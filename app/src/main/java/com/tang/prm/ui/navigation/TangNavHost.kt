@@ -26,10 +26,16 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.SystemUpdateAlt
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -40,13 +46,20 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.tang.prm.ui.profile.UpdateResult
+import com.tang.prm.ui.profile.checkForUpdate
+import com.tang.prm.ui.theme.DialogDefaults
 
 @Composable
 fun TangNavHost(
@@ -62,6 +75,68 @@ fun TangNavHost(
     var overlayVisible by remember { mutableStateOf(false) }
 
     val transitions = remember(bottomRoutes) { navTransitions(bottomRoutes) }
+
+    val context = LocalContext.current
+    val uriHandler = LocalUriHandler.current
+    var updateInfo by remember { mutableStateOf<UpdateResult.HasUpdate?>(null) }
+
+    LaunchedEffect(Unit) {
+        val currentVersion = runCatching {
+            val packageInfo = context.packageManager.getPackageInfo(context.packageName, 0)
+            packageInfo.versionName ?: "1.0.0"
+        }.getOrDefault("1.0.0")
+
+        when (val result = checkForUpdate(currentVersion)) {
+            is UpdateResult.HasUpdate -> updateInfo = result
+            else -> {}
+        }
+    }
+
+    if (updateInfo != null) {
+        AlertDialog(
+            onDismissRequest = { updateInfo = null },
+            containerColor = DialogDefaults.containerColor,
+            icon = {
+                Icon(
+                    Icons.Outlined.SystemUpdateAlt,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(28.dp)
+                )
+            },
+            title = {
+                Text(
+                    "发现新版本",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 18.sp
+                )
+            },
+            text = {
+                Text(
+                    "结绳 v${updateInfo!!.latestVersion} 已发布，是否前往下载更新？",
+                    fontSize = 14.sp,
+                    lineHeight = 20.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    val url = updateInfo!!.releaseUrl
+                    updateInfo = null
+                    try {
+                        uriHandler.openUri(url)
+                    } catch (_: Exception) {}
+                }) {
+                    Text("立即更新", fontWeight = FontWeight.SemiBold)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { updateInfo = null }) {
+                    Text("稍后再说")
+                }
+            }
+        )
+    }
 
     Box(modifier = Modifier.fillMaxSize()) {
         NavHost(

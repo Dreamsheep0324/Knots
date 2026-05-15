@@ -78,3 +78,6 @@ app/release/
 
 # npm cache (should not exist in project)
 %USERPROFILE%/
+
+# IDE tools
+.superpowers/

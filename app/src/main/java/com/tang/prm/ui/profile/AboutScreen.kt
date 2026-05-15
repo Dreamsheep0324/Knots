@@ -57,12 +57,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.tang.prm.R
 import com.tang.prm.ui.theme.Primary
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import org.json.JSONObject
-import java.net.HttpURLConnection
-import java.net.URL
 
 @Composable
 fun AboutScreen(
@@ -209,20 +204,20 @@ fun AboutScreen(
                     Box(
                         modifier = Modifier
                             .size(36.dp)
-                            .background(Color(0xFF2196F3).copy(alpha = 0.1f), RoundedCornerShape(10.dp)),
+                            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f), RoundedCornerShape(10.dp)),
                         contentAlignment = Alignment.Center
                     ) {
                         if (isCheckingUpdate) {
                             CircularProgressIndicator(
                                 modifier = Modifier.size(18.dp),
                                 strokeWidth = 2.dp,
-                                color = Color(0xFF2196F3)
+                                color = MaterialTheme.colorScheme.primary
                             )
                         } else {
                             Icon(
                                 Icons.Outlined.SystemUpdateAlt,
                                 contentDescription = null,
-                                tint = Color(0xFF2196F3),
+                                tint = MaterialTheme.colorScheme.primary,
                                 modifier = Modifier.size(20.dp)
                             )
                         }
@@ -269,44 +264,7 @@ fun AboutScreen(
     }
 }
 
-sealed class UpdateResult {
-    data class HasUpdate(val latestVersion: String, val releaseUrl: String) : UpdateResult()
-    data object NoUpdate : UpdateResult()
-    data class Error(val message: String) : UpdateResult()
-}
 
-private suspend fun checkForUpdate(currentVersion: String): UpdateResult {
-    return withContext(Dispatchers.IO) {
-        try {
-            val url = URL("https://api.github.com/repos/dreamsheep0324/Knots/releases/latest")
-            val connection = url.openConnection() as HttpURLConnection
-            connection.requestMethod = "GET"
-            connection.setRequestProperty("Accept", "application/vnd.github+json")
-            connection.connectTimeout = 10000
-            connection.readTimeout = 10000
-            connection.instanceFollowRedirects = true
-
-            val responseCode = connection.responseCode
-            if (responseCode != 200) {
-                return@withContext UpdateResult.Error("HTTP $responseCode")
-            }
-
-            val response = connection.inputStream.bufferedReader().readText()
-            val json = JSONObject(response)
-
-            val tagName = json.optString("tag_name", "").removePrefix("v")
-            val htmlUrl = json.optString("html_url", "")
-
-            if (tagName.isNotEmpty() && tagName != currentVersion) {
-                UpdateResult.HasUpdate(tagName, htmlUrl)
-            } else {
-                UpdateResult.NoUpdate
-            }
-        } catch (e: Exception) {
-            UpdateResult.Error(e.message ?: "未知错误")
-        }
-    }
-}
 
 @Composable
 private fun AboutCard(content: @Composable () -> Unit) {
