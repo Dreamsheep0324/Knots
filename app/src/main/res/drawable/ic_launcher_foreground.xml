@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- 光晕背景 -->
+    <path
+        android:pathData="M54,54m-14,0a14,14 0,1 1,28 0a14,14 0,1 1,-28 0"
+        android:fillColor="#3b82f6"
+        android:fillAlpha="0.12" />
+
+    <!-- 中心光晕 -->
+    <path
+        android:pathData="M54,54m-10,0a10,10 0,1 1,20 0a10,10 0,1 1,-20 0"
+        android:fillColor="#3b82f6"
+        android:fillAlpha="0.2" />
+
+    <!-- 外圈光晕 -->
+    <path
+        android:pathData="M54,54m-7,0a7,7 0,1 1,14 0a7,7 0,1 1,-14 0"
+        android:fillColor="#3b82f6"
+        android:fillAlpha="0.1" />
+
+    <!-- 弧线1: 钴蓝 -> 天蓝 -->
+    <path
+        android:pathData="M54,26 A28,28 0 0,1 54,82"
+        android:strokeColor="#1e40af"
+        android:strokeWidth="4.5"
+        android:strokeLineCap="round" />
+
+    <!-- 弧线2: 靛紫 -> 淡靛 -->
+    <path
+        android:pathData="M54,82 A28,28 0 0,1 54,26"
+        android:strokeColor="#6366f1"
+        android:strokeWidth="4.5"
+        android:strokeLineCap="round" />
+
+    <!-- 中心圆 -->
+    <path
+        android:pathData="M54,54m-4,0a4,4 0,1 1,8 0a4,4 0,1 1,-8 0"
+        android:fillColor="#3b82f6" />
+
+    <!-- 顶部端点 -->
+    <path
+        android:pathData="M54,26m-2,0a2,2 0,1 1,4 0a2,2 0,1 1,-4 0"
+        android:fillColor="#1e40af"
+        android:fillAlpha="0.5" />
+
+    <!-- 底部端点 -->
+    <path
+        android:pathData="M54,82m-2,0a2,2 0,1 1,4 0a2,2 0,1 1,-4 0"
+        android:fillColor="#6366f1"
+        android:fillAlpha="0.5" />
+
+</vector>

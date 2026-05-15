@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">结绳</string>
+    <string name="notification_channel_name">结绳提醒</string>
+    <string name="notification_channel_description">提醒通知渠道</string>
+</resources>
