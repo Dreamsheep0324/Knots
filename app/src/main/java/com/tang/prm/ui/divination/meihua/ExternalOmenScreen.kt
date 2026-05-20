@@ -37,6 +37,8 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -63,8 +65,8 @@ fun ExternalOmenScreen(
         viewModelStoreOwner = navController.getBackStackEntry(Screen.Divination.route)
     )
 ) {
-    val selections = viewModel.externalSelections
-    val count = viewModel.externalCount
+    val selections by viewModel.externalSelections.collectAsState()
+    val count by viewModel.externalCount.collectAsState()
     val selectedCount = selections.size
     val canProceed = selectedCount >= 2 && count.toIntOrNull()?.let { it > 0 } == true
 

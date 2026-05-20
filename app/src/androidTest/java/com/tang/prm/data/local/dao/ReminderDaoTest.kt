@@ -61,6 +61,40 @@ class ReminderDaoTest {
     }
 
     @Test
+    fun markIgnored() = runBlocking {
+        val id = dao.insertReminder(ReminderEntity(
+            type = "anniversary",
+            title = "提醒",
+            content = "内容",
+            time = System.currentTimeMillis() + 10000L,
+            isIgnored = false
+        ))
+        dao.markReminderIgnored(id)
+        val result = dao.getActiveReminders().first()
+        assertThat(result).isEmpty()
+    }
+
+    @Test
+    fun getActiveRemindersSync() = runBlocking {
+        val futureTime = System.currentTimeMillis() + 10000L
+        dao.insertReminder(ReminderEntity(
+            type = "anniversary",
+            title = "未来提醒",
+            content = "内容",
+            time = futureTime
+        ))
+        dao.insertReminder(ReminderEntity(
+            type = "anniversary",
+            title = "过去提醒",
+            content = "内容",
+            time = System.currentTimeMillis() - 10000L
+        ))
+        val result = dao.getActiveRemindersSync()
+        assertThat(result).hasSize(1)
+        assertThat(result[0].title).isEqualTo("未来提醒")
+    }
+
+    @Test
     fun deleteReminder() = runBlocking {
         val id = dao.insertReminder(ReminderEntity(
             type = "anniversary",
@@ -69,6 +103,21 @@ class ReminderDaoTest {
             time = System.currentTimeMillis() + 10000L
         ))
         dao.deleteReminderById(id)
+        val result = dao.getActiveReminders().first()
+        assertThat(result).isEmpty()
+    }
+
+    @Test
+    fun deleteRemindersByContact() = runBlocking {
+        val contactId = 42L
+        dao.insertReminder(ReminderEntity(
+            type = "anniversary",
+            title = "提醒",
+            content = "内容",
+            time = System.currentTimeMillis() + 10000L,
+            contactId = contactId
+        ))
+        dao.deleteRemindersByContact(contactId)
         val result = dao.getActiveReminders().first()
         assertThat(result).isEmpty()
     }

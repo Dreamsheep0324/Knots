@@ -1,7 +1,6 @@
 package com.tang.prm.data.local.dao
 
 import androidx.room.*
-import com.tang.prm.domain.model.EventTypes
 import com.tang.prm.data.local.entity.EventEntity
 import com.tang.prm.data.local.entity.EventParticipantCrossRef
 import com.tang.prm.data.local.entity.EventWithParticipants
@@ -22,7 +21,7 @@ interface EventDao {
     fun getRecentEventsWithParticipants(limit: Int): Flow<List<EventWithParticipants>>
 
     @Transaction
-    @Query("SELECT * FROM events WHERE type != '${EventTypes.CONVERSATION}' AND (:keyword IS NULL OR title LIKE '%' || :keyword || '%' ESCAPE '\\' OR description LIKE '%' || :keyword || '%' ESCAPE '\\' OR location LIKE '%' || :keyword || '%' ESCAPE '\\') ORDER BY time DESC")
+    @Query("SELECT * FROM events WHERE type != 'CONVERSATION' AND (:keyword IS NULL OR title LIKE '%' || :keyword || '%' ESCAPE '\\' OR description LIKE '%' || :keyword || '%' ESCAPE '\\' OR location LIKE '%' || :keyword || '%' ESCAPE '\\') ORDER BY time DESC")
     fun searchNonConversationEvents(keyword: String?): Flow<List<EventWithParticipants>>
 
     @Transaction
@@ -30,7 +29,7 @@ interface EventDao {
     fun getEventsByTypeWithParticipants(type: String): Flow<List<EventWithParticipants>>
 
     @Transaction
-    @Query("SELECT * FROM events WHERE type = '${EventTypes.CONVERSATION}' ORDER BY createdAt DESC")
+    @Query("SELECT * FROM events WHERE type = 'CONVERSATION' ORDER BY createdAt DESC")
     fun getConversationEventsWithParticipants(): Flow<List<EventWithParticipants>>
 
     @Transaction
@@ -45,6 +44,9 @@ interface EventDao {
 
     @Query("DELETE FROM events WHERE id = :id")
     suspend fun deleteEventById(id: Long)
+
+    @Query("SELECT * FROM events WHERE id = :id")
+    suspend fun getEventByIdOnce(id: Long): EventEntity?
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertEventParticipant(crossRef: EventParticipantCrossRef)
@@ -65,10 +67,10 @@ interface EventDao {
     @Query("DELETE FROM event_participants WHERE eventId = :eventId")
     suspend fun deleteParticipantsByEvent(eventId: Long)
 
-    @Query("SELECT COUNT(*) FROM events WHERE type != '${EventTypes.CONVERSATION}'")
+    @Query("SELECT COUNT(*) FROM events WHERE type != 'CONVERSATION'")
     fun getEventCount(): Flow<Int>
 
-    @Query("SELECT COUNT(*) FROM events WHERE type = '${EventTypes.CONVERSATION}'")
+    @Query("SELECT COUNT(*) FROM events WHERE type = 'CONVERSATION'")
     fun getConversationCount(): Flow<Int>
 
     @Query("SELECT photos FROM events WHERE photos IS NOT NULL AND photos != '[]'")

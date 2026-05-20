@@ -2,12 +2,13 @@ package com.tang.prm.data.mapper
 
 import com.tang.prm.data.local.entity.GiftEntity
 import com.tang.prm.domain.model.Gift
+import com.tang.prm.domain.model.GiftType
 
 fun GiftEntity.toDomain() = Gift(
     id = id,
     contactId = contactId,
     giftName = giftName,
-    giftType = giftType,
+    giftType = GiftType.entries.find { it.key == giftType } ?: GiftType.OTHER,
     date = date,
     isSent = isSent,
     amount = amount,
@@ -23,7 +24,7 @@ fun Gift.toEntity() = GiftEntity(
     id = id,
     contactId = contactId,
     giftName = giftName,
-    giftType = giftType,
+    giftType = giftType.key,
     date = date,
     isSent = isSent,
     amount = amount,

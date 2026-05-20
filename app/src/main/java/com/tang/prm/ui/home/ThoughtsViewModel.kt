@@ -92,6 +92,25 @@ data class ThoughtsUiState(
     fun thoughtExp(thought: Thought): Int = 3 + (if (thought.isDone) 2 else 0) + (if (thought.contactId != null) 1 else 0)
 }
 
+private data class ThoughtsData(
+    val thoughts: List<Thought>,
+    val todos: List<Thought>,
+    val contacts: List<Contact>
+)
+
+private data class FilterState(
+    val selectedFilter: String,
+    val selectedContactId: Long?,
+    val searchQuery: String,
+    val isSearching: Boolean
+)
+
+private data class DialogState(
+    val showDialog: Boolean,
+    val editingThought: Thought?,
+    val dialogType: ThoughtType
+)
+
 @OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class ThoughtsViewModel @Inject constructor(
@@ -117,33 +136,39 @@ class ThoughtsViewModel @Inject constructor(
         }
     }
 
-    val uiState = combine(
+    private val thoughtsData = combine(
         thoughtRepository.getAllThoughts(),
         thoughtRepository.getTodoThoughts(),
-        contactRepository.getAllContacts(),
+        contactRepository.getAllContacts()
+    ) { thoughts, todos, contacts ->
+        ThoughtsData(thoughts, todos, contacts)
+    }
+
+    private val filterState = combine(
         _selectedFilter,
         _selectedContactId,
         _searchQuery,
-        _isSearching,
+        _isSearching
+    ) { selectedFilter, selectedContactId, searchQuery, isSearching ->
+        FilterState(selectedFilter, selectedContactId, searchQuery, isSearching)
+    }
+
+    private val dialogState = combine(
         _showDialog,
         _editingThought,
-        _dialogType,
-        _favoriteIds
-    ) { values ->
-        val thoughts = values[0] as List<Thought>
-        val todos = values[1] as List<Thought>
-        val contacts = values[2] as List<Contact>
-        val filter = values[3] as String
-        val contactIdFilter = values[4] as Long?
-        val query = values[5] as String
-        val isSearching = values[6] as Boolean
-        val showDialog = values[7] as Boolean
-        val editingThought = values[8] as Thought?
-        val dialogType = values[9] as ThoughtType
-        val favIds = values[10] as Set<Long>
+        _dialogType
+    ) { showDialog, editingThought, dialogType ->
+        DialogState(showDialog, editingThought, dialogType)
+    }
 
-        val contactMap = contacts.associateBy { it.id }
-        val contactThoughts = thoughts
+    val uiState = combine(
+        thoughtsData,
+        filterState,
+        dialogState,
+        _favoriteIds
+    ) { data, filter, dialog, favIds ->
+        val contactMap = data.contacts.associateBy { it.id }
+        val contactThoughts = data.thoughts
             .filter { it.contactId != null }
             .groupBy { it.contactId }
             .mapNotNull { (contactId, list) ->
@@ -155,38 +180,38 @@ class ThoughtsViewModel @Inject constructor(
                 )
             }
 
-        val byType = when (filter) {
-            "friend" -> thoughts.filter { it.type == ThoughtType.FRIEND }
-            "plan" -> thoughts.filter { it.type == ThoughtType.PLAN }
-            "murmur" -> thoughts.filter { it.type == ThoughtType.MURMUR }
-            "todo" -> thoughts.filter { it.isTodo }
-            else -> thoughts
+        val byType = when (filter.selectedFilter) {
+            "friend" -> data.thoughts.filter { it.type == ThoughtType.FRIEND }
+            "plan" -> data.thoughts.filter { it.type == ThoughtType.PLAN }
+            "murmur" -> data.thoughts.filter { it.type == ThoughtType.MURMUR }
+            "todo" -> data.thoughts.filter { it.isTodo }
+            else -> data.thoughts
         }
 
-        val byContact = if (contactIdFilter != null) {
-            byType.filter { it.contactId == contactIdFilter }
+        val byContact = if (filter.selectedContactId != null) {
+            byType.filter { it.contactId == filter.selectedContactId }
         } else {
             byType
         }
 
-        val filtered = if (query.isBlank()) byContact else byContact.filter {
-            it.content.contains(query, ignoreCase = true) ||
-            contactMap[it.contactId]?.name?.contains(query, ignoreCase = true) == true
+        val filtered = if (filter.searchQuery.isBlank()) byContact else byContact.filter {
+            it.content.contains(filter.searchQuery, ignoreCase = true) ||
+            contactMap[it.contactId]?.name?.contains(filter.searchQuery, ignoreCase = true) == true
         }
 
         ThoughtsUiState(
-            allThoughts = thoughts,
-            contacts = contacts,
+            allThoughts = data.thoughts,
+            contacts = data.contacts,
             contactThoughts = contactThoughts,
-            todoThoughts = todos,
+            todoThoughts = data.todos,
             filteredThoughts = filtered,
-            selectedFilter = filter,
-            selectedContactId = contactIdFilter,
-            searchQuery = query,
-            isSearching = isSearching,
-            showDialog = showDialog,
-            editingThought = editingThought,
-            dialogType = dialogType,
+            selectedFilter = filter.selectedFilter,
+            selectedContactId = filter.selectedContactId,
+            searchQuery = filter.searchQuery,
+            isSearching = filter.isSearching,
+            showDialog = dialog.showDialog,
+            editingThought = dialog.editingThought,
+            dialogType = dialog.dialogType,
             favoriteIds = favIds
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), ThoughtsUiState())

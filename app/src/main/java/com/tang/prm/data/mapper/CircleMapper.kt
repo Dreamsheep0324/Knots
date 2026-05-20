@@ -10,6 +10,7 @@ package com.tang.prm.data.mapper
 // 6. UI forms (CircleScreen, CircleDetailScreen)
 
 import com.tang.prm.data.local.entity.CircleEntity
+import com.tang.prm.data.local.entity.CircleWithMembers
 import com.tang.prm.domain.model.Circle
 
 fun CircleEntity.toDomain(memberIds: List<Long> = emptyList()) = Circle(
@@ -26,6 +27,8 @@ fun CircleEntity.toDomain(memberIds: List<Long> = emptyList()) = Circle(
     createdAt = createdAt,
     updatedAt = updatedAt
 )
+
+fun CircleWithMembers.toDomain() = circle.toDomain(members.map { it.contactId })
 
 fun Circle.toEntity() = CircleEntity(
     id = id,

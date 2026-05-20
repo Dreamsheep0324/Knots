@@ -43,6 +43,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import android.os.Build
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -79,7 +80,11 @@ fun AboutScreen(
         runCatching {
             val packageInfo = context.packageManager.getPackageInfo(context.packageName, 0)
             @Suppress("DEPRECATION")
-            packageInfo.longVersionCode.toInt()
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                packageInfo.longVersionCode.toInt()
+            } else {
+                packageInfo.versionCode
+            }
         }.getOrDefault(1)
     }
 

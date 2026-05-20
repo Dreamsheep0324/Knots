@@ -39,6 +39,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -67,7 +68,10 @@ fun MeihuaMethodScreen(
         viewModelStoreOwner = navController.getBackStackEntry(Screen.Divination.route)
     )
 ) {
-    val selectedMethod = viewModel.selectedMeihuaMethod
+    val selectedMethod by viewModel.selectedMeihuaMethod.collectAsState()
+    val numberInput by viewModel.numberInput.collectAsState()
+    val numberInputB by viewModel.numberInputB.collectAsState()
+    val inputError by viewModel.inputError.collectAsState()
     var showNumberDialog by remember { mutableStateOf(false) }
 
     Column(
@@ -190,11 +194,11 @@ fun MeihuaMethodScreen(
                         navController.navigate(Screen.ExternalOmen.route)
                     }
                     is MeihuaMethodType.Number -> {
-                        if (viewModel.numberInput.isEmpty() || viewModel.numberInputB.isEmpty()) {
+                        if (numberInput.isEmpty() || numberInputB.isEmpty()) {
                             showNumberDialog = true
                         } else {
                             viewModel.generateMeihuaResult()
-                            if (viewModel.inputError.isNotEmpty()) {
+                            if (inputError.isNotEmpty()) {
                                 showNumberDialog = true
                             } else {
                                 navController.navigate(Screen.MeihuaResult.route)
@@ -231,8 +235,8 @@ fun MeihuaMethodScreen(
 
     if (showNumberDialog) {
         NumberInputDialog(
-            currentValueA = viewModel.numberInput,
-            currentValueB = viewModel.numberInputB,
+            currentValueA = numberInput,
+            currentValueB = numberInputB,
             onValueChangeA = { viewModel.updateNumberInput(it) },
             onValueChangeB = { viewModel.updateNumberInputB(it) },
             onDismiss = { showNumberDialog = false },

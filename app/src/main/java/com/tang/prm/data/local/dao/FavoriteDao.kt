@@ -30,7 +30,6 @@ interface FavoriteDao {
     @Query("SELECT COUNT(*) FROM favorites")
     fun getTotalCount(): Flow<Int>
 
-    // Source types referenced: see SourceTypes for 'EVENT', 'DIALOG', 'PHOTO'
-    @Query("DELETE FROM favorites WHERE sourceId = :eventId AND sourceType IN ('EVENT', 'DIALOG', 'PHOTO')")
-    suspend fun deleteEventFavorites(eventId: Long)
+    @Query("DELETE FROM favorites WHERE sourceId = :eventId AND sourceType IN (:types)")
+    suspend fun deleteEventFavorites(eventId: Long, types: List<String>)
 }

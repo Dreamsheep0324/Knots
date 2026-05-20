@@ -20,7 +20,7 @@ import androidx.room.PrimaryKey
 data class AnniversaryEntity(
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0,
-    val contactId: Long,
+    val contactId: Long?,
     val name: String,
     val type: String,
     val date: Long,

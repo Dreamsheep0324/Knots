@@ -12,8 +12,14 @@ interface GiftDao {
     @Query("SELECT * FROM gifts WHERE id = :id")
     fun getGiftById(id: Long): Flow<GiftEntity?>
 
+    @Query("SELECT * FROM gifts WHERE id = :id")
+    suspend fun getGiftByIdOnce(id: Long): GiftEntity?
+
     @Query("SELECT * FROM gifts WHERE contactId = :contactId ORDER BY date DESC")
     fun getGiftsByContactId(contactId: Long): Flow<List<GiftEntity>>
+
+    @Query("SELECT * FROM gifts WHERE contactId = :contactId")
+    suspend fun getGiftsByContactIdOnce(contactId: Long): List<GiftEntity>
 
     @Query("SELECT * FROM gifts WHERE isSent = :isSent ORDER BY date DESC")
     fun getGiftsBySentType(isSent: Boolean): Flow<List<GiftEntity>>

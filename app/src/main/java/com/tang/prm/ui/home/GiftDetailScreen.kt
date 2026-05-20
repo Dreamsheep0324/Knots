@@ -61,9 +61,7 @@ import com.tang.prm.ui.theme.Dimens
 
 // ── 与列表页统一的配色 ──
 
-
 // ── 礼物分类（与GiftsScreen统一）──
-private val GiftTypeEntries = GiftType.entries
 
 @Composable
 fun GiftDetailScreen(
@@ -82,8 +80,8 @@ fun GiftDetailScreen(
     var selectedPhotoUri by remember { mutableStateOf<android.net.Uri?>(null) }
     var showDeleteDialog by remember { mutableStateOf(false) }
 
-    val giftTypeData = remember(giftRecord) {
-        giftRecord?.let { GiftTypeEntries.find { type -> type.name == it.giftType } ?: GiftType.OTHER }
+    val giftTypeData: GiftType = remember(giftRecord) {
+        giftRecord?.giftType ?: GiftType.OTHER
     }
 
     if (showDeleteDialog) {

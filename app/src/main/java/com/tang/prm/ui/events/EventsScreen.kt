@@ -28,6 +28,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.tang.prm.domain.model.CustomType
 import com.tang.prm.domain.model.Event
+import com.tang.prm.domain.model.EventType
 import com.tang.prm.ui.components.AppCard
 import com.tang.prm.ui.components.SearchBar
 import com.tang.prm.ui.navigation.Screen
@@ -187,7 +188,7 @@ fun EventsScreen(
 
 @Composable
 private fun EventCard(event: Event, eventTypes: List<CustomType>, onClick: () -> Unit, modifier: Modifier = Modifier) {
-    val customType = if (event.type.isNotBlank()) eventTypes.find { it.key == event.type } ?: eventTypes.find { it.name == event.type } else null
+    val customType = if (event.type != EventType.OTHER) eventTypes.find { it.key == event.type.name } ?: eventTypes.find { it.name == event.type.name } else null
     val accentColor: Color
     val lightColor: Color
     val icon: ImageVector
@@ -200,7 +201,7 @@ private fun EventCard(event: Event, eventTypes: List<CustomType>, onClick: () ->
         lightColor = baseColor.copy(alpha = AnimationTokens.Alpha.subtle)
         icon = customType.icon?.let { getGenericIcon(it) } ?: Icons.Default.Event
     } else {
-        val style = getEventTypeStyle(event.type ?: "")
+        val style = getEventTypeStyle(event.type)
         accentColor = style.accentColor
         lightColor = style.lightColor
         icon = style.icon
@@ -218,9 +219,9 @@ private fun EventCard(event: Event, eventTypes: List<CustomType>, onClick: () ->
                 Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(5.dp)) {
                     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         Text(text = event.title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f))
-                        if (event.type.isNotBlank()) {
+                        if (event.type != EventType.OTHER) {
                             Surface(shape = RoundedCornerShape(20.dp), color = lightColor) {
-                                Text(text = event.type, modifier = Modifier.padding(10.dp, 4.dp), style = MaterialTheme.typography.labelSmall, color = accentColor, fontWeight = FontWeight.SemiBold, fontSize = 11.sp)
+                                Text(text = event.type.displayName, modifier = Modifier.padding(10.dp, 4.dp), style = MaterialTheme.typography.labelSmall, color = accentColor, fontWeight = FontWeight.SemiBold, fontSize = 11.sp)
                             }
                         }
                     }

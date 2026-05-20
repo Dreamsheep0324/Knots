@@ -63,6 +63,7 @@ import com.tang.prm.ui.theme.Dimens
 import java.util.Calendar
 import kotlin.math.cos
 import kotlin.math.sin
+import java.util.Locale
 
 private val bagua = listOf("坎","艮","震","巽","离","坤","兑","乾")
 
@@ -124,7 +125,7 @@ internal fun OrbitalCalendar(
             val cal = Calendar.getInstance().apply { timeInMillis = it.date }
             cal.get(Calendar.MONTH) == todayMonth && cal.get(Calendar.DAY_OF_MONTH) == todayDay
         }
-        evts.map { it.title.ifBlank { it.type } } + anns.map { it.name }
+        evts.map { it.title.ifBlank { it.type.displayName } } + anns.map { it.name }
     }
 
     val upcomingEvents = remember(events) {
@@ -133,7 +134,7 @@ internal fun OrbitalCalendar(
         events.filter { it.time in now..threeDaysLater }
             .sortedBy { it.time }
             .take(3)
-            .map { it.title.ifBlank { it.type } to DateUtils.formatMonthDay(it.time) }
+            .map { it.title.ifBlank { it.type.displayName } to DateUtils.formatMonthDay(it.time) }
     }
 
     val nextEventCountdown = remember(events) {
@@ -144,7 +145,7 @@ internal fun OrbitalCalendar(
                 val diffMs = it.time - now
                 val days = (diffMs / (24 * 60 * 60 * 1000)).toInt()
                 val hours = ((diffMs % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000)).toInt()
-                it.title.ifBlank { it.type } to (days to hours)
+                it.title.ifBlank { it.type.displayName } to (days to hours)
             }
     }
 
@@ -221,7 +222,7 @@ internal fun OrbitalCalendar(
                     }, modifier = Modifier.size(28.dp)) {
                         Icon(Icons.Default.ChevronLeft, contentDescription = "上月", tint = TextGray, modifier = Modifier.size(16.dp))
                     }
-                    Text("${displayYear}.${String.format("%02d", displayMonth + 1)}",
+                    Text("${displayYear}.${String.format(Locale.US, "%02d", displayMonth + 1)}",
                         fontFamily = FontFamily.Monospace, fontSize = 12.sp, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.onSurface)
                     IconButton(onClick = {
                         val c = Calendar.getInstance().apply { set(displayYear, displayMonth, 1); add(Calendar.MONTH, 1) }

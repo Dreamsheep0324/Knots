@@ -1,19 +1,17 @@
 package com.tang.prm.ui.home
 
-import android.content.Context
 import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tang.prm.domain.model.Gift
+import com.tang.prm.domain.model.GiftType
 import com.tang.prm.domain.model.SourceTypes
 import com.tang.prm.domain.repository.ContactRepository
 import com.tang.prm.domain.repository.FavoriteRepository
 import com.tang.prm.domain.repository.GiftRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
-import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-import com.tang.prm.util.ImageCacheManager
 import javax.inject.Inject
 
 data class GiftRecord(
@@ -24,7 +22,7 @@ data class GiftRecord(
     val id get() = gift.id
     val contactId get() = gift.contactId
     val giftName get() = gift.giftName
-    val giftType get() = gift.giftType
+    val giftType: GiftType get() = gift.giftType
     val date get() = gift.date
     val isSent get() = gift.isSent
     val amount get() = gift.amount
@@ -41,15 +39,15 @@ data class GiftsUiState(
     val selectedContactId: Long? = null,
     val availableContacts: List<com.tang.prm.domain.model.Contact> = emptyList(),
     val isLoading: Boolean = false,
-    val favoriteGiftIds: Set<Long> = emptySet()
+    val favoriteGiftIds: Set<Long> = emptySet(),
+    val photoSaveErrorCount: Int = 0
 )
 
 @HiltViewModel
 class GiftsViewModel @Inject constructor(
     private val giftRepository: GiftRepository,
     private val contactRepository: ContactRepository,
-    private val favoriteRepository: FavoriteRepository,
-    @ApplicationContext private val context: Context
+    private val favoriteRepository: FavoriteRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(GiftsUiState())
@@ -111,22 +109,15 @@ class GiftsViewModel @Inject constructor(
 
     fun addGift(gift: GiftRecord) {
         viewModelScope.launch {
-            val savedPaths = mutableListOf<String>()
-            gift.photos.forEach { uri ->
-                val path = ImageCacheManager.copyToInternalStorage(context, uri, "gift")
-                if (path != null) {
-                    savedPaths.add(path)
-                }
+            val (id, failedCount) = giftRepository.saveGiftWithPhotos(gift.gift, gift.photos)
+            if (failedCount > 0) {
+                _uiState.update { it.copy(photoSaveErrorCount = failedCount) }
             }
-
-            val newGift = gift.gift.copy(
-                id = 0,
-                photos = savedPaths,
-                createdAt = System.currentTimeMillis(),
-                updatedAt = System.currentTimeMillis()
-            )
-            giftRepository.insertGift(newGift)
         }
+    }
+
+    fun clearPhotoSaveError() {
+        _uiState.update { it.copy(photoSaveErrorCount = 0) }
     }
 
     fun deleteGift(giftId: Long) {

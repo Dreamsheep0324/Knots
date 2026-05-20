@@ -100,7 +100,7 @@ fun AnniversaryDetailScreen(
                     AnniversaryHeader(anniversary = anniversary)
                 }
 
-                if (anniversary.contactId > 0 && anniversary.contactName != null) {
+                if (anniversary.contactId != null && anniversary.contactId > 0 && anniversary.contactName != null) {
                     item {
                         ContactCard(
                             contactId = anniversary.contactId,

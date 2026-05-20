@@ -1,8 +1,5 @@
 package com.tang.prm.ui.divination
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tang.prm.domain.divination.model.DivinationRecord
@@ -14,6 +11,9 @@ import com.tang.prm.engine.divination.meihua.MeihuaEngine
 import com.tang.prm.engine.divination.data.ExternalOmenOption
 import com.google.gson.Gson
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -34,101 +34,101 @@ class DivinationViewModel @Inject constructor(
     private val repository: DivinationRepository
 ) : ViewModel() {
 
-    var selectedMethod by mutableStateOf<DivinationMethod>(DivinationMethod.Meihua)
-        private set
+    private val _selectedMethod = MutableStateFlow<DivinationMethod>(DivinationMethod.Meihua)
+    val selectedMethod: StateFlow<DivinationMethod> = _selectedMethod.asStateFlow()
 
-    var selectedMeihuaMethod by mutableStateOf<MeihuaMethodType>(MeihuaMethodType.Time)
-        private set
+    private val _selectedMeihuaMethod = MutableStateFlow<MeihuaMethodType>(MeihuaMethodType.Time)
+    val selectedMeihuaMethod: StateFlow<MeihuaMethodType> = _selectedMeihuaMethod.asStateFlow()
 
-    var liuyaoData by mutableStateOf<LiuyaoData?>(null)
-        private set
+    private val _liuyaoData = MutableStateFlow<LiuyaoData?>(null)
+    val liuyaoData: StateFlow<LiuyaoData?> = _liuyaoData.asStateFlow()
 
-    var meihuaData by mutableStateOf<MeihuaData?>(null)
-        private set
+    private val _meihuaData = MutableStateFlow<MeihuaData?>(null)
+    val meihuaData: StateFlow<MeihuaData?> = _meihuaData.asStateFlow()
 
-    var currentYaoIndex by mutableStateOf(0)
-        private set
+    private val _currentYaoIndex = MutableStateFlow(0)
+    val currentYaoIndex: StateFlow<Int> = _currentYaoIndex.asStateFlow()
 
-    var yaoResults by mutableStateOf<List<Int>>(emptyList())
-        private set
+    private val _yaoResults = MutableStateFlow<List<Int>>(emptyList())
+    val yaoResults: StateFlow<List<Int>> = _yaoResults.asStateFlow()
 
-    var lastCoinFlips by mutableStateOf<List<Int>>(emptyList())
-        private set
+    private val _lastCoinFlips = MutableStateFlow<List<Int>>(emptyList())
+    val lastCoinFlips: StateFlow<List<Int>> = _lastCoinFlips.asStateFlow()
 
-    var numberInput by mutableStateOf("")
-        private set
+    private val _numberInput = MutableStateFlow("")
+    val numberInput: StateFlow<String> = _numberInput.asStateFlow()
 
-    var numberInputB by mutableStateOf("")
-        private set
+    private val _numberInputB = MutableStateFlow("")
+    val numberInputB: StateFlow<String> = _numberInputB.asStateFlow()
 
-    var externalSelections by mutableStateOf<Map<String, ExternalOmenOption>>(emptyMap())
-        private set
+    private val _externalSelections = MutableStateFlow<Map<String, ExternalOmenOption>>(emptyMap())
+    val externalSelections: StateFlow<Map<String, ExternalOmenOption>> = _externalSelections.asStateFlow()
 
-    var externalCount by mutableStateOf("")
-        private set
+    private val _externalCount = MutableStateFlow("")
+    val externalCount: StateFlow<String> = _externalCount.asStateFlow()
 
-    var isCasting by mutableStateOf(false)
-        private set
+    private val _isCasting = MutableStateFlow(false)
+    val isCasting: StateFlow<Boolean> = _isCasting.asStateFlow()
 
-    var currentQuestion by mutableStateOf("")
-        private set
+    private val _currentQuestion = MutableStateFlow("")
+    val currentQuestion: StateFlow<String> = _currentQuestion.asStateFlow()
 
-    var currentAiAnalysis by mutableStateOf("")
-        private set
+    private val _currentAiAnalysis = MutableStateFlow("")
+    val currentAiAnalysis: StateFlow<String> = _currentAiAnalysis.asStateFlow()
 
-    private var lastSavedRecordId by mutableStateOf(0L)
+    private val _lastSavedRecordId = MutableStateFlow(0L)
 
     private val gson = Gson()
 
     fun selectMethod(method: DivinationMethod) {
-        selectedMethod = method
+        _selectedMethod.value = method
     }
 
     fun selectMeihuaMethod(method: MeihuaMethodType) {
-        selectedMeihuaMethod = method
+        _selectedMeihuaMethod.value = method
     }
 
     fun updateNumberInput(input: String) {
-        numberInput = input
+        _numberInput.value = input
     }
 
     fun updateNumberInputB(input: String) {
-        numberInputB = input
+        _numberInputB.value = input
     }
 
     fun updateExternalSelection(category: String, option: ExternalOmenOption?) {
-        externalSelections = if (option != null) {
-            externalSelections + (category to option)
+        _externalSelections.value = if (option != null) {
+            _externalSelections.value + (category to option)
         } else {
-            externalSelections - category
+            _externalSelections.value - category
         }
     }
 
     fun updateExternalCount(input: String) {
         if (input.isEmpty() || input.all { it.isDigit() }) {
-            externalCount = input
+            _externalCount.value = input
         }
     }
 
     fun updateQuestion(q: String) {
-        currentQuestion = q
+        _currentQuestion.value = q
     }
 
     fun updateAiAnalysis(analysis: String) {
-        currentAiAnalysis = analysis
+        _currentAiAnalysis.value = analysis
     }
 
     fun saveAiAnalysis(analysis: String) {
-        currentAiAnalysis = analysis
-        if (lastSavedRecordId > 0) {
+        _currentAiAnalysis.value = analysis
+        if (_lastSavedRecordId.value > 0) {
             viewModelScope.launch {
-                repository.updateAiAnalysis(lastSavedRecordId, analysis)
+                repository.updateAiAnalysis(_lastSavedRecordId.value, analysis)
             }
         }
     }
 
     fun castNextYao() {
-        if (currentYaoIndex >= 6) return
+        if (_currentYaoIndex.value >= 6) return
         val flips = mutableListOf<Int>()
         var total = 0
         repeat(3) {
@@ -136,88 +136,88 @@ class DivinationViewModel @Inject constructor(
             flips.add(flip)
             total += flip
         }
-        lastCoinFlips = flips
-        yaoResults = yaoResults + total
-        currentYaoIndex += 1
+        _lastCoinFlips.value = flips
+        _yaoResults.value = _yaoResults.value + total
+        _currentYaoIndex.value += 1
     }
 
     fun generateLiuyaoResult() {
-        if (yaoResults.size != 6) return
-        liuyaoData = LiuyaoEngine.generate(yaoArray = yaoResults)
+        if (_yaoResults.value.size != 6) return
+        _liuyaoData.value = LiuyaoEngine.generate(yaoArray = _yaoResults.value)
     }
 
-    var inputError by mutableStateOf("")
-        private set
+    private val _inputError = MutableStateFlow("")
+    val inputError: StateFlow<String> = _inputError.asStateFlow()
 
     fun generateMeihuaResult() {
-        isCasting = true
-        inputError = ""
-        meihuaData = when (selectedMeihuaMethod) {
+        _isCasting.value = true
+        _inputError.value = ""
+        _meihuaData.value = when (_selectedMeihuaMethod.value) {
             MeihuaMethodType.Time -> MeihuaEngine.generate(method = MeihuaEngine.Method.TIME)
             MeihuaMethodType.Number -> {
-                val numA = numberInput.toIntOrNull()
-                val numB = numberInputB.toIntOrNull()
+                val numA = _numberInput.value.toIntOrNull()
+                val numB = _numberInputB.value.toIntOrNull()
                 if (numA == null || numB == null || numA <= 0 || numB <= 0) {
-                    inputError = "请输入大于0的数字"
-                    isCasting = false
+                    _inputError.value = "请输入大于0的数字"
+                    _isCasting.value = false
                     return
                 }
                 MeihuaEngine.generate(method = MeihuaEngine.Method.NUMBER, number = numA, numberB = numB)
             }
             MeihuaMethodType.Random -> MeihuaEngine.generate(method = MeihuaEngine.Method.RANDOM)
             MeihuaMethodType.External -> {
-                val count = externalCount.toIntOrNull()
+                val count = _externalCount.value.toIntOrNull()
                 if (count == null || count <= 0) {
-                    inputError = "外应数必须大于0"
-                    isCasting = false
+                    _inputError.value = "外应数必须大于0"
+                    _isCasting.value = false
                     return
                 }
                 MeihuaEngine.generate(
                     method = MeihuaEngine.Method.EXTERNAL,
-                    externalSelections = externalSelections,
+                    externalSelections = _externalSelections.value,
                     externalCount = count
                 )
             }
         }
-        isCasting = false
+        _isCasting.value = false
     }
 
     fun resetLiuyao() {
-        currentYaoIndex = 0
-        yaoResults = emptyList()
-        liuyaoData = null
-        lastCoinFlips = emptyList()
-        currentQuestion = ""
-        currentAiAnalysis = ""
-        lastSavedRecordId = 0
+        _currentYaoIndex.value = 0
+        _yaoResults.value = emptyList()
+        _liuyaoData.value = null
+        _lastCoinFlips.value = emptyList()
+        _currentQuestion.value = ""
+        _currentAiAnalysis.value = ""
+        _lastSavedRecordId.value = 0
     }
 
     fun resetMeihua() {
-        meihuaData = null
-        numberInput = ""
-        numberInputB = ""
-        externalSelections = emptyMap()
-        externalCount = ""
-        currentQuestion = ""
-        currentAiAnalysis = ""
-        lastSavedRecordId = 0
+        _meihuaData.value = null
+        _numberInput.value = ""
+        _numberInputB.value = ""
+        _externalSelections.value = emptyMap()
+        _externalCount.value = ""
+        _currentQuestion.value = ""
+        _currentAiAnalysis.value = ""
+        _lastSavedRecordId.value = 0
     }
 
     fun saveResult() {
-        val data = liuyaoData ?: meihuaData ?: return
-        val method = when (selectedMethod) {
+        val data = _liuyaoData.value ?: _meihuaData.value ?: return
+        val method = when (_selectedMethod.value) {
             is DivinationMethod.Liuyao -> "liuyao"
             is DivinationMethod.Meihua -> "meihua"
         }
         val json = gson.toJson(data)
         viewModelScope.launch {
-            lastSavedRecordId = repository.saveRecord(
+            _lastSavedRecordId.value = repository.saveRecord(
                 DivinationRecord(
                     method = method,
-                    question = currentQuestion,
+                    question = _currentQuestion.value,
                     resultJson = json,
                     createdAt = System.currentTimeMillis(),
-                    aiAnalysis = currentAiAnalysis
+                    aiAnalysis = _currentAiAnalysis.value
                 )
             )
         }

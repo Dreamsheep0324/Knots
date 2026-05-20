@@ -139,4 +139,25 @@ class ThoughtsViewModelTest {
             assertThat(state.selectedContactId).isEqualTo(1L)
         }
     }
+
+    @Test
+    fun onContactFilterSelected_toggleOff() = runTest {
+        viewModel.onContactFilterSelected(1L)
+        viewModel.onContactFilterSelected(1L)
+
+        viewModel.uiState.test {
+            val state = awaitItem()
+            assertThat(state.selectedContactId).isNull()
+        }
+    }
+
+    @Test
+    fun onSearchQueryChange_filtersBySearchQuery() = runTest {
+        viewModel.onSearchQueryChange("Hello")
+
+        viewModel.uiState.test {
+            val state = awaitItem()
+            assertThat(state.searchQuery).isEqualTo("Hello")
+        }
+    }
 }

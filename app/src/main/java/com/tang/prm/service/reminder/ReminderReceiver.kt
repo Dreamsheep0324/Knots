@@ -12,14 +12,19 @@ import androidx.core.app.NotificationCompat
 import com.tang.prm.MainActivity
 import com.tang.prm.R
 import com.tang.prm.data.local.dao.ReminderDao
-import dagger.hilt.android.AndroidEntryPoint
 import dagger.hilt.android.EntryPointAccessors
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
-import javax.inject.Inject
+
+@dagger.hilt.InstallIn(dagger.hilt.components.SingletonComponent::class)
+@dagger.hilt.EntryPoint
+interface ReminderEntryPoint {
+    fun reminderDao(): ReminderDao
+}
 
 class ReminderReceiver : BroadcastReceiver() {
 
@@ -30,21 +35,45 @@ class ReminderReceiver : BroadcastReceiver() {
 
         ensureNotificationChannel(context)
         showNotification(context, title, content, reminderId)
+
+        if (reminderId > 0) {
+            markReminderCompleted(context, reminderId)
+        }
+    }
+
+    private fun markReminderCompleted(context: Context, reminderId: Long) {
+        try {
+            val entryPoint = EntryPointAccessors.fromApplication(
+                context.applicationContext,
+                ReminderEntryPoint::class.java
+            )
+            val reminderDao = entryPoint.reminderDao()
+            val pendingResult = goAsync()
+            val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+            scope.launch {
+                try {
+                    reminderDao.markReminderCompleted(reminderId)
+                } finally {
+                    scope.cancel()
+                    pendingResult.finish()
+                }
+            }
+        } catch (e: Exception) {
+            Log.w("ReminderReceiver", "标记提醒完成失败", e)
+        }
     }
 
     private fun ensureNotificationChannel(context: Context) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-            if (notificationManager.getNotificationChannel(CHANNEL_ID) != null) return
-            val channel = NotificationChannel(
-                CHANNEL_ID,
-                context.getString(R.string.notification_channel_name),
-                NotificationManager.IMPORTANCE_DEFAULT
-            ).apply {
-                description = context.getString(R.string.notification_channel_description)
-            }
-            notificationManager.createNotificationChannel(channel)
+        val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        if (notificationManager.getNotificationChannel(CHANNEL_ID) != null) return
+        val channel = NotificationChannel(
+            CHANNEL_ID,
+            context.getString(R.string.notification_channel_name),
+            NotificationManager.IMPORTANCE_DEFAULT
+        ).apply {
+            description = context.getString(R.string.notification_channel_description)
         }
+        notificationManager.createNotificationChannel(channel)
     }
 
     private fun showNotification(context: Context, title: String, content: String, reminderId: Long) {
@@ -99,7 +128,8 @@ class BootReceiver : BroadcastReceiver() {
             val exceptionHandler = CoroutineExceptionHandler { _, throwable ->
                 Log.w("BootReceiver", "重新调度提醒异常", throwable)
             }
-            CoroutineScope(Dispatchers.IO + SupervisorJob() + exceptionHandler).launch {
+            val scope = CoroutineScope(Dispatchers.IO + SupervisorJob() + exceptionHandler)
+            scope.launch {
                 try {
                     val reminders = reminderDao.getActiveRemindersSync()
                     val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as android.app.AlarmManager
@@ -120,6 +150,7 @@ class BootReceiver : BroadcastReceiver() {
                         }
                     }
                 } finally {
+                    scope.cancel()
                     pendingResult.finish()
                 }
             }
@@ -154,11 +185,5 @@ class BootReceiver : BroadcastReceiver() {
                 pendingIntent
             )
         }
-    }
-
-    @dagger.hilt.InstallIn(dagger.hilt.components.SingletonComponent::class)
-    @dagger.hilt.EntryPoint
-    interface ReminderEntryPoint {
-        fun reminderDao(): ReminderDao
     }
 }

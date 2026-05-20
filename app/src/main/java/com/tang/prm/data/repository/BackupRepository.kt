@@ -15,6 +15,7 @@ import java.io.FileOutputStream
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.Locale
+import com.tang.prm.domain.repository.BackupRepositoryInterface
 import java.util.zip.ZipEntry
 import java.util.zip.ZipInputStream
 import java.util.zip.ZipOutputStream
@@ -46,7 +47,7 @@ sealed class ClearDataResult {
 class BackupRepository @Inject constructor(
     @ApplicationContext private val context: Context,
     private val database: TangDatabase
-) {
+) : BackupRepositoryInterface {
     companion object {
         private const val DB_NAME = "tang_database"
         private const val DATASTORE_NAME = "settings"
@@ -62,11 +63,11 @@ class BackupRepository @Inject constructor(
 
     private val dateFormat = DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss", Locale.getDefault())
 
-    suspend fun backupToUri(uri: Uri): Flow<BackupResult> = flow {
+    override suspend fun backupToUri(uri: Uri): Flow<BackupResult> = flow {
         emit(performBackup(uri))
     }
 
-    suspend fun restoreFromUri(uri: Uri): Flow<RestoreResult> = flow {
+    override suspend fun restoreFromUri(uri: Uri): Flow<RestoreResult> = flow {
         emit(performRestore(uri))
     }
 
@@ -190,6 +191,11 @@ class BackupRepository @Inject constructor(
     }
 
     private fun writeFileFromZip(zipIn: ZipInputStream, targetFile: File) {
+        val canonicalTarget = targetFile.canonicalPath
+        val canonicalParent = targetFile.parentFile?.canonicalPath
+        if (canonicalParent != null && !canonicalTarget.startsWith(canonicalParent)) {
+            return
+        }
         targetFile.parentFile?.mkdirs()
         FileOutputStream(targetFile).use { fos ->
             val buffer = ByteArray(8192)
@@ -214,11 +220,11 @@ class BackupRepository @Inject constructor(
         }
     }
 
-    fun generateBackupFileName(): String {
+    override fun generateBackupFileName(): String {
         return "$BACKUP_PREFIX${dateFormat.format(LocalDateTime.now())}$BACKUP_EXTENSION"
     }
 
-    suspend fun clearAllData(): ClearDataResult = withContext(Dispatchers.IO) {
+    override suspend fun clearAllData(): ClearDataResult = withContext(Dispatchers.IO) {
         try {
             database.checkpoint()
             database.close()

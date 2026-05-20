@@ -30,6 +30,7 @@ import com.tang.prm.util.DateUtils
 import kotlin.math.roundToInt
 import com.tang.prm.ui.theme.GiftTypeStyle
 import com.tang.prm.ui.theme.toStyle
+import java.util.Locale
 
 // ═══════════════════════════════════════════════════════════════
 //  CASSETTE TAPE CARD — 磁带卡片（参考播放器卷轴设计）
@@ -41,9 +42,9 @@ internal fun CassetteTapeCard(
     index: Int,
     onClick: () -> Unit
 ) {
-    val giftTypeData = GiftType.entries.find { it.name == gift.giftType } ?: GiftType.OTHER
+    val giftTypeData = gift.giftType
     val dateFormat: (Long) -> String = { DateUtils.formatYearMonthDayDot(it) }
-    val tapeId = String.format("NO.%03d", index)
+    val tapeId = String.format(Locale.US, "NO.%03d", index)
 
     val reelRotation by rememberContinuousRotation(cycleDuration = 10000)
 

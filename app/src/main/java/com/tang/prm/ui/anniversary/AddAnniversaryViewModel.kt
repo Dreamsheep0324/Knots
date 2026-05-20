@@ -65,7 +65,7 @@ class AddAnniversaryViewModel @Inject constructor(
                         state.copy(
                             id = it.id,
                             name = it.name,
-                            contactId = if (it.contactId > 0) it.contactId else null,
+                            contactId = if (it.contactId != null && it.contactId > 0) it.contactId else null,
                             contactName = it.contactName,
                             selectedType = it.type,
                             selectedIcon = it.icon ?: "Cake",
@@ -123,7 +123,7 @@ class AddAnniversaryViewModel @Inject constructor(
             val anniversary = Anniversary(
                 id = if (state.isEditing) state.id else 0,
                 name = state.name,
-                contactId = state.contactId ?: 0,
+                contactId = state.contactId,
                 type = state.selectedType,
                 date = state.date,
                 isLunar = state.isLunar,

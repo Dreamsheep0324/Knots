@@ -3,12 +3,17 @@ package com.tang.prm.data.local.dao
 import androidx.room.*
 import com.tang.prm.data.local.entity.CircleEntity
 import com.tang.prm.data.local.entity.CircleMemberCrossRef
+import com.tang.prm.data.local.entity.CircleWithMembers
 import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface CircleDao {
     @Query("SELECT * FROM circles ORDER BY sortOrder ASC")
     fun getAllCircles(): Flow<List<CircleEntity>>
+
+    @Transaction
+    @Query("SELECT * FROM circles ORDER BY sortOrder ASC")
+    fun getAllCirclesWithMembers(): Flow<List<CircleWithMembers>>
 
     @Query("SELECT * FROM circles WHERE id = :id")
     fun getCircleById(id: Long): Flow<CircleEntity?>

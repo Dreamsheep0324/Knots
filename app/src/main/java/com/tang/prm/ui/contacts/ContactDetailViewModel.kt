@@ -74,8 +74,8 @@ class ContactDetailViewModel @Inject constructor(
                 },
                 thoughtFavoritesFlow
             ) { contactData, customTypeData, thoughtFavorites ->
-                val conversations = contactData.events.filter { it.type == EventTypes.CONVERSATION }
-                val nonConversationEvents = contactData.events.filter { it.type != EventTypes.CONVERSATION }
+                val conversations = contactData.events.filter { it.type == EventType.CONVERSATION }
+                val nonConversationEvents = contactData.events.filter { it.type != EventType.CONVERSATION }
                 val favIds = thoughtFavorites.map { it.sourceId }.toSet()
 
                 _uiState.update { it.copy(

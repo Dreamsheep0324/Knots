@@ -4,8 +4,10 @@ import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat
 import com.tang.prm.domain.model.Contact
 import com.tang.prm.domain.model.Event
+import com.tang.prm.domain.model.EventType
 import com.tang.prm.domain.model.Favorite
 import com.tang.prm.domain.model.Gift
+import com.tang.prm.domain.model.SourceTypes
 import com.tang.prm.domain.repository.ContactRepository
 import com.tang.prm.domain.repository.EventRepository
 import com.tang.prm.domain.repository.FavoriteRepository
@@ -45,7 +47,7 @@ class PhotoAlbumViewModelTest {
     private val testEvent = Event(
         id = 1,
         title = "Meetup",
-        type = "MEETUP",
+        type = EventType.MEETUP,
         time = 1000L,
         photos = listOf("photo1.jpg"),
         participants = listOf(testContact)
@@ -64,7 +66,7 @@ class PhotoAlbumViewModelTest {
         Dispatchers.setMain(UnconfinedTestDispatcher())
 
         every { eventRepository.getAllEventsIncludingConversations() } returns flowOf(listOf(testEvent))
-        every { giftRepository.getAllGifts() } returns flowOf(listOf(testGift))
+        every { giftRepository.getGiftsWithExistingPhotos() } returns flowOf(listOf(testGift))
         every { contactRepository.getAllContacts() } returns flowOf(listOf(testContact))
         every { favoriteRepository.getFavoritesByType(any<String>()) } returns flowOf(emptyList<Favorite>())
 
@@ -89,7 +91,7 @@ class PhotoAlbumViewModelTest {
     fun init_extractsEventPhotos() = runTest {
         viewModel.uiState.test {
             val state = awaitItem()
-            val eventPhoto = state.photos.find { it.sourceType == "event" }
+            val eventPhoto = state.photos.find { it.sourceType == SourceTypes.ALBUM_EVENT }
             assertThat(eventPhoto).isNotNull()
             assertThat(eventPhoto!!.sourceTitle).isEqualTo("Meetup")
         }
@@ -117,9 +119,9 @@ class PhotoAlbumViewModelTest {
     fun filterBySourceType_updatesFilter() = runTest {
         viewModel.uiState.test {
             awaitItem()
-            viewModel.filterBySourceType("event")
+            viewModel.filterBySourceType(SourceTypes.ALBUM_EVENT)
             val state = awaitItem()
-            assertThat(state.filterSourceType).isEqualTo("event")
+            assertThat(state.filterSourceType).isEqualTo(SourceTypes.ALBUM_EVENT)
         }
     }
 
@@ -129,7 +131,7 @@ class PhotoAlbumViewModelTest {
             awaitItem()
             viewModel.filterByContact(1L)
             awaitItem()
-            viewModel.filterBySourceType("event")
+            viewModel.filterBySourceType(SourceTypes.ALBUM_EVENT)
             awaitItem()
             viewModel.clearFilters()
             var state = awaitItem()

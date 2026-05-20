@@ -3,10 +3,10 @@ package com.tang.prm.ui.profile
 import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat
 import com.tang.prm.data.repository.BackupInfo
-import com.tang.prm.data.repository.BackupRepository
 import com.tang.prm.data.repository.BackupResult
 import com.tang.prm.data.repository.ClearDataResult
 import com.tang.prm.data.repository.RestoreResult
+import com.tang.prm.domain.repository.BackupRepositoryInterface
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.junit5.MockKExtension
@@ -25,7 +25,7 @@ import org.junit.jupiter.api.extension.ExtendWith
 @ExtendWith(MockKExtension::class)
 class BackupViewModelTest {
 
-    private lateinit var backupRepository: BackupRepository
+    private lateinit var backupRepository: BackupRepositoryInterface
     private lateinit var viewModel: BackupViewModel
 
     private val testUri = mockk<android.net.Uri>()

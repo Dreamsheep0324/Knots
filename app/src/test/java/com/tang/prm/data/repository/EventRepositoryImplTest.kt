@@ -12,7 +12,8 @@ import com.tang.prm.data.local.entity.EventWithParticipants
 import com.tang.prm.data.mapper.toDomain
 import com.tang.prm.data.mapper.toEntity
 import com.tang.prm.domain.model.Event
-import com.tang.prm.domain.model.EventTypes
+import com.tang.prm.domain.model.EventType
+import com.tang.prm.domain.model.SourceTypes
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -48,9 +49,9 @@ class EventRepositoryImplTest {
 
     private lateinit var repository: EventRepositoryImpl
 
-    private val eventEntity = EventEntity(id = 1, type = EventTypes.MEETUP, title = "Meet", time = 1000L, createdAt = 0, updatedAt = 0)
+    private val eventEntity = EventEntity(id = 1, type = EventType.MEETUP.name, title = "Meet", time = 1000L, createdAt = 0, updatedAt = 0)
     private val eventWithParticipants = EventWithParticipants(event = eventEntity, participants = emptyList())
-    private val domain = Event(id = 1, type = EventTypes.MEETUP, title = "Meet", time = 1000L, createdAt = 0, updatedAt = 0)
+    private val domain = Event(id = 1, type = EventType.MEETUP, title = "Meet", time = 1000L, createdAt = 0, updatedAt = 0)
 
     @BeforeEach
     fun setUp() {
@@ -68,14 +69,14 @@ class EventRepositoryImplTest {
 
     @Test
     fun getAllEvents_filtersOutConversations() = runTest {
-        val convEntity = EventEntity(id = 2, type = EventTypes.CONVERSATION, title = "Chat", time = 2000L, createdAt = 0, updatedAt = 0)
+        val convEntity = EventEntity(id = 2, type = EventType.CONVERSATION.name, title = "Chat", time = 2000L, createdAt = 0, updatedAt = 0)
         val convWithParticipants = EventWithParticipants(event = convEntity, participants = emptyList())
         every { eventDao.getAllEventsWithParticipants() } returns flowOf(listOf(eventWithParticipants, convWithParticipants))
 
         val result = repository.getAllEvents().first()
 
         assertThat(result).hasSize(1)
-        assertThat(result[0].type).isEqualTo(EventTypes.MEETUP)
+        assertThat(result[0].type).isEqualTo(EventType.MEETUP)
     }
 
     @Test
@@ -99,7 +100,8 @@ class EventRepositoryImplTest {
 
     @Test
     fun deleteEvent_callsDaoDeleteById() = runTest {
-        coEvery { favoriteDao.deleteEventFavorites(1L) } returns Unit
+        coEvery { eventDao.getEventByIdOnce(1L) } returns null
+        coEvery { favoriteDao.deleteEventFavorites(1L, listOf(SourceTypes.EVENT)) } returns Unit
         coEvery { todoDao.deleteTodosByEvent(1L) } returns Unit
         coEvery { reminderDao.deleteRemindersByEvent(1L) } returns Unit
         coEvery { eventDao.deleteEventById(1L) } returns Unit

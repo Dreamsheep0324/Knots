@@ -61,8 +61,8 @@ class DivinationViewModelTest {
         viewModel.selectMethod(DivinationMethod.Meihua)
         viewModel.selectMeihuaMethod(MeihuaMethodType.Time)
         viewModel.generateMeihuaResult()
-        assertThat(viewModel.meihuaData).isNotNull()
-        assertThat(viewModel.meihuaData).isEqualTo(mockMeihuaData)
+        assertThat(viewModel.meihuaData.value).isNotNull()
+        assertThat(viewModel.meihuaData.value).isEqualTo(mockMeihuaData)
     }
 
     @Test
@@ -72,7 +72,7 @@ class DivinationViewModelTest {
         viewModel.updateNumberInput("3")
         viewModel.updateNumberInputB("5")
         viewModel.generateMeihuaResult()
-        assertThat(viewModel.meihuaData).isNotNull()
+        assertThat(viewModel.meihuaData.value).isNotNull()
     }
 
     @Test
@@ -81,8 +81,8 @@ class DivinationViewModelTest {
         viewModel.updateNumberInput("0")
         viewModel.updateNumberInputB("0")
         viewModel.generateMeihuaResult()
-        assertThat(viewModel.inputError).isNotEmpty()
-        assertThat(viewModel.meihuaData).isNull()
+        assertThat(viewModel.inputError.value).isNotEmpty()
+        assertThat(viewModel.meihuaData.value).isNull()
     }
 
     @Test
@@ -90,8 +90,8 @@ class DivinationViewModelTest {
         viewModel.selectMethod(DivinationMethod.Liuyao)
         repeat(6) { viewModel.castNextYao() }
         viewModel.generateLiuyaoResult()
-        assertThat(viewModel.liuyaoData).isNotNull()
-        assertThat(viewModel.liuyaoData).isEqualTo(mockLiuyaoData)
+        assertThat(viewModel.liuyaoData.value).isNotNull()
+        assertThat(viewModel.liuyaoData.value).isEqualTo(mockLiuyaoData)
     }
 
     @Test
@@ -108,8 +108,8 @@ class DivinationViewModelTest {
         viewModel.selectMeihuaMethod(MeihuaMethodType.Time)
         viewModel.generateMeihuaResult()
         viewModel.resetMeihua()
-        assertThat(viewModel.meihuaData).isNull()
-        assertThat(viewModel.numberInput).isEmpty()
-        assertThat(viewModel.currentQuestion).isEmpty()
+        assertThat(viewModel.meihuaData.value).isNull()
+        assertThat(viewModel.numberInput.value).isEmpty()
+        assertThat(viewModel.currentQuestion.value).isEmpty()
     }
 }

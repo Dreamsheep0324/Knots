@@ -1,6 +1,5 @@
 package com.tang.prm.data.repository
 
-import androidx.datastore.preferences.core.stringPreferencesKey
 import com.google.common.truth.Truth.assertThat
 import com.tang.prm.domain.model.ThemeMode
 import org.junit.jupiter.api.Test
@@ -23,23 +22,13 @@ class SettingsRepositoryImplTest {
     }
 
     @Test
-    fun keyAiApiKey_hasCorrectName() {
-        assertThat(SettingsRepositoryImpl.KEY_AI_API_KEY.name).isEqualTo("ai_api_key")
+    fun keyAiGender_hasCorrectName() {
+        assertThat(SettingsRepositoryImpl.KEY_AI_GENDER.name).isEqualTo("ai_gender")
     }
 
     @Test
-    fun keyAiBaseUrl_hasCorrectName() {
-        assertThat(SettingsRepositoryImpl.KEY_AI_BASE_URL.name).isEqualTo("ai_base_url")
-    }
-
-    @Test
-    fun keyAiModel_hasCorrectName() {
-        assertThat(SettingsRepositoryImpl.KEY_AI_MODEL.name).isEqualTo("ai_model")
-    }
-
-    @Test
-    fun companionObject_keysAreStringPreferencesKey() {
-        assertThat(SettingsRepositoryImpl.KEY_THEME_MODE).isInstanceOf(stringPreferencesKey("test")::class.java)
+    fun keyAiBirthDate_hasCorrectName() {
+        assertThat(SettingsRepositoryImpl.KEY_AI_BIRTH_DATE.name).isEqualTo("ai_birth_date")
     }
 
     @Test

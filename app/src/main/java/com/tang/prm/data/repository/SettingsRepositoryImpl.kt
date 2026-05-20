@@ -1,31 +1,37 @@
 package com.tang.prm.data.repository
 
+import android.content.SharedPreferences
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import com.tang.prm.domain.model.ThemeMode
 import com.tang.prm.domain.repository.SettingsRepository
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class SettingsRepositoryImpl @Inject constructor(
-    private val dataStore: DataStore<Preferences>
+    private val dataStore: DataStore<Preferences>,
+    private val encryptedPrefs: SharedPreferences
 ) : SettingsRepository {
 
     companion object {
         val KEY_THEME_MODE = stringPreferencesKey("theme_mode")
         val KEY_USER_NAME = stringPreferencesKey("user_name")
         val KEY_USER_SIGNATURE = stringPreferencesKey("user_signature")
-        val KEY_AI_API_KEY = stringPreferencesKey("ai_api_key")
-        val KEY_AI_BASE_URL = stringPreferencesKey("ai_base_url")
-        val KEY_AI_MODEL = stringPreferencesKey("ai_model")
         val KEY_AI_GENDER = stringPreferencesKey("ai_gender")
         val KEY_AI_BIRTH_DATE = stringPreferencesKey("ai_birth_date")
+
+        private const val ENC_KEY_API_KEY = "ai_api_key"
+        private const val ENC_KEY_BASE_URL = "ai_base_url"
+        private const val ENC_KEY_MODEL = "ai_model"
     }
 
     override val themeMode: Flow<ThemeMode> = dataStore.data.map { prefs ->
@@ -60,40 +66,55 @@ class SettingsRepositoryImpl @Inject constructor(
     }
 
     override val aiApiKey: Flow<String> = dataStore.data.map { prefs ->
-        prefs[KEY_AI_API_KEY] ?: ""
+        prefs[stringPreferencesKey(ENC_KEY_API_KEY)] ?: encryptedPrefs.getString(ENC_KEY_API_KEY, "") ?: ""
     }
 
     override suspend fun setAiApiKey(key: String) {
+        withContext(Dispatchers.IO) {
+            encryptedPrefs.edit().putString(ENC_KEY_API_KEY, key).apply()
+        }
         dataStore.edit { prefs ->
-            prefs[KEY_AI_API_KEY] = key
+            prefs.remove(stringPreferencesKey(ENC_KEY_API_KEY))
         }
     }
 
     override val aiBaseUrl: Flow<String> = dataStore.data.map { prefs ->
-        prefs[KEY_AI_BASE_URL] ?: "https://api.deepseek.com"
+        prefs[stringPreferencesKey(ENC_KEY_BASE_URL)] ?: encryptedPrefs.getString(ENC_KEY_BASE_URL, "https://api.deepseek.com") ?: "https://api.deepseek.com"
     }
 
     override suspend fun setAiBaseUrl(url: String) {
+        withContext(Dispatchers.IO) {
+            encryptedPrefs.edit().putString(ENC_KEY_BASE_URL, url).apply()
+        }
         dataStore.edit { prefs ->
-            prefs[KEY_AI_BASE_URL] = url
+            prefs.remove(stringPreferencesKey(ENC_KEY_BASE_URL))
         }
     }
 
     override val aiModel: Flow<String> = dataStore.data.map { prefs ->
-        prefs[KEY_AI_MODEL] ?: "deepseek-v4-flash"
+        prefs[stringPreferencesKey(ENC_KEY_MODEL)] ?: encryptedPrefs.getString(ENC_KEY_MODEL, "deepseek-v4-flash") ?: "deepseek-v4-flash"
     }
 
     override suspend fun setAiModel(model: String) {
+        withContext(Dispatchers.IO) {
+            encryptedPrefs.edit().putString(ENC_KEY_MODEL, model).apply()
+        }
         dataStore.edit { prefs ->
-            prefs[KEY_AI_MODEL] = model
+            prefs.remove(stringPreferencesKey(ENC_KEY_MODEL))
         }
     }
 
-    override suspend fun getAiApiKey(): String = aiApiKey.first()
+    override suspend fun getAiApiKey(): String = withContext(Dispatchers.IO) {
+        encryptedPrefs.getString(ENC_KEY_API_KEY, "") ?: ""
+    }
 
-    override suspend fun getAiBaseUrl(): String = aiBaseUrl.first()
+    override suspend fun getAiBaseUrl(): String = withContext(Dispatchers.IO) {
+        encryptedPrefs.getString(ENC_KEY_BASE_URL, "https://api.deepseek.com") ?: "https://api.deepseek.com"
+    }
 
-    override suspend fun getAiModel(): String = aiModel.first()
+    override suspend fun getAiModel(): String = withContext(Dispatchers.IO) {
+        encryptedPrefs.getString(ENC_KEY_MODEL, "deepseek-v4-flash") ?: "deepseek-v4-flash"
+    }
 
     override val aiGender: Flow<String> = dataStore.data.map { prefs ->
         prefs[KEY_AI_GENDER] ?: "男"

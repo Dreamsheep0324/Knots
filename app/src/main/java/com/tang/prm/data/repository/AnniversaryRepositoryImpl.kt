@@ -25,6 +25,12 @@ class AnniversaryRepositoryImpl @Inject constructor(
 
     private fun List<AnniversaryWithContact>.toDomainList() = map { it.toDomain() }
 
+    private fun Anniversary.effectiveDate(): Long = when {
+        type == AnniversaryType.BIRTHDAY -> DateUtils.getNextBirthdayDate(date)
+        isRepeat -> DateUtils.getNextRepeatDate(date)
+        else -> date
+    }
+
     override fun getAllAnniversaries(): Flow<List<Anniversary>> =
         anniversaryDao.getAllAnniversariesWithContact().map { it.toDomainList() }
 
@@ -39,16 +45,9 @@ class AnniversaryRepositoryImpl @Inject constructor(
 
     override fun getUpcomingAnniversaries(limit: Int): Flow<List<Anniversary>> =
         anniversaryDao.getAllAnniversariesWithContact().map { list ->
-            val all = list.toDomainList()
-            val today = System.currentTimeMillis()
-            all.map { anniversary ->
-                val effectiveDate = when {
-                    anniversary.type == AnniversaryType.BIRTHDAY -> DateUtils.getNextBirthdayDate(anniversary.date)
-                    anniversary.isRepeat -> DateUtils.getNextRepeatDate(anniversary.date)
-                    else -> anniversary.date
-                }
-                anniversary to effectiveDate
-            }
+            val today = DateUtils.getTodayStart()
+            list.toDomainList()
+                .map { it to it.effectiveDate() }
                 .filter { it.second >= today }
                 .sortedBy { it.second }
                 .take(limit)
@@ -57,16 +56,9 @@ class AnniversaryRepositoryImpl @Inject constructor(
 
     override fun getPastAnniversaries(limit: Int): Flow<List<Anniversary>> =
         anniversaryDao.getAllAnniversariesWithContact().map { list ->
-            val all = list.toDomainList()
-            val today = System.currentTimeMillis()
-            all.map { anniversary ->
-                val effectiveDate = when {
-                    anniversary.type == AnniversaryType.BIRTHDAY -> DateUtils.getNextBirthdayDate(anniversary.date)
-                    anniversary.isRepeat -> DateUtils.getNextRepeatDate(anniversary.date)
-                    else -> anniversary.date
-                }
-                anniversary to effectiveDate
-            }
+            val today = DateUtils.getTodayStart()
+            list.toDomainList()
+                .map { it to it.effectiveDate() }
                 .filter { it.second < today }
                 .sortedByDescending { it.second }
                 .take(limit)

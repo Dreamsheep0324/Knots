@@ -55,40 +55,41 @@ class AiRepositoryImpl @Inject constructor(
             .build()
 
         try {
-            val response = okHttpClient.newCall(httpRequest).execute()
-            if (!response.isSuccessful) {
-                val errorCode = response.code
-                val errorMsg = when (errorCode) {
-                    401 -> "ERROR:INVALID_API_KEY"
-                    429 -> "ERROR:RATE_LIMIT"
-                    500, 502, 503 -> "ERROR:SERVER_ERROR"
-                    else -> "ERROR:HTTP_$errorCode"
+            okHttpClient.newCall(httpRequest).execute().use { response ->
+                if (!response.isSuccessful) {
+                    val errorCode = response.code
+                    val errorMsg = when (errorCode) {
+                        401 -> "ERROR:INVALID_API_KEY"
+                        429 -> "ERROR:RATE_LIMIT"
+                        500, 502, 503 -> "ERROR:SERVER_ERROR"
+                        else -> "ERROR:HTTP_$errorCode"
+                    }
+                    trySend(errorMsg)
+                    close()
+                    return@callbackFlow
                 }
-                trySend(errorMsg)
-                close()
-                return@callbackFlow
-            }
 
-            val source = response.body?.source() ?: run {
-                trySend("ERROR:EMPTY_RESPONSE")
-                close()
-                return@callbackFlow
-            }
+                val source = response.body?.source() ?: run {
+                    trySend("ERROR:EMPTY_RESPONSE")
+                    close()
+                    return@callbackFlow
+                }
 
-            while (!source.exhausted()) {
-                val line = source.readUtf8Line()
-                if (line == null) continue
-                if (line.startsWith("data: ")) {
-                    val data = line.removePrefix("data: ").trim()
-                    if (data == "[DONE]") break
-                    try {
-                        val streamResp = gson.fromJson(data, ChatStreamResponse::class.java)
-                        val content = streamResp?.choices?.firstOrNull()?.delta?.content
-                        if (content != null) {
-                            trySend(content)
+                while (!source.exhausted()) {
+                    val line = source.readUtf8Line()
+                    if (line == null) continue
+                    if (line.startsWith("data: ")) {
+                        val data = line.removePrefix("data: ").trim()
+                        if (data == "[DONE]") break
+                        try {
+                            val streamResp = gson.fromJson(data, ChatStreamResponse::class.java)
+                            val content = streamResp?.choices?.firstOrNull()?.delta?.content
+                            if (content != null) {
+                                trySend(content)
+                            }
+                        } catch (_: Exception) {
+                            continue
                         }
-                    } catch (_: Exception) {
-                        continue
                     }
                 }
             }
@@ -123,13 +124,14 @@ class AiRepositoryImpl @Inject constructor(
             .build()
 
         return try {
-            val response = okHttpClient.newCall(httpRequest).execute()
-            when {
-                response.isSuccessful -> Result.success("连接成功，模型: $model")
-                response.code == 401 -> Result.failure(Exception("API密钥无效"))
-                response.code == 429 -> Result.failure(Exception("请求过于频繁，请稍后重试"))
-                response.code >= 500 -> Result.failure(Exception("服务器错误(${response.code})"))
-                else -> Result.failure(Exception("请求失败(${response.code})"))
+            okHttpClient.newCall(httpRequest).execute().use { response ->
+                when {
+                    response.isSuccessful -> Result.success("连接成功，模型: $model")
+                    response.code == 401 -> Result.failure(Exception("API密钥无效"))
+                    response.code == 429 -> Result.failure(Exception("请求过于频繁，请稍后重试"))
+                    response.code >= 500 -> Result.failure(Exception("服务器错误(${response.code})"))
+                    else -> Result.failure(Exception("请求失败(${response.code})"))
+                }
             }
         } catch (e: java.net.SocketTimeoutException) {
             Result.failure(Exception("连接超时，请检查网络或API地址"))

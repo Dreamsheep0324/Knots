@@ -3,6 +3,8 @@ package com.tang.prm.data.repository
 import com.google.common.truth.Truth.assertThat
 import com.tang.prm.data.local.dao.CircleDao
 import com.tang.prm.data.local.entity.CircleEntity
+import com.tang.prm.data.local.entity.CircleMemberCrossRef
+import com.tang.prm.data.local.entity.CircleWithMembers
 import com.tang.prm.data.mapper.toDomain
 import com.tang.prm.data.mapper.toEntity
 import com.tang.prm.domain.model.Circle
@@ -31,6 +33,13 @@ class CircleRepositoryImplTest {
 
     private val entity = CircleEntity(id = 1, name = "Friends", sortOrder = 0)
     private val domain = Circle(id = 1, name = "Friends", memberIds = listOf(10L, 20L), sortOrder = 0)
+    private val circleWithMembers = CircleWithMembers(
+        circle = entity,
+        members = listOf(
+            CircleMemberCrossRef(circleId = 1, contactId = 10L),
+            CircleMemberCrossRef(circleId = 1, contactId = 20L)
+        )
+    )
 
     @BeforeEach
     fun setUp() {
@@ -45,27 +54,14 @@ class CircleRepositoryImplTest {
 
     @Test
     fun getAllCircles_returnsMappedListWithMemberIds() = runTest {
-        every { circleDao.getAllCircles() } returns flowOf(listOf(entity))
-        coEvery { circleDao.getMemberIdsForCircleOnce(1L) } returns listOf(10L, 20L)
-        every { entity.toDomain(listOf(10L, 20L)) } returns domain
+        every { circleDao.getAllCirclesWithMembers() } returns flowOf(listOf(circleWithMembers))
+        every { circleWithMembers.toDomain() } returns domain
 
         val result = repository.getAllCircles().first()
 
         assertThat(result).hasSize(1)
         assertThat(result[0].name).isEqualTo("Friends")
         assertThat(result[0].memberIds).containsExactly(10L, 20L).inOrder()
-    }
-
-    @Test
-    fun getAllCircles_handlesMemberIdsFailureGracefully() = runTest {
-        every { circleDao.getAllCircles() } returns flowOf(listOf(entity))
-        coEvery { circleDao.getMemberIdsForCircleOnce(1L) } throws RuntimeException("db error")
-        every { entity.toDomain(emptyList()) } returns domain.copy(memberIds = emptyList())
-
-        val result = repository.getAllCircles().first()
-
-        assertThat(result).hasSize(1)
-        assertThat(result[0].memberIds).isEmpty()
     }
 
     @Test

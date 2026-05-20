@@ -14,7 +14,7 @@ class DivinationMapperTest {
             resultJson = """{"hexagram":"乾"}""", createdAt = 1000L, aiAnalysis = "大吉"
         )
 
-        val domain = DivinationMapper.toDomain(entity)
+        val domain = entity.toDomain()
 
         assertThat(domain.id).isEqualTo(1)
         assertThat(domain.method).isEqualTo("liuyao")
@@ -31,7 +31,7 @@ class DivinationMapperTest {
             resultJson = """{"trigram":"坤"}""", createdAt = 1000L, aiAnalysis = "平稳"
         )
 
-        val entity = DivinationMapper.toEntity(domain)
+        val entity = domain.toEntity()
 
         assertThat(entity.id).isEqualTo(1)
         assertThat(entity.method).isEqualTo("meihua")
@@ -48,7 +48,7 @@ class DivinationMapperTest {
             resultJson = "{}", createdAt = 1000L
         )
 
-        val entity = DivinationMapper.toEntity(domain)
+        val entity = domain.toEntity()
 
         assertThat(entity.id).isEqualTo(0)
     }
@@ -60,7 +60,7 @@ class DivinationMapperTest {
             resultJson = "{}", createdAt = 1000L
         )
 
-        val entity = DivinationMapper.toEntity(domain)
+        val entity = domain.toEntity()
 
         assertThat(entity.id).isEqualTo(0)
     }
@@ -72,7 +72,7 @@ class DivinationMapperTest {
             resultJson = """{"result":"吉"}""", createdAt = 1000L, aiAnalysis = "分析"
         )
 
-        val roundtrip = DivinationMapper.toEntity(DivinationMapper.toDomain(original))
+        val roundtrip = original.toDomain().toEntity()
 
         assertThat(roundtrip).isEqualTo(original)
     }

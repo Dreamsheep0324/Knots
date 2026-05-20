@@ -30,11 +30,8 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -46,13 +43,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.tang.prm.ui.components.AppCard
 import com.tang.prm.ui.navigation.Screen
 import com.tang.prm.ui.theme.*
 import com.tang.prm.util.DateUtils
-import com.tang.prm.ui.animation.core.rememberIsResumed
-import com.tang.prm.ui.animation.core.AnimationTokens
 
 private val TerminalGreen = SignalGreen
 
@@ -81,17 +77,7 @@ fun HomeScreen(
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    var currentTime by remember { mutableStateOf(System.currentTimeMillis()) }
-    val isResumed by rememberIsResumed()
-
-    LaunchedEffect(Unit) {
-        while (true) {
-            kotlinx.coroutines.delay(1000)
-            if (isResumed) {
-                currentTime = System.currentTimeMillis()
-            }
-        }
-    }
+    val currentTime by viewModel.currentTimeFlow.collectAsStateWithLifecycle()
 
     val timeStr = DateUtils.formatTimeWithSeconds(currentTime)
     val dateStr = DateUtils.formatYearMonthDay(currentTime)

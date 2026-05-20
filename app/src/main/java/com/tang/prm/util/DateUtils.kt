@@ -123,6 +123,9 @@ object DateUtils {
         }
     }
 
+    fun getTodayStart(): Long =
+        LocalDate.now(defaultZoneId).atStartOfDay(defaultZoneId).toInstant().toEpochMilli()
+
     fun calculateDaysUntil(targetMillis: Long): Int {
         val today = LocalDate.now(defaultZoneId)
         val targetDate = Instant.ofEpochMilli(targetMillis).atZone(defaultZoneId).toLocalDate()

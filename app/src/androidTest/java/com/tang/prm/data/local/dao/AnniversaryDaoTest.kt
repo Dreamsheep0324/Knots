@@ -55,6 +55,21 @@ class AnniversaryDaoTest {
     }
 
     @Test
+    fun insertWithNullContactId() = runBlocking {
+        val anniversary = AnniversaryEntity(
+            contactId = null,
+            name = "国庆节",
+            type = "holiday",
+            date = 1000L
+        )
+        dao.insertAnniversary(anniversary)
+        val result = dao.getAllAnniversariesWithContact().first()
+        assertThat(result).hasSize(1)
+        assertThat(result[0].anniversary.name).isEqualTo("国庆节")
+        assertThat(result[0].anniversary.contactId).isNull()
+    }
+
+    @Test
     fun getByContactId() = runBlocking {
         dao.insertAnniversary(AnniversaryEntity(contactId = contactId, name = "生日", type = "birthday", date = 1000L))
         val result = dao.getAnniversariesByContactWithContact(contactId).first()

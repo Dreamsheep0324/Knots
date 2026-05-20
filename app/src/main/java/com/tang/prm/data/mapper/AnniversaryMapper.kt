@@ -26,7 +26,7 @@ fun AnniversaryEntity.toDomain(contactName: String?, contactAvatar: String?) = A
 )
 
 fun Anniversary.toEntity() = AnniversaryEntity(
-    id = id, contactId = contactId, name = name, type = type.name,
+    id = id, contactId = contactId ?: 0L, name = name, type = type.name,
     date = date, isLunar = isLunar, isRepeat = isRepeat, reminderDays = reminderDays,
     remarks = remarks, icon = icon, createdAt = createdAt, updatedAt = updatedAt
 )

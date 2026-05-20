@@ -1,7 +1,7 @@
 package com.tang.prm.ui.theme
 
 import androidx.compose.runtime.Composable
-import com.tang.prm.domain.model.EventTypes
+import com.tang.prm.domain.model.EventType
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.material.icons.Icons
@@ -14,20 +14,16 @@ data class EventTypeStyle(
     val icon: ImageVector
 )
 
-/**
- * 根据事件类型字符串获取对应的视觉样式
- */
 @Composable
-fun getEventTypeStyle(eventType: String): EventTypeStyle {
+fun getEventTypeStyle(eventType: EventType): EventTypeStyle {
     return when (eventType) {
-        EventTypes.MEETUP -> EventTypeStyle(SignalGreen, EventLightGreen, Icons.Default.People)
-        EventTypes.DINING -> EventTypeStyle(SignalAmber, EventLightAmber, Icons.Default.Restaurant)
-        EventTypes.TRAVEL -> EventTypeStyle(SignalSky, EventLightBlue, Icons.Default.Flight)
-        EventTypes.CALL -> EventTypeStyle(SignalPurple, EventLightPurple, Icons.Default.Phone)
-        EventTypes.GIFT_SENT, EventTypes.GIFT_RECEIVED -> EventTypeStyle(SignalCoral, EventLightRed, Icons.Default.CardGiftcard)
-        EventTypes.MONEY_LEND, EventTypes.MONEY_BORROW -> EventTypeStyle(EventMoneyTeal, EventLightTeal, Icons.Default.AttachMoney)
-        EventTypes.CONVERSATION -> EventTypeStyle(SignalPurple, EventLightIndigo, Icons.AutoMirrored.Filled.Chat)
-        EventTypes.OTHER -> EventTypeStyle(SignalElectric, EventLightIndigo, Icons.Default.MoreHoriz)
-        else -> EventTypeStyle(SignalElectric, EventLightIndigo, Icons.Default.Event)
+        EventType.MEETUP -> EventTypeStyle(SignalGreen, EventLightGreen, Icons.Default.People)
+        EventType.DINING -> EventTypeStyle(SignalAmber, EventLightAmber, Icons.Default.Restaurant)
+        EventType.TRAVEL -> EventTypeStyle(SignalSky, EventLightBlue, Icons.Default.Flight)
+        EventType.CALL -> EventTypeStyle(SignalPurple, EventLightPurple, Icons.Default.Phone)
+        EventType.GIFT_SENT, EventType.GIFT_RECEIVED -> EventTypeStyle(SignalCoral, EventLightRed, Icons.Default.CardGiftcard)
+        EventType.MONEY_LEND, EventType.MONEY_BORROW -> EventTypeStyle(EventMoneyTeal, EventLightTeal, Icons.Default.AttachMoney)
+        EventType.CONVERSATION -> EventTypeStyle(SignalPurple, EventLightIndigo, Icons.AutoMirrored.Filled.Chat)
+        EventType.OTHER -> EventTypeStyle(SignalElectric, EventLightIndigo, Icons.Default.MoreHoriz)
     }
 }

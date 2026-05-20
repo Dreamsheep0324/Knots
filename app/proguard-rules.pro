@@ -20,6 +20,13 @@
 # DataStore
 -keepclassmembers class * extends com.google.protobuf.GeneratedMessageLite { <methods>; }
 
+# EncryptedSharedPreferences (androidx.security)
+-keep class androidx.security.crypto.** { *; }
+-dontwarn androidx.security.crypto.**
+
+# OkHttp SSE
+-dontwarn okhttp3.internal.sse.**
+
 # Kotlinx coroutines
 -dontwarn kotlinx.coroutines.**
 

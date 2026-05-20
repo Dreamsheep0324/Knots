@@ -10,7 +10,6 @@ import com.tang.prm.domain.repository.CustomTypeRepository
 import com.tang.prm.domain.repository.EventRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 data class FootprintItem(
@@ -50,90 +49,64 @@ class FootprintsViewModel @Inject constructor(
     private val customTypeRepository: CustomTypeRepository
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow(FootprintsUiState())
-    val uiState: StateFlow<FootprintsUiState> = _uiState.asStateFlow()
+    private val _selectedContactId = MutableStateFlow<Long?>(null)
+    private val _filterEventType = MutableStateFlow<String?>(null)
+    private val _selectedYear = MutableStateFlow<Int?>(null)
+    private val _isTimelineView = MutableStateFlow(true)
 
-    private var selectedContactId: Long? = null
-    private var filterEventType: String? = null
-    private var selectedYear: Int? = null
-    private var isTimelineView: Boolean = true
-    private var allFootprints: List<FootprintItem> = emptyList()
-
-    init {
-        loadData()
-    }
-
-    private fun loadData() {
-        viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true) }
-
-            combine(
-                eventRepository.getEventsWithLocation(),
-                contactRepository.getAllContacts(),
-                customTypeRepository.getTypesByCategory(CustomCategories.EVENT_TYPE)
-            ) { events, contacts, eventTypes ->
-                val footprints = events
-                    .filter { !it.location.isNullOrBlank() }
-                    .map { event ->
-                        val participant = event.participants.firstOrNull()
-                        FootprintItem(
-                            id = event.id,
-                            location = event.location ?: "",
-                            date = event.time,
-                            eventType = event.type,
-                            eventTitle = event.title,
-                            contactId = participant?.id,
-                            contactName = participant?.name,
-                            contactAvatar = participant?.avatar,
-                            description = event.description,
-                            weather = event.weather,
-                            emotion = event.emotion,
-                            photoCount = event.photos.size
-                        )
-                    }
-                    .sortedByDescending { it.date }
-
-                Triple(footprints, contacts, eventTypes)
-            }.catch { _ ->
-                _uiState.update { it.copy(isLoading = false) }
-            }.collect { (footprintsList, contacts, eventTypes) ->
-                allFootprints = footprintsList
-                val totalFootprintCount = footprintsList.size
-                val totalCityCount = footprintsList
-                    .mapNotNull { it.location.split("·").firstOrNull() }
-                    .distinct()
-                    .size
-                val totalContactCount = footprintsList.mapNotNull { it.contactId }.distinct().size
-                val availableYears = footprintsList.map {
-                    java.util.Calendar.getInstance().apply { timeInMillis = it.date }.get(java.util.Calendar.YEAR)
-                }.distinct().sortedDescending()
-                applyFilter()
-                _uiState.update {
-                    it.copy(
-                        allContacts = contacts,
-                        eventTypes = eventTypes,
-                        isLoading = false,
-                        totalFootprintCount = totalFootprintCount,
-                        totalCityCount = totalCityCount,
-                        totalContactCount = totalContactCount,
-                        availableYears = availableYears
-                    )
-                }
+    private val rawData = combine(
+        eventRepository.getEventsWithLocation(),
+        contactRepository.getAllContacts(),
+        customTypeRepository.getTypesByCategory(CustomCategories.EVENT_TYPE)
+    ) { events, contacts, eventTypes ->
+        val footprints = events
+            .filter { !it.location.isNullOrBlank() }
+            .map { event ->
+                val participant = event.participants.firstOrNull()
+                FootprintItem(
+                    id = event.id,
+                    location = event.location ?: "",
+                    date = event.time,
+                    eventType = event.type.name,
+                    eventTitle = event.title,
+                    contactId = participant?.id,
+                    contactName = participant?.name,
+                    contactAvatar = participant?.avatar,
+                    description = event.description,
+                    weather = event.weather,
+                    emotion = event.emotion,
+                    photoCount = event.photos.size
+                )
             }
-        }
+            .sortedByDescending { it.date }
+
+        Triple(footprints, contacts, eventTypes)
     }
 
-    private fun applyFilter() {
-        var filtered = allFootprints
+    val uiState: StateFlow<FootprintsUiState> = combine(
+        rawData,
+        _selectedContactId,
+        _filterEventType,
+        _selectedYear,
+        _isTimelineView
+    ) { (allFootprints, contacts, eventTypes), selectedContactId, filterEventType, selectedYear, isTimelineView ->
+        val totalFootprintCount = allFootprints.size
+        val totalCityCount = allFootprints
+            .mapNotNull { it.location.split("·").firstOrNull() }
+            .distinct()
+            .size
+        val totalContactCount = allFootprints.mapNotNull { it.contactId }.distinct().size
+        val availableYears = allFootprints.map {
+            java.util.Calendar.getInstance().apply { timeInMillis = it.date }.get(java.util.Calendar.YEAR)
+        }.distinct().sortedDescending()
 
+        var filtered = allFootprints
         if (selectedContactId != null) {
             filtered = filtered.filter { it.contactId == selectedContactId }
         }
-
         if (filterEventType != null) {
             filtered = filtered.filter { it.eventType == filterEventType }
         }
-
         if (selectedYear != null) {
             filtered = filtered.filter {
                 val calendar = java.util.Calendar.getInstance().apply { timeInMillis = it.date }
@@ -141,41 +114,41 @@ class FootprintsViewModel @Inject constructor(
             }
         }
 
-        _uiState.update {
-            it.copy(
-                footprints = filtered,
-                selectedContactId = selectedContactId,
-                filterEventType = filterEventType,
-                selectedYear = selectedYear,
-                isTimelineView = isTimelineView
-            )
-        }
-    }
+        FootprintsUiState(
+            footprints = filtered,
+            allContacts = contacts,
+            eventTypes = eventTypes,
+            selectedContactId = selectedContactId,
+            filterEventType = filterEventType,
+            isLoading = false,
+            totalFootprintCount = totalFootprintCount,
+            totalCityCount = totalCityCount,
+            totalContactCount = totalContactCount,
+            isTimelineView = isTimelineView,
+            selectedYear = selectedYear,
+            availableYears = availableYears
+        )
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), FootprintsUiState())
 
     fun filterByContact(contactId: Long?) {
-        selectedContactId = contactId
-        applyFilter()
+        _selectedContactId.value = contactId
     }
 
     fun filterByEventType(eventType: String?) {
-        filterEventType = eventType
-        applyFilter()
+        _filterEventType.value = eventType
     }
 
     fun clearFilters() {
-        selectedContactId = null
-        filterEventType = null
-        selectedYear = null
-        applyFilter()
+        _selectedContactId.value = null
+        _filterEventType.value = null
+        _selectedYear.value = null
     }
 
     fun toggleView() {
-        isTimelineView = !isTimelineView
-        applyFilter()
+        _isTimelineView.value = !_isTimelineView.value
     }
 
     fun selectYear(year: Int?) {
-        selectedYear = year
-        applyFilter()
+        _selectedYear.value = year
     }
 }

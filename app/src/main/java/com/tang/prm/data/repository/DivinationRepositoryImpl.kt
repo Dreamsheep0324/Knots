@@ -1,7 +1,8 @@
 package com.tang.prm.data.repository
 
 import com.tang.prm.data.local.dao.DivinationRecordDao
-import com.tang.prm.data.mapper.DivinationMapper
+import com.tang.prm.data.mapper.toDomain
+import com.tang.prm.data.mapper.toEntity
 import com.tang.prm.domain.divination.model.DivinationRecord
 import com.tang.prm.domain.divination.repository.DivinationRepository
 import kotlinx.coroutines.flow.Flow
@@ -15,19 +16,19 @@ class DivinationRepositoryImpl @Inject constructor(
 ) : DivinationRepository {
 
     override fun getAllRecords(): Flow<List<DivinationRecord>> {
-        return dao.getAll().map { entities -> entities.map { DivinationMapper.toDomain(it) } }
+        return dao.getAll().map { entities -> entities.map { it.toDomain() } }
     }
 
     override fun getRecordsByMethod(method: String): Flow<List<DivinationRecord>> {
-        return dao.getByMethod(method).map { entities -> entities.map { DivinationMapper.toDomain(it) } }
+        return dao.getByMethod(method).map { entities -> entities.map { it.toDomain() } }
     }
 
     override suspend fun saveRecord(record: DivinationRecord): Long {
-        return dao.insert(DivinationMapper.toEntity(record))
+        return dao.insert(record.toEntity())
     }
 
     override suspend fun deleteRecord(record: DivinationRecord) {
-        dao.delete(DivinationMapper.toEntity(record))
+        dao.delete(record.toEntity())
     }
 
     override suspend fun updateAiAnalysis(id: Long, analysis: String) {

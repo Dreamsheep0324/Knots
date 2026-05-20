@@ -24,6 +24,7 @@ import com.tang.prm.domain.model.Contact
 import com.tang.prm.domain.model.CardRarity
 import com.tang.prm.domain.model.getCardRarity
 import com.tang.prm.ui.theme.*
+import java.util.Locale
 
 
 @Composable
@@ -190,14 +191,14 @@ internal fun TerminalStatsPanel(
             TerminalStatCard(
                 index = "01",
                 label = "总联系人",
-                value = String.format("%03d", totalContacts),
+                value = String.format(Locale.US, "%03d", totalContacts),
                 accentColor = SignalPurple,
                 modifier = Modifier.weight(1f)
             )
             TerminalStatCard(
                 index = "02",
                 label = "平均亲密度",
-                value = String.format("%02d%%", avgIntimacy),
+                value = String.format(Locale.US, "%02d%%", avgIntimacy),
                 accentColor = SignalGreen,
                 modifier = Modifier.weight(1f)
             )
@@ -212,14 +213,14 @@ internal fun TerminalStatsPanel(
             TerminalStatCard(
                 index = "03",
                 label = "圈子数量",
-                value = String.format("%02d", totalCircles),
+                value = String.format(Locale.US, "%02d", totalCircles),
                 accentColor = SignalGold,
                 modifier = Modifier.weight(1f)
             )
             TerminalStatCard(
                 index = "04",
                 label = "高亲密度",
-                value = String.format("%02d", highIntimacy),
+                value = String.format(Locale.US, "%02d", highIntimacy),
                 accentColor = CardRarity.UR.color,
                 modifier = Modifier.weight(1f)
             )

@@ -21,8 +21,8 @@ android {
         applicationId = "com.tang.prm"
         minSdk = 26
         targetSdk = 34
-        versionCode = 1
-        versionName = "1.0.0"
+        versionCode = 10100
+        versionName = "1.1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -110,6 +110,8 @@ dependencies {
     implementation("io.coil-kt:coil-compose:2.5.0")
 
     implementation("androidx.datastore:datastore-preferences:1.0.0")
+
+    implementation("androidx.security:security-crypto:1.1.0-alpha06")
 
     implementation("cn.6tail:lunar:1.7.7")
 

@@ -92,4 +92,25 @@ class DateUtilsTest {
         val result = DateUtils.calculateBirthdayInfo(birthday)
         assertThat(result.toString()).isNotEmpty()
     }
+
+    @Test
+    fun getTodayStart_returnsMidnightTimestamp() {
+        val todayStart = DateUtils.getTodayStart()
+        val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+        val formatted = sdf.format(todayStart)
+        assertThat(formatted).endsWith("00:00:00")
+    }
+
+    @Test
+    fun getTodayStart_isBeforeNow() {
+        val todayStart = DateUtils.getTodayStart()
+        assertThat(todayStart).isLessThan(System.currentTimeMillis())
+    }
+
+    @Test
+    fun getTodayStart_isWithinToday() {
+        val todayStart = DateUtils.getTodayStart()
+        val dayMs = 24 * 60 * 60 * 1000L
+        assertThat(System.currentTimeMillis() - todayStart).isLessThan(dayMs)
+    }
 }

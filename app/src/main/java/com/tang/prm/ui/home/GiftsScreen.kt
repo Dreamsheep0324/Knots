@@ -44,6 +44,7 @@ import com.tang.prm.ui.theme.GiftTypeStyle
 import com.tang.prm.ui.theme.toStyle
 import com.tang.prm.ui.theme.DialogDefaults
 import com.tang.prm.domain.model.AppStrings
+import java.util.Locale
 
 // ═══════════════════════════════════════════════════════════════
 //  RETRO CASSETTE TAPE LIBRARY — 复古录音磁带库
@@ -76,7 +77,7 @@ fun GiftsScreen(
                 }
             }
             .filter { gift -> uiState.selectedContactId?.let { it == gift.contactId } ?: true }
-            .filter { gift -> selectedTypeFilter?.let { it.name == gift.giftType } ?: true }
+            .filter { gift -> selectedTypeFilter?.let { it == gift.giftType } ?: true }
     }
 
     val sentCount = uiState.gifts.count { it.isSent }
@@ -134,7 +135,7 @@ fun GiftsScreen(
                 totalCount = uiState.gifts.size,
                 sentCount = sentCount,
                 receivedCount = receivedCount,
-                typeBreakdown = uiState.gifts.groupBy { it.giftType }.mapValues { it.value.size }
+                typeBreakdown = uiState.gifts.groupBy { it.giftType.name }.mapValues { it.value.size }
             )
 
             TypeFilterStrip(
@@ -231,7 +232,7 @@ private fun RetroMeter(
     Column(modifier = modifier) {
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
             Text(label, fontFamily = FontFamily.Monospace, fontSize = 9.sp, color = TextGray)
-            Text(String.format("%02d", count), fontFamily = FontFamily.Monospace, fontSize = 13.sp, fontWeight = FontWeight.Bold, color = color)
+            Text(String.format(Locale.US, "%02d", count), fontFamily = FontFamily.Monospace, fontSize = 13.sp, fontWeight = FontWeight.Bold, color = color)
         }
         Spacer(modifier = Modifier.height(3.dp))
         Box(
@@ -288,7 +289,7 @@ private fun TypeFilterStrip(
 ) {
     val usedTypes = remember(gifts) {
         val used = gifts.map { it.giftType }.distinct()
-        listOf(null) + GiftType.entries.filter { it.name in used }
+        listOf(null) + GiftType.entries.filter { it in used }
     }
 
     LazyRow(
@@ -299,7 +300,7 @@ private fun TypeFilterStrip(
         items(usedTypes, key = { it?.name ?: "all" }) { type ->
             val isSelected = selectedType == type
             val typeColor = type?.toStyle()?.color ?: SignalElectric
-            val count = if (type == null) gifts.size else gifts.count { it.giftType == type.name }
+            val count = if (type == null) gifts.size else gifts.count { it.giftType == type }
 
             Surface(
                 modifier = Modifier.clip(RoundedCornerShape(8.dp)).clickable { onTypeSelect(if (isSelected) null else type) },
@@ -325,7 +326,7 @@ private fun TypeFilterStrip(
                         color = if (isSelected) typeColor else TextGray
                     )
                     Text(
-                        text = String.format("%02d", count),
+                        text = String.format(Locale.US, "%02d", count),
                         fontFamily = FontFamily.Monospace,
                         fontSize = 9.sp,
                         color = if (isSelected) typeColor else TextGray.copy(alpha = AnimationTokens.Alpha.visible)

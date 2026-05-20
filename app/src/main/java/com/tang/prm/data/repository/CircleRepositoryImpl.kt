@@ -17,11 +17,8 @@ class CircleRepositoryImpl @Inject constructor(
 ) : CircleRepository {
 
     override fun getAllCircles(): Flow<List<Circle>> {
-        return circleDao.getAllCircles().map { entities ->
-            entities.map { entity ->
-                val memberIds = runCatching { circleDao.getMemberIdsForCircleOnce(entity.id) }.getOrDefault(emptyList())
-                entity.toDomain(memberIds)
-            }
+        return circleDao.getAllCirclesWithMembers().map { circlesWithMembers ->
+            circlesWithMembers.map { it.toDomain() }
         }
     }
 
@@ -32,29 +29,23 @@ class CircleRepositoryImpl @Inject constructor(
     }
 
     override fun getCirclesForContact(contactId: Long): Flow<List<Circle>> {
-        return circleDao.getCirclesForContact(contactId).map { entities ->
-            entities.map { entity ->
-                val memberIds = runCatching { circleDao.getMemberIdsForCircleOnce(entity.id) }.getOrDefault(emptyList())
-                entity.toDomain(memberIds)
-            }
+        return circleDao.getAllCirclesWithMembers().map { circlesWithMembers ->
+            circlesWithMembers.filter { it.members.any { it.contactId == contactId } }
+                .map { it.toDomain() }
         }
     }
 
     override fun getChildCircles(parentId: Long): Flow<List<Circle>> {
-        return circleDao.getChildCircles(parentId).map { entities ->
-            entities.map { entity ->
-                val memberIds = runCatching { circleDao.getMemberIdsForCircleOnce(entity.id) }.getOrDefault(emptyList())
-                entity.toDomain(memberIds)
-            }
+        return circleDao.getAllCirclesWithMembers().map { circlesWithMembers ->
+            circlesWithMembers.filter { it.circle.parentCircleId == parentId }
+                .map { it.toDomain() }
         }
     }
 
     override fun getRootCircles(): Flow<List<Circle>> {
-        return circleDao.getRootCircles().map { entities ->
-            entities.map { entity ->
-                val memberIds = runCatching { circleDao.getMemberIdsForCircleOnce(entity.id) }.getOrDefault(emptyList())
-                entity.toDomain(memberIds)
-            }
+        return circleDao.getAllCirclesWithMembers().map { circlesWithMembers ->
+            circlesWithMembers.filter { it.circle.parentCircleId == null }
+                .map { it.toDomain() }
         }
     }
 

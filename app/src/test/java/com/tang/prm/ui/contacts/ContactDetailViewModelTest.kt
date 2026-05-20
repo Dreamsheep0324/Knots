@@ -9,6 +9,7 @@ import com.tang.prm.domain.model.Contact
 import com.tang.prm.domain.model.CustomCategories
 import com.tang.prm.domain.model.CustomType
 import com.tang.prm.domain.model.Event
+import com.tang.prm.domain.model.EventType
 import com.tang.prm.domain.model.Favorite
 import com.tang.prm.domain.model.Gift
 import com.tang.prm.domain.model.SourceTypes
@@ -64,7 +65,7 @@ class ContactDetailViewModelTest {
     private lateinit var viewModel: ContactDetailViewModel
 
     private val testContact = Contact(id = 1, name = "Alice")
-    private val testEvent = Event(id = 1, title = "Meetup", type = "MEETUP", time = 1000L)
+    private val testEvent = Event(id = 1, title = "Meetup", type = EventType.MEETUP, time = 1000L)
     private val testAnniversary = Anniversary(id = 1, contactId = 1, name = "Birthday", type = AnniversaryType.BIRTHDAY, date = 1000L)
     private val testGift = Gift(id = 1, contactId = 1, giftName = "Book", date = 1000L, isSent = true)
     private val testThought = Thought(id = 1, content = "Nice", type = ThoughtType.MURMUR)

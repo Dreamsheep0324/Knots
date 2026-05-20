@@ -4,7 +4,7 @@ import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat
 import com.tang.prm.domain.model.Contact
 import com.tang.prm.domain.model.Event
-import com.tang.prm.domain.model.EventTypes
+import com.tang.prm.domain.model.EventType
 import com.tang.prm.domain.repository.ContactRepository
 import com.tang.prm.domain.repository.EventRepository
 import io.mockk.coEvery

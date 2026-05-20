@@ -6,13 +6,15 @@ import com.tang.prm.data.local.dao.ReminderDao
 import com.tang.prm.data.local.dao.FavoriteDao
 import com.tang.prm.data.local.database.TangDatabase
 import com.tang.prm.data.local.entity.EventParticipantCrossRef
-import com.tang.prm.data.local.entity.EventWithParticipants
 import com.tang.prm.data.mapper.toDomain
+import com.tang.prm.data.mapper.toDomainList
 import com.tang.prm.data.mapper.toEntity
 import androidx.room.withTransaction
 import com.tang.prm.domain.model.Event
-import com.tang.prm.domain.model.EventTypes
+import com.tang.prm.domain.model.EventType
+import com.tang.prm.domain.model.SourceTypes
 import com.tang.prm.domain.repository.EventRepository
+import com.tang.prm.util.ImageCacheManager
 import com.tang.prm.util.escapeSqlWildcards
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -28,34 +30,9 @@ class EventRepositoryImpl @Inject constructor(
     private val database: TangDatabase
 ) : EventRepository {
 
-    private fun EventWithParticipants.toDomain() = Event(
-        id = event.id,
-        type = event.type,
-        title = event.title,
-        description = event.description,
-        time = event.time,
-        endTime = event.endTime,
-        location = event.location,
-        latitude = event.latitude,
-        longitude = event.longitude,
-        photos = event.photos,
-        emotion = event.emotion,
-        weather = event.weather,
-        amount = event.amount,
-        remarks = event.remarks,
-        promise = event.promise,
-        conversationSummary = event.conversationSummary,
-        giftName = event.giftName,
-        participants = participants.map { it.toDomain() },
-        createdAt = event.createdAt,
-        updatedAt = event.updatedAt
-    )
-
-    private fun List<EventWithParticipants>.toDomainList() = map { it.toDomain() }
-
     override fun getAllEvents(): Flow<List<Event>> =
         eventDao.getAllEventsWithParticipants().map { list ->
-            list.filter { it.event.type != EventTypes.CONVERSATION }.toDomainList()
+            list.filter { it.event.type != EventType.CONVERSATION.name }.toDomainList()
         }
 
     override fun getAllEventsIncludingConversations(): Flow<List<Event>> =
@@ -66,7 +43,7 @@ class EventRepositoryImpl @Inject constructor(
 
     override fun getRecentEvents(limit: Int): Flow<List<Event>> =
         eventDao.getRecentEventsWithParticipants(limit).map { list ->
-            list.filter { it.event.type != EventTypes.CONVERSATION }.toDomainList()
+            list.filter { it.event.type != EventType.CONVERSATION.name }.toDomainList()
         }
 
     override fun getEventsByType(type: String): Flow<List<Event>> =
@@ -101,7 +78,10 @@ class EventRepositoryImpl @Inject constructor(
         eventDao.updateEvent(event.toEntity())
 
     override suspend fun deleteEvent(id: Long) = database.withTransaction {
-        favoriteDao.deleteEventFavorites(id)
+        eventDao.getEventByIdOnce(id)?.let { entity ->
+            deletePhotoFiles(entity.photos)
+        }
+        favoriteDao.deleteEventFavorites(id, listOf(SourceTypes.EVENT))
         todoDao.deleteTodosByEvent(id)
         reminderDao.deleteRemindersByEvent(id)
         eventDao.deleteEventById(id)
@@ -146,4 +126,12 @@ class EventRepositoryImpl @Inject constructor(
     }
 
     override fun getFootprintCount(): Flow<Int> = eventDao.getFootprintCount()
+
+    private suspend fun deletePhotoFiles(photos: List<String>) {
+        photos.forEach { path ->
+            if (ImageCacheManager.isLocalPath(path)) {
+                ImageCacheManager.deleteImage(path)
+            }
+        }
+    }
 }

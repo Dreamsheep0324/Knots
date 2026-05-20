@@ -3,6 +3,7 @@ package com.tang.prm.data.mapper
 import com.google.common.truth.Truth.assertThat
 import com.tang.prm.data.local.entity.EventEntity
 import com.tang.prm.domain.model.Event
+import com.tang.prm.domain.model.EventType
 import org.junit.jupiter.api.Test
 
 class EventMapperTest {
@@ -21,7 +22,7 @@ class EventMapperTest {
         val domain = entity.toDomain(participants = emptyList())
 
         assertThat(domain.id).isEqualTo(1)
-        assertThat(domain.type).isEqualTo("MEETUP")
+        assertThat(domain.type).isEqualTo(EventType.MEETUP)
         assertThat(domain.title).isEqualTo("见面")
         assertThat(domain.description).isEqualTo("咖啡厅见面")
         assertThat(domain.time).isEqualTo(1000L)
@@ -45,7 +46,7 @@ class EventMapperTest {
     @Test
     fun event_toEntity_mapsAllFields() {
         val domain = Event(
-            id = 1, type = "DINING", title = "聚餐", description = "火锅",
+            id = 1, type = EventType.DINING, title = "聚餐", description = "火锅",
             time = 1000L, endTime = 2000L, location = "海底捞",
             latitude = 31.2, longitude = 121.5, photos = listOf("p1.jpg"),
             emotion = "兴奋", weather = "阴", amount = 200.0,
@@ -105,7 +106,7 @@ class EventMapperTest {
     @Test
     fun event_toEntity_doesNotIncludeParticipants() {
         val domain = Event(
-            id = 1, type = "MEETUP", title = "见面", time = 1000L,
+            id = 1, type = EventType.MEETUP, title = "见面", time = 1000L,
             participants = listOf(com.tang.prm.domain.model.Contact(id = 99, name = "张三"))
         )
 

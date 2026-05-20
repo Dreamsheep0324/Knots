@@ -1,6 +1,5 @@
 package com.tang.prm.ui.home
 
-import android.content.Context
 import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat
 import com.tang.prm.domain.model.Contact
@@ -37,9 +36,6 @@ class GiftsViewModelTest {
     @MockK
     private lateinit var favoriteRepository: FavoriteRepository
 
-    @MockK
-    private lateinit var context: Context
-
     private lateinit var viewModel: GiftsViewModel
 
     private val testContact = Contact(id = 1, name = "Alice")
@@ -51,9 +47,9 @@ class GiftsViewModelTest {
 
         every { giftRepository.getAllGifts() } returns flowOf(listOf(testGift))
         every { contactRepository.getAllContacts() } returns flowOf(listOf(testContact))
-        every { favoriteRepository.getFavoritesByType("GIFT") } returns flowOf(emptyList<Favorite>())
+        every { favoriteRepository.getFavoritesByType(any<String>()) } returns flowOf(emptyList<Favorite>())
 
-        viewModel = GiftsViewModel(giftRepository, contactRepository, favoriteRepository, context)
+        viewModel = GiftsViewModel(giftRepository, contactRepository, favoriteRepository)
     }
 
     @AfterEach
@@ -115,9 +111,9 @@ class GiftsViewModelTest {
     @Test
     fun init_loadsFavorites() = runTest {
         val fav = Favorite(id = 1, sourceType = "GIFT", sourceId = 1L, title = "Book")
-        every { favoriteRepository.getFavoritesByType("GIFT") } returns flowOf(listOf(fav))
+        every { favoriteRepository.getFavoritesByType(any<String>()) } returns flowOf(listOf(fav))
 
-        val freshViewModel = GiftsViewModel(giftRepository, contactRepository, favoriteRepository, context)
+        val freshViewModel = GiftsViewModel(giftRepository, contactRepository, favoriteRepository)
 
         freshViewModel.uiState.test {
             val state = awaitItem()

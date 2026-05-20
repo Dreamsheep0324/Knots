@@ -3,6 +3,7 @@ package com.tang.prm.ui.events
 import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat
 import com.tang.prm.domain.model.Event
+import com.tang.prm.domain.model.EventType
 import com.tang.prm.domain.model.SourceTypes
 import com.tang.prm.domain.repository.EventRepository
 import com.tang.prm.domain.repository.FavoriteRepository
@@ -33,7 +34,7 @@ class EventDetailViewModelTest {
 
     private lateinit var viewModel: EventDetailViewModel
 
-    private val testEvent = Event(id = 1, title = "Meetup", type = "MEETUP", time = 1000L)
+    private val testEvent = Event(id = 1, title = "Meetup", type = EventType.MEETUP, time = 1000L)
 
     @BeforeEach
     fun setUp() {

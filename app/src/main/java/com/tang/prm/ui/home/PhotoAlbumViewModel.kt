@@ -5,7 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.tang.prm.domain.model.Contact
 import com.tang.prm.domain.model.Event
 import com.tang.prm.domain.model.Gift
-import com.tang.prm.domain.model.EventTypes
+import com.tang.prm.domain.model.EventType
 import com.tang.prm.domain.model.SourceTypes
 import com.tang.prm.domain.repository.ContactRepository
 import com.tang.prm.domain.repository.EventRepository
@@ -75,7 +75,7 @@ class PhotoAlbumViewModel @Inject constructor(
 
     private val photoData = combine(
         eventRepository.getAllEventsIncludingConversations(),
-        giftRepository.getAllGifts(),
+        giftRepository.getGiftsWithExistingPhotos(),
         contactRepository.getAllContacts()
     ) { events, gifts, contacts ->
         val contactMap = contacts.associateBy { it.id }
@@ -84,7 +84,7 @@ class PhotoAlbumViewModel @Inject constructor(
         events.forEach { event ->
             event.photos.forEachIndexed { photoIndex, photoUri ->
                 val participant = event.participants.firstOrNull()
-                val sourceType = if (event.type == EventTypes.CONVERSATION) SourceTypes.ALBUM_CHAT else SourceTypes.ALBUM_EVENT
+                val sourceType = if (event.type == EventType.CONVERSATION) SourceTypes.ALBUM_CHAT else SourceTypes.ALBUM_EVENT
                 allPhotos.add(
                     AlbumPhoto(
                         id = "${sourceType}_${event.id}_${photoIndex}",
@@ -104,23 +104,20 @@ class PhotoAlbumViewModel @Inject constructor(
 
         gifts.forEach { gift ->
             gift.photos.forEachIndexed { photoIndex, pathString ->
-                val file = java.io.File(pathString.trim())
-                if (file.exists()) {
-                    allPhotos.add(
-                        AlbumPhoto(
-                            id = "gift_${gift.id}_${photoIndex}",
-                            uri = android.net.Uri.fromFile(file).toString(),
-                            sourceType = SourceTypes.ALBUM_GIFT,
-                            sourceId = gift.id,
-                            sourceTitle = gift.giftName,
-                            contactId = gift.contactId,
-                            contactName = contactMap[gift.contactId]?.name,
-                            contactAvatar = contactMap[gift.contactId]?.avatar,
-                            date = gift.date,
-                            location = gift.location
-                        )
+                allPhotos.add(
+                    AlbumPhoto(
+                        id = "gift_${gift.id}_${photoIndex}",
+                        uri = pathString.trim(),
+                        sourceType = SourceTypes.ALBUM_GIFT,
+                        sourceId = gift.id,
+                        sourceTitle = gift.giftName,
+                        contactId = gift.contactId,
+                        contactName = contactMap[gift.contactId]?.name,
+                        contactAvatar = contactMap[gift.contactId]?.avatar,
+                        date = gift.date,
+                        location = gift.location
                     )
-                }
+                )
             }
         }
 

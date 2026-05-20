@@ -50,7 +50,7 @@ import com.tang.prm.domain.model.Contact
 import com.tang.prm.ui.components.ContactPickerDialog
 import com.tang.prm.ui.components.AppDatePicker
 import com.tang.prm.ui.components.FormScreenScaffold
-import com.tang.prm.domain.model.EventTypes
+import com.tang.prm.domain.model.EventType
 import com.tang.prm.domain.model.CustomType
 import com.tang.prm.ui.components.TagSelector
 import com.tang.prm.ui.components.TagSelectorMode
@@ -374,7 +374,7 @@ fun AddEventScreen(
                 SectionCard(title = "事件类型", icon = Icons.AutoMirrored.Filled.Label, iconTint = Color(0xFF8B5CF6)) {
                     TagSelector(mode = TagSelectorMode.SINGLE, title = null, showHeader = false, showAddButton = true,
                         availableItems = uiState.eventTypes, selectedItems = listOf(uiState.type),
-                        onSelectionChange = { viewModel.updateType(it.firstOrNull() ?: EventTypes.MEETUP) },
+                        onSelectionChange = { viewModel.updateType(it.firstOrNull() ?: EventType.MEETUP.name) },
                         onAddItem = { name, color, icon -> viewModel.addEventType(name, color, icon) },
                         onDeleteItem = { viewModel.deleteEventType(it) },
                         iconResolver = { name -> uiState.eventTypes.find { it.name == name }?.icon?.let { getGenericIcon(it) } },
@@ -424,7 +424,7 @@ fun AddEventScreen(
                 }
             }
 
-            if (uiState.type == EventTypes.CONVERSATION) {
+            if (uiState.type == EventType.CONVERSATION.name) {
                 item {
                     SectionCard(title = "对话摘要", icon = Icons.AutoMirrored.Filled.Chat, iconTint = Color(0xFF06B6D4)) {
                         LinedPaperField(value = uiState.conversationSummary, onValueChange = viewModel::updateConversationSummary, placeholder = "记录本次对话的重要内容...", minLines = 3)

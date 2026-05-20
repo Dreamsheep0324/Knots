@@ -5,7 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tang.prm.domain.model.Contact
 import com.tang.prm.domain.model.Event
-import com.tang.prm.domain.model.EventTypes
+import com.tang.prm.domain.model.EventType
 import com.tang.prm.domain.repository.ContactRepository
 import com.tang.prm.domain.repository.EventRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -269,7 +269,7 @@ class AddChatViewModel @Inject constructor(
                 }
             } else {
                 val event = Event(
-                    type = EventTypes.CONVERSATION,
+                    type = EventType.CONVERSATION,
                     title = state.title.ifBlank { "与${contact.name}的对话" },
                     description = description,
                     photos = imageUris,

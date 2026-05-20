@@ -58,6 +58,7 @@ import com.tang.prm.ui.animation.primitives.rememberBreathingPulse
 import com.tang.prm.ui.theme.SignalGreen
 import com.tang.prm.ui.theme.SignalPurple
 import kotlin.math.abs
+import java.util.Locale
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -160,7 +161,7 @@ private fun TerminalTapeTrack(
         Spacer(Modifier.width(8.dp))
 
         Text(
-            String.format("%02d/%02d", currentIndex + 1, totalCount),
+            String.format(Locale.US, "%02d/%02d", currentIndex + 1, totalCount),
             fontFamily = FontFamily.Monospace,
             fontSize = 9.sp,
             color = trackColor.copy(alpha = 0.7f),
@@ -256,7 +257,7 @@ private fun TerminalMiniCard(
                             horizontalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
                             Text(
-                                "[NODE_${String.format("%02d", nodeIndex + 1)}]",
+                                "[NODE_${String.format(Locale.US, "%02d", nodeIndex + 1)}]",
                                 fontFamily = FontFamily.Monospace,
                                 fontSize = 9.sp,
                                 color = TerminalTextMuted,

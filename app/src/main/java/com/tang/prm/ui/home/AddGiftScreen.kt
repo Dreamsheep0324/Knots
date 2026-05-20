@@ -84,7 +84,7 @@ fun AddGiftScreen(
             val contact = uiState.availableContacts.find { it.id == g.contactId }
             selectedContact = contact
             giftName = g.giftName
-            giftType = GiftType.entries.find { it.name == g.giftType } ?: GiftType.OTHER
+            giftType = g.giftType
             isSent = g.isSent
             occasion = g.occasion ?: ""
             description = g.description ?: ""
@@ -140,7 +140,7 @@ fun AddGiftScreen(
                         id = if (isEditing) giftId else 0,
                         contactId = contact.id,
                         giftName = giftName,
-                        giftType = giftType.name,
+                        giftType = giftType,
                         date = selectedDate,
                         isSent = isSent,
                         amount = null,

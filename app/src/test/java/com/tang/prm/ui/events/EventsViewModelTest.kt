@@ -6,6 +6,7 @@ import com.tang.prm.domain.model.Contact
 import com.tang.prm.domain.model.CustomCategories
 import com.tang.prm.domain.model.CustomType
 import com.tang.prm.domain.model.Event
+import com.tang.prm.domain.model.EventType
 import com.tang.prm.domain.repository.ContactRepository
 import com.tang.prm.domain.repository.CustomTypeRepository
 import com.tang.prm.domain.repository.EventRepository
@@ -40,8 +41,8 @@ class EventsViewModelTest {
     private lateinit var viewModel: EventsViewModel
 
     private val testEvents = listOf(
-        Event(id = 1, title = "Meetup", type = "MEETUP", time = 2000L),
-        Event(id = 2, title = "Dinner", type = "DINING", time = 1000L)
+        Event(id = 1, title = "Meetup", type = EventType.MEETUP, time = 2000L),
+        Event(id = 2, title = "Dinner", type = EventType.DINING, time = 1000L)
     )
 
     @BeforeEach

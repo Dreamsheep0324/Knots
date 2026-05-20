@@ -47,6 +47,7 @@ import com.tang.prm.ui.animation.core.rememberPausableInfiniteFloatLoop
 import com.tang.prm.ui.animation.primitives.rememberBreathingPulse
 import com.tang.prm.ui.animation.primitives.rememberScanLineOffset
 import com.tang.prm.ui.animation.primitives.rememberShimmerPhase
+import java.util.Locale
 
 @Composable
 internal fun TerminalDossier(
@@ -87,7 +88,7 @@ internal fun TerminalDossier(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    String.format("%03d", circle.id),
+                    String.format(Locale.US, "%03d", circle.id),
                     fontFamily = FontFamily.Monospace,
                     fontSize = 11.sp,
                     color = circleColor,
@@ -129,7 +130,7 @@ internal fun TerminalDossier(
                 )
 
                 Text(
-                    String.format("%02d%%", avgIntimacy),
+                    String.format(Locale.US, "%02d%%", avgIntimacy),
                     fontFamily = FontFamily.Monospace,
                     fontSize = 11.sp,
                     color = rarity.color,
@@ -613,7 +614,7 @@ private fun TerminalCardBackV2(
                             .padding(horizontal = 8.dp, vertical = 2.dp)
                     ) {
                         Text(
-                            "ID:${String.format("%04d", contact.id)}",
+                            "ID:${String.format(Locale.US, "%04d", contact.id)}",
                             fontFamily = FontFamily.Monospace,
                             fontSize = 9.sp,
                             color = TerminalTextMuted

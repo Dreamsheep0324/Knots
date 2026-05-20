@@ -2,7 +2,7 @@ package com.tang.prm.ui.profile
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.tang.prm.data.repository.BackupRepository
+import com.tang.prm.domain.repository.BackupRepositoryInterface
 import com.tang.prm.data.repository.BackupResult
 import com.tang.prm.data.repository.ClearDataResult
 import com.tang.prm.data.repository.RestoreResult
@@ -28,7 +28,7 @@ sealed class BackupState {
 
 @HiltViewModel
 class BackupViewModel @Inject constructor(
-    private val backupRepository: BackupRepository
+    private val backupRepository: BackupRepositoryInterface
 ) : ViewModel() {
 
     private val _state = MutableStateFlow<BackupState>(BackupState.Idle)

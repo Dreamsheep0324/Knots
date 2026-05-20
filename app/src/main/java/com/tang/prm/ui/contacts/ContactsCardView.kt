@@ -42,6 +42,7 @@ import com.tang.prm.ui.components.CardCornerBrackets
 import com.tang.prm.ui.components.ContactAvatar
 import com.tang.prm.ui.components.ContactRelationshipBadge
 import com.tang.prm.ui.theme.SignalGreen
+import java.util.Locale
 
 internal val CardGreen = SignalGreen
 
@@ -104,7 +105,7 @@ private fun ContactMiniCard(
                         horizontalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
                         Text(
-                            "[${String.format("%04d", contact.id)}]",
+                            "[${String.format(Locale.US, "%04d", contact.id)}]",
                             fontFamily = FontFamily.Monospace,
                             fontSize = 9.sp,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,

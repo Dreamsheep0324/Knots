@@ -1,20 +1,13 @@
 package com.tang.prm.data.mapper
 
-// Alignment checklist for Event ↔ EventEntity:
-// When adding/removing fields, ensure ALL of the following are updated:
-// 1. Event (domain model)
-// 2. EventEntity (Room entity)
-// 3. EventMapper (toEntity / toDomain)
-// 4. EventDao (queries)
-// 5. Room migration (if entity schema changes)
-// 6. UI forms (AddEventScreen, EventDetailScreen)
-
 import com.tang.prm.data.local.entity.EventEntity
+import com.tang.prm.data.local.entity.EventWithParticipants
 import com.tang.prm.domain.model.Event
+import com.tang.prm.domain.model.EventType
 import com.tang.prm.domain.model.Contact
 
 fun EventEntity.toDomain(participants: List<Contact> = emptyList()) = Event(
-    id = id, type = type, title = title, description = description,
+    id = id, type = EventType.entries.find { it.name == type } ?: EventType.OTHER, title = title, description = description,
     time = time, endTime = endTime, location = location, latitude = latitude, longitude = longitude,
     photos = photos,
     emotion = emotion, weather = weather, amount = amount, remarks = remarks, promise = promise,
@@ -23,9 +16,34 @@ fun EventEntity.toDomain(participants: List<Contact> = emptyList()) = Event(
 )
 
 fun Event.toEntity() = EventEntity(
-    id = id, type = type, title = title, description = description,
+    id = id, type = type.name, title = title, description = description,
     time = time, endTime = endTime, location = location, latitude = latitude, longitude = longitude,
     photos = photos, emotion = emotion, weather = weather, amount = amount, remarks = remarks,
     promise = promise, conversationSummary = conversationSummary, giftName = giftName,
     createdAt = createdAt, updatedAt = updatedAt
 )
+
+fun EventWithParticipants.toDomain() = Event(
+    id = event.id,
+    type = EventType.entries.find { it.name == event.type } ?: EventType.OTHER,
+    title = event.title,
+    description = event.description,
+    time = event.time,
+    endTime = event.endTime,
+    location = event.location,
+    latitude = event.latitude,
+    longitude = event.longitude,
+    photos = event.photos,
+    emotion = event.emotion,
+    weather = event.weather,
+    amount = event.amount,
+    remarks = event.remarks,
+    promise = event.promise,
+    conversationSummary = event.conversationSummary,
+    giftName = event.giftName,
+    participants = participants.map { it.toDomain() },
+    createdAt = event.createdAt,
+    updatedAt = event.updatedAt
+)
+
+fun List<EventWithParticipants>.toDomainList() = map { it.toDomain() }

@@ -25,7 +25,7 @@ import com.tang.prm.domain.model.CustomType
 import com.tang.prm.domain.model.Event
 import com.tang.prm.domain.model.Gift
 import com.tang.prm.domain.model.Thought
-import com.tang.prm.domain.model.EventTypes
+import com.tang.prm.domain.model.EventType
 import com.tang.prm.ui.components.AppCard
 import com.tang.prm.ui.theme.AnniversaryBirthday
 import com.tang.prm.ui.theme.SignalAmber
@@ -39,6 +39,7 @@ import com.tang.prm.ui.theme.SignalPurple
 import com.tang.prm.ui.theme.getEventTypeStyle
 import com.tang.prm.ui.theme.getGenericIcon
 import com.tang.prm.ui.theme.toComposeColor
+import java.util.Locale
 
 @Composable
 internal fun EventsContent(events: List<Event>, eventTypes: List<CustomType>, onEventClick: (Long) -> Unit) {
@@ -86,7 +87,7 @@ private fun ContentSection(emptyIcon: ImageVector, emptyText: String, content: @
 @Composable
 private fun EventCard(event: Event, eventTypes: List<CustomType>, onClick: () -> Unit) {
     val typeLabel = getEventTypeLabel(event.type)
-    val customType = if (event.type.isNotBlank()) eventTypes.find { it.key == event.type } ?: eventTypes.find { it.name == event.type } else null
+    val customType = if (event.type != EventType.OTHER) eventTypes.find { it.key == event.type.name } ?: eventTypes.find { it.name == event.type.name } else null
     val accentColor: Color
     val icon: ImageVector
 
@@ -154,7 +155,7 @@ private fun GiftCard(gift: Gift, onClick: () -> Unit) {
                 }
             }
             gift.date.let { Text(text = DateUtils.formatDate(it), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant) }
-            gift.amount?.let { Text(text = "¥${String.format("%.0f", it)}", style = MaterialTheme.typography.labelSmall, color = SignalAmber, fontWeight = FontWeight.Medium, fontSize = 10.sp) }
+            gift.amount?.let { Text(text = "¥${String.format(Locale.US, "%.0f", it)}", style = MaterialTheme.typography.labelSmall, color = SignalAmber, fontWeight = FontWeight.Medium, fontSize = 10.sp) }
         }
     }
 }
@@ -207,15 +208,10 @@ private fun ContentCard(onClick: () -> Unit, icon: ImageVector, iconColor: Color
     }
 }
 
-internal fun getEventTypeLabel(type: String): String = when (type) {
-    "MEAL" -> AppStrings.EventType.DINING
-    EventTypes.MEETUP -> AppStrings.EventType.MEETUP
-    EventTypes.TRAVEL -> "旅行"
-    "ENTERTAINMENT" -> "娱乐"
-    EventTypes.CONVERSATION -> "对话"
-    "MEETING" -> "会议"
-    "CELEBRATION" -> "庆祝"
-    "SPORT" -> "运动"
-    EventTypes.OTHER -> AppStrings.EventType.OTHER
-    else -> type
+internal fun getEventTypeLabel(type: EventType): String = when (type) {
+    EventType.MEETUP -> AppStrings.EventType.MEETUP
+    EventType.TRAVEL -> "旅行"
+    EventType.CONVERSATION -> "对话"
+    EventType.OTHER -> AppStrings.EventType.OTHER
+    else -> type.displayName
 }

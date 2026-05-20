@@ -72,4 +72,8 @@ abstract class RepositoryModule {
     @Binds
     @Singleton
     abstract fun bindAiRepository(impl: AiRepositoryImpl): AiRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindBackupRepository(impl: BackupRepository): BackupRepositoryInterface
 }

@@ -103,6 +103,18 @@ class AnniversaryMapperTest {
     }
 
     @Test
+    fun anniversary_toEntity_nullContactId_mapsToZero() {
+        val domain = Anniversary(
+            id = 1, contactId = null, name = "节日", type = AnniversaryType.HOLIDAY,
+            date = 1000L
+        )
+
+        val entity = domain.toEntity()
+
+        assertThat(entity.contactId).isEqualTo(0L)
+    }
+
+    @Test
     fun anniversary_toEntity_typeAnniversary_nameIsAnniversary() {
         val domain = Anniversary(id = 1, contactId = 10, name = "纪念日", type = AnniversaryType.ANNIVERSARY, date = 1000L)
 

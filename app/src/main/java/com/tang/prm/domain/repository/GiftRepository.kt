@@ -5,6 +5,7 @@ import kotlinx.coroutines.flow.Flow
 
 interface GiftRepository {
     fun getAllGifts(): Flow<List<Gift>>
+    fun getGiftsWithExistingPhotos(): Flow<List<Gift>>
     fun getGiftById(id: Long): Flow<Gift?>
     fun getGiftsByContactId(contactId: Long): Flow<List<Gift>>
     fun getGiftsBySentType(isSent: Boolean): Flow<List<Gift>>
@@ -13,6 +14,7 @@ interface GiftRepository {
     suspend fun updateGift(gift: Gift)
     suspend fun deleteGiftById(id: Long)
     suspend fun deleteGiftsByContactId(contactId: Long)
+    suspend fun saveGiftWithPhotos(gift: Gift, photoUris: List<android.net.Uri>): Pair<Long, Int>
 
     fun getGiftCount(): Flow<Int>
 

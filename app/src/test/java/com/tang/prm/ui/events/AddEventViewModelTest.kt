@@ -5,6 +5,7 @@ import com.tang.prm.domain.model.Contact
 import com.tang.prm.domain.model.CustomCategories
 import com.tang.prm.domain.model.CustomType
 import com.tang.prm.domain.model.Event
+import com.tang.prm.domain.model.EventType
 import com.tang.prm.domain.repository.ContactRepository
 import com.tang.prm.domain.repository.CustomTypeRepository
 import com.tang.prm.domain.repository.EventRepository
@@ -65,7 +66,7 @@ class AddEventViewModelTest {
         viewModel.updateType("MEETUP")
         viewModel.saveEvent()
 
-        coVerify { eventRepository.insertEventWithParticipants(match { it.title == "Meetup" && it.type == "MEETUP" }, emptyList()) }
+        coVerify { eventRepository.insertEventWithParticipants(match { it.title == "Meetup" && it.type == EventType.MEETUP }, emptyList()) }
     }
 
     @Test

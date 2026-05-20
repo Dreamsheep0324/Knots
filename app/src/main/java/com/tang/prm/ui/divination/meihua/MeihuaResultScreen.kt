@@ -41,6 +41,7 @@ import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -80,7 +81,7 @@ fun MeihuaResultScreen(
     ),
     aiViewModel: AiViewModel = hiltViewModel()
 ) {
-    val data = viewModel.meihuaData
+    val data = viewModel.meihuaData.collectAsState().value
 
     if (data == null) {
         Column(

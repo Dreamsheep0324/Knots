@@ -7,6 +7,7 @@ import com.tang.prm.data.local.entity.ContactTagEntity
 import com.tang.prm.domain.model.Contact
 import com.tang.prm.domain.model.ContactGroup
 import com.tang.prm.domain.model.ContactTag
+import com.tang.prm.domain.model.Gender
 import org.junit.jupiter.api.Test
 
 class ContactMapperTest {
@@ -33,7 +34,7 @@ class ContactMapperTest {
         assertThat(domain.name).isEqualTo("张三")
         assertThat(domain.avatar).isEqualTo("avatar.png")
         assertThat(domain.nickname).isEqualTo("小三")
-        assertThat(domain.gender).isEqualTo(1)
+        assertThat(domain.gender).isEqualTo(Gender.MALE)
         assertThat(domain.birthday).isEqualTo(1000L)
         assertThat(domain.isLunarBirthday).isTrue()
         assertThat(domain.knowingDate).isEqualTo(2000L)
@@ -69,7 +70,7 @@ class ContactMapperTest {
     fun contact_toEntity_mapsAllFields() {
         val domain = Contact(
             id = 1, name = "张三", avatar = "avatar.png", nickname = "小三",
-            gender = 1, birthday = 1000L, isLunarBirthday = true, knowingDate = 2000L,
+            gender = Gender.MALE, birthday = 1000L, isLunarBirthday = true, knowingDate = 2000L,
             phone = "13800138000", email = "zhangsan@test.com", city = "北京",
             address = "朝阳区", education = "本科", company = "科技公司",
             jobTitle = "工程师", industry = "互联网", hobby = "篮球",
@@ -178,6 +179,48 @@ class ContactMapperTest {
         assertThat(domain.lastInteractionTime).isNull()
         assertThat(domain.customFields).isNull()
         assertThat(domain.notes).isNull()
+    }
+
+    @Test
+    fun contactEntity_genderZero_mapsToUnknown() {
+        val entity = ContactEntity(id = 1, name = "张三", gender = 0)
+        val domain = entity.toDomain()
+        assertThat(domain.gender).isEqualTo(Gender.UNKNOWN)
+    }
+
+    @Test
+    fun contactEntity_genderOne_mapsToMale() {
+        val entity = ContactEntity(id = 1, name = "张三", gender = 1)
+        val domain = entity.toDomain()
+        assertThat(domain.gender).isEqualTo(Gender.MALE)
+    }
+
+    @Test
+    fun contactEntity_genderTwo_mapsToFemale() {
+        val entity = ContactEntity(id = 1, name = "张三", gender = 2)
+        val domain = entity.toDomain()
+        assertThat(domain.gender).isEqualTo(Gender.FEMALE)
+    }
+
+    @Test
+    fun contactEntity_genderInvalid_mapsToUnknown() {
+        val entity = ContactEntity(id = 1, name = "张三", gender = 99)
+        val domain = entity.toDomain()
+        assertThat(domain.gender).isEqualTo(Gender.UNKNOWN)
+    }
+
+    @Test
+    fun contact_genderUnknown_toEntity_isZero() {
+        val domain = Contact(id = 1, name = "张三", gender = Gender.UNKNOWN)
+        val entity = domain.toEntity()
+        assertThat(entity.gender).isEqualTo(0)
+    }
+
+    @Test
+    fun contact_genderFemale_toEntity_isTwo() {
+        val domain = Contact(id = 1, name = "张三", gender = Gender.FEMALE)
+        val entity = domain.toEntity()
+        assertThat(entity.gender).isEqualTo(2)
     }
 
     @Test

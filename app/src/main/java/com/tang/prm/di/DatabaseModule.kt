@@ -1,10 +1,13 @@
 package com.tang.prm.di
 
 import android.content.Context
+import android.content.SharedPreferences
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStore
 import androidx.room.Room
+import androidx.security.crypto.EncryptedSharedPreferences
+import androidx.security.crypto.MasterKey
 import com.tang.prm.data.local.dao.*
 import com.tang.prm.data.local.database.TangDatabase
 import com.tang.prm.data.local.database.migrations.*
@@ -39,7 +42,9 @@ object DatabaseModule {
                 MIGRATION_21_22, MIGRATION_22_23, MIGRATION_23_24, MIGRATION_24_25,
                 MIGRATION_25_26,
                 MIGRATION_26_27,
-                MIGRATION_27_28
+                MIGRATION_27_28,
+                MIGRATION_28_29,
+                MIGRATION_29_30
             )
             .build()
     }
@@ -86,6 +91,21 @@ object DatabaseModule {
     @Provides
     @Singleton
     fun provideDataStore(@ApplicationContext context: Context): DataStore<Preferences> = context.dataStore
+
+    @Provides
+    @Singleton
+    fun provideEncryptedSharedPreferences(@ApplicationContext context: Context): SharedPreferences {
+        val masterKey = MasterKey.Builder(context)
+            .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+            .build()
+        return EncryptedSharedPreferences.create(
+            context,
+            "secret_settings",
+            masterKey,
+            EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+            EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+        )
+    }
 
     @Provides
     @Singleton

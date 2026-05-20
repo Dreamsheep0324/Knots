@@ -6,6 +6,7 @@ import com.tang.prm.domain.model.Contact
 import com.tang.prm.domain.model.CustomCategories
 import com.tang.prm.domain.model.CustomType
 import com.tang.prm.domain.model.Event
+import com.tang.prm.domain.model.EventType
 import com.tang.prm.domain.repository.ContactRepository
 import com.tang.prm.domain.repository.CustomTypeRepository
 import com.tang.prm.domain.repository.EventRepository
@@ -40,7 +41,7 @@ class FootprintsViewModelTest {
     private val testEvent = Event(
         id = 1,
         title = "Trip",
-        type = "TRAVEL",
+        type = EventType.TRAVEL,
         time = 1000L,
         location = "Beijing",
         participants = listOf(Contact(id = 1, name = "Alice"))
@@ -112,12 +113,13 @@ class FootprintsViewModelTest {
             val state = awaitItem()
             assertThat(state.selectedContactId).isNull()
             assertThat(state.filterEventType).isNull()
+            assertThat(state.selectedYear).isNull()
         }
     }
 
     @Test
     fun init_eventsWithoutLocation_areExcluded() = runTest {
-        val eventNoLocation = Event(id = 2, title = "NoLoc", type = "MEETUP", time = 2000L, location = null)
+        val eventNoLocation = Event(id = 2, title = "NoLoc", type = EventType.MEETUP, time = 2000L, location = null)
         every { eventRepository.getEventsWithLocation() } returns flowOf(listOf(testEvent, eventNoLocation))
 
         val freshViewModel = FootprintsViewModel(eventRepository, contactRepository, customTypeRepository)
@@ -126,6 +128,29 @@ class FootprintsViewModelTest {
             val state = awaitItem()
             assertThat(state.footprints).hasSize(1)
             assertThat(state.footprints[0].eventTitle).isEqualTo("Trip")
+        }
+    }
+
+    @Test
+    fun selectYear_filtersByYear() = runTest {
+        viewModel.selectYear(1970)
+
+        viewModel.uiState.test {
+            val state = awaitItem()
+            assertThat(state.selectedYear).isEqualTo(1970)
+        }
+    }
+
+    @Test
+    fun toggleView_switchesTimelineView() = runTest {
+        viewModel.uiState.test {
+            val initialState = awaitItem()
+            val initialView = initialState.isTimelineView
+
+            viewModel.toggleView()
+
+            val state = awaitItem()
+            assertThat(state.isTimelineView).isEqualTo(!initialView)
         }
     }
 }

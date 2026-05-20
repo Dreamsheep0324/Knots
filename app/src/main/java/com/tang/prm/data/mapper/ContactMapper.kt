@@ -15,9 +15,10 @@ import com.tang.prm.data.local.entity.ContactTagEntity
 import com.tang.prm.domain.model.Contact
 import com.tang.prm.domain.model.ContactGroup
 import com.tang.prm.domain.model.ContactTag
+import com.tang.prm.domain.model.Gender
 
 fun ContactEntity.toDomain() = Contact(
-    id = id, name = name, avatar = avatar, nickname = nickname, gender = gender,
+    id = id, name = name, avatar = avatar, nickname = nickname, gender = Gender.fromValue(gender),
     birthday = birthday, isLunarBirthday = isLunarBirthday, knowingDate = knowingDate,
     phone = phone, email = email, city = city, address = address, education = education,
     company = company, jobTitle = jobTitle, industry = industry, hobby = hobby, habit = habit,
@@ -29,7 +30,7 @@ fun ContactEntity.toDomain() = Contact(
 )
 
 fun Contact.toEntity() = ContactEntity(
-    id = id, name = name, avatar = avatar, nickname = nickname, gender = gender,
+    id = id, name = name, avatar = avatar, nickname = nickname, gender = gender.value,
     birthday = birthday, isLunarBirthday = isLunarBirthday, knowingDate = knowingDate,
     phone = phone, email = email, city = city, address = address, education = education,
     company = company, jobTitle = jobTitle, industry = industry, hobby = hobby, habit = habit,

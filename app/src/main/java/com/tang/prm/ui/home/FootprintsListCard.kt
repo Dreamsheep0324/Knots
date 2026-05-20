@@ -233,19 +233,29 @@ internal fun resolveEventTypeStyle(eventType: String, eventTypes: List<CustomTyp
         val baseColor = customType.color?.let { it.toComposeColor(SignalPurple) } ?: SignalPurple
         Triple(baseColor, baseColor.copy(alpha = AnimationTokens.Alpha.subtle), customType.icon?.let { getGenericIcon(it) } ?: Icons.Default.Event)
     } else {
-        val style = getEventTypeStyle(eventType)
+        val resolved = EventType.entries.find { it.name == eventType } ?: EventType.OTHER
+        val style = getEventTypeStyle(resolved)
         Triple(style.accentColor, style.lightColor, style.icon)
     }
 }
 
 @Composable
-internal fun getEventTypeColor(eventType: String): Color = getEventTypeStyle(eventType).accentColor
+internal fun getEventTypeColor(eventType: String): Color {
+    val resolved = EventType.entries.find { it.name == eventType } ?: EventType.OTHER
+    return getEventTypeStyle(resolved).accentColor
+}
 
 @Composable
-internal fun getEventTypeIcon(eventType: String): ImageVector = getEventTypeStyle(eventType).icon
+internal fun getEventTypeIcon(eventType: String): ImageVector {
+    val resolved = EventType.entries.find { it.name == eventType } ?: EventType.OTHER
+    return getEventTypeStyle(resolved).icon
+}
 
 @Composable
-internal fun getEventTypeLightColor(eventType: String): Color = getEventTypeStyle(eventType).lightColor
+internal fun getEventTypeLightColor(eventType: String): Color {
+    val resolved = EventType.entries.find { it.name == eventType } ?: EventType.OTHER
+    return getEventTypeStyle(resolved).lightColor
+}
 
 internal fun getWeatherIconForFootprint(weather: String?): ImageVector {
     if (weather.isNullOrBlank()) return Icons.Default.WbSunny

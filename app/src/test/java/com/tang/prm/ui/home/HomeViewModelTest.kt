@@ -185,4 +185,15 @@ class HomeViewModelTest {
             assertThat(state.isLoading).isFalse()
         }
     }
+
+    @Test
+    fun currentTimeFlow_emitsTimestamps() = runTest {
+        val before = System.currentTimeMillis()
+        viewModel.currentTimeFlow.test {
+            val first = awaitItem()
+            assertThat(first).isAtLeast(before)
+            val second = awaitItem()
+            assertThat(second).isAtLeast(first)
+        }
+    }
 }

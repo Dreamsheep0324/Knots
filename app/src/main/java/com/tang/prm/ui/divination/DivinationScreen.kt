@@ -32,6 +32,8 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -52,7 +54,7 @@ fun DivinationScreen(
     navController: NavController,
     viewModel: DivinationViewModel = hiltViewModel()
 ) {
-    val selectedMethod = viewModel.selectedMethod
+    val selectedMethod by viewModel.selectedMethod.collectAsState()
 
     Column(
         modifier = Modifier

@@ -4,7 +4,7 @@ import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat
 import com.tang.prm.domain.model.Contact
 import com.tang.prm.domain.model.Event
-import com.tang.prm.domain.model.EventTypes
+import com.tang.prm.domain.model.EventType
 import com.tang.prm.domain.repository.EventRepository
 import com.tang.prm.util.DateUtils
 import io.mockk.coEvery
@@ -33,7 +33,7 @@ class ChatViewModelTest {
     private val testContact = Contact(id = 1L, name = "Alice")
     private val testEvent = Event(
         id = 1L,
-        type = EventTypes.CONVERSATION,
+        type = EventType.CONVERSATION,
         title = "Chat with Alice",
         time = System.currentTimeMillis(),
         conversationSummary = "Hello",

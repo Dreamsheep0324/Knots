@@ -66,6 +66,7 @@ import com.tang.prm.ui.animation.primitives.rememberBreathingPulse
 import com.tang.prm.ui.animation.primitives.rememberScanLineOffset
 import com.tang.prm.ui.theme.Dimens
 import kotlin.math.sin
+import java.util.Locale
 
 @Composable
 internal fun ContactCardOverlay(
@@ -210,7 +211,7 @@ private fun ContactCardFront(
                             )
                             Spacer(Modifier.width(6.dp))
                             Text(
-                                "ID:${String.format("%04d", contact.id)}",
+                                "ID:${String.format(Locale.US, "%04d", contact.id)}",
                                 fontFamily = FontFamily.Monospace,
                                 fontSize = 9.sp,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -466,7 +467,7 @@ private fun ContactCardBack(
                             .padding(horizontal = 8.dp, vertical = 2.dp)
                     ) {
                         Text(
-                            "ID:${String.format("%04d", contact.id)}",
+                            "ID:${String.format(Locale.US, "%04d", contact.id)}",
                             fontFamily = FontFamily.Monospace,
                             fontSize = 9.sp,
                             color = MaterialTheme.colorScheme.onSurfaceVariant

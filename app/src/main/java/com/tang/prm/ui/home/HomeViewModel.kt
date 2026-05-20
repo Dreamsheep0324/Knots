@@ -7,6 +7,7 @@ import com.tang.prm.domain.repository.*
 import com.tang.prm.domain.usecase.HomeStatsUseCase
 import com.tang.prm.domain.usecase.HomeStats
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import java.util.*
@@ -68,27 +69,27 @@ class HomeViewModel @Inject constructor(
     )
 
     private val coreFlow = combine(
-        contactRepository.getRecentContacts(5),
-        eventRepository.getAllEvents(),
-        todoRepository.getActiveTodos(),
-        reminderRepository.getActiveReminders()
+        contactRepository.getRecentContacts(5).distinctUntilChanged(),
+        eventRepository.getAllEvents().distinctUntilChanged(),
+        todoRepository.getActiveTodos().distinctUntilChanged(),
+        reminderRepository.getActiveReminders().distinctUntilChanged()
     ) { contacts, allEvents, todos, reminders ->
         CoreData(contacts, allEvents, todos, reminders)
     }
 
     private val anniversaryFlow = combine(
-        anniversaryRepository.getUpcomingAnniversaries(10),
-        anniversaryRepository.getAllAnniversaries()
+        anniversaryRepository.getUpcomingAnniversaries(10).distinctUntilChanged(),
+        anniversaryRepository.getAllAnniversaries().distinctUntilChanged()
     ) { upcoming, all ->
         AnniversaryData(upcoming, all)
     }
 
     val uiState: StateFlow<HomeUiState> = combine(
         flowOf(greeting),
-        settingsRepository.userName,
+        settingsRepository.userName.distinctUntilChanged(),
         coreFlow,
         anniversaryFlow,
-        homeStatsUseCase.getStats()
+        homeStatsUseCase.getStats().distinctUntilChanged()
     ) { greeting, userName, core, anniversaries, stats ->
         val today = Calendar.getInstance()
         val todayReminders = core.reminders.filter {
@@ -120,6 +121,13 @@ class HomeViewModel @Inject constructor(
             isLoading = false
         )
     }.stateIn(viewModelScope, SharingStarted.Eagerly, HomeUiState(isLoading = false))
+
+    val currentTimeFlow: StateFlow<Long> = flow {
+        while (true) {
+            emit(System.currentTimeMillis())
+            delay(30_000)
+        }
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), System.currentTimeMillis())
 
     fun toggleTodoCompletion(todoId: Long, isCompleted: Boolean) {
         viewModelScope.launch {

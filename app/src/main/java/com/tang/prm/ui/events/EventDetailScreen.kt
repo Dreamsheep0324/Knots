@@ -38,6 +38,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.tang.prm.domain.model.Event
+import com.tang.prm.domain.model.EventType
 import com.tang.prm.ui.navigation.Screen
 import com.tang.prm.ui.theme.Primary
 import com.tang.prm.ui.theme.SignalSky
@@ -281,10 +282,10 @@ private fun EventHeader(event: Event) {
             }
         }
 
-        if (event.type.isNotBlank()) {
+        if (event.type != EventType.OTHER) {
             Surface(color = Primary.copy(alpha = AnimationTokens.Alpha.faint), shape = RoundedCornerShape(12.dp)) {
                 Box(modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)) {
-                    Text(text = event.type, style = MaterialTheme.typography.labelSmall, color = Primary, fontWeight = FontWeight.SemiBold)
+                    Text(text = event.type.displayName, style = MaterialTheme.typography.labelSmall, color = Primary, fontWeight = FontWeight.SemiBold)
                 }
             }
         }
@@ -605,7 +606,7 @@ private fun shareEvent(context: android.content.Context, event: Event) {
 
     sb.appendLine()
 
-    if (event.type.isNotBlank()) sb.append("🏷️ ${event.type}  ")
+    if (event.type != EventType.OTHER) sb.append("🏷️ ${event.type.displayName}  ")
     event.location?.let { if (it.isNotBlank()) sb.append("📍 $it  ") }
     event.weather?.let { if (it.isNotBlank()) sb.append("🌤️ $it  ") }
     event.emotion?.let { if (it.isNotBlank()) sb.append("💭 $it  ") }

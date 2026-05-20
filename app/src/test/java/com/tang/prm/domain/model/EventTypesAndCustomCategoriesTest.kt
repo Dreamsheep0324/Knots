@@ -7,18 +7,14 @@ import java.lang.reflect.Modifier
 class EventTypesAndCustomCategoriesTest {
 
     @Test
-    fun eventTypes_has10Constants() {
-        val fields = EventTypes::class.java.declaredFields
-            .filter { Modifier.isPublic(it.modifiers) && Modifier.isStatic(it.modifiers) && Modifier.isFinal(it.modifiers) && it.type == String::class.java }
-        assertThat(fields).hasSize(10)
+    fun eventType_has10Entries() {
+        assertThat(EventType.entries).hasSize(10)
     }
 
     @Test
-    fun eventTypes_valuesAreUnique() {
-        val fields = EventTypes::class.java.declaredFields
-            .filter { Modifier.isPublic(it.modifiers) && Modifier.isStatic(it.modifiers) && Modifier.isFinal(it.modifiers) && it.type == String::class.java }
-        val values = fields.map { it.get(null) as String }
-        assertThat(values).hasSize(values.toSet().size)
+    fun eventType_namesAreUnique() {
+        val names = EventType.entries.map { it.name }
+        assertThat(names).hasSize(names.toSet().size)
     }
 
     @Test
