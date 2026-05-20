@@ -39,6 +39,7 @@ import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.rememberTextMeasurer
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -233,10 +234,18 @@ internal fun OrbitalCalendar(
 
             Spacer(modifier = Modifier.height(4.dp))
 
-            Canvas(modifier = Modifier.fillMaxWidth().height(242.dp)) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(242.dp)
+            ) {
+            Canvas(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(242.dp)
+            ) {
                 val center = Offset(size.width / 2, size.height / 2)
                 val minDim = minOf(size.width, size.height) * 1.05f
-
                 val innerDecorR = minDim * 0.10f
                 val innerR = minDim * 0.15f
                 val weekR = minDim * 0.21f
@@ -434,6 +443,7 @@ internal fun OrbitalCalendar(
 
                 drawText(textLayoutResult = centerDayMeasured,
                     topLeft = Offset(center.x - centerDayMeasured.size.width / 2f, center.y - centerDayMeasured.size.height / 2f))
+            }
             }
 
             if (isCurrentMonth && todayEvents.isNotEmpty()) {

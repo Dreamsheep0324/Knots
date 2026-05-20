@@ -105,12 +105,20 @@ private fun GlassChannelItem(
                             .background(channel.color.copy(alpha = AnimationTokens.Alpha.subtle), CircleShape),
                         contentAlignment = Alignment.Center
                     ) {
-                        Icon(
-                            channel.icon,
-                            contentDescription = channel.name,
-                            tint = channel.color,
-                            modifier = Modifier.size(22.dp)
-                        )
+                        if (channel.textIcon != null) {
+                            Text(
+                                channel.textIcon,
+                                fontSize = 20.sp,
+                                color = channel.color
+                            )
+                        } else if (channel.icon != null) {
+                            Icon(
+                                channel.icon,
+                                contentDescription = channel.name,
+                                tint = channel.color,
+                                modifier = Modifier.size(22.dp)
+                            )
+                        }
                     }
                     Canvas(modifier = Modifier.size(52.dp)) {
                         val cx = size.width / 2

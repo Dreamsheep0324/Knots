@@ -30,6 +30,7 @@ import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.SettingsBrightness
+import androidx.compose.material.icons.filled.SmartToy
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -89,6 +90,21 @@ fun SettingsScreen(
                     ThemeEntryItem(
                         currentMode = themeMode,
                         onClick = { navController.navigate(Screen.ThemeSettings.route) }
+                    )
+                }
+            }
+
+            item {
+                SectionLabel("AI配置")
+            }
+            item {
+                SettingsCard {
+                    SettingsEntryItem(
+                        icon = Icons.Default.SmartToy,
+                        iconTint = Color(0xFF4CAF50),
+                        title = "AI配置",
+                        subtitle = "API密钥、地址与模型设置",
+                        onClick = { navController.navigate(Screen.AiConfig.route) }
                     )
                 }
             }
@@ -204,6 +220,8 @@ private fun SettingsEntryItem(
         )
     }
 }
+
+
 
 @Composable
 private fun ThemeEntryItem(

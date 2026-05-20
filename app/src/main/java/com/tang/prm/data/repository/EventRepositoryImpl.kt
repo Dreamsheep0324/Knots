@@ -137,7 +137,13 @@ class EventRepositoryImpl @Inject constructor(
 
     override fun getConversationCount(): Flow<Int> = eventDao.getConversationCount()
 
-    override fun getPhotoCount(): Flow<Int> = eventDao.getPhotoCount()
+    override fun getPhotoCount(): Flow<Int> = eventDao.getAllPhotosRaw().map { list ->
+        list.sumOf { photos ->
+            try {
+                org.json.JSONArray(photos).length()
+            } catch (_: Exception) { 0 }
+        }
+    }
 
     override fun getFootprintCount(): Flow<Int> = eventDao.getFootprintCount()
 }

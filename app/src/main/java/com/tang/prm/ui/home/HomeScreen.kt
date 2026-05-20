@@ -60,17 +60,19 @@ internal data class ChannelDef(
     val name: String,
     val color: Color,
     val route: String,
-    val icon: ImageVector,
     val desc: String,
+    val icon: ImageVector? = null,
+    val textIcon: String? = null,
 )
 
 internal val channels = listOf(
-    ChannelDef("礼物", SignalCoral, "gifts", Icons.Default.CardGiftcard, "收送记录与心愿单"),
-    ChannelDef("圈子", SignalPurple, "contact_list", Icons.Default.Hub, "社交分组与关系管理"),
-    ChannelDef("相册", SignalSky, "photo_album", Icons.Default.Image, "共享回忆与时光轴"),
-    ChannelDef("足迹", SignalGreen, "footprints", Icons.Default.Map, "共同地点与旅行轨迹"),
-    ChannelDef("想法", SignalAmber, "thoughts", Icons.Default.Lightbulb, "灵感笔记与待办事项"),
-    ChannelDef("收藏", SignalGold, "favorites", Icons.Default.Star, "珍藏回忆与重要内容"),
+    ChannelDef("礼物", SignalCoral, "gifts", "收送记录与心愿单", Icons.Default.CardGiftcard),
+    ChannelDef("圈子", SignalPurple, "contact_list", "社交分组与关系管理", Icons.Default.Hub),
+    ChannelDef("相册", SignalSky, "photo_album", "共享回忆与时光轴", Icons.Default.Image),
+    ChannelDef("足迹", SignalGreen, "footprints", "共同地点与旅行轨迹", Icons.Default.Map),
+    ChannelDef("想法", SignalAmber, "thoughts", "灵感笔记与待办事项", Icons.Default.Lightbulb),
+    ChannelDef("收藏", SignalGold, "favorites", "珍藏回忆与重要内容", Icons.Default.Star),
+    ChannelDef("占卜", SignalElectric, "divination", "梅花易数 · 六爻纳甲", textIcon = "☯"),
 )
 
 @Composable
@@ -173,7 +175,8 @@ fun HomeScreen(
                         "photo_album" to uiState.photoCount,
                         "footprints" to uiState.footprintCount,
                         "thoughts" to uiState.thoughtCount,
-                        "favorites" to uiState.favoriteCount
+                        "favorites" to uiState.favoriteCount,
+                        "divination" to 0
                     ),
                     onChannelClick = { route ->
                         when (route) {
@@ -183,6 +186,7 @@ fun HomeScreen(
                             "footprints" -> navController.navigate(Screen.Footprints.route)
                             "thoughts" -> navController.navigate(Screen.Thoughts.route)
                             "favorites" -> navController.navigate(Screen.Favorites.route)
+                            "divination" -> navController.navigate(Screen.Divination.route)
                         }
                     }
                 )

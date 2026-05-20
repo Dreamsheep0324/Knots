@@ -48,6 +48,7 @@ sealed class Screen(val route: String) {
     }
     object Settings : Screen("settings")
     object ThemeSettings : Screen("theme_settings")
+    object AiConfig : Screen("ai_config")
     object BackupRestore : Screen("backup_restore")
     object About : Screen("about")
     object Gifts : Screen("gifts")
@@ -65,6 +66,13 @@ sealed class Screen(val route: String) {
     object Thoughts : Screen("thoughts")
     object ContactList : Screen("contact_list")
     object Favorites : Screen("favorites")
+    object Divination : Screen("divination")
+    object LiuyaoCast : Screen("liuyao_cast")
+    object LiuyaoResult : Screen("liuyao_result")
+    object MeihuaMethod : Screen("meihua_method")
+    object MeihuaResult : Screen("meihua_result")
+    object ExternalOmen : Screen("external_omen")
+    object DivinationHistory : Screen("divination_history")
 }
 
 data class BottomNavItem(

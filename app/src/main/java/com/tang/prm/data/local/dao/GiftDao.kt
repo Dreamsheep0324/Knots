@@ -36,6 +36,6 @@ interface GiftDao {
     @Query("SELECT COUNT(*) FROM gifts")
     fun getGiftCount(): Flow<Int>
 
-    @Query("SELECT COALESCE(SUM(json_array_length(photos)), 0) FROM gifts WHERE photos IS NOT NULL")
-    fun getGiftPhotoCount(): Flow<Int>
+    @Query("SELECT photos FROM gifts WHERE photos IS NOT NULL AND photos != '[]'")
+    fun getAllPhotosRaw(): Flow<List<String>>
 }

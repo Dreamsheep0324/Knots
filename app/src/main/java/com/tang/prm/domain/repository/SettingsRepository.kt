@@ -10,4 +10,21 @@ interface SettingsRepository {
     suspend fun setUserName(name: String)
     val userSignature: Flow<String>
     suspend fun setUserSignature(signature: String)
+
+    val aiApiKey: Flow<String>
+    suspend fun setAiApiKey(key: String)
+    val aiBaseUrl: Flow<String>
+    suspend fun setAiBaseUrl(url: String)
+    val aiModel: Flow<String>
+    suspend fun setAiModel(model: String)
+    suspend fun getAiApiKey(): String
+    suspend fun getAiBaseUrl(): String
+    suspend fun getAiModel(): String
+
+    val aiGender: Flow<String>
+    suspend fun setAiGender(gender: String)
+    val aiBirthDate: Flow<String>
+    suspend fun setAiBirthDate(date: String)
+    suspend fun getAiGender(): String
+    suspend fun getAiBirthDate(): String
 }

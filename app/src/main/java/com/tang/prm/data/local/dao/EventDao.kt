@@ -71,8 +71,8 @@ interface EventDao {
     @Query("SELECT COUNT(*) FROM events WHERE type = '${EventTypes.CONVERSATION}'")
     fun getConversationCount(): Flow<Int>
 
-    @Query("SELECT COALESCE(SUM(json_array_length(photos)), 0) FROM events WHERE photos IS NOT NULL")
-    fun getPhotoCount(): Flow<Int>
+    @Query("SELECT photos FROM events WHERE photos IS NOT NULL AND photos != '[]'")
+    fun getAllPhotosRaw(): Flow<List<String>>
 
     @Transaction
     @Query("SELECT * FROM events WHERE location IS NOT NULL AND location != '' ORDER BY time DESC")

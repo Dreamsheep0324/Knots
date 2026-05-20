@@ -37,7 +37,9 @@ object DatabaseModule {
                 MIGRATION_13_14, MIGRATION_14_15, MIGRATION_15_16, MIGRATION_16_17,
                 MIGRATION_17_18, MIGRATION_18_19, MIGRATION_19_20, MIGRATION_20_21,
                 MIGRATION_21_22, MIGRATION_22_23, MIGRATION_23_24, MIGRATION_24_25,
-                MIGRATION_25_26
+                MIGRATION_25_26,
+                MIGRATION_26_27,
+                MIGRATION_27_28
             )
             .build()
     }
@@ -79,6 +81,17 @@ object DatabaseModule {
     fun provideFavoriteDao(database: TangDatabase): FavoriteDao = database.favoriteDao()
 
     @Provides
+    fun provideDivinationRecordDao(database: TangDatabase): DivinationRecordDao = database.divinationRecordDao()
+
+    @Provides
     @Singleton
     fun provideDataStore(@ApplicationContext context: Context): DataStore<Preferences> = context.dataStore
+
+    @Provides
+    @Singleton
+    fun provideOkHttpClient(): okhttp3.OkHttpClient = okhttp3.OkHttpClient.Builder()
+        .connectTimeout(30, java.util.concurrent.TimeUnit.SECONDS)
+        .readTimeout(120, java.util.concurrent.TimeUnit.SECONDS)
+        .writeTimeout(30, java.util.concurrent.TimeUnit.SECONDS)
+        .build()
 }

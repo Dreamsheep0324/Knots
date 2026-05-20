@@ -40,5 +40,11 @@ class GiftRepositoryImpl @Inject constructor(
 
     override fun getGiftCount(): Flow<Int> = giftDao.getGiftCount()
 
-    override fun getGiftPhotoCount(): Flow<Int> = giftDao.getGiftPhotoCount()
+    override fun getGiftPhotoCount(): Flow<Int> = giftDao.getAllPhotosRaw().map { list ->
+        list.sumOf { photos ->
+            try {
+                org.json.JSONArray(photos).length()
+            } catch (_: Exception) { 0 }
+        }
+    }
 }

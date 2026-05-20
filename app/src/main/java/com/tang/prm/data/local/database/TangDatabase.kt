@@ -22,9 +22,10 @@ import com.tang.prm.data.local.entity.*
         ThoughtEntity::class,
         CircleEntity::class,
         CircleMemberCrossRef::class,
-        FavoriteEntity::class
+        FavoriteEntity::class,
+        DivinationRecordEntity::class
     ],
-    version = 26,
+    version = 28,
     exportSchema = true
 )
 @TypeConverters(ListStringConverter::class)
@@ -41,6 +42,7 @@ abstract class TangDatabase : RoomDatabase() {
     abstract fun thoughtDao(): ThoughtDao
     abstract fun circleDao(): CircleDao
     abstract fun favoriteDao(): FavoriteDao
+    abstract fun divinationRecordDao(): DivinationRecordDao
 
     suspend fun checkpoint() {
         val db = openHelper.writableDatabase

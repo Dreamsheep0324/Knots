@@ -1,6 +1,7 @@
 package com.tang.prm.di
 
 import com.tang.prm.data.repository.*
+import com.tang.prm.domain.divination.repository.DivinationRepository
 import com.tang.prm.domain.repository.*
 import dagger.Binds
 import dagger.Module
@@ -63,4 +64,12 @@ abstract class RepositoryModule {
     @Binds
     @Singleton
     abstract fun bindSettingsRepository(impl: SettingsRepositoryImpl): SettingsRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindDivinationRepository(impl: DivinationRepositoryImpl): DivinationRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindAiRepository(impl: AiRepositoryImpl): AiRepository
 }

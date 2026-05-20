@@ -37,9 +37,17 @@ import com.tang.prm.ui.home.AddGiftScreen
 import com.tang.prm.ui.home.PhotoAlbumScreen
 import com.tang.prm.ui.home.ThoughtsScreen
 import com.tang.prm.ui.profile.AboutScreen
+import com.tang.prm.ui.profile.AiConfigScreen
 import com.tang.prm.ui.profile.BackupScreen
 import com.tang.prm.ui.profile.SettingsScreen
 import com.tang.prm.ui.profile.ThemeScreen
+import com.tang.prm.ui.divination.DivinationScreen
+import com.tang.prm.ui.divination.liuyao.LiuyaoCastScreen
+import com.tang.prm.ui.divination.liuyao.LiuyaoResultScreen
+import com.tang.prm.ui.divination.meihua.MeihuaMethodScreen
+import com.tang.prm.ui.divination.meihua.MeihuaResultScreen
+import com.tang.prm.ui.divination.meihua.ExternalOmenScreen
+import com.tang.prm.ui.divination.DivinationHistoryScreen
 
 private inline fun <reified T> androidx.navigation.NavBackStackEntry.navArg(key: String): T {
     val args = arguments ?: throw IllegalArgumentException("No arguments")
@@ -158,6 +166,27 @@ fun NavGraphBuilder.homeGraph(
     }
     composable(Screen.Favorites.route) {
         FavoritesScreen(navController = navController)
+    }
+    composable(Screen.Divination.route) {
+        DivinationScreen(navController = navController)
+    }
+    composable(Screen.LiuyaoCast.route) {
+        LiuyaoCastScreen(navController = navController)
+    }
+    composable(Screen.LiuyaoResult.route) {
+        LiuyaoResultScreen(navController = navController)
+    }
+    composable(Screen.MeihuaMethod.route) {
+        MeihuaMethodScreen(navController = navController)
+    }
+    composable(Screen.MeihuaResult.route) {
+        MeihuaResultScreen(navController = navController)
+    }
+    composable(Screen.ExternalOmen.route) {
+        ExternalOmenScreen(navController = navController)
+    }
+    composable(Screen.DivinationHistory.route) {
+        DivinationHistoryScreen(navController = navController)
     }
 }
 
@@ -283,6 +312,9 @@ fun NavGraphBuilder.settingsGraph(navController: NavHostController) {
     }
     composable(Screen.ThemeSettings.route) {
         ThemeScreen(navController = navController)
+    }
+    composable(Screen.AiConfig.route) {
+        AiConfigScreen(navController = navController)
     }
     composable(Screen.BackupRestore.route) {
         BackupScreen(navController = navController)
