@@ -25,7 +25,8 @@ data class ContactDetailUiState(
     val habitOptions: List<CustomType> = emptyList(),
     val dietOptions: List<CustomType> = emptyList(),
     val skillOptions: List<CustomType> = emptyList(),
-    val eventTypes: List<CustomType> = emptyList()
+    val eventTypes: List<CustomType> = emptyList(),
+    val relationshipTypes: List<CustomType> = emptyList()
 )
 
 @HiltViewModel
@@ -63,6 +64,7 @@ class ContactDetailViewModel @Inject constructor(
             val dietFlow = customTypeRepository.getTypesByCategory(CustomCategories.DIET)
             val skillFlow = customTypeRepository.getTypesByCategory(CustomCategories.SKILL)
             val eventTypeFlow = customTypeRepository.getTypesByCategory(CustomCategories.EVENT_TYPE)
+            val relationshipFlow = customTypeRepository.getTypesByCategory(CustomCategories.RELATIONSHIP)
             val thoughtFavoritesFlow = favoriteRepository.getFavoritesByType(SourceTypes.THOUGHT)
 
             combine(
@@ -70,7 +72,9 @@ class ContactDetailViewModel @Inject constructor(
                     ContactData(contact, events, anniversaries, gifts, thoughts)
                 },
                 combine(hobbyFlow, habitFlow, dietFlow, skillFlow, eventTypeFlow) { hobby, habit, diet, skill, eventTypes ->
-                    CustomTypeData(hobby, habit, diet, skill, eventTypes)
+                    CustomTypeDataPart1(hobby, habit, diet, skill, eventTypes)
+                }.combine(relationshipFlow) { part1, relationshipTypes ->
+                    CustomTypeData(part1.hobby, part1.habit, part1.diet, part1.skill, part1.eventTypes, relationshipTypes)
                 },
                 thoughtFavoritesFlow
             ) { contactData, customTypeData, thoughtFavorites ->
@@ -91,6 +95,7 @@ class ContactDetailViewModel @Inject constructor(
                     dietOptions = customTypeData.diet,
                     skillOptions = customTypeData.skill,
                     eventTypes = customTypeData.eventTypes,
+                    relationshipTypes = customTypeData.relationshipTypes,
                     isLoading = false
                 )}
             }.collect {}
@@ -105,12 +110,21 @@ class ContactDetailViewModel @Inject constructor(
         val thoughts: List<Thought>
     )
 
-    private data class CustomTypeData(
+    private data class CustomTypeDataPart1(
         val hobby: List<CustomType>,
         val habit: List<CustomType>,
         val diet: List<CustomType>,
         val skill: List<CustomType>,
         val eventTypes: List<CustomType>
+    )
+
+    private data class CustomTypeData(
+        val hobby: List<CustomType>,
+        val habit: List<CustomType>,
+        val diet: List<CustomType>,
+        val skill: List<CustomType>,
+        val eventTypes: List<CustomType>,
+        val relationshipTypes: List<CustomType>
     )
 
     fun onTabSelected(tabIndex: Int) {

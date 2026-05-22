@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.tang.prm.domain.model.Contact
+import com.tang.prm.domain.model.CustomType
 import com.tang.prm.domain.model.AppStrings
 import com.tang.prm.ui.animation.core.AnimationTokens
 import com.tang.prm.ui.theme.SignalAmber
@@ -33,6 +34,7 @@ import com.tang.prm.ui.theme.SignalSky
 @Composable
 internal fun ProfileHeader(
     contact: Contact,
+    relationshipTypes: List<CustomType> = emptyList(),
     onBack: () -> Unit,
     onEdit: () -> Unit,
     onDelete: () -> Unit
@@ -139,8 +141,9 @@ internal fun ProfileHeader(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    contact.relationship?.takeIf { it.isNotBlank() }?.let {
-                        HeaderTagChip(text = it, color = SignalAmber, icon = Icons.Default.Link)
+                    contact.relationship?.takeIf { it.isNotBlank() }?.let { rel ->
+                        val relColor = relationshipTypes.find { it.name == rel }?.color?.let { parseHexColor(it) } ?: SignalAmber
+                        HeaderTagChip(text = rel, color = relColor, icon = Icons.Default.Link)
                     }
                     contact.education?.takeIf { it.isNotBlank() }?.let {
                         HeaderTagChip(text = it, color = SignalSky, icon = Icons.Default.School)
@@ -222,3 +225,14 @@ internal fun getIntimacyLevel(score: Int): IntimacyLevelInfo = when {
 }
 
 internal data class IntimacyLevelInfo(val name: String, val icon: ImageVector)
+
+internal fun parseHexColor(hex: String): Color {
+    val cleaned = hex.removePrefix("#")
+    return try {
+        when (cleaned.length) {
+            6 -> Color(("FF$cleaned").toLong(16).toInt())
+            8 -> Color(cleaned.toLong(16).toInt())
+            else -> SignalAmber
+        }
+    } catch (_: Exception) { SignalAmber }
+}

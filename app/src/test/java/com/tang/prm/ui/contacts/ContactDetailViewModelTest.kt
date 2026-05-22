@@ -86,6 +86,7 @@ class ContactDetailViewModelTest {
         every { customTypeRepository.getTypesByCategory(CustomCategories.DIET) } returns flowOf(emptyList<CustomType>())
         every { customTypeRepository.getTypesByCategory(CustomCategories.SKILL) } returns flowOf(emptyList<CustomType>())
         every { customTypeRepository.getTypesByCategory(CustomCategories.EVENT_TYPE) } returns flowOf(emptyList<CustomType>())
+        every { customTypeRepository.getTypesByCategory(CustomCategories.RELATIONSHIP) } returns flowOf(emptyList<CustomType>())
         every { favoriteRepository.getFavoritesByType(SourceTypes.THOUGHT) } returns flowOf(emptyList<Favorite>())
 
         viewModel = ContactDetailViewModel(

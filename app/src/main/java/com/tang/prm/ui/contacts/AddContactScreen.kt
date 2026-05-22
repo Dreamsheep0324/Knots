@@ -188,7 +188,7 @@ fun AddContactScreen(
                         mode = TagSelectorMode.SINGLE, availableItems = uiState.relationships,
                         selectedItems = listOfNotNull(uiState.relationship),
                         onSelectionChange = { viewModel.updateRelationship(it.firstOrNull() ?: "") },
-                        onAddItem = { name, _, _ -> viewModel.addCustomType(CustomCategories.RELATIONSHIP, name) },
+                        onAddItem = { name, color, icon -> viewModel.addCustomType(CustomCategories.RELATIONSHIP, name, color, icon) },
                         onDeleteItem = { viewModel.deleteCustomType(it) },
                         emptyText = "暂无关系标签，点击新增添加",
                         showHeader = false,

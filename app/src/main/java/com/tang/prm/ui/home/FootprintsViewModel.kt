@@ -67,7 +67,7 @@ class FootprintsViewModel @Inject constructor(
                     id = event.id,
                     location = event.location ?: "",
                     date = event.time,
-                    eventType = event.type.name,
+                    eventType = event.customTypeName ?: event.type.name,
                     eventTitle = event.title,
                     contactId = participant?.id,
                     contactName = participant?.name,

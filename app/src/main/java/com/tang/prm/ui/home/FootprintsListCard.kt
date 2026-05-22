@@ -58,8 +58,8 @@ internal fun ListCard(
     onClick: () -> Unit = {}
 ) {
     val (accentColor, lightColor, icon) = resolveEventTypeStyle(footprint.eventType, eventTypes)
-    val eventTypeData = EventType.entries.find { it.name == footprint.eventType }
-    val eventTypeDisplayName = eventTypeData?.displayName ?: footprint.eventType
+    val customType = eventTypes.find { it.name == footprint.eventType }
+    val eventTypeDisplayName = customType?.name ?: EventType.entries.find { it.name == footprint.eventType }?.displayName ?: footprint.eventType
 
     Surface(
         modifier = Modifier

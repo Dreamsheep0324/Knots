@@ -188,7 +188,7 @@ fun EventsScreen(
 
 @Composable
 private fun EventCard(event: Event, eventTypes: List<CustomType>, onClick: () -> Unit, modifier: Modifier = Modifier) {
-    val customType = if (event.type != EventType.OTHER) eventTypes.find { it.key == event.type.name } ?: eventTypes.find { it.name == event.type.name } else null
+    val customType = if (event.type != EventType.OTHER) eventTypes.find { it.key == event.type.name } ?: eventTypes.find { it.name == event.type.name } else event.customTypeName?.let { ctn -> eventTypes.find { it.name == ctn } }
     val accentColor: Color
     val lightColor: Color
     val icon: ImageVector
@@ -219,9 +219,9 @@ private fun EventCard(event: Event, eventTypes: List<CustomType>, onClick: () ->
                 Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(5.dp)) {
                     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         Text(text = event.title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f))
-                        if (event.type != EventType.OTHER) {
+                        if (event.type != EventType.OTHER || event.customTypeName != null) {
                             Surface(shape = RoundedCornerShape(20.dp), color = lightColor) {
-                                Text(text = event.type.displayName, modifier = Modifier.padding(10.dp, 4.dp), style = MaterialTheme.typography.labelSmall, color = accentColor, fontWeight = FontWeight.SemiBold, fontSize = 11.sp)
+                                Text(text = event.customTypeName ?: event.type.displayName, modifier = Modifier.padding(10.dp, 4.dp), style = MaterialTheme.typography.labelSmall, color = accentColor, fontWeight = FontWeight.SemiBold, fontSize = 11.sp)
                             }
                         }
                     }

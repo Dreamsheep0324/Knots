@@ -73,7 +73,7 @@ class AddEventViewModel @Inject constructor(
         viewModelScope.launch {
             eventRepository.getEventById(eventId).first()?.let { event ->
                 _uiState.update {
-                    it.copy(title = event.title, type = event.type.name, description = event.description ?: "",
+                    it.copy(title = event.title, type = event.customTypeName ?: event.type.name, description = event.description ?: "",
                         time = event.time, endTime = event.endTime, location = event.location ?: "",
                         emotion = event.emotion ?: "", weather = event.weather ?: "",
                         conversationSummary = event.conversationSummary ?: "", remarks = event.remarks ?: "",
@@ -131,7 +131,10 @@ class AddEventViewModel @Inject constructor(
         viewModelScope.launch {
             val state = _uiState.value
             if (state.title.isBlank() || state.type.isBlank()) return@launch
-            val event = Event(id = editingEventId ?: 0, title = state.title, type = EventType.entries.find { it.name == state.type } ?: EventType.OTHER,
+            val eventType = EventType.entries.find { it.name == state.type }
+            val customTypeName = if (eventType == null) state.type else null
+            val event = Event(id = editingEventId ?: 0, title = state.title, type = eventType ?: EventType.OTHER,
+                customTypeName = customTypeName,
                 description = state.description.ifBlank { null }, time = state.time, endTime = state.endTime,
                 location = state.location.ifBlank { null }, emotion = state.emotion.ifBlank { null },
                 weather = state.weather.ifBlank { null }, conversationSummary = state.conversationSummary.ifBlank { null },

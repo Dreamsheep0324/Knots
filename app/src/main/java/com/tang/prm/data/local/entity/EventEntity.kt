@@ -14,6 +14,7 @@ data class EventEntity(
     val id: Long = 0,
     val type: String,
     val title: String,
+    val customTypeName: String? = null,
     val description: String? = null,
     val time: Long,
     val endTime: Long? = null,

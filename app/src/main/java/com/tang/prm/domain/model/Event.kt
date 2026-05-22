@@ -16,6 +16,7 @@ enum class EventType(val displayName: String) {
 data class Event(
     val id: Long = 0,
     val type: EventType = EventType.OTHER,
+    val customTypeName: String? = null,
     val title: String,
     val description: String? = null,
     val time: Long,

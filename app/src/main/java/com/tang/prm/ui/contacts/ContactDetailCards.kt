@@ -86,8 +86,8 @@ private fun ContentSection(emptyIcon: ImageVector, emptyText: String, content: @
 
 @Composable
 private fun EventCard(event: Event, eventTypes: List<CustomType>, onClick: () -> Unit) {
-    val typeLabel = getEventTypeLabel(event.type)
-    val customType = if (event.type != EventType.OTHER) eventTypes.find { it.key == event.type.name } ?: eventTypes.find { it.name == event.type.name } else null
+    val typeLabel = event.customTypeName ?: getEventTypeLabel(event.type)
+    val customType = if (event.type != EventType.OTHER) eventTypes.find { it.key == event.type.name } ?: eventTypes.find { it.name == event.type.name } else event.customTypeName?.let { ctn -> eventTypes.find { it.name == ctn } }
     val accentColor: Color
     val icon: ImageVector
 

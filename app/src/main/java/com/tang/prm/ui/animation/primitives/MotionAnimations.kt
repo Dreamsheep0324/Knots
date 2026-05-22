@@ -8,6 +8,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.tang.prm.ui.animation.core.AnimationTokens
 import com.tang.prm.ui.animation.core.rememberPausableInfiniteFloatLoop
+import kotlinx.coroutines.delay
 
 enum class RotationDirection {
     Clockwise,
@@ -42,19 +43,18 @@ fun rememberContinuousRotation(
     direction: RotationDirection = RotationDirection.Clockwise
 ): State<Float> {
     val multiplier = if (direction == RotationDirection.Clockwise) 1f else -1f
-    val rotationValue = rememberPausableInfiniteFloatLoop(
-        initialValue = 0f,
-        targetValue = 360f * speed,
-        durationMillis = cycleDuration,
-        easing = AnimationTokens.Easing.linear,
-        repeatMode = RepeatMode.Restart,
-        label = "ContinuousRotation"
-    )
-    return produceState(
-        initialValue = 0f,
-        key1 = rotationValue.value
-    ) {
-        value = rotationValue.value * multiplier
+    return produceState(initialValue = 0f) {
+        val degreesPerMs = 360f * speed / cycleDuration
+        var lastTime = System.currentTimeMillis()
+        var accumulated = 0f
+        while (true) {
+            val now = System.currentTimeMillis()
+            val delta = now - lastTime
+            lastTime = now
+            accumulated = (accumulated + degreesPerMs * delta * multiplier) % 360f
+            value = accumulated
+            delay(16)
+        }
     }
 }
 

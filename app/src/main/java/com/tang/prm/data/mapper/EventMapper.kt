@@ -7,7 +7,9 @@ import com.tang.prm.domain.model.EventType
 import com.tang.prm.domain.model.Contact
 
 fun EventEntity.toDomain(participants: List<Contact> = emptyList()) = Event(
-    id = id, type = EventType.entries.find { it.name == type } ?: EventType.OTHER, title = title, description = description,
+    id = id, type = EventType.entries.find { it.name == type } ?: EventType.OTHER,
+    customTypeName = if (EventType.entries.none { it.name == type }) type else customTypeName,
+    title = title, description = description,
     time = time, endTime = endTime, location = location, latitude = latitude, longitude = longitude,
     photos = photos,
     emotion = emotion, weather = weather, amount = amount, remarks = remarks, promise = promise,
@@ -16,7 +18,8 @@ fun EventEntity.toDomain(participants: List<Contact> = emptyList()) = Event(
 )
 
 fun Event.toEntity() = EventEntity(
-    id = id, type = type.name, title = title, description = description,
+    id = id, type = customTypeName ?: type.name, title = title, description = description,
+    customTypeName = customTypeName,
     time = time, endTime = endTime, location = location, latitude = latitude, longitude = longitude,
     photos = photos, emotion = emotion, weather = weather, amount = amount, remarks = remarks,
     promise = promise, conversationSummary = conversationSummary, giftName = giftName,
@@ -26,6 +29,7 @@ fun Event.toEntity() = EventEntity(
 fun EventWithParticipants.toDomain() = Event(
     id = event.id,
     type = EventType.entries.find { it.name == event.type } ?: EventType.OTHER,
+    customTypeName = if (EventType.entries.none { it.name == event.type }) event.type else event.customTypeName,
     title = event.title,
     description = event.description,
     time = event.time,

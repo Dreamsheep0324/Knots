@@ -31,7 +31,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.TextStyle
@@ -39,7 +41,6 @@ import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.rememberTextMeasurer
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -56,7 +57,7 @@ import com.tang.prm.ui.theme.SignalSky
 import com.tang.prm.ui.theme.TextGray
 import com.tang.prm.util.DateUtils
 import com.tang.prm.ui.animation.core.AnimationTokens
-import com.tang.prm.ui.animation.core.rememberPausableInfiniteFloatLoop
+import com.tang.prm.ui.animation.primitives.rememberBreathingPulse
 import com.tang.prm.ui.animation.primitives.rememberContinuousRotation
 import com.tang.prm.ui.animation.primitives.rememberFadePulse
 import com.tang.prm.ui.theme.Dimens
@@ -64,8 +65,19 @@ import java.util.Calendar
 import kotlin.math.cos
 import kotlin.math.sin
 import java.util.Locale
+import kotlin.random.Random
 
 private val bagua = listOf("坎","艮","震","巽","离","坤","兑","乾")
+
+private data class ParticleState(
+    val angle: Float,
+    val radiusOffset: Float,
+    val size: Float,
+    val alpha: Float,
+    val color: Color,
+    val speed: Float,
+    val breathPhase: Float
+)
 
 @Composable
 internal fun OrbitalCalendar(
@@ -152,6 +164,25 @@ internal fun OrbitalCalendar(
     val pulsePhase by rememberFadePulse(cycleDuration = 2000)
     val scanAngle by rememberContinuousRotation(cycleDuration = 10000)
     val rotateAngle by rememberContinuousRotation(cycleDuration = 60000)
+    val particleAngle by rememberContinuousRotation(cycleDuration = 90000)
+    val crosshairAngle by rememberContinuousRotation(cycleDuration = 120000)
+    val breathAlpha by rememberBreathingPulse(minAlpha = 0.3f, maxAlpha = 0.7f, cycleDuration = 3000)
+    val ripplePhase by rememberFadePulse(cycleDuration = 3000)
+
+    val particles = remember {
+        val colors = listOf(SignalElectric, SignalSky, SignalPurple, SignalGreen)
+        (0 until 25).map {
+            ParticleState(
+                angle = Random.nextFloat() * 360f,
+                radiusOffset = Random.nextFloat() * 6f - 3f,
+                size = Random.nextFloat() * 2f + 1f,
+                alpha = Random.nextFloat() * 0.4f + 0.2f,
+                color = colors[Random.nextInt(colors.size)],
+                speed = Random.nextFloat() * 0.3f + 0.85f,
+                breathPhase = Random.nextFloat() * 2f
+            )
+        }
+    }
 
     val textMeasurer = rememberTextMeasurer()
     val weekLabels = remember { listOf("日","一","二","三","四","五","六") }
@@ -255,6 +286,7 @@ internal fun OrbitalCalendar(
                 val weekTextR = minDim * 0.35f
                 val outerR = minDim * 0.41f
                 val outerR2 = minDim * 0.44f
+                val particleR = minDim * 0.48f
 
                 val gridColors = listOf(
                     SignalElectric.copy(alpha = 0.04f),
@@ -279,7 +311,8 @@ internal fun OrbitalCalendar(
                     )
                 }
 
-                drawCircle(color = SignalElectric.copy(alpha = 0.45f), radius = outerR2, center = center, style = Stroke(width = 2f))
+                drawCircle(color = SignalPurple.copy(alpha = 0.1f), radius = outerR2 + 4f, center = center, style = Stroke(width = 0.5f))
+                drawCircle(color = SignalElectric.copy(alpha = breathAlpha), radius = outerR2, center = center, style = Stroke(width = 2f, pathEffect = PathEffect.dashPathEffect(floatArrayOf(4f, 8f), 0f)))
                 drawCircle(color = SignalSky.copy(alpha = 0.25f), radius = outerR, center = center, style = Stroke(width = 1f))
 
                 for (deg in 0 until 360 step 5) {
@@ -300,11 +333,17 @@ internal fun OrbitalCalendar(
                 }
 
                 if (monthProgress > 0f && monthProgress < 1f) {
-                    drawArc(color = SignalGreen.copy(alpha = 0.7f), startAngle = -90f, sweepAngle = 360f * monthProgress,
-                        useCenter = false, style = Stroke(width = 4f, cap = StrokeCap.Round),
+                    val arcSweep = ((todayDay - 1).toFloat() / daysInMonth) * 360f + 360f / daysInMonth * 0.5f
+                    drawArc(color = SignalGreen.copy(alpha = 0.15f), startAngle = -90f, sweepAngle = arcSweep,
+                        useCenter = false, style = Stroke(width = 8f, cap = StrokeCap.Round),
+                        topLeft = Offset(center.x - outerR2, center.y - outerR2), size = Size(outerR2 * 2, outerR2 * 2))
+                    drawArc(brush = Brush.linearGradient(listOf(SignalGreen, SignalSky), start = Offset(center.x - outerR2, center.y), end = Offset(center.x + outerR2, center.y)),
+                        startAngle = -90f, sweepAngle = arcSweep,
+                        useCenter = false, style = Stroke(width = 3f, cap = StrokeCap.Round),
                         topLeft = Offset(center.x - outerR2, center.y - outerR2), size = Size(outerR2 * 2, outerR2 * 2))
                 } else if (monthProgress >= 1f) {
-                    drawCircle(color = SignalGreen.copy(alpha = 0.7f), radius = outerR2, center = center, style = Stroke(width = 4f))
+                    drawCircle(color = SignalGreen.copy(alpha = 0.15f), radius = outerR2, center = center, style = Stroke(width = 8f))
+                    drawCircle(color = SignalGreen.copy(alpha = 0.7f), radius = outerR2, center = center, style = Stroke(width = 3f))
                 }
 
                 drawCircle(color = SignalSky.copy(alpha = 0.45f), radius = weekR, center = center, style = Stroke(width = 1.5f))
@@ -335,6 +374,20 @@ internal fun OrbitalCalendar(
                     drawText(textLayoutResult = m, topLeft = Offset(bx - m.size.width / 2f, by - m.size.height / 2f))
                 }
 
+                val eventDays = daySignalMap.keys.sorted()
+                for (idx in 0 until eventDays.size - 1) {
+                    val day1 = eventDays[idx]
+                    val day2 = eventDays[idx + 1]
+                    if (day2 - day1 <= 3) {
+                        val startAngleDeg = ((day1 - 1).toFloat() / daysInMonth) * 360f - 90f
+                        val endAngleDeg = ((day2 - 1).toFloat() / daysInMonth) * 360f - 90f
+                        val sweepAngle = endAngleDeg - startAngleDeg
+                        drawArc(color = SignalElectric.copy(alpha = 0.2f), startAngle = startAngleDeg, sweepAngle = sweepAngle,
+                            useCenter = false, style = Stroke(width = 1f, cap = StrokeCap.Round),
+                            topLeft = Offset(center.x - mainR, center.y - mainR), size = Size(mainR * 2, mainR * 2))
+                    }
+                }
+
                 if (isCurrentMonth) {
                     val todayAngle = ((todayDay - 1).toFloat() / daysInMonth) * 360f - 90f
                     val todayRad = Math.toRadians(todayAngle.toDouble())
@@ -346,17 +399,28 @@ internal fun OrbitalCalendar(
                     val ax = center.x + arrowR * cos(todayRad).toFloat()
                     val ay = center.y + arrowR * sin(todayRad).toFloat()
                     drawCircle(color = SignalGreen.copy(alpha = 0.85f), radius = 4f, center = Offset(ax, ay))
+
+                    val rippleProgress = ripplePhase
+                    val rippleR = mainR + (outerR - mainR) * rippleProgress
+                    val rippleAlpha = 0.5f * (1f - rippleProgress)
+                    val todayX = center.x + mainR * cos(todayRad).toFloat()
+                    val todayY = center.y + mainR * sin(todayRad).toFloat()
+                    drawCircle(color = SignalGreen.copy(alpha = rippleAlpha), radius = rippleR - mainR + 10f, center = Offset(todayX, todayY), style = Stroke(width = 1.5f))
                 }
 
                 val scanRad = Math.toRadians(scanAngle.toDouble())
-                drawLine(color = SignalSky.copy(alpha = 0.4f), start = center,
+                drawLine(color = SignalSky.copy(alpha = 0.5f), start = center,
                     end = Offset(center.x + outerR2 * cos(scanRad).toFloat(), center.y + outerR2 * sin(scanRad).toFloat()),
-                    strokeWidth = 1f)
-                for (a in 0..20) {
-                    val frac = a / 20f
-                    val rad = Math.toRadians((scanAngle - 30f * frac).toDouble())
-                    val tailColor = if (a < 10) SignalSky else SignalElectric
-                    drawLine(color = tailColor.copy(alpha = 0.12f * (1 - frac)), start = center,
+                    strokeWidth = 1.5f)
+                for (a in 0..30) {
+                    val frac = a / 30f
+                    val rad = Math.toRadians((scanAngle - 45f * frac).toDouble())
+                    val tColor = when {
+                        frac < 0.33f -> SignalSky
+                        frac < 0.66f -> SignalPurple
+                        else -> SignalElectric
+                    }
+                    drawLine(color = tColor.copy(alpha = 0.15f * (1 - frac)), start = center,
                         end = Offset(center.x + outerR2 * cos(rad).toFloat(), center.y + outerR2 * sin(rad).toFloat()),
                         strokeWidth = 1f)
                 }
@@ -376,6 +440,16 @@ internal fun OrbitalCalendar(
                     }
                     val alpha = if (i % 6 == 0) 0.55f else 0.25f
                     drawCircle(color = rotColor.copy(alpha = alpha), radius = if (i % 6 == 0) 2f else 1f, center = Offset(rx, ry))
+                }
+
+                for (p in particles) {
+                    val pAngle = p.angle + particleAngle * p.speed
+                    val pRad = Math.toRadians(pAngle.toDouble())
+                    val breathOffset = 3f * sin((ripplePhase + p.breathPhase) * Math.PI).toFloat()
+                    val pR = particleR + p.radiusOffset + breathOffset
+                    val px = center.x + pR * cos(pRad).toFloat()
+                    val py = center.y + pR * sin(pRad).toFloat()
+                    drawCircle(color = p.color.copy(alpha = p.alpha), radius = p.size, center = Offset(px, py))
                 }
 
                 for (day in 1..daysInMonth) {
@@ -437,8 +511,22 @@ internal fun OrbitalCalendar(
                 drawCircle(color = SignalSky.copy(alpha = 0.25f), radius = 24f, center = center, style = Stroke(width = 0.8f))
                 drawCircle(color = SignalGreen.copy(alpha = 0.15f), radius = 20f, center = center, style = Stroke(width = 0.5f))
 
-                drawLine(color = SignalElectric.copy(alpha = 0.3f), start = Offset(center.x - 12f, center.y), end = Offset(center.x + 12f, center.y), strokeWidth = 1f)
-                drawLine(color = SignalSky.copy(alpha = 0.3f), start = Offset(center.x, center.y - 12f), end = Offset(center.x, center.y + 12f), strokeWidth = 1f)
+                val crossRad = Math.toRadians(crosshairAngle.toDouble())
+                val armLen = 14f
+                for (i in 0 until 4) {
+                    val a = crossRad + Math.toRadians((i * 90.0))
+                    val endX = center.x + armLen * cos(a).toFloat()
+                    val endY = center.y + armLen * sin(a).toFloat()
+                    val lineColor = if (i % 2 == 0) SignalElectric.copy(alpha = 0.35f) else SignalSky.copy(alpha = 0.35f)
+                    drawLine(color = lineColor, start = center, end = Offset(endX, endY), strokeWidth = 1f)
+                    val diamondSize = 3f
+                    val dx1 = endX + diamondSize * cos(a + Math.toRadians(45.0)).toFloat()
+                    val dy1 = endY + diamondSize * sin(a + Math.toRadians(45.0)).toFloat()
+                    val dx2 = endX + diamondSize * cos(a - Math.toRadians(45.0)).toFloat()
+                    val dy2 = endY + diamondSize * sin(a - Math.toRadians(45.0)).toFloat()
+                    drawLine(color = lineColor, start = Offset(dx1, dy1), end = Offset(dx2, dy2), strokeWidth = 1f)
+                }
+
                 drawCircle(color = SignalElectric.copy(alpha = 0.6f), radius = 2.5f, center = center)
                 drawCircle(color = Color.White, radius = 1.2f, center = center)
 

@@ -25,7 +25,7 @@ import com.tang.prm.data.local.entity.*
         FavoriteEntity::class,
         DivinationRecordEntity::class
     ],
-    version = 30,
+    version = 31,
     exportSchema = true
 )
 @TypeConverters(ListStringConverter::class)

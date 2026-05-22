@@ -292,7 +292,7 @@ class AddContactViewModel @Inject constructor(
         }
     }
 
-    fun addCustomType(category: String, name: String, color: String? = null) {
+    fun addCustomType(category: String, name: String, color: String? = null, icon: String? = null) {
         viewModelScope.launch {
             val currentList = when (category) {
                 CustomCategories.RELATIONSHIP -> _uiState.value.relationships
@@ -307,6 +307,7 @@ class AddContactViewModel @Inject constructor(
                 category = category,
                 name = name,
                 color = color,
+                icon = icon,
                 sortOrder = currentList.size
             )
             customTypeRepository.insertType(newType)

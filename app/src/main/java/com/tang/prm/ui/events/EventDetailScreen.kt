@@ -282,10 +282,10 @@ private fun EventHeader(event: Event) {
             }
         }
 
-        if (event.type != EventType.OTHER) {
+        if (event.type != EventType.OTHER || event.customTypeName != null) {
             Surface(color = Primary.copy(alpha = AnimationTokens.Alpha.faint), shape = RoundedCornerShape(12.dp)) {
                 Box(modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)) {
-                    Text(text = event.type.displayName, style = MaterialTheme.typography.labelSmall, color = Primary, fontWeight = FontWeight.SemiBold)
+                    Text(text = event.customTypeName ?: event.type.displayName, style = MaterialTheme.typography.labelSmall, color = Primary, fontWeight = FontWeight.SemiBold)
                 }
             }
         }
@@ -606,7 +606,7 @@ private fun shareEvent(context: android.content.Context, event: Event) {
 
     sb.appendLine()
 
-    if (event.type != EventType.OTHER) sb.append("🏷️ ${event.type.displayName}  ")
+    if (event.type != EventType.OTHER || event.customTypeName != null) sb.append("🏷️ ${event.customTypeName ?: event.type.displayName}  ")
     event.location?.let { if (it.isNotBlank()) sb.append("📍 $it  ") }
     event.weather?.let { if (it.isNotBlank()) sb.append("🌤️ $it  ") }
     event.emotion?.let { if (it.isNotBlank()) sb.append("💭 $it  ") }

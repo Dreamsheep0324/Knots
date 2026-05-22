@@ -100,6 +100,7 @@ fun ContactDetailScreen(
                 item {
                     ProfileHeader(
                         contact = it,
+                        relationshipTypes = uiState.relationshipTypes,
                         onBack = { navController.popBackStack() },
                         onEdit = { navController.navigate(Screen.EditContact.createRoute(contactId)) },
                         onDelete = { viewModel.showDeleteDialog() }
