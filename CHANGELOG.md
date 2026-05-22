@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.1] - 2026-05-22
+
+### Bug Fixes
+- 修复从 v1.0.0 升级到 v1.1.0 后频繁闪退：`Migration_29_30` 空实现导致 `anniversaries` 表 `contactId` 列未正确迁移为可空，Room 校验失败。现已使用重建表方式正确执行迁移
+
 ## [1.1.0] - 2026-05-22
 
 ### Added
