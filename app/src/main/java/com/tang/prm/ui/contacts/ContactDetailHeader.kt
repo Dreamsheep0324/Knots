@@ -10,6 +10,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -30,6 +31,9 @@ import com.tang.prm.domain.model.AppStrings
 import com.tang.prm.ui.animation.core.AnimationTokens
 import com.tang.prm.ui.theme.SignalAmber
 import com.tang.prm.ui.theme.SignalSky
+import com.tang.prm.util.Zodiac
+import com.tang.prm.util.ZodiacUtils
+import androidx.compose.ui.res.painterResource
 
 @Composable
 internal fun ProfileHeader(
@@ -135,7 +139,13 @@ internal fun ProfileHeader(
                 verticalArrangement = Arrangement.spacedBy(8.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                IntimacyBadge(score = contact.intimacyScore, color = intimacyColor, level = intimacyLevel)
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    IntimacyBadge(score = contact.intimacyScore, color = intimacyColor, level = intimacyLevel)
+                    contact.knowingDate?.let { DaysKnownBadge(knowingDate = it, color = intimacyColor) }
+                }
 
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -144,6 +154,9 @@ internal fun ProfileHeader(
                     contact.relationship?.takeIf { it.isNotBlank() }?.let { rel ->
                         val relColor = relationshipTypes.find { it.name == rel }?.color?.let { parseHexColor(it) } ?: SignalAmber
                         HeaderTagChip(text = rel, color = relColor, icon = Icons.Default.Link)
+                    }
+                    ZodiacUtils.fromBirthday(contact.birthday)?.let { zodiac ->
+                        ZodiacTagChip(zodiac = zodiac)
                     }
                     contact.education?.takeIf { it.isNotBlank() }?.let {
                         HeaderTagChip(text = it, color = SignalSky, icon = Icons.Default.School)
@@ -170,6 +183,61 @@ private fun HeaderTagChip(text: String, color: Color, icon: ImageVector? = null)
                 style = MaterialTheme.typography.labelMedium,
                 color = color,
                 fontWeight = FontWeight.SemiBold
+            )
+        }
+    }
+}
+
+@Composable
+private fun ZodiacTagChip(zodiac: Zodiac) {
+    Surface(shape = RoundedCornerShape(20.dp), color = zodiac.tagColor) {
+        Row(
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 5.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            Icon(
+                painter = painterResource(id = zodiac.iconRes),
+                contentDescription = zodiac.displayName,
+                tint = zodiac.color,
+                modifier = Modifier.size(14.dp)
+            )
+            Text(
+                text = zodiac.displayName,
+                style = MaterialTheme.typography.labelMedium,
+                color = zodiac.color,
+                fontWeight = FontWeight.SemiBold
+            )
+        }
+    }
+}
+
+@Composable
+private fun DaysKnownBadge(knowingDate: Long, color: Color) {
+    val text = remember(knowingDate) {
+        val diff = System.currentTimeMillis() - knowingDate
+        val days = (diff / (1000L * 60 * 60 * 24)).toInt().coerceAtLeast(0)
+        val years = days / 365
+        val remainDays = days % 365
+        if (years > 0) "${years}年${remainDays}天" else "${days}天"
+    }
+    Surface(shape = RoundedCornerShape(14.dp), color = color.copy(alpha = AnimationTokens.Alpha.faint)) {
+        Row(
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                Icons.Default.Schedule,
+                contentDescription = null,
+                tint = color,
+                modifier = Modifier.size(16.dp)
+            )
+            Text(
+                text = text,
+                style = MaterialTheme.typography.labelLarge,
+                fontWeight = FontWeight.Bold,
+                color = color
             )
         }
     }

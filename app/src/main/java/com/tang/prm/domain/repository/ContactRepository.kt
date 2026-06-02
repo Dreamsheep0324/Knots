@@ -18,6 +18,9 @@ interface ContactRepository {
     suspend fun updateContact(contact: Contact)
     suspend fun deleteContact(id: Long)
     suspend fun updateContactInteraction(id: Long, score: Int, interactionTime: Long)
+    suspend fun removeRelationshipFromAll(relationshipName: String)
+    suspend fun removeEducationFromAll(educationName: String)
+    suspend fun removeFromListFieldAll(field: String, value: String)
 }
 
 interface ContactGroupRepository {

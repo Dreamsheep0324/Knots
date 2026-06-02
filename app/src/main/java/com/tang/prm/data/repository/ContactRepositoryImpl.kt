@@ -70,4 +70,51 @@ class ContactRepositoryImpl @Inject constructor(
 
     override suspend fun updateContactInteraction(id: Long, score: Int, interactionTime: Long) =
         contactDao.updateContactInteraction(id, score, interactionTime)
+
+    override suspend fun removeRelationshipFromAll(relationshipName: String) {
+        contactDao.clearRelationship(relationshipName)
+    }
+
+    override suspend fun removeEducationFromAll(educationName: String) {
+        contactDao.clearEducation(educationName)
+    }
+
+    override suspend fun removeFromListFieldAll(field: String, value: String) {
+        val contacts = contactDao.getContactsWithListFieldValue(value)
+        for (c in contacts) {
+            val updatedHobby = c.hobby?.removeFromJsonArray(value)
+            val updatedHabit = c.habit?.removeFromJsonArray(value)
+            val updatedDiet = c.diet?.removeFromJsonArray(value)
+            val updatedSkill = c.skill?.removeFromJsonArray(value)
+            val changed = updatedHobby != c.hobby || updatedHabit != c.habit || updatedDiet != c.diet || updatedSkill != c.skill
+            if (changed) {
+                val full = contactDao.getContactByIdOnce(c.id) ?: continue
+                contactDao.updateContact(full.copy(
+                    hobby = updatedHobby,
+                    habit = updatedHabit,
+                    diet = updatedDiet,
+                    skill = updatedSkill,
+                    updatedAt = System.currentTimeMillis()
+                ))
+            }
+        }
+    }
+
+    private fun String.removeFromJsonArray(value: String): String? {
+        return try {
+            val arr = org.json.JSONArray(this)
+            val newArr = org.json.JSONArray()
+            var changed = false
+            for (i in 0 until arr.length()) {
+                val item = arr.getString(i)
+                if (item == value) { changed = true } else { newArr.put(item) }
+            }
+            if (!changed) this
+            else if (newArr.length() == 0) null
+            else newArr.toString()
+        } catch (e: Exception) {
+            val items = split(",").map { it.trim() }.filter { it.isNotEmpty() && it != value }
+            if (items.isEmpty()) null else org.json.JSONArray(items).toString()
+        }
+    }
 }

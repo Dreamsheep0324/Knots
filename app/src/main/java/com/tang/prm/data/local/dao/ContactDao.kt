@@ -15,6 +15,9 @@ interface ContactDao {
     @Query("SELECT * FROM contacts WHERE id = :id")
     fun getContactById(id: Long): Flow<ContactEntity?>
 
+    @Query("SELECT * FROM contacts WHERE id = :id")
+    suspend fun getContactByIdOnce(id: Long): ContactEntity?
+
     @Query("SELECT * FROM contacts WHERE name LIKE '%' || :keyword || '%' ESCAPE '\\' OR nickname LIKE '%' || :keyword || '%' ESCAPE '\\' OR phone LIKE '%' || :keyword || '%' ESCAPE '\\'")
     fun searchContacts(keyword: String): Flow<List<ContactEntity>>
 
@@ -50,6 +53,23 @@ interface ContactDao {
 
     @Query("DELETE FROM contact_tag_cross_ref WHERE contactId = :contactId")
     suspend fun deleteCrossRefsByContact(contactId: Long)
+
+    @Query("UPDATE contacts SET relationship = NULL, updatedAt = :timestamp WHERE relationship = :relationshipName")
+    suspend fun clearRelationship(relationshipName: String, timestamp: Long = System.currentTimeMillis())
+
+    @Query("UPDATE contacts SET education = NULL, updatedAt = :timestamp WHERE education = :educationName")
+    suspend fun clearEducation(educationName: String, timestamp: Long = System.currentTimeMillis())
+
+    @Query("SELECT id, hobby, habit, diet, skill FROM contacts WHERE hobby LIKE '%' || :value || '%' OR habit LIKE '%' || :value || '%' OR diet LIKE '%' || :value || '%' OR skill LIKE '%' || :value || '%'")
+    suspend fun getContactsWithListFieldValue(value: String): List<ListFieldData>
+
+    data class ListFieldData(
+        val id: Long,
+        val hobby: String?,
+        val habit: String?,
+        val diet: String?,
+        val skill: String?
+    )
 }
 
 @Dao

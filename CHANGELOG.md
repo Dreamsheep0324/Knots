@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] - 2026-06-02
+
+### Added
+- 星座标签：根据出生日期自动计算星座，在人物详情头部标签区展示
+  - 12 星座各有自定义矢量图标（24dp 视口、2dp 笔触、圆角端点），与应用整体图标风格统一
+  - 每个星座拥有专属代表色和淡色背景，简约胶囊风格展示
+  - `ZodiacUtils` 工具类：基于公历日期精确计算星座
+- 相识天数标签：在亲密度标签旁展示相识时长
+  - 基于用户填写的 `knowingDate`（相识日期）计算，而非创建时间
+  - 显示格式：超过 1 年显示「X年X天」，不足 1 年显示「X天」
+
+### Bug Fixes
+- 修复删除自定义标签后人物详情界面仍显示已删除标签的问题
+  - 删除 `CustomType` 时同步清理 `Contact` 表中引用该标签名称的字段
+  - 单选字段（relationship/education）批量清空，多选字段（hobby/habit/diet/skill）精确移除
+  - `ContactDao` 新增 `clearRelationship()`、`clearEducation()`、`getContactsWithListFieldValue()` 方法
+  - `ContactRepository` 新增 `removeRelationshipFromAll()`、`removeEducationFromAll()`、`removeFromListFieldAll()` 方法
+
 ## [1.1.1] - 2026-05-22
 
 ### Bug Fixes

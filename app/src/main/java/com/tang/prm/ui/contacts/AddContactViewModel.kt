@@ -317,6 +317,48 @@ class AddContactViewModel @Inject constructor(
     fun deleteCustomType(type: CustomType) {
         viewModelScope.launch {
             customTypeRepository.deleteTypeById(type.id)
+            when (type.category) {
+                CustomCategories.RELATIONSHIP -> {
+                    if (_uiState.value.relationship == type.name) {
+                        _uiState.update { it.copy(relationship = null, hasUnsavedChanges = true) }
+                    }
+                    contactRepository.removeRelationshipFromAll(type.name)
+                }
+                CustomCategories.EDUCATION -> {
+                    if (_uiState.value.education == type.name) {
+                        _uiState.update { it.copy(education = null, hasUnsavedChanges = true) }
+                    }
+                    contactRepository.removeEducationFromAll(type.name)
+                }
+                CustomCategories.HOBBY -> {
+                    val updated = _uiState.value.hobbies.filter { it != type.name }
+                    if (updated.size != _uiState.value.hobbies.size) {
+                        _uiState.update { it.copy(hobbies = updated, hasUnsavedChanges = true) }
+                    }
+                    contactRepository.removeFromListFieldAll(CustomCategories.HOBBY, type.name)
+                }
+                CustomCategories.HABIT -> {
+                    val updated = _uiState.value.habits.filter { it != type.name }
+                    if (updated.size != _uiState.value.habits.size) {
+                        _uiState.update { it.copy(habits = updated, hasUnsavedChanges = true) }
+                    }
+                    contactRepository.removeFromListFieldAll(CustomCategories.HABIT, type.name)
+                }
+                CustomCategories.DIET -> {
+                    val updated = _uiState.value.diets.filter { it != type.name }
+                    if (updated.size != _uiState.value.diets.size) {
+                        _uiState.update { it.copy(diets = updated, hasUnsavedChanges = true) }
+                    }
+                    contactRepository.removeFromListFieldAll(CustomCategories.DIET, type.name)
+                }
+                CustomCategories.SKILL -> {
+                    val updated = _uiState.value.skills.filter { it != type.name }
+                    if (updated.size != _uiState.value.skills.size) {
+                        _uiState.update { it.copy(skills = updated, hasUnsavedChanges = true) }
+                    }
+                    contactRepository.removeFromListFieldAll(CustomCategories.SKILL, type.name)
+                }
+            }
         }
     }
 

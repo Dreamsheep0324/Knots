@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>星座标签 UI 方案预览</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;600;700;900&family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0a0a0f;
+  --surface: #14141f;
+  --surface2: #1c1c2e;
+  --text: #e8e6f0;
+  --text-muted: #8a87a0;
+  --border: rgba(255,255,255,0.06);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Noto Sans SC', sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+.page-header {
+  text-align: center;
+  padding: 60px 20px 20px;
+}
+
+.page-header h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: 42px;
+  font-weight: 700;
+  background: linear-gradient(135deg, #c9b8ff, #7b68ee, #4fc3f7);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  letter-spacing: 2px;
+}
+
+.page-header p {
+  color: var(--text-muted);
+  font-size: 14px;
+  margin-top: 8px;
+  font-weight: 300;
+}
+
+.schemes-container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 40px 20px 80px;
+  display: flex;
+  flex-direction: column;
+  gap: 60px;
+}
+
+.scheme-section {
+  background: var(--surface);
+  border-radius: 24px;
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+
+.scheme-label {
+  padding: 24px 32px 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.scheme-label .tag {
+  display: inline-block;
+  padding: 4px 14px;
+  border-radius: 100px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+
+.scheme-label h2 {
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.scheme-label p {
+  color: var(--text-muted);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.scheme-preview {
+  padding: 40px 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 40px;
+}
+
+.mock-header {
+  width: 100%;
+  max-width: 400px;
+  background: var(--surface2);
+  border-radius: 20px;
+  padding: 32px 24px 28px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  position: relative;
+  overflow: hidden;
+}
+
+.mock-header::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 100px;
+  background: linear-gradient(180deg, rgba(123,104,238,0.08), transparent);
+  pointer-events: none;
+}
+
+.mock-avatar {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #7b68ee33, #4fc3f733);
+  border: 2px solid rgba(255,255,255,0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+}
+
+.mock-name {
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.mock-nickname {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: -8px;
+}
+
+.mock-tags {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}
+
+.all-zodiac-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  max-width: 600px;
+}
+
+.zodiac-data {
+  display: none;
+}
+
+.scheme-a .tag { background: rgba(123,104,238,0.15); color: #b8a9f0; }
+
+.scheme-a .zodiac-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 14px;
+  border-radius: 100px;
+  font-size: 12px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  cursor: default;
+}
+
+.scheme-a .zodiac-tag .symbol {
+  font-size: 14px;
+}
+
+.scheme-a .zodiac-tag.fire { background: rgba(255,107,53,0.12); color: #ff8a50; }
+.scheme-a .zodiac-tag.earth { background: rgba(139,195,74,0.12); color: #aed581; }
+.scheme-a .zodiac-tag.air { background: rgba(79,195,247,0.12); color: #4fc3f7; }
+.scheme-a .zodiac-tag.water { background: rgba(121,134,203,0.12); color: #9fa8da; }
+
+.scheme-b .tag { background: rgba(255,107,53,0.15); color: #ff8a50; }
+
+.scheme-b .zodiac-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 14px 4px 4px;
+  border-radius: 100px;
+  font-size: 12px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  cursor: default;
+  border: 1px solid transparent;
+}
+
+.scheme-b .zodiac-tag .symbol-wrap {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+}
+
+.scheme-b .zodiac-tag.fire { background: rgba(255,107,53,0.06); border-color: rgba(255,107,53,0.2); color: #ff8a50; }
+.scheme-b .zodiac-tag.fire .symbol-wrap { background: rgba(255,107,53,0.15); }
+.scheme-b .zodiac-tag.earth { background: rgba(139,195,74,0.06); border-color: rgba(139,195,74,0.2); color: #aed581; }
+.scheme-b .zodiac-tag.earth .symbol-wrap { background: rgba(139,195,74,0.15); }
+.scheme-b .zodiac-tag.air { background: rgba(79,195,247,0.06); border-color: rgba(79,195,247,0.2); color: #4fc3f7; }
+.scheme-b .zodiac-tag.air .symbol-wrap { background: rgba(79,195,247,0.15); }
+.scheme-b .zodiac-tag.water { background: rgba(121,134,203,0.06); border-color: rgba(121,134,203,0.2); color: #9fa8da; }
+.scheme-b .zodiac-tag.water .symbol-wrap { background: rgba(121,134,203,0.15); }
+
+.scheme-c .tag { background: rgba(79,195,247,0.15); color: #4fc3f7; }
+
+.scheme-c .zodiac-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 16px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: default;
+  position: relative;
+  overflow: hidden;
+}
+
+.scheme-c .zodiac-tag::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 12px;
+  padding: 1px;
+  background: linear-gradient(135deg, var(--glow1), var(--glow2));
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+.scheme-c .zodiac-tag .symbol {
+  font-size: 16px;
+  filter: drop-shadow(0 0 4px var(--glow1));
+}
+
+.scheme-c .zodiac-tag.fire { background: rgba(255,107,53,0.08); --glow1: #ff6b35; --glow2: #ffab40; color: #ffab40; }
+.scheme-c .zodiac-tag.earth { background: rgba(139,195,74,0.08); --glow1: #8bc34a; --glow2: #cddc39; color: #cddc39; }
+.scheme-c .zodiac-tag.air { background: rgba(79,195,247,0.08); --glow1: #4fc3f7; --glow2: #b388ff; color: #b388ff; }
+.scheme-c .zodiac-tag.water { background: rgba(121,134,203,0.08); --glow1: #7986cb; --glow2: #ea80fc; color: #ea80fc; }
+
+.scheme-d .tag { background: rgba(233,30,99,0.15); color: #f48fb1; }
+
+.scheme-d .zodiac-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: default;
+  position: relative;
+  overflow: hidden;
+}
+
+.scheme-d .zodiac-tag::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: conic-gradient(from 0deg, transparent, var(--sparkle), transparent, transparent);
+  animation: shimmer 4s linear infinite;
+  opacity: 0.3;
+}
+
+@keyframes shimmer {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.scheme-d .zodiac-tag .symbol {
+  font-size: 15px;
+  position: relative;
+  z-index: 1;
+}
+
+.scheme-d .zodiac-tag .label {
+  position: relative;
+  z-index: 1;
+}
+
+.scheme-d .zodiac-tag.fire { background: linear-gradient(135deg, rgba(255,107,53,0.1), rgba(255,171,64,0.05)); --sparkle: rgba(255,107,53,0.4); color: #ffab40; }
+.scheme-d .zodiac-tag.earth { background: linear-gradient(135deg, rgba(139,195,74,0.1), rgba(205,220,57,0.05)); --sparkle: rgba(139,195,74,0.4); color: #cddc39; }
+.scheme-d .zodiac-tag.air { background: linear-gradient(135deg, rgba(79,195,247,0.1), rgba(179,136,255,0.05)); --sparkle: rgba(79,195,247,0.4); color: #b388ff; }
+.scheme-d .zodiac-tag.water { background: linear-gradient(135deg, rgba(121,134,203,0.1), rgba(234,128,252,0.05)); --sparkle: rgba(234,128,252,0.4); color: #ea80fc; }
+
+.existing-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 14px;
+  border-radius: 100px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.existing-tag.rel { background: rgba(244,63,94,0.1); color: #f43f5e; }
+.existing-tag.edu { background: rgba(79,195,247,0.1); color: #4fc3f7; }
+
+.scheme-notes {
+  padding: 16px 32px 24px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.note-chip {
+  padding: 4px 12px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 500;
+  background: rgba(255,255,255,0.04);
+  color: var(--text-muted);
+  border: 1px solid rgba(255,255,255,0.06);
+}
+
+.note-chip.pro { border-color: rgba(139,195,74,0.3); color: #aed581; background: rgba(139,195,74,0.06); }
+.note-chip.con { border-color: rgba(255,107,53,0.3); color: #ff8a50; background: rgba(255,107,53,0.06); }
+
+@media (max-width: 600px) {
+  .page-header h1 { font-size: 28px; }
+  .scheme-preview { padding: 24px 16px; }
+  .scheme-label { padding: 20px 20px 12px; }
+  .scheme-notes { padding: 12px 20px 20px; }
+  .all-zodiac-row { gap: 6px; }
+}
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <h1>Zodiac Tag</h1>
+  <p>人物详情头部星座标签 — 4 种 UI 方案对比</p>
+</div>
+
+<div class="schemes-container">
+
+  <div class="scheme-section scheme-a">
+    <div class="scheme-label">
+      <div class="tag" style="background:rgba(123,104,238,0.15);color:#b8a9f0;">方案 A</div>
+      <h2>简约胶囊</h2>
+      <p>与现有关系/学历标签风格统一，轻量不抢视觉，星座符号 + 名称 + 元素色系区分</p>
+    </div>
+    <div class="scheme-preview">
+      <div class="mock-header">
+        <div class="mock-avatar">👤</div>
+        <div class="mock-name">林小鹿</div>
+        <div class="mock-nickname">@xiaolu</div>
+        <div class="mock-tags">
+          <span class="existing-tag rel">🔗 闺蜜</span>
+          <span class="zodiac-tag fire"><span class="symbol">♈</span>白羊座</span>
+          <span class="existing-tag edu">🎓 本科</span>
+        </div>
+      </div>
+      <div class="all-zodiac-row">
+        <span class="zodiac-tag fire"><span class="symbol">♈</span>白羊</span>
+        <span class="zodiac-tag earth"><span class="symbol">♉</span>金牛</span>
+        <span class="zodiac-tag air"><span class="symbol">♊</span>双子</span>
+        <span class="zodiac-tag water"><span class="symbol">♋</span>巨蟹</span>
+        <span class="zodiac-tag fire"><span class="symbol">♌</span>狮子</span>
+        <span class="zodiac-tag earth"><span class="symbol">♍</span>处女</span>
+        <span class="zodiac-tag air"><span class="symbol">♎</span>天秤</span>
+        <span class="zodiac-tag water"><span class="symbol">♏</span>天蝎</span>
+        <span class="zodiac-tag fire"><span class="symbol">♐</span>射手</span>
+        <span class="zodiac-tag earth"><span class="symbol">♑</span>摩羯</span>
+        <span class="zodiac-tag air"><span class="symbol">♒</span>水瓶</span>
+        <span class="zodiac-tag water"><span class="symbol">♓</span>双鱼</span>
+      </div>
+    </div>
+    <div class="scheme-notes">
+      <span class="note-chip pro">风格统一</span>
+      <span class="note-chip pro">实现简单</span>
+      <span class="note-chip pro">不抢视觉</span>
+      <span class="note-chip con">辨识度一般</span>
+    </div>
+  </div>
+
+  <div class="scheme-section scheme-b">
+    <div class="scheme-label">
+      <div class="tag" style="background:rgba(255,107,53,0.15);color:#ff8a50;">方案 B</div>
+      <h2>图标胶囊</h2>
+      <p>星座符号放入独立圆形底色，形成「图标+文字」的双层结构，层次感更强</p>
+    </div>
+    <div class="scheme-preview">
+      <div class="mock-header">
+        <div class="mock-avatar">👤</div>
+        <div class="mock-name">林小鹿</div>
+        <div class="mock-nickname">@xiaolu</div>
+        <div class="mock-tags">
+          <span class="existing-tag rel">🔗 闺蜜</span>
+          <span class="zodiac-tag fire"><span class="symbol-wrap">♈</span>白羊座</span>
+          <span class="existing-tag edu">🎓 本科</span>
+        </div>
+      </div>
+      <div class="all-zodiac-row">
+        <span class="zodiac-tag fire"><span class="symbol-wrap">♈</span>白羊</span>
+        <span class="zodiac-tag earth"><span class="symbol-wrap">♉</span>金牛</span>
+        <span class="zodiac-tag air"><span class="symbol-wrap">♊</span>双子</span>
+        <span class="zodiac-tag water"><span class="symbol-wrap">♋</span>巨蟹</span>
+        <span class="zodiac-tag fire"><span class="symbol-wrap">♌</span>狮子</span>
+        <span class="zodiac-tag earth"><span class="symbol-wrap">♍</span>处女</span>
+        <span class="zodiac-tag air"><span class="symbol-wrap">♎</span>天秤</span>
+        <span class="zodiac-tag water"><span class="symbol-wrap">♏</span>天蝎</span>
+        <span class="zodiac-tag fire"><span class="symbol-wrap">♐</span>射手</span>
+        <span class="zodiac-tag earth"><span class="symbol-wrap">♑</span>摩羯</span>
+        <span class="zodiac-tag air"><span class="symbol-wrap">♒</span>水瓶</span>
+        <span class="zodiac-tag water"><span class="symbol-wrap">♓</span>双鱼</span>
+      </div>
+    </div>
+    <div class="scheme-notes">
+      <span class="note-chip pro">层次分明</span>
+      <span class="note-chip pro">图标突出</span>
+      <span class="note-chip pro">元素感强</span>
+      <span class="note-chip con">稍占空间</span>
+    </div>
+  </div>
+
+  <div class="scheme-section scheme-c">
+    <div class="scheme-label">
+      <div class="tag" style="background:rgba(79,195,247,0.15);color:#4fc3f7;">方案 C</div>
+      <h2>星辉边框</h2>
+      <p>渐变发光边框 + 符号光晕，营造星象神秘感，与轨道罗盘赛博星图风格呼应</p>
+    </div>
+    <div class="scheme-preview">
+      <div class="mock-header">
+        <div class="mock-avatar">👤</div>
+        <div class="mock-name">林小鹿</div>
+        <div class="mock-nickname">@xiaolu</div>
+        <div class="mock-tags">
+          <span class="existing-tag rel">🔗 闺蜜</span>
+          <span class="zodiac-tag fire"><span class="symbol">♈</span>白羊座</span>
+          <span class="existing-tag edu">🎓 本科</span>
+        </div>
+      </div>
+      <div class="all-zodiac-row">
+        <span class="zodiac-tag fire"><span class="symbol">♈</span>白羊</span>
+        <span class="zodiac-tag earth"><span class="symbol">♉</span>金牛</span>
+        <span class="zodiac-tag air"><span class="symbol">♊</span>双子</span>
+        <span class="zodiac-tag water"><span class="symbol">♋</span>巨蟹</span>
+        <span class="zodiac-tag fire"><span class="symbol">♌</span>狮子</span>
+        <span class="zodiac-tag earth"><span class="symbol">♍</span>处女</span>
+        <span class="zodiac-tag air"><span class="symbol">♎</span>天秤</span>
+        <span class="zodiac-tag water"><span class="symbol">♏</span>天蝎</span>
+        <span class="zodiac-tag fire"><span class="symbol">♐</span>射手</span>
+        <span class="zodiac-tag earth"><span class="symbol">♑</span>摩羯</span>
+        <span class="zodiac-tag air"><span class="symbol">♒</span>水瓶</span>
+        <span class="zodiac-tag water"><span class="symbol">♓</span>双鱼</span>
+      </div>
+    </div>
+    <div class="scheme-notes">
+      <span class="note-chip pro">神秘感强</span>
+      <span class="note-chip pro">呼应罗盘</span>
+      <span class="note-chip pro">视觉精致</span>
+      <span class="note-chip con">实现复杂</span>
+    </div>
+  </div>
+
+  <div class="scheme-section scheme-d">
+    <div class="scheme-label">
+      <div class="tag" style="background:rgba(233,30,99,0.15);color:#f48fb1;">方案 D</div>
+      <h2>流光星尘</h2>
+      <p>旋转光锥动画 + 渐变底色，星座符号带微光，最具视觉冲击力的方案</p>
+    </div>
+    <div class="scheme-preview">
+      <div class="mock-header">
+        <div class="mock-avatar">👤</div>
+        <div class="mock-name">林小鹿</div>
+        <div class="mock-nickname">@xiaolu</div>
+        <div class="mock-tags">
+          <span class="existing-tag rel">🔗 闺蜜</span>
+          <span class="zodiac-tag fire"><span class="symbol">♈</span><span class="label">白羊座</span></span>
+          <span class="existing-tag edu">🎓 本科</span>
+        </div>
+      </div>
+      <div class="all-zodiac-row">
+        <span class="zodiac-tag fire"><span class="symbol">♈</span><span class="label">白羊</span></span>
+        <span class="zodiac-tag earth"><span class="symbol">♉</span><span class="label">金牛</span></span>
+        <span class="zodiac-tag air"><span class="symbol">♊</span><span class="label">双子</span></span>
+        <span class="zodiac-tag water"><span class="symbol">♋</span><span class="label">巨蟹</span></span>
+        <span class="zodiac-tag fire"><span class="symbol">♌</span><span class="label">狮子</span></span>
+        <span class="zodiac-tag earth"><span class="symbol">♍</span><span class="label">处女</span></span>
+        <span class="zodiac-tag air"><span class="symbol">♎</span><span class="label">天秤</span></span>
+        <span class="zodiac-tag water"><span class="symbol">♏</span><span class="label">天蝎</span></span>
+        <span class="zodiac-tag fire"><span class="symbol">♐</span><span class="label">射手</span></span>
+        <span class="zodiac-tag earth"><span class="symbol">♑</span><span class="label">摩羯</span></span>
+        <span class="zodiac-tag air"><span class="symbol">♒</span><span class="label">水瓶</span></span>
+        <span class="zodiac-tag water"><span class="symbol">♓</span><span class="label">双鱼</span></span>
+      </div>
+    </div>
+    <div class="scheme-notes">
+      <span class="note-chip pro">视觉惊艳</span>
+      <span class="note-chip pro">动态感强</span>
+      <span class="note-chip pro">记忆深刻</span>
+      <span class="note-chip con">性能开销</span>
+      <span class="note-chip con">可能过炫</span>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>
