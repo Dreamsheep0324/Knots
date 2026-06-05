@@ -38,7 +38,7 @@ internal fun TerminalWaveformMonitor(
     wavePhase: Float,
     waveformType: String = "sine"
 ) {
-    val waveformLabel = ContactListViewModel.WaveformTypes.find { it.first == waveformType }?.second ?: "正弦波"
+    val waveformLabel = CircleConstants.WaveformTypes.find { it.first == waveformType }?.second ?: "正弦波"
 
     Box(
         modifier = Modifier

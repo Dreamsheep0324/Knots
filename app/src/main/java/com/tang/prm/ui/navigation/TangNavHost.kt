@@ -141,7 +141,7 @@ fun TangNavHost(
     Box(modifier = Modifier.fillMaxSize()) {
         NavHost(
             navController = navController,
-            startDestination = Screen.Home.route,
+            startDestination = HomeRoute,
             modifier = Modifier.fillMaxSize(),
             enterTransition = transitions.enterTransition,
             exitTransition = transitions.exitTransition,
@@ -160,8 +160,8 @@ fun TangNavHost(
             GlassBottomBar(
                 items = bottomNavItems,
                 currentDestination = currentDestination,
-                onNavigate = { route ->
-                    navController.navigate(route) {
+                onNavigate = { routeObject ->
+                    navController.navigate(routeObject) {
                         popUpTo(navController.graph.findStartDestination().id) {
                             saveState = true
                         }
@@ -179,7 +179,7 @@ fun TangNavHost(
 private fun GlassBottomBar(
     items: List<BottomNavItem>,
     currentDestination: androidx.navigation.NavDestination?,
-    onNavigate: (String) -> Unit,
+    onNavigate: (Any) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val surfaceColor = MaterialTheme.colorScheme.surface
@@ -233,7 +233,7 @@ private fun GlassBottomBar(
                         GlassNavItem(
                             item = item,
                             selected = selected,
-                            onClick = { onNavigate(item.route) }
+                            onClick = { onNavigate(item.routeObject) }
                         )
                     }
                 }

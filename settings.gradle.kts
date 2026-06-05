@@ -16,3 +16,12 @@ dependencyResolutionManagement {
 
 rootProject.name = "Tang"
 include(":app")
+include(":core:domain")
+include(":core:data")
+include(":core:ui")
+include(":engine:divination")
+include(":feature:divination")
+include(":feature:remember")
+include(":feature:people")
+include(":feature:encounter")
+include(":feature:reflect")

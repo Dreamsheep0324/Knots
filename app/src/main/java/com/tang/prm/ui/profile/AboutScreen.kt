@@ -47,7 +47,6 @@ import android.os.Build
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
@@ -265,68 +264,6 @@ fun AboutScreen(
             )
 
             Spacer(Modifier.height(16.dp))
-        }
-    }
-}
-
-
-
-@Composable
-private fun AboutCard(content: @Composable () -> Unit) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(16.dp))
-            .background(MaterialTheme.colorScheme.surface)
-    ) {
-        content()
-    }
-}
-
-@Composable
-private fun AboutItem(
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
-    iconTint: Color,
-    title: String,
-    content: String
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 14.dp),
-        verticalAlignment = Alignment.Top
-    ) {
-        Box(
-            modifier = Modifier
-                .size(36.dp)
-                .background(iconTint.copy(alpha = 0.1f), RoundedCornerShape(10.dp)),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                icon,
-                contentDescription = null,
-                tint = iconTint,
-                modifier = Modifier.size(20.dp)
-            )
-        }
-
-        Spacer(Modifier.width(12.dp))
-
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                title,
-                style = MaterialTheme.typography.bodyMedium,
-                fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-            Spacer(Modifier.height(4.dp))
-            Text(
-                content,
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                fontSize = 12.sp,
-                lineHeight = 18.sp
-            )
         }
     }
 }

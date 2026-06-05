@@ -30,6 +30,7 @@ import com.tang.prm.domain.model.Circle
 import com.tang.prm.domain.model.Contact
 import com.tang.prm.ui.components.ContactAvatar
 import com.tang.prm.ui.components.ContactRelationshipBadge
+import com.tang.prm.ui.home.card.TerminalActionButton
 import com.tang.prm.ui.theme.*
 import com.tang.prm.ui.animation.core.AnimationTokens
 import com.tang.prm.ui.theme.Dimens
@@ -44,7 +45,7 @@ internal fun TerminalCreateDialog(
     var description by remember { mutableStateOf("") }
     var selectedWaveformIndex by remember { mutableStateOf(0) }
 
-    val selectedWaveform = ContactListViewModel.WaveformTypes[selectedWaveformIndex].first
+    val selectedWaveform = CircleConstants.WaveformTypes[selectedWaveformIndex].first
     val accentColor = MaterialTheme.colorScheme.onSurface
 
     Dialog(onDismissRequest = onDismiss) {
@@ -109,7 +110,7 @@ internal fun TerminalCreateDialog(
                     Text("波形", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = TerminalTextDim, fontFamily = FontFamily.Monospace)
                     Spacer(Modifier.width(6.dp))
                     Text(
-                        "[${ContactListViewModel.WaveformTypes[selectedWaveformIndex].second}]",
+                        "[${CircleConstants.WaveformTypes[selectedWaveformIndex].second}]",
                         fontSize = 9.sp,
                         color = MaterialTheme.colorScheme.onSurface,
                         fontFamily = FontFamily.Monospace
@@ -117,8 +118,8 @@ internal fun TerminalCreateDialog(
                 }
                 Spacer(Modifier.height(8.dp))
                 LazyRow(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                    items(ContactListViewModel.WaveformTypes.size, key = { it }) { index ->
-                        val (waveformKey, waveformLabel) = ContactListViewModel.WaveformTypes[index]
+                    items(CircleConstants.WaveformTypes.size, key = { it }) { index ->
+                        val (waveformKey, waveformLabel) = CircleConstants.WaveformTypes[index]
                         val isSelected = index == selectedWaveformIndex
                         Surface(
                             onClick = { selectedWaveformIndex = index },
@@ -191,9 +192,9 @@ internal fun TerminalEditDialog(
 ) {
     var name by remember { mutableStateOf(circle.name) }
     var description by remember { mutableStateOf(circle.description ?: "") }
-    var selectedWaveformIndex by remember { mutableStateOf(ContactListViewModel.WaveformTypes.indexOfFirst { it.first == circle.waveform }.coerceAtLeast(0)) }
+    var selectedWaveformIndex by remember { mutableStateOf(CircleConstants.WaveformTypes.indexOfFirst { it.first == circle.waveform }.coerceAtLeast(0)) }
 
-    val selectedWaveform = ContactListViewModel.WaveformTypes[selectedWaveformIndex].first
+    val selectedWaveform = CircleConstants.WaveformTypes[selectedWaveformIndex].first
     val accentColor = MaterialTheme.colorScheme.onSurface
 
     Dialog(onDismissRequest = onDismiss) {
@@ -258,7 +259,7 @@ internal fun TerminalEditDialog(
                     Text("波形", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = TerminalTextDim, fontFamily = FontFamily.Monospace)
                     Spacer(Modifier.width(6.dp))
                     Text(
-                        "[${ContactListViewModel.WaveformTypes[selectedWaveformIndex].second}]",
+                        "[${CircleConstants.WaveformTypes[selectedWaveformIndex].second}]",
                         fontSize = 9.sp,
                         color = MaterialTheme.colorScheme.onSurface,
                         fontFamily = FontFamily.Monospace
@@ -266,8 +267,8 @@ internal fun TerminalEditDialog(
                 }
                 Spacer(Modifier.height(8.dp))
                 LazyRow(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                    items(ContactListViewModel.WaveformTypes.size, key = { it }) { index ->
-                        val (waveformKey, waveformLabel) = ContactListViewModel.WaveformTypes[index]
+                    items(CircleConstants.WaveformTypes.size, key = { it }) { index ->
+                        val (waveformKey, waveformLabel) = CircleConstants.WaveformTypes[index]
                         val isSelected = index == selectedWaveformIndex
                         Surface(
                             onClick = { selectedWaveformIndex = index },

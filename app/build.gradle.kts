@@ -3,6 +3,8 @@ import java.util.Properties
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
+    id("org.jetbrains.kotlin.plugin.compose")
+    id("org.jetbrains.kotlin.plugin.serialization")
     id("com.google.dagger.hilt.android")
     id("com.google.devtools.ksp")
 }
@@ -15,14 +17,14 @@ if (keystorePropertiesFile.exists()) {
 
 android {
     namespace = "com.tang.prm"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.tang.prm"
         minSdk = 26
-        targetSdk = 34
-        versionCode = 10200
-        versionName = "1.2.0"
+        targetSdk = 35
+        versionCode = 10201
+        versionName = "1.2.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -45,7 +47,8 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            isShrinkResources = true
             signingConfig = signingConfigs.getByName("release")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
@@ -63,16 +66,8 @@ android {
         jvmTarget = "17"
     }
 
-    ksp {
-        arg("room.schemaLocation", "$projectDir/schemas")
-    }
-
     buildFeatures {
         compose = true
-    }
-
-    composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.14"
     }
 
     packaging {
@@ -83,13 +78,23 @@ android {
 }
 
 dependencies {
-    val composeBom = platform("androidx.compose:compose-bom:2024.12.01")
+    // 模块依赖
+    implementation(project(":core:data"))
+    implementation(project(":core:domain"))
+    implementation(project(":core:ui"))
+    implementation(project(":engine:divination"))
+    implementation(project(":feature:divination"))
+    implementation(project(":feature:remember"))
+    implementation(project(":feature:people"))
+    implementation(project(":feature:encounter"))
+    implementation(project(":feature:reflect"))
+
+    // Coil — app 直接使用 AsyncImage（core:data 不再 api 透传）
+    implementation("io.coil-kt:coil-compose:2.7.0")
+
+    // Compose
+    val composeBom = platform("androidx.compose:compose-bom:2025.05.01")
     implementation(composeBom)
-
-    implementation("androidx.core:core-ktx:1.12.0")
-    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")
-    implementation("androidx.activity:activity-compose:1.8.2")
-
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-graphics")
     implementation("androidx.compose.ui:ui-tooling-preview")
@@ -97,48 +102,44 @@ dependencies {
     implementation("androidx.compose.material:material-icons-extended")
     implementation("androidx.compose.foundation:foundation")
 
-    implementation("androidx.navigation:navigation-compose:2.7.7")
+    // AndroidX
+    implementation("androidx.core:core-ktx:1.15.0")
+    implementation("androidx.activity:activity-compose:1.9.3")
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.7")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.7")
+    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.8.7")
+    implementation("androidx.navigation:navigation-compose:2.8.5")
 
-    implementation("com.google.dagger:hilt-android:2.51.1")
-    ksp("com.google.dagger:hilt-compiler:2.51.1")
+    // Hilt（app 模块需要自己的 Hilt 注入入口）
+    implementation("com.google.dagger:hilt-android:2.55")
+    ksp("com.google.dagger:hilt-compiler:2.55")
     implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
 
-    implementation("androidx.room:room-runtime:2.6.1")
-    implementation("androidx.room:room-ktx:2.6.1")
-    ksp("androidx.room:room-compiler:2.6.1")
+    // Kotlin Serialization（app 模块直接使用）
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
 
-    implementation("io.coil-kt:coil-compose:2.5.0")
-
-    implementation("androidx.datastore:datastore-preferences:1.0.0")
-
-    implementation("androidx.security:security-crypto:1.1.0-alpha06")
-
-    implementation("cn.6tail:lunar:1.7.7")
-
-    implementation("com.google.code.gson:gson:2.10.1")
-
-    implementation("com.squareup.okhttp3:okhttp:4.12.0")
-
-    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0")
-    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.7.0")
-
+    // Debug
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
 
+    // Test
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.10.2")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.10.2")
-    testImplementation("io.mockk:mockk:1.13.10")
-    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.0")
+    testImplementation("io.mockk:mockk:1.13.16")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.9.0")
     testImplementation("app.cash.turbine:turbine:1.1.0")
     testImplementation("com.google.truth:truth:1.4.2")
 
-    androidTestImplementation("androidx.room:room-testing:2.6.1")
+    androidTestImplementation("androidx.benchmark:benchmark-macro-junit4:1.3.3")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test:runner:1.5.2")
     androidTestImplementation(composeBom)
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
     androidTestImplementation("com.google.truth:truth:1.4.2")
-    androidTestImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.0")
+    androidTestImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.9.0")
+    androidTestImplementation("io.mockk:mockk-android:1.13.16")
+    androidTestImplementation("com.google.dagger:hilt-android-testing:2.55")
+    kspAndroidTest("com.google.dagger:hilt-compiler:2.55")
 }
 
 tasks.withType<Test> {

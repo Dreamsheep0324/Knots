@@ -34,7 +34,7 @@ suspend fun checkForUpdate(currentVersion: String): UpdateResult {
             val tagName = json.optString("tag_name", "").removePrefix("v")
             val htmlUrl = json.optString("html_url", "")
 
-            if (tagName.isNotEmpty() && tagName != currentVersion) {
+            if (tagName.isNotEmpty() && isNewerVersion(tagName, currentVersion)) {
                 UpdateResult.HasUpdate(tagName, htmlUrl)
             } else {
                 UpdateResult.NoUpdate
@@ -43,4 +43,17 @@ suspend fun checkForUpdate(currentVersion: String): UpdateResult {
             UpdateResult.Error(e.message ?: "未知错误")
         }
     }
+}
+
+private fun isNewerVersion(remote: String, current: String): Boolean {
+    val remoteParts = remote.split(".").mapNotNull { it.toIntOrNull() }
+    val currentParts = current.split(".").mapNotNull { it.toIntOrNull() }
+    val maxLen = maxOf(remoteParts.size, currentParts.size)
+    for (i in 0 until maxLen) {
+        val r = remoteParts.getOrElse(i) { 0 }
+        val c = currentParts.getOrElse(i) { 0 }
+        if (r > c) return true
+        if (r < c) return false
+    }
+    return false // 版本相同
 }

@@ -40,14 +40,21 @@ import com.tang.prm.ui.components.AppCard
 import com.tang.prm.ui.animation.core.AnimationTokens
 import com.tang.prm.ui.animation.primitives.rememberBreathingPulse
 import com.tang.prm.ui.animation.primitives.rememberShimmerPhase
+import com.tang.prm.ui.navigation.GiftsRoute
+import com.tang.prm.ui.navigation.ContactListRoute
+import com.tang.prm.ui.navigation.PhotoAlbumRoute
+import com.tang.prm.ui.navigation.FootprintsRoute
+import com.tang.prm.ui.navigation.ThoughtsRoute
+import com.tang.prm.ui.navigation.FavoritesRoute
+import com.tang.prm.ui.navigation.DivinationRoute
 import kotlin.math.cos
 import kotlin.math.sin
 
 @Composable
 internal fun ChannelGrid(
     channels: List<ChannelDef>,
-    signalStrengths: Map<String, Int>,
-    onChannelClick: (String) -> Unit
+    signalStrengths: Map<Any, Int>,
+    onChannelClick: (Any) -> Unit
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         channels.forEach { channel ->

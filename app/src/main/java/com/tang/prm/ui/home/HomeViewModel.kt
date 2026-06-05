@@ -3,9 +3,13 @@ package com.tang.prm.ui.home
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tang.prm.domain.model.*
-import com.tang.prm.domain.repository.*
-import com.tang.prm.domain.usecase.HomeStatsUseCase
+import com.tang.prm.domain.repository.ReminderRepository
+import com.tang.prm.domain.repository.SettingsRepository
+import com.tang.prm.domain.repository.TodoRepository
+import com.tang.prm.domain.usecase.HomeAggregateData
+import com.tang.prm.domain.usecase.HomeDataAggregationUseCase
 import com.tang.prm.domain.usecase.HomeStats
+import com.tang.prm.domain.usecase.HomeStatsUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
@@ -38,13 +42,11 @@ data class HomeUiState(
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
-    private val contactRepository: ContactRepository,
-    private val eventRepository: EventRepository,
-    private val anniversaryRepository: AnniversaryRepository,
-    private val todoRepository: TodoRepository,
-    private val reminderRepository: ReminderRepository,
+    private val homeDataUseCase: HomeDataAggregationUseCase,
     private val homeStatsUseCase: HomeStatsUseCase,
-    private val settingsRepository: SettingsRepository
+    private val settingsRepository: SettingsRepository,
+    private val todoRepository: TodoRepository,
+    private val reminderRepository: ReminderRepository
 ) : ViewModel() {
 
     private val greeting: String = run {
@@ -56,58 +58,22 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    private data class CoreData(
-        val contacts: List<Contact>,
-        val allEvents: List<Event>,
-        val todos: List<TodoItem>,
-        val reminders: List<Reminder>
-    )
-
-    private data class AnniversaryData(
-        val upcoming: List<Anniversary>,
-        val all: List<Anniversary>
-    )
-
-    private val coreFlow = combine(
-        contactRepository.getRecentContacts(5).distinctUntilChanged(),
-        eventRepository.getAllEvents().distinctUntilChanged(),
-        todoRepository.getActiveTodos().distinctUntilChanged(),
-        reminderRepository.getActiveReminders().distinctUntilChanged()
-    ) { contacts, allEvents, todos, reminders ->
-        CoreData(contacts, allEvents, todos, reminders)
-    }
-
-    private val anniversaryFlow = combine(
-        anniversaryRepository.getUpcomingAnniversaries(10).distinctUntilChanged(),
-        anniversaryRepository.getAllAnniversaries().distinctUntilChanged()
-    ) { upcoming, all ->
-        AnniversaryData(upcoming, all)
-    }
-
     val uiState: StateFlow<HomeUiState> = combine(
         flowOf(greeting),
         settingsRepository.userName.distinctUntilChanged(),
-        coreFlow,
-        anniversaryFlow,
+        homeDataUseCase.getAggregateData().distinctUntilChanged(),
         homeStatsUseCase.getStats().distinctUntilChanged()
-    ) { greeting, userName, core, anniversaries, stats ->
-        val today = Calendar.getInstance()
-        val todayReminders = core.reminders.filter {
-            val reminderCal = Calendar.getInstance().apply { timeInMillis = it.time }
-            reminderCal.get(Calendar.YEAR) == today.get(Calendar.YEAR) &&
-                    reminderCal.get(Calendar.DAY_OF_YEAR) == today.get(Calendar.DAY_OF_YEAR)
-        }
-
+    ) { greeting, userName, data: HomeAggregateData, stats: HomeStats ->
         HomeUiState(
             greeting = greeting,
             userName = userName,
-            frequentContacts = core.contacts,
-            recentEvents = core.allEvents.take(5),
-            allEvents = core.allEvents,
-            upcomingAnniversaries = anniversaries.upcoming,
-            allAnniversaries = anniversaries.all,
-            pendingTodos = core.todos,
-            todayReminders = todayReminders,
+            frequentContacts = data.frequentContacts,
+            recentEvents = data.recentEvents,
+            allEvents = data.allEvents,
+            upcomingAnniversaries = data.upcomingAnniversaries,
+            allAnniversaries = data.allAnniversaries,
+            pendingTodos = data.pendingTodos,
+            todayReminders = data.todayReminders,
             giftCount = stats.giftCount,
             contactCount = stats.contactCount,
             photoCount = stats.photoCount,
@@ -120,7 +86,7 @@ class HomeViewModel @Inject constructor(
             conversationCount = stats.conversationCount,
             isLoading = false
         )
-    }.stateIn(viewModelScope, SharingStarted.Eagerly, HomeUiState(isLoading = false))
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), HomeUiState(isLoading = true))
 
     val currentTimeFlow: StateFlow<Long> = flow {
         while (true) {

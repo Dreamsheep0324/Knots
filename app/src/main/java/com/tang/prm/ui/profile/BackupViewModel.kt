@@ -2,10 +2,11 @@ package com.tang.prm.ui.profile
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.tang.prm.domain.repository.BackupRepositoryInterface
-import com.tang.prm.data.repository.BackupResult
-import com.tang.prm.data.repository.ClearDataResult
-import com.tang.prm.data.repository.RestoreResult
+import com.tang.prm.domain.usecase.BackupRestoreUseCase
+import com.tang.prm.domain.model.BackupInfo
+import com.tang.prm.domain.model.BackupResult
+import com.tang.prm.domain.model.ClearDataResult
+import com.tang.prm.domain.model.RestoreResult
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -16,7 +17,7 @@ import javax.inject.Inject
 sealed class BackupState {
     data object Idle : BackupState()
     data object BackingUp : BackupState()
-    data class BackupSuccess(val info: com.tang.prm.data.repository.BackupInfo) : BackupState()
+    data class BackupSuccess(val info: BackupInfo) : BackupState()
     data class BackupError(val message: String) : BackupState()
     data object Restoring : BackupState()
     data object RestoreSuccess : BackupState()
@@ -28,7 +29,7 @@ sealed class BackupState {
 
 @HiltViewModel
 class BackupViewModel @Inject constructor(
-    private val backupRepository: BackupRepositoryInterface
+    private val backupRestoreUseCase: BackupRestoreUseCase
 ) : ViewModel() {
 
     private val _state = MutableStateFlow<BackupState>(BackupState.Idle)
@@ -37,7 +38,7 @@ class BackupViewModel @Inject constructor(
     fun createBackup(uri: android.net.Uri) {
         viewModelScope.launch {
             _state.value = BackupState.BackingUp
-            backupRepository.backupToUri(uri).collect { result ->
+            backupRestoreUseCase.backupToUri(uri.toString()).collect { result ->
                 _state.value = when (result) {
                     is BackupResult.Success -> BackupState.BackupSuccess(result.info)
                     is BackupResult.Error -> BackupState.BackupError(result.message)
@@ -49,7 +50,7 @@ class BackupViewModel @Inject constructor(
     fun restoreBackup(uri: android.net.Uri) {
         viewModelScope.launch {
             _state.value = BackupState.Restoring
-            backupRepository.restoreFromUri(uri).collect { result ->
+            backupRestoreUseCase.restoreFromUri(uri.toString()).collect { result ->
                 _state.value = when (result) {
                     is RestoreResult.Success -> {
                         BackupState.RestoreSuccess
@@ -63,7 +64,7 @@ class BackupViewModel @Inject constructor(
     fun clearAllData() {
         viewModelScope.launch {
             _state.value = BackupState.Clearing
-            when (val result = backupRepository.clearAllData()) {
+            when (val result = backupRestoreUseCase.clearAllData()) {
                 is ClearDataResult.Success -> _state.value = BackupState.ClearSuccess
                 is ClearDataResult.Error -> _state.value = BackupState.ClearError(result.message)
             }
@@ -74,5 +75,5 @@ class BackupViewModel @Inject constructor(
         _state.value = BackupState.Idle
     }
 
-    fun generateBackupFileName(): String = backupRepository.generateBackupFileName()
+    fun generateBackupFileName(): String = backupRestoreUseCase.generateBackupFileName()
 }

@@ -2,11 +2,12 @@ package com.tang.prm.ui.profile
 
 import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat
-import com.tang.prm.data.repository.BackupInfo
-import com.tang.prm.data.repository.BackupResult
-import com.tang.prm.data.repository.ClearDataResult
-import com.tang.prm.data.repository.RestoreResult
+import com.tang.prm.domain.model.BackupInfo
+import com.tang.prm.domain.model.BackupResult
+import com.tang.prm.domain.model.ClearDataResult
+import com.tang.prm.domain.model.RestoreResult
 import com.tang.prm.domain.repository.BackupRepositoryInterface
+import com.tang.prm.domain.usecase.BackupRestoreUseCase
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.junit5.MockKExtension
@@ -26,6 +27,7 @@ import org.junit.jupiter.api.extension.ExtendWith
 class BackupViewModelTest {
 
     private lateinit var backupRepository: BackupRepositoryInterface
+    private lateinit var backupRestoreUseCase: BackupRestoreUseCase
     private lateinit var viewModel: BackupViewModel
 
     private val testUri = mockk<android.net.Uri>()
@@ -40,12 +42,15 @@ class BackupViewModelTest {
         Dispatchers.setMain(UnconfinedTestDispatcher())
         backupRepository = mockk()
 
+        every { testUri.toString() } returns "content://test"
         coEvery { backupRepository.backupToUri(any()) } returns flowOf(BackupResult.Success(testBackupInfo))
         coEvery { backupRepository.restoreFromUri(any()) } returns flowOf(RestoreResult.Success)
         coEvery { backupRepository.clearAllData() } returns ClearDataResult.Success
         every { backupRepository.generateBackupFileName() } returns "tang_backup_test.zip"
 
-        viewModel = BackupViewModel(backupRepository)
+        backupRestoreUseCase = BackupRestoreUseCase(backupRepository)
+
+        viewModel = BackupViewModel(backupRestoreUseCase)
     }
 
     @AfterEach

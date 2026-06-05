@@ -219,7 +219,7 @@ private fun TerminalMiniCard(
     totalNodes: Int = 1
 ) {
     val rarity = getCardRarity(contact.intimacyScore)
-    val rarityColor = rarity.color
+    val rarityColor = Color(rarity.colorValue)
 
     val scale by animateFloatAsState(
         targetValue = 1f,

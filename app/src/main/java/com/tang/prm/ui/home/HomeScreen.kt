@@ -30,7 +30,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -46,29 +45,36 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.tang.prm.ui.components.AppCard
-import com.tang.prm.ui.navigation.Screen
+import com.tang.prm.ui.navigation.SettingsRoute
+import com.tang.prm.ui.navigation.GiftsRoute
+import com.tang.prm.ui.navigation.ContactListRoute
+import com.tang.prm.ui.navigation.PhotoAlbumRoute
+import com.tang.prm.ui.navigation.FootprintsRoute
+import com.tang.prm.ui.navigation.ThoughtsRoute
+import com.tang.prm.ui.navigation.FavoritesRoute
+import com.tang.prm.ui.navigation.DivinationRoute
 import com.tang.prm.ui.theme.*
-import com.tang.prm.util.DateUtils
+import com.tang.prm.domain.util.DateUtils
 
 private val TerminalGreen = SignalGreen
 
 internal data class ChannelDef(
     val name: String,
     val color: Color,
-    val route: String,
+    val route: Any,
     val desc: String,
     val icon: ImageVector? = null,
     val textIcon: String? = null,
 )
 
 internal val channels = listOf(
-    ChannelDef("礼物", SignalCoral, "gifts", "收送记录与心愿单", Icons.Default.CardGiftcard),
-    ChannelDef("圈子", SignalPurple, "contact_list", "社交分组与关系管理", Icons.Default.Hub),
-    ChannelDef("相册", SignalSky, "photo_album", "共享回忆与时光轴", Icons.Default.Image),
-    ChannelDef("足迹", SignalGreen, "footprints", "共同地点与旅行轨迹", Icons.Default.Map),
-    ChannelDef("想法", SignalAmber, "thoughts", "灵感笔记与待办事项", Icons.Default.Lightbulb),
-    ChannelDef("收藏", SignalGold, "favorites", "珍藏回忆与重要内容", Icons.Default.Star),
-    ChannelDef("占卜", SignalElectric, "divination", "梅花易数 · 六爻纳甲", textIcon = "☯"),
+    ChannelDef("礼物", SignalCoral, GiftsRoute, "收送记录与心愿单", Icons.Default.CardGiftcard),
+    ChannelDef("圈子", SignalPurple, ContactListRoute, "社交分组与关系管理", Icons.Default.Hub),
+    ChannelDef("相册", SignalSky, PhotoAlbumRoute(), "共享回忆与时光轴", Icons.Default.Image),
+    ChannelDef("足迹", SignalGreen, FootprintsRoute, "共同地点与旅行轨迹", Icons.Default.Map),
+    ChannelDef("想法", SignalAmber, ThoughtsRoute, "灵感笔记与待办事项", Icons.Default.Lightbulb),
+    ChannelDef("收藏", SignalGold, FavoritesRoute, "珍藏回忆与重要内容", Icons.Default.Star),
+    ChannelDef("占卜", SignalElectric, DivinationRoute, "梅花易数 · 六爻纳甲", textIcon = "☯"),
 )
 
 @Composable
@@ -76,7 +82,7 @@ fun HomeScreen(
     navController: NavController,
     viewModel: HomeViewModel = hiltViewModel()
 ) {
-    val uiState by viewModel.uiState.collectAsState()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val currentTime by viewModel.currentTimeFlow.collectAsStateWithLifecycle()
 
     val timeStr = DateUtils.formatTimeWithSeconds(currentTime)
@@ -115,7 +121,7 @@ fun HomeScreen(
                 }
             },
             actions = {
-                IconButton(onClick = { navController.navigate(Screen.Settings.route) }) {
+                IconButton(onClick = { navController.navigate(SettingsRoute) }) {
                     Icon(
                         Icons.Default.Settings,
                         contentDescription = "设置",
@@ -156,25 +162,15 @@ fun HomeScreen(
                 ChannelGrid(
                     channels = channels,
                     signalStrengths = mapOf(
-                        "gifts" to uiState.giftCount,
-                        "contact_list" to uiState.circleCount,
-                        "photo_album" to uiState.photoCount,
-                        "footprints" to uiState.footprintCount,
-                        "thoughts" to uiState.thoughtCount,
-                        "favorites" to uiState.favoriteCount,
-                        "divination" to 0
+                        GiftsRoute to uiState.giftCount,
+                        ContactListRoute to uiState.circleCount,
+                        PhotoAlbumRoute() to uiState.photoCount,
+                        FootprintsRoute to uiState.footprintCount,
+                        ThoughtsRoute to uiState.thoughtCount,
+                        FavoritesRoute to uiState.favoriteCount,
+                        DivinationRoute to 0
                     ),
-                    onChannelClick = { route ->
-                        when (route) {
-                            "gifts" -> navController.navigate(Screen.Gifts.route)
-                            "contact_list" -> navController.navigate(Screen.ContactList.route)
-                            "photo_album" -> navController.navigate(Screen.PhotoAlbum.route)
-                            "footprints" -> navController.navigate(Screen.Footprints.route)
-                            "thoughts" -> navController.navigate(Screen.Thoughts.route)
-                            "favorites" -> navController.navigate(Screen.Favorites.route)
-                            "divination" -> navController.navigate(Screen.Divination.route)
-                        }
-                    }
+                    onChannelClick = { route -> navController.navigate(route) }
                 )
             }
 

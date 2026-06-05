@@ -4,10 +4,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tang.prm.domain.model.Circle
 import com.tang.prm.domain.model.Contact
-import com.tang.prm.domain.model.CardRarity
-import com.tang.prm.domain.model.getCardRarity
-import com.tang.prm.domain.repository.CircleRepository
-import com.tang.prm.domain.repository.ContactRepository
+import com.tang.prm.domain.usecase.CircleSortMode
+import com.tang.prm.domain.usecase.ContactListManageUseCase
+import com.tang.prm.ui.common.SearchState
+import com.tang.prm.ui.common.SearchStateManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -21,33 +21,37 @@ data class HologramCircle(
     val selectedMemberId: Long? = null
 )
 
-enum class CircleSortMode {
-    DEFAULT, MEMBER_COUNT_ASC, MEMBER_COUNT_DESC, INTIMACY_ASC, INTIMACY_DESC
-}
-
-data class ContactListUiState(
+data class ContactListDataState(
     val circles: List<HologramCircle> = emptyList(),
     val contacts: List<Contact> = emptyList(),
     val isLoading: Boolean = false,
-    val searchQuery: String = "",
-    val isSearchActive: Boolean = false,
-    val showCreateDialog: Boolean = false,
-    val showEditDialog: Circle? = null,
-    val showAddMemberDialog: Long? = null,
-    val showDeleteConfirm: Long? = null,
-    val expandedCircleId: Long? = null,
-    val flippedCardId: Long? = null,
     val sortMode: CircleSortMode = CircleSortMode.DEFAULT
+)
+
+data class ContactListDialogState(
+    val showCreate: Boolean = false,
+    val showEdit: Circle? = null,
+    val showAddMember: Long? = null,
+    val showDeleteConfirm: Long? = null
+)
+
+data class ContactListUiState(
+    val data: ContactListDataState = ContactListDataState(),
+    val dialog: ContactListDialogState = ContactListDialogState(),
+    val expandedCircleId: Long? = null,
+    val flippedCardId: Long? = null
 )
 
 @HiltViewModel
 class ContactListViewModel @Inject constructor(
-    private val contactRepository: ContactRepository,
-    private val circleRepository: CircleRepository
+    private val useCase: ContactListManageUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ContactListUiState())
     val uiState: StateFlow<ContactListUiState> = _uiState.asStateFlow()
+
+    private val searchManager = SearchStateManager()
+    val searchState: StateFlow<SearchState> = searchManager.state
 
     init {
         loadData()
@@ -55,22 +59,18 @@ class ContactListViewModel @Inject constructor(
 
     private fun loadData() {
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true) }
-            combine(
-                contactRepository.getAllContacts(),
-                circleRepository.getAllCircles()
-            ) { contacts, circles ->
-                contacts to circles
-            }.collect { (contacts, circles) ->
-                val hologramCircles = circles.map { circle ->
-                    val members = contacts.filter { it.id in circle.memberIds }
-                    HologramCircle(circle = circle, members = members)
+            _uiState.update { it.copy(data = it.data.copy(isLoading = true)) }
+            useCase.getContactListAggregate().collect { aggregate ->
+                val hologramCircles = aggregate.circles.map { cwm ->
+                    HologramCircle(circle = cwm.circle, members = cwm.members)
                 }
                 _uiState.update { state ->
                     state.copy(
-                        circles = hologramCircles,
-                        contacts = contacts,
-                        isLoading = false
+                        data = state.data.copy(
+                            circles = hologramCircles,
+                            contacts = aggregate.contacts,
+                            isLoading = false
+                        )
                     )
                 }
             }
@@ -83,13 +83,15 @@ class ContactListViewModel @Inject constructor(
             state.copy(
                 expandedCircleId = newExpandedId,
                 flippedCardId = null,
-                circles = state.circles.map { hc ->
-                    hc.copy(
-                        isExpanded = hc.circle.id == newExpandedId,
-                        isFlipped = false,
-                        selectedMemberId = null
-                    )
-                }
+                data = state.data.copy(
+                    circles = state.data.circles.map { hc ->
+                        hc.copy(
+                            isExpanded = hc.circle.id == newExpandedId,
+                            isFlipped = false,
+                            selectedMemberId = null
+                        )
+                    }
+                )
             )
         }
     }
@@ -99,9 +101,11 @@ class ContactListViewModel @Inject constructor(
             val newFlippedId = if (state.flippedCardId == contactId) null else contactId
             state.copy(
                 flippedCardId = newFlippedId,
-                circles = state.circles.map { hc ->
-                    hc.copy(isFlipped = hc.selectedMemberId == newFlippedId)
-                }
+                data = state.data.copy(
+                    circles = state.data.circles.map { hc ->
+                        hc.copy(isFlipped = hc.selectedMemberId == newFlippedId)
+                    }
+                )
             )
         }
     }
@@ -110,74 +114,70 @@ class ContactListViewModel @Inject constructor(
         _uiState.update { state ->
             state.copy(
                 flippedCardId = null,
-                circles = state.circles.map { hc ->
-                    if (hc.circle.id == circleId) {
-                        hc.copy(selectedMemberId = contactId, isFlipped = false)
-                    } else hc
-                }
+                data = state.data.copy(
+                    circles = state.data.circles.map { hc ->
+                        if (hc.circle.id == circleId) {
+                            hc.copy(selectedMemberId = contactId, isFlipped = false)
+                        } else hc
+                    }
+                )
             )
         }
     }
 
-    fun toggleSearch() {
-        _uiState.update { it.copy(isSearchActive = !it.isSearchActive, searchQuery = "") }
-    }
+    fun toggleSearch() = searchManager.toggleSearch()
 
-    fun onSearchQueryChange(query: String) {
-        _uiState.update { it.copy(searchQuery = query) }
-    }
+    fun onSearchQueryChange(query: String) = searchManager.onQueryChange(query)
 
     fun showCreateDialog() {
-        _uiState.update { it.copy(showCreateDialog = true) }
+        _uiState.update { it.copy(dialog = it.dialog.copy(showCreate = true)) }
     }
 
     fun hideCreateDialog() {
-        _uiState.update { it.copy(showCreateDialog = false) }
+        _uiState.update { it.copy(dialog = ContactListDialogState()) }
     }
 
     fun showEditDialog(circle: Circle) {
-        _uiState.update { it.copy(showEditDialog = circle) }
+        _uiState.update { it.copy(dialog = it.dialog.copy(showEdit = circle)) }
     }
 
     fun hideEditDialog() {
-        _uiState.update { it.copy(showEditDialog = null) }
+        _uiState.update { it.copy(dialog = ContactListDialogState()) }
     }
 
     fun showAddMemberDialog(circleId: Long) {
-        _uiState.update { it.copy(showAddMemberDialog = circleId) }
+        _uiState.update { it.copy(dialog = it.dialog.copy(showAddMember = circleId)) }
     }
 
     fun hideAddMemberDialog() {
-        _uiState.update { it.copy(showAddMemberDialog = null) }
+        _uiState.update { it.copy(dialog = ContactListDialogState()) }
     }
 
     fun showDeleteConfirm(circleId: Long) {
-        _uiState.update { it.copy(showDeleteConfirm = circleId) }
+        _uiState.update { it.copy(dialog = it.dialog.copy(showDeleteConfirm = circleId)) }
     }
 
     fun hideDeleteConfirm() {
-        _uiState.update { it.copy(showDeleteConfirm = null) }
+        _uiState.update { it.copy(dialog = ContactListDialogState()) }
     }
 
     fun createCircle(name: String, description: String?, color: String, waveform: String) {
         viewModelScope.launch {
-            val newCircle = Circle(name = name, description = description, color = color, waveform = waveform)
-            circleRepository.insertCircle(newCircle)
+            useCase.createCircle(name, description, color, waveform)
             hideCreateDialog()
         }
     }
 
     fun updateCircle(circle: Circle, name: String, description: String?, color: String, waveform: String) {
         viewModelScope.launch {
-            val updated = circle.copy(name = name, description = description, color = color, waveform = waveform, updatedAt = System.currentTimeMillis())
-            circleRepository.updateCircle(updated)
+            useCase.updateCircle(circle, name, description, color, waveform)
             hideEditDialog()
         }
     }
 
     fun deleteCircle(circleId: Long) {
         viewModelScope.launch {
-            circleRepository.deleteCircleWithChildren(circleId)
+            useCase.deleteCircle(circleId)
             hideDeleteConfirm()
             if (_uiState.value.expandedCircleId == circleId) {
                 _uiState.update { it.copy(expandedCircleId = null) }
@@ -187,93 +187,53 @@ class ContactListViewModel @Inject constructor(
 
     fun addMemberToCircle(circleId: Long, contactId: Long) {
         viewModelScope.launch {
-            val hc = _uiState.value.circles.find { it.circle.id == circleId } ?: return@launch
-            if (!hc.circle.memberIds.contains(contactId)) {
-                val updated = hc.circle.copy(memberIds = hc.circle.memberIds + contactId, updatedAt = System.currentTimeMillis())
-                circleRepository.updateCircle(updated)
-            }
+            val hc = _uiState.value.data.circles.find { it.circle.id == circleId } ?: return@launch
+            useCase.addMemberToCircle(hc.circle, contactId)
             hideAddMemberDialog()
         }
     }
 
     fun removeMemberFromCircle(circleId: Long, contactId: Long) {
         viewModelScope.launch {
-            val hc = _uiState.value.circles.find { it.circle.id == circleId } ?: return@launch
-            val updated = hc.circle.copy(memberIds = hc.circle.memberIds - contactId, updatedAt = System.currentTimeMillis())
-            circleRepository.updateCircle(updated)
+            val hc = _uiState.value.data.circles.find { it.circle.id == circleId } ?: return@launch
+            useCase.removeMemberFromCircle(hc.circle, contactId)
         }
     }
 
     fun getAvailableContacts(circleId: Long): List<Contact> {
-        val hc = _uiState.value.circles.find { it.circle.id == circleId } ?: return _uiState.value.contacts
-        return _uiState.value.contacts.filter { it.id !in hc.circle.memberIds }
+        val hc = _uiState.value.data.circles.find { it.circle.id == circleId } ?: return _uiState.value.data.contacts
+        return useCase.getAvailableContacts(_uiState.value.data.contacts, hc.circle)
     }
 
     fun getFilteredContacts(): List<Contact> {
-        val query = _uiState.value.searchQuery
-        return if (query.isBlank()) _uiState.value.contacts
-        else _uiState.value.contacts.filter {
-            it.name.contains(query, ignoreCase = true) ||
-            it.phone?.contains(query, ignoreCase = true) == true
-        }
+        val query = searchManager.state.value.query
+        return useCase.getFilteredContacts(_uiState.value.data.contacts, query)
     }
 
     fun toggleSortMode() {
         _uiState.update { state ->
-            val newMode = when (state.sortMode) {
+            val newMode = when (state.data.sortMode) {
                 CircleSortMode.DEFAULT -> CircleSortMode.MEMBER_COUNT_DESC
                 CircleSortMode.MEMBER_COUNT_DESC -> CircleSortMode.MEMBER_COUNT_ASC
                 CircleSortMode.MEMBER_COUNT_ASC -> CircleSortMode.INTIMACY_DESC
                 CircleSortMode.INTIMACY_DESC -> CircleSortMode.INTIMACY_ASC
                 CircleSortMode.INTIMACY_ASC -> CircleSortMode.DEFAULT
             }
-            state.copy(sortMode = newMode)
+            state.copy(data = state.data.copy(sortMode = newMode))
         }
     }
 
     fun getSortedCircles(circles: List<HologramCircle>): List<HologramCircle> {
-        return when (_uiState.value.sortMode) {
-            CircleSortMode.DEFAULT -> circles
-            CircleSortMode.MEMBER_COUNT_ASC -> circles.sortedBy { it.members.size }
-            CircleSortMode.MEMBER_COUNT_DESC -> circles.sortedByDescending { it.members.size }
-            CircleSortMode.INTIMACY_ASC -> circles.sortedBy { it.members.map { m -> m.intimacyScore }.averageOrZero() }
-            CircleSortMode.INTIMACY_DESC -> circles.sortedByDescending { it.members.map { m -> m.intimacyScore }.averageOrZero() }
-        }
-    }
-
-    private fun List<Int>.averageOrZero(): Double {
-        return if (isEmpty()) 0.0 else average()
+        val sorted = useCase.getSortedCircles(
+            circles.map { com.tang.prm.domain.usecase.CircleWithMembers(it.circle, it.members) },
+            _uiState.value.data.sortMode
+        )
+        val sortIndex = sorted.mapIndexed { index, cwm -> cwm.circle.id to index }.toMap()
+        return circles.sortedBy { sortIndex[it.circle.id] ?: Int.MAX_VALUE }
     }
 
     companion object {
-        val PresetColors = listOf(
-            "#2196F3" to "科技蓝",
-            "#00BCD4" to "青蓝",
-            "#3F51B5" to "靛蓝",
-            "#673AB7" to "深紫",
-            "#9C27B0" to "紫色",
-            "#E91E63" to "粉红",
-            "#F44336" to "红色",
-            "#FF5722" to "橙红",
-            "#FF9800" to "橙色",
-            "#FFC107" to "琥珀",
-            "#8BC34A" to "浅绿",
-            "#4CAF50" to "绿色"
-        )
-
-        val WaveformTypes = listOf(
-            "sine" to "正弦波",
-            "cosine" to "余弦波",
-            "square" to "方波",
-            "sawtooth" to "锯齿波",
-            "triangle" to "三角波",
-            "pulse" to "脉冲波",
-            "noise" to "噪声波",
-            "heartbeat" to "心跳波",
-            "exponential" to "指数波",
-            "damped" to "阻尼波",
-            "step" to "阶梯波",
-            "compound" to "复合波"
-        )
+        val PresetColors = ContactListManageUseCase.PresetColors
+        val WaveformTypes = ContactListManageUseCase.WaveformTypes
     }
 }

@@ -55,9 +55,9 @@ class ContactListViewModelTest {
     fun init_loadsCircles() = runTest {
         viewModel.uiState.test {
             val state = awaitItem()
-            assertThat(state.circles).hasSize(1)
-            assertThat(state.circles[0].circle.name).isEqualTo("Friends")
-            assertThat(state.isLoading).isFalse()
+            assertThat(state.data.circles).hasSize(1)
+            assertThat(state.data.circles[0].circle.name).isEqualTo("Friends")
+            assertThat(state.data.isLoading).isFalse()
         }
     }
 
@@ -65,8 +65,8 @@ class ContactListViewModelTest {
     fun init_loadsContacts() = runTest {
         viewModel.uiState.test {
             val state = awaitItem()
-            assertThat(state.contacts).hasSize(1)
-            assertThat(state.contacts[0].name).isEqualTo("Alice")
+            assertThat(state.data.contacts).hasSize(1)
+            assertThat(state.data.contacts[0].name).isEqualTo("Alice")
         }
     }
 
@@ -74,8 +74,8 @@ class ContactListViewModelTest {
     fun init_mapsCircleMembers() = runTest {
         viewModel.uiState.test {
             val state = awaitItem()
-            assertThat(state.circles[0].members).hasSize(1)
-            assertThat(state.circles[0].members[0].name).isEqualTo("Alice")
+            assertThat(state.data.circles[0].members).hasSize(1)
+            assertThat(state.data.circles[0].members[0].name).isEqualTo("Alice")
         }
     }
 
@@ -93,11 +93,11 @@ class ContactListViewModelTest {
         coEvery { circleRepository.insertCircle(any()) } returns 1L
 
         viewModel.showCreateDialog()
-        assertThat(viewModel.uiState.value.showCreateDialog).isTrue()
+        assertThat(viewModel.uiState.value.dialog.showCreate).isTrue()
 
         viewModel.createCircle("NewCircle", null, "#FF0000", "sine")
 
-        assertThat(viewModel.uiState.value.showCreateDialog).isFalse()
+        assertThat(viewModel.uiState.value.dialog.showCreate).isFalse()
     }
 
     @Test
@@ -124,10 +124,10 @@ class ContactListViewModelTest {
     fun toggleSearch_updatesSearchState() = runTest {
         viewModel.toggleSearch()
 
-        assertThat(viewModel.uiState.value.isSearchActive).isTrue()
+        assertThat(viewModel.uiState.value.data.isSearchActive).isTrue()
 
         viewModel.toggleSearch()
 
-        assertThat(viewModel.uiState.value.isSearchActive).isFalse()
+        assertThat(viewModel.uiState.value.data.isSearchActive).isFalse()
     }
 }

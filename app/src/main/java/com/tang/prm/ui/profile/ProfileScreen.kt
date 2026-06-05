@@ -22,13 +22,14 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import android.widget.Toast
 import androidx.compose.material.icons.automirrored.filled.Help
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.tang.prm.ui.theme.Primary
 import com.tang.prm.ui.theme.Dimens
 import com.tang.prm.ui.theme.DialogDefaults
 
 @Composable
 fun ProfileScreen(navController: NavController, viewModel: ProfileViewModel = hiltViewModel()) {
-    val uiState by viewModel.uiState.collectAsState()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     var showEditDialog by remember { mutableStateOf(false) }
     val context = LocalContext.current
     val developingToast: () -> Unit = { Toast.makeText(context, "功能开发中", Toast.LENGTH_SHORT).show() }

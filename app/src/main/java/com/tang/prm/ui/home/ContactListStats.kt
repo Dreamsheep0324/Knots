@@ -221,7 +221,7 @@ internal fun TerminalStatsPanel(
                 index = "04",
                 label = "高亲密度",
                 value = String.format(Locale.US, "%02d", highIntimacy),
-                accentColor = CardRarity.UR.color,
+                accentColor = Color(CardRarity.UR.colorValue),
                 modifier = Modifier.weight(1f)
             )
         }
