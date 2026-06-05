@@ -81,3 +81,9 @@ app/release/
 
 # IDE tools
 .superpowers/
+
+# Project docs (local only, not for GitHub)
+docs/
+
+# AI memory files
+memory/
