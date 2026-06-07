@@ -41,7 +41,12 @@ import kotlinx.serialization.Serializable
 @Serializable data class GiftDetailRoute(val giftId: Long)
 
 // Home sub-routes
-@Serializable data class PhotoAlbumRoute(val photoId: Long = 0L)
+@Serializable data class PhotoAlbumRoute(val photoId: Long = 0L) {
+    companion object {
+        fun default() = PhotoAlbumRoute()
+        fun targeting(photoId: Long) = PhotoAlbumRoute(photoId = photoId)
+    }
+}
 @Serializable object FootprintsRoute
 @Serializable object ThoughtsRoute
 @Serializable object ContactListRoute
@@ -61,7 +66,15 @@ import kotlinx.serialization.Serializable
 @Serializable object ThemeSettingsRoute
 @Serializable object AiConfigRoute
 @Serializable object BackupRestoreRoute
+@Serializable object WebDavSyncRoute
 @Serializable object AboutRoute
+
+// Subscription routes
+@Serializable object SubscriptionsRoute
+@Serializable data class SubscriptionDetailRoute(val subscriptionId: Long)
+@Serializable object AddSubscriptionRoute
+@Serializable data class EditSubscriptionRoute(val subscriptionId: Long)
+@Serializable object SubscriptionStatsRoute
 
 data class BottomNavItem(
     val route: String,

@@ -29,7 +29,6 @@ android {
 
 dependencies {
     implementation(project(":core:domain"))
-    implementation(project(":core:data"))
 
     val composeBom = platform("androidx.compose:compose-bom:2025.05.01")
     implementation(composeBom)

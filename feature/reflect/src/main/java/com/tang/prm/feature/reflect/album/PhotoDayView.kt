@@ -109,9 +109,9 @@ private fun DailyPhotoCard(
                         color = Color(0xFF111827),
                         fontSize = 15.sp
                     )
-                    group.contactName?.let {
+                    if (group.contacts.isNotEmpty()) {
                         Text(
-                            text = it,
+                            text = group.contacts.mapNotNull { it.second }.joinToString("、"),
                             style = MaterialTheme.typography.bodySmall,
                             color = TextGray,
                             fontSize = 12.sp,

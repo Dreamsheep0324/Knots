@@ -11,13 +11,20 @@ import androidx.security.crypto.MasterKey
 import com.tang.prm.data.local.dao.*
 import com.tang.prm.data.local.database.TangDatabase
 import com.tang.prm.data.local.database.migrations.MIGRATION_1_32
+import com.tang.prm.data.local.database.migrations.MIGRATION_24_31
 import com.tang.prm.data.local.database.migrations.MIGRATION_31_33
 import com.tang.prm.data.local.database.migrations.MIGRATION_32_33
+import com.tang.prm.data.local.database.migrations.MIGRATION_33_34
+import com.tang.prm.data.local.database.migrations.MIGRATION_34_35
+import com.tang.prm.data.local.database.migrations.MIGRATION_35_36
+import com.tang.prm.data.local.database.migrations.MIGRATION_36_37
+import com.tang.prm.data.local.database.migrations.MIGRATION_37_38
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import javax.inject.Named
 import javax.inject.Singleton
 
 private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "settings")
@@ -34,7 +41,7 @@ object DatabaseModule {
             TangDatabase::class.java,
             "tang_database"
         )
-            .addMigrations(MIGRATION_1_32, MIGRATION_31_33, MIGRATION_32_33)
+            .addMigrations(MIGRATION_1_32, MIGRATION_24_31, MIGRATION_31_33, MIGRATION_32_33, MIGRATION_33_34, MIGRATION_34_35, MIGRATION_35_36, MIGRATION_36_37, MIGRATION_37_38)
             .build()
     }
 
@@ -81,6 +88,9 @@ object DatabaseModule {
     fun provideContactAttributeDao(database: TangDatabase): ContactAttributeDao = database.contactAttributeDao()
 
     @Provides
+    fun provideSubscriptionDao(database: TangDatabase): SubscriptionDao = database.subscriptionDao()
+
+    @Provides
     @Singleton
     fun provideDataStore(@ApplicationContext context: Context): DataStore<Preferences> = context.dataStore
 
@@ -97,5 +107,26 @@ object DatabaseModule {
             EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
             EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
         )
+    }
+
+    @Provides
+    @Singleton
+    @Named("webdav")
+    fun provideWebDavEncryptedPrefs(@ApplicationContext context: Context): SharedPreferences {
+        return try {
+            val masterKey = MasterKey.Builder(context)
+                .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+                .build()
+            EncryptedSharedPreferences.create(
+                context,
+                "webdav_secret",
+                masterKey,
+                EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+                EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+            )
+        } catch (e: Exception) {
+            // Fallback to plain SharedPreferences on incompatible ROMs
+            context.getSharedPreferences("webdav_config", Context.MODE_PRIVATE)
+        }
     }
 }

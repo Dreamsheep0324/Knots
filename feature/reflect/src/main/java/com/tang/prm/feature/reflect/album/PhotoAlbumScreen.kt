@@ -208,6 +208,7 @@ data class PhotoGroup(
     val subtitle: String?,
     val contactName: String?,
     val contactAvatar: String?,
+    val contacts: List<Pair<String?, String?>>,
     val date: Long,
     val location: String?,
     val photos: List<AlbumPhoto>

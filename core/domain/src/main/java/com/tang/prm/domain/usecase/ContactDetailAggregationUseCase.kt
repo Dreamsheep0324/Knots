@@ -51,25 +51,16 @@ class ContactDetailAggregationUseCase @Inject constructor(
         val anniversariesFlow = anniversaryRepository.getAnniversariesByContact(contactId)
         val giftsFlow = giftRepository.getGiftsByContactId(contactId)
         val thoughtsFlow = thoughtRepository.getThoughtsByContact(contactId)
-        val hobbyFlow = customTypeRepository.getTypesByCategory(CustomCategories.HOBBY)
-        val habitFlow = customTypeRepository.getTypesByCategory(CustomCategories.HABIT)
-        val dietFlow = customTypeRepository.getTypesByCategory(CustomCategories.DIET)
-        val skillFlow = customTypeRepository.getTypesByCategory(CustomCategories.SKILL)
-        val eventTypeFlow = customTypeRepository.getTypesByCategory(CustomCategories.EVENT_TYPE)
-        val relationshipFlow = customTypeRepository.getTypesByCategory(CustomCategories.RELATIONSHIP)
+        val customTypesFlow = customTypeRepository.getAllTypesGroupedByCategory()
         val thoughtFavoritesFlow = favoriteToggleUseCase.getFavoriteIds(SourceTypes.THOUGHT)
 
         return combine(
             combine(contactFlow, eventsFlow, anniversariesFlow, giftsFlow, thoughtsFlow) { contact, events, anniversaries, gifts, thoughts ->
                 ContactDataTuple(contact, events, anniversaries, gifts, thoughts)
             },
-            combine(hobbyFlow, habitFlow, dietFlow, skillFlow, eventTypeFlow) { hobby, habit, diet, skill, eventTypes ->
-                CustomTypePart1(hobby, habit, diet, skill, eventTypes)
-            }.combine(relationshipFlow) { part1, relationshipTypes ->
-                CustomTypePart2(part1.hobby, part1.habit, part1.diet, part1.skill, part1.eventTypes, relationshipTypes)
-            },
+            customTypesFlow,
             thoughtFavoritesFlow
-        ) { contactData, customTypeData, thoughtFavoriteIds ->
+        ) { contactData, customTypesMap, thoughtFavoriteIds ->
             val conversations = contactData.events.filter { it.type == EventType.CONVERSATION }
             val nonConversationEvents = contactData.events.filter { it.type != EventType.CONVERSATION }
 
@@ -81,12 +72,12 @@ class ContactDetailAggregationUseCase @Inject constructor(
                 gifts = contactData.gifts,
                 thoughts = contactData.thoughts,
                 favoriteIds = thoughtFavoriteIds,
-                hobbyOptions = customTypeData.hobby,
-                habitOptions = customTypeData.habit,
-                dietOptions = customTypeData.diet,
-                skillOptions = customTypeData.skill,
-                eventTypes = customTypeData.eventTypes,
-                relationshipTypes = customTypeData.relationshipTypes,
+                hobbyOptions = customTypesMap[CustomCategories.HOBBY].orEmpty(),
+                habitOptions = customTypesMap[CustomCategories.HABIT].orEmpty(),
+                dietOptions = customTypesMap[CustomCategories.DIET].orEmpty(),
+                skillOptions = customTypesMap[CustomCategories.SKILL].orEmpty(),
+                eventTypes = customTypesMap[CustomCategories.EVENT_TYPE].orEmpty(),
+                relationshipTypes = customTypesMap[CustomCategories.RELATIONSHIP].orEmpty(),
                 isLoading = false
             )
         }
@@ -98,23 +89,6 @@ class ContactDetailAggregationUseCase @Inject constructor(
         val anniversaries: List<Anniversary>,
         val gifts: List<Gift>,
         val thoughts: List<Thought>
-    )
-
-    private data class CustomTypePart1(
-        val hobby: List<CustomType>,
-        val habit: List<CustomType>,
-        val diet: List<CustomType>,
-        val skill: List<CustomType>,
-        val eventTypes: List<CustomType>
-    )
-
-    private data class CustomTypePart2(
-        val hobby: List<CustomType>,
-        val habit: List<CustomType>,
-        val diet: List<CustomType>,
-        val skill: List<CustomType>,
-        val eventTypes: List<CustomType>,
-        val relationshipTypes: List<CustomType>
     )
 
     /** 代理写操作，使 VM 无需直接注入 Repository */

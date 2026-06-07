@@ -9,6 +9,8 @@ data class AlbumPhoto(
     val contactId: Long?,
     val contactName: String?,
     val contactAvatar: String?,
+    val allContactNames: List<String> = emptyList(),
+    val allContactAvatars: List<String?> = emptyList(),
     val date: Long,
     val location: String?
 ) {

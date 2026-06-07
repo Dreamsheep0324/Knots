@@ -54,7 +54,7 @@ interface ContactDao {
     @Query("DELETE FROM contact_tag_cross_ref WHERE contactId = :contactId")
     suspend fun deleteCrossRefsByContact(contactId: Long)
 
-    @Query("SELECT id, hobby, habit, diet, skill FROM contacts WHERE hobby LIKE '%' || :value || '%' OR habit LIKE '%' || :value || '%' OR diet LIKE '%' || :value || '%' OR skill LIKE '%' || :value || '%'")
+    @Query("SELECT id, hobby, habit, diet, skill FROM contacts WHERE hobby LIKE '%' || :value || '%' ESCAPE '\\' OR habit LIKE '%' || :value || '%' ESCAPE '\\' OR diet LIKE '%' || :value || '%' ESCAPE '\\' OR skill LIKE '%' || :value || '%' ESCAPE '\\'")
     suspend fun getContactsWithListFieldValue(value: String): List<ListFieldData>
 
     data class ListFieldData(

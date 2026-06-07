@@ -1,5 +1,6 @@
 package com.tang.prm.domain.repository
 
+import com.tang.prm.domain.model.BackupImageQuality
 import com.tang.prm.domain.model.ThemeMode
 import kotlinx.coroutines.flow.Flow
 
@@ -22,4 +23,10 @@ interface SettingsRepository {
     suspend fun setAiGender(gender: String)
     val aiBirthDate: Flow<String>
     suspend fun setAiBirthDate(date: String)
+
+    fun getBackupImageQuality(): Flow<BackupImageQuality>
+    suspend fun setBackupImageQuality(quality: BackupImageQuality)
+
+    fun getAutoBackupEnabled(): Flow<Boolean>
+    suspend fun setAutoBackupEnabled(enabled: Boolean)
 }

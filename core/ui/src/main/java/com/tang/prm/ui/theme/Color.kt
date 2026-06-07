@@ -129,6 +129,11 @@ val TapePlastic: Color
     @Composable @ReadOnlyComposable get() = if (isSystemInDarkTheme()) Color(0xFF161B22) else Color(0xFFE8ECF1)
 val OutlineVariantLight = Color(0xFFCBD5E1)
 
+// 功能图标色
+val InsightPink = Color(0xFFEC4899)
+val DeleteRed = Color(0xFFFF6B6B)
+val SceneOrange = Color(0xFFF97316)
+
 fun String?.toComposeColor(fallback: Color = Primary): Color {
     if (this == null) return fallback
     return try { Color(android.graphics.Color.parseColor(this)) } catch (e: Exception) { fallback }

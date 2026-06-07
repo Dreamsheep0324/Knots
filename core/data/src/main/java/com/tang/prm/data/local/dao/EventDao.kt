@@ -69,4 +69,7 @@ interface EventDao {
     @Transaction
     @Query("SELECT * FROM events WHERE location IS NOT NULL AND location != '' ORDER BY time DESC")
     fun getEventsWithLocation(): Flow<List<EventWithParticipants>>
+
+    @Query("SELECT COALESCE(SUM(photos_count), 0) FROM events")
+    fun getPhotoCount(): Flow<Int>
 }

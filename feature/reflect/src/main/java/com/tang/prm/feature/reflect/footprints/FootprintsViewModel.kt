@@ -74,7 +74,7 @@ class FootprintsViewModel @Inject constructor(
             selectedYear = selectedYear,
             availableYears = availableYears
         )
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), FootprintsUiState())
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(10_000), FootprintsUiState())
 
     fun filterByContact(contactId: Long?) {
         _selectedContactId.value = contactId

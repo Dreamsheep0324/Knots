@@ -42,7 +42,7 @@ class PhotoAlbumViewModel @Inject constructor(
 
     /** 单一聚合数据源，避免 getAggregateData() 被重复调用导致双重订阅 */
     private val aggregateData = photoAlbumAggregationUseCase.getAggregateData()
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), PhotoAlbumAggregateData(emptyList(), emptyList()))
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(10_000), PhotoAlbumAggregateData(emptyList(), emptyList()))
 
     init {
         viewModelScope.launch {
@@ -78,7 +78,7 @@ class PhotoAlbumViewModel @Inject constructor(
             totalLocationCount = totalLocationCount,
             favoritePhotoIds = favoritePhotoIds
         )
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), PhotoAlbumUiState())
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(10_000), PhotoAlbumUiState())
 
     fun filterByContact(contactId: Long?) {
         _selectedContactId.value = contactId

@@ -199,7 +199,7 @@ private fun EventPhotoCard(
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(8.dp))
                         .background(SignalPurple.copy(alpha = AnimationTokens.Alpha.faint))
-                        .clickable { }
+                        .clickable { onPhotoClick(4) }
                         .padding(vertical = 8.dp),
                     horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.CenterVertically
@@ -214,23 +214,27 @@ private fun EventPhotoCard(
                 }
             }
 
-            group.contactName?.let {
+            if (group.contacts.isNotEmpty()) {
                 Spacer(modifier = Modifier.height(10.dp))
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
-                    ContactAvatar(
-                        avatar = group.contactAvatar,
-                        name = it,
-                        size = 18
-                    )
-                    Text(
-                        text = it,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = TextGray,
-                        fontSize = 12.sp
-                    )
+                    group.contacts.forEach { (avatar, name) ->
+                        if (name != null) {
+                            ContactAvatar(
+                                avatar = avatar,
+                                name = name,
+                                size = 18
+                            )
+                            Text(
+                                text = name,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = TextGray,
+                                fontSize = 12.sp
+                            )
+                        }
+                    }
                 }
             }
         }

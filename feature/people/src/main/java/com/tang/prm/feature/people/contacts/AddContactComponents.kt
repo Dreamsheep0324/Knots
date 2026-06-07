@@ -64,6 +64,7 @@ import com.tang.prm.ui.theme.IntimacyFamily
 import com.tang.prm.ui.theme.IntimacyFriend
 import com.tang.prm.ui.theme.IntimacyNew
 import com.tang.prm.ui.theme.Primary
+import com.tang.prm.ui.theme.SceneOrange
 
 internal val SectionIconSize = 36.dp
 internal val SectionIconInnerSize = 18.dp
@@ -78,7 +79,7 @@ internal val sectionStyles = mapOf(
     "位置信息" to SectionStyle(Icons.Default.LocationOn, Color(0xFF9575CD)),
     "个人特征" to SectionStyle(Icons.Default.EmojiEmotions, Color(0xFFF43F5E)),
     "简介" to SectionStyle(Icons.Default.EditNote, Color(0xFF64748B)),
-    "亲密度" to SectionStyle(Icons.Default.Favorite, Color(0xFFF97316))
+    "亲密度" to SectionStyle(Icons.Default.Favorite, SceneOrange)
 )
 
 internal data class IntimacyLevel(val range: IntRange, val name: String, val color: Color, val icon: ImageVector)

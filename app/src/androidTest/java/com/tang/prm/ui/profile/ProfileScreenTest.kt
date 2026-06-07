@@ -5,6 +5,7 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.navigation.NavController
+import com.tang.prm.feature.profile.ProfileScreen
 import io.mockk.mockk
 import org.junit.Rule
 import org.junit.Test

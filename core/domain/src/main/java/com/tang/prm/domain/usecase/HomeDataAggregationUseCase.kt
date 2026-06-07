@@ -34,36 +34,37 @@ class HomeDataAggregationUseCase @Inject constructor(
     private val todoRepository: TodoRepository,
     private val reminderRepository: ReminderRepository
 ) {
-    fun getAggregateData(): Flow<HomeAggregateData> = combine(
-        contactRepository.getRecentContacts(5).distinctUntilChanged(),
-        eventRepository.getAllEvents().distinctUntilChanged(),
-        anniversaryRepository.getUpcomingAnniversaries(10).distinctUntilChanged(),
-        anniversaryRepository.getAllAnniversaries().distinctUntilChanged(),
-        todoRepository.getActiveTodos().distinctUntilChanged(),
-        reminderRepository.getActiveReminders().distinctUntilChanged()
-    ) { args: Array<Any> ->
-        @Suppress("UNCHECKED_CAST")
-        val contacts = args[0] as List<Contact>
-        val allEvents = args[1] as List<Event>
-        val upcomingAnniversaries = args[2] as List<Anniversary>
-        val allAnniversaries = args[3] as List<Anniversary>
-        val todos = args[4] as List<TodoItem>
-        val reminders = args[5] as List<Reminder>
+    fun getAggregateData(): Flow<HomeAggregateData> {
+        val contactsFlow = contactRepository.getRecentContacts(5).distinctUntilChanged()
+        val eventsFlow = eventRepository.getAllEvents().distinctUntilChanged()
+        val upcomingAnniversariesFlow = anniversaryRepository.getUpcomingAnniversaries(10).distinctUntilChanged()
+        val allAnniversariesFlow = anniversaryRepository.getAllAnniversaries().distinctUntilChanged()
+        val todosFlow = todoRepository.getActiveTodos().distinctUntilChanged()
+        val remindersFlow = reminderRepository.getActiveReminders().distinctUntilChanged()
 
-        val today = Calendar.getInstance()
-        val todayReminders = reminders.filter {
-            val cal = Calendar.getInstance().apply { timeInMillis = it.time }
-            cal.get(Calendar.YEAR) == today.get(Calendar.YEAR) &&
-                cal.get(Calendar.DAY_OF_YEAR) == today.get(Calendar.DAY_OF_YEAR)
+        return combine(
+            combine(contactsFlow, eventsFlow, upcomingAnniversariesFlow) { contacts, events, upcoming ->
+                Triple(contacts, events, upcoming)
+            },
+            combine(allAnniversariesFlow, todosFlow, remindersFlow) { allAnn, todos, reminders ->
+                Triple(allAnn, todos, reminders)
+            }
+        ) { (contacts, allEvents, upcomingAnniversaries), (allAnniversaries, todos, reminders) ->
+            val today = Calendar.getInstance()
+            val todayReminders = reminders.filter {
+                val cal = Calendar.getInstance().apply { timeInMillis = it.time }
+                cal.get(Calendar.YEAR) == today.get(Calendar.YEAR) &&
+                    cal.get(Calendar.DAY_OF_YEAR) == today.get(Calendar.DAY_OF_YEAR)
+            }
+            HomeAggregateData(
+                frequentContacts = contacts,
+                recentEvents = allEvents.take(5),
+                allEvents = allEvents,
+                upcomingAnniversaries = upcomingAnniversaries,
+                allAnniversaries = allAnniversaries,
+                pendingTodos = todos,
+                todayReminders = todayReminders
+            )
         }
-        HomeAggregateData(
-            frequentContacts = contacts,
-            recentEvents = allEvents.take(5),
-            allEvents = allEvents,
-            upcomingAnniversaries = upcomingAnniversaries,
-            allAnniversaries = allAnniversaries,
-            pendingTodos = todos,
-            todayReminders = todayReminders
-        )
     }
 }

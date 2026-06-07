@@ -14,7 +14,7 @@
 
 <p align="center">
   <a href="LICENSE"><img alt="License" src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge" /></a>
-  <img alt="Kotlin" src="https://img.shields.io/badge/Kotlin-1.9-7F52FF?style=for-the-badge&logo=kotlin&logoColor=white" />
+  <img alt="Kotlin" src="https://img.shields.io/badge/Kotlin-2.1-7F52FF?style=for-the-badge&logo=kotlin&logoColor=white" />
   <img alt="Compose" src="https://img.shields.io/badge/Compose-Material3-4285F4?style=for-the-badge&logo=jetpackcompose&logoColor=white" />
   <img alt="Android" src="https://img.shields.io/badge/Android-8.0+-3DDC84?style=for-the-badge&logo=android&logoColor=white" />
 </p>
@@ -37,9 +37,12 @@
 
 ### 朋友档案
 
-- 记录朋友的姓名、昵称、电话、学校、公司、职务、城市、地址、爱好、习惯、饮食、技能、简介等信息。
+- 记录姓名、昵称、电话、学校、公司、职务、城市、地址、爱好、习惯、饮食、技能、MBTI、简介等丰富信息。
 - 自定义关系标签（家人、同学、同事等），支持新增、删除和颜色选择。
-- 亲密度系统：0-100 分滑块，自动划分为家人、亲密、朋友、熟人、新识五个等级。
+- 亲密度系统：0-100 分滑块，自动划分为至亲、密友、朋友、泛交、初识五个等级。
+- 星座标签：根据出生日期自动计算，12 星座各有矢量图标和专属色。
+- 相识天数：基于相识日期自动计算并展示。
+- 头像裁剪：上传头像后支持圆形蒙版裁剪，单指拖动、双指缩放，512×512 输出。
 - 三种视图切换：网格、列表（支持拖拽排序）、卡牌（支持翻转）。
 - 详情页整合资料、事件、纪念日、礼物、想法、对话六大板块。
 
@@ -55,7 +58,7 @@
 
 - 支持生日、纪念日、节日三种类型，可关联朋友。
 - 农历日期支持，自动转换。
-- 倒计时展示：7天内红色提醒，30天内橙色提示。
+- 倒计时展示：7 天内红色提醒，30 天内橙色提示。
 - 定时通知推送，不错过每一个重要的日子。
 
 ### 礼物往来
@@ -81,7 +84,7 @@
 
 ### 圈子分组
 
-- 将朋友归入不同圈子，自定义圈子名称、描述、颜色。
+- 将朋友归入不同圈子，自定义圈子名称、描述、颜色和波形。
 - 终端风格界面，圈子档案卡片可展开/折叠，成员卡牌支持翻转。
 - 支持添加、移除成员，点击成员跳转到朋友详情。
 
@@ -93,7 +96,7 @@
 
 ### 往来相册
 
-- 自动汇总事件、对话、礼物中的所有照片。
+- 自动汇总事件、对话、礼物中的所有照片，支持多人物显示。
 - 三种浏览方式：按日期、按事件来源、纯网格。
 - 按来源类型和朋友筛选，滑动浏览大图，支持收藏。
 
@@ -102,6 +105,13 @@
 - 跨类型收藏：事件、礼物、想法统一管理。
 - 终端风格界面，四种视图：列表、详情卡片、树状统计、操作日志。
 - 点击可跳转回原始内容。
+
+### 订阅管理
+
+- 记录各类订阅服务，支持周付、月付、季付、年付、一次性五种扣费周期。
+- 自动计算日均、月均、年均费用，智能推算下次扣费日期。
+- 统计页：年度预估、关键指标网格、分类占比圆环图（8 色柔和配色）、扣费日历。
+- 订阅状态自动判断：下次扣费日早于当前时间标记为已过期。
 
 ### 占卜
 
@@ -126,8 +136,10 @@
 
 - 所有数据存储在本地 Room 数据库，无需注册，无需联网。
 - 本地 ZIP 备份/恢复，覆盖数据库、设置和图片文件。
+- WebDAV 增量同步：基于 manifest.json 清单 + diff 计算，仅传输变更文件到用户自有云存储（坚果云、NextCloud、Synology 等）。
 - 图片自动复制到应用私有目录，即使原始图片被删除也不受影响。
-- API 密钥使用 EncryptedSharedPreferences 加密存储。
+- 孤立图片清理：自动检测并清理裁剪残留等未被数据库引用的图片文件。
+- API 密钥和 WebDAV 密码使用 EncryptedSharedPreferences 加密存储。
 
 ### 主题
 
@@ -137,34 +149,37 @@
 ## TODO
 
 - [ ] 适配平板
-- [ ] 新增 WebDAV 同步
 
 ## 截图预览
 
 <table>
   <tr>
-    <td><img src="png/S60515-20354154_com.tang.prm.png" alt="首页" /></td>
-    <td><img src="png/S60515-20354576_com.tang.prm.png" alt="首页更多" /></td>
+    <td width="50%"><img src="png/S60515-20354154_com.tang.prm.png" alt="首页" width="100%" /></td>
+    <td width="50%"><img src="png/S60515-20354576_com.tang.prm.png" alt="首页更多" width="100%" /></td>
   </tr>
   <tr>
-    <td><img src="png/S60515-20355097_com.tang.prm.png" alt="纪念日" /></td>
-    <td><img src="png/S60515-20355346_com.tang.prm.png" alt="对话" /></td>
+    <td width="50%"><img src="png/S60515-20355097_com.tang.prm.png" alt="纪念日" width="100%" /></td>
+    <td width="50%"><img src="png/S60515-20355346_com.tang.prm.png" alt="对话" width="100%" /></td>
   </tr>
   <tr>
-    <td><img src="png/S60515-20355614_com.tang.prm.png" alt="人物" /></td>
-    <td><img src="png/S60515-20355949_com.tang.prm.png" alt="人物详情" /></td>
+    <td width="50%"><img src="png/S60515-20355614_com.tang.prm.png" alt="人物" width="100%" /></td>
+    <td width="50%"><img src="png/S60515-20355949_com.tang.prm.png" alt="人物详情" width="100%" /></td>
   </tr>
   <tr>
-    <td><img src="png/S60515-20361345_com.tang.prm.png" alt="礼物" /></td>
-    <td><img src="png/S60515-20361679_com.tang.prm.png" alt="圈子" /></td>
+    <td width="50%"><img src="png/S60515-20361345_com.tang.prm.png" alt="礼物" width="100%" /></td>
+    <td width="50%"><img src="png/S60515-20361679_com.tang.prm.png" alt="圈子" width="100%" /></td>
   </tr>
   <tr>
-    <td><img src="png/S60515-20362108_com.tang.prm.png" alt="相册" /></td>
-    <td><img src="png/S60515-20362755_com.tang.prm.png" alt="足迹" /></td>
+    <td width="50%"><img src="png/S60515-20362108_com.tang.prm.png" alt="相册" width="100%" /></td>
+    <td width="50%"><img src="png/S60515-20362755_com.tang.prm.png" alt="足迹" width="100%" /></td>
   </tr>
   <tr>
-    <td><img src="png/S60515-20363198_com.tang.prm.png" alt="想法" /></td>
-    <td><img src="png/S60515-20363619_com.tang.prm.png" alt="收藏夹" /></td>
+    <td width="50%"><img src="png/S60515-20363198_com.tang.prm.png" alt="想法" width="100%" /></td>
+    <td width="50%"><img src="png/S60515-20363619_com.tang.prm.png" alt="收藏夹" width="100%" /></td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="png/tmp_605990489_S60607-18521098_com.tang.prm.png" alt="占卜" width="100%" /></td>
+    <td width="50%"><img src="png/tmp_605998509_S60607-18522032_com.tang.prm.png" alt="订阅" width="100%" /></td>
   </tr>
 </table>
 
@@ -180,10 +195,10 @@
 
 ### 环境要求
 
-- Android Studio Hedgehog 及以上
+- Android Studio Meerkat 及以上
 - JDK 17
-- Android SDK 34
-- Kotlin 1.9
+- Android SDK 35
+- Kotlin 2.1.21
 
 ### 本地开发
 
@@ -209,59 +224,43 @@ cd Knots
 ## 技术栈
 
 - UI 框架：Jetpack Compose + Material 3
-- 架构模式：MVVM + Clean Architecture
+- 架构模式：MVVM + Clean Architecture（16 模块）
 - 依赖注入：Hilt
-- 本地数据库：Room
+- 本地数据库：Room 2.7.0
+- 序列化：kotlinx-serialization
 - 偏好存储：DataStore Preferences + EncryptedSharedPreferences
 - 图片加载：Coil
-- 页面导航：Navigation Compose
-- 网络请求：OkHttp（SSE 流式）
-- 农历转换：6tail lunar
+- 页面导航：Navigation Compose（Type-Safe `@Serializable`）
+- 网络请求：OkHttp（SSE 流式 AI + WebDAV 增量同步）
+- 农历转换：6tail lunar 1.7.7
 - 加密存储：AndroidX Security Crypto
-- 编程语言：Kotlin
+- 编译器插件：Kotlin 2.1.21（K2）、Compose Compiler、KSP 2.1.21-2.0.2
+- 构建工具：AGP 8.9.0
 
 ## 项目结构
 
 ```text
 YU
-├─ app/src/main/java/com/tang/prm
-│  ├─ data                        # 数据层
-│  │  ├─ local/dao                # Room DAO 接口
-│  │  ├─ local/database           # 数据库定义与版本迁移
-│  │  ├─ local/entity             # 数据库实体
-│  │  ├─ mapper                   # Entity ↔ Domain 映射
-│  │  └─ repository               # Repository 实现
-│  ├─ di                          # Hilt 依赖注入模块
-│  ├─ domain                      # 领域层
-│  │  ├─ model                    # 领域模型
-│  │  ├─ repository               # Repository 接口
-│  │  └─ usecase                  # 用例
-│  ├─ engine                      # 计算引擎
-│  │  └─ divination               # 占卜引擎（六爻/梅花易数）
-│  │     ├─ core                  # 干支历法、五行生克
-│  │     ├─ data                  # 卦象、纳甲、宫位数据
-│  │     ├─ liuyao                # 六爻引擎与 Prompt
-│  │     ├─ meihua                # 梅花易数引擎与 Prompt
-│  │     └─ prompt                # AI 解读 Prompt 构建
-│  ├─ service                     # 后台服务（提醒通知）
-│  ├─ ui                          # 表现层
-│  │  ├─ animation/core           # 动画引擎与令牌
-│  │  ├─ animation/primitives     # 基础动画原语
-│  │  ├─ animation/composites     # 组合动画组件
-│  │  ├─ components               # 通用 UI 组件
-│  │  ├─ navigation               # 导航图与路由
-│  │  ├─ theme                    # 主题、颜色、字体
-│  │  ├─ contacts                 # 联系人模块
-│  │  ├─ events                   # 事件模块
-│  │  ├─ anniversary              # 纪念日模块
-│  │  ├─ chat                     # 对话模块
-│  │  ├─ divination               # 占卜模块
-│  │  │  ├─ liuyao                # 六爻起卦与结果
-│  │  │  └─ meihua                # 梅花易数起卦与结果
-│  │  ├─ home                     # 首页模块
-│  │  └─ profile                  # 设置模块
-│  └─ util                        # 工具类
-└─ app/src/main/res               # 资源文件
+├─ app/                            # 壳模块：单 Activity + 导航宿主
+├─ core/
+│  ├─ domain/                      # 纯 JVM：领域模型 + Repository 接口 + UseCase + 工具类
+│  ├─ data/                        # Android Library：Entity + DAO + Mapper + RepositoryImpl + DI + 迁移 + ImageFileManager
+│  └─ ui/                          # Android Library：主题 + 动画 + 通用组件 + 导航路由 + AvatarCropDialog
+├─ engine/
+│  └─ divination/                  # 纯 JVM：占卜计算引擎（六爻/梅花易数/干支历法/五行生克）
+├─ feature/
+│  ├─ home/                        # 首页：频道网格 + 信号卡片 + 轨道罗盘
+│  ├─ events/                      # 互动事件：列表/详情/新建/编辑
+│  ├─ chat/                        # 对话记录：列表/详情/新建/编辑 + DialogueLineManager
+│  ├─ gifts/                       # 礼物往来：列表/详情/新建/编辑（磁带风格）
+│  ├─ remember/                    # 纪念日：列表/详情/新建/编辑/筛选
+│  ├─ people/                      # 联系人：列表/新建/详情/卡片翻转
+│  ├─ reflect/                     # 想法 + 收藏 + 足迹 + 相册
+│  ├─ subscription/                # 订阅管理：列表/新建/详情/统计（圆环图+扣费日历）
+│  ├─ divination/                  # 占卜：六爻/梅花/AI 解读/历史
+│  ├─ circle/                      # 圈子分组：终端风格界面
+│  └─ profile/                     # 设置：备份恢复 + WebDAV 增量同步 + AI 配置 + 关于
+└─ docs/                           # 文档
 ```
 
 ## 声明与致谢

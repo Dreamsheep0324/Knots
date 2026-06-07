@@ -6,6 +6,7 @@ import com.tang.prm.data.mapper.toEntity
 import com.tang.prm.domain.model.CustomType
 import com.tang.prm.domain.repository.CustomTypeRepository
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import com.tang.prm.data.mapper.mapList
 import com.tang.prm.data.mapper.mapNullable
 import javax.inject.Inject
@@ -23,6 +24,11 @@ class CustomTypeRepositoryImpl @Inject constructor(
     override fun getAllTypes(): Flow<List<CustomType>> {
         return customTypeDao.getAllTypes().mapList { it.toDomain() }
     }
+
+    override fun getAllTypesGroupedByCategory(): Flow<Map<String, List<CustomType>>> =
+        customTypeDao.getAllTypes()
+            .mapList { it.toDomain() }
+            .map { types -> types.groupBy { it.category } }
 
     override fun getTypeById(id: Long): Flow<CustomType?> {
         return customTypeDao.getTypeById(id).mapNullable { it.toDomain() }

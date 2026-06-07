@@ -3,6 +3,7 @@ package com.tang.prm.ui.profile
 import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat
 import com.tang.prm.domain.repository.SettingsRepository
+import com.tang.prm.feature.profile.ProfileViewModel
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every

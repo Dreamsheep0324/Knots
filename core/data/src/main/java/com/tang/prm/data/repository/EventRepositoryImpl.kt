@@ -14,7 +14,7 @@ import com.tang.prm.domain.model.Event
 import com.tang.prm.domain.model.EventType
 import com.tang.prm.domain.model.SourceTypes
 import com.tang.prm.domain.repository.EventRepository
-import com.tang.prm.util.ImageCacheManager
+import com.tang.prm.data.util.ImageFileManager
 import com.tang.prm.util.escapeSqlWildcards
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -68,8 +68,17 @@ class EventRepositoryImpl @Inject constructor(
     override suspend fun insertEvent(event: Event): Long =
         eventDao.insertEvent(event.toEntity())
 
-    override suspend fun updateEvent(event: Event) =
+    override suspend fun updateEvent(event: Event) {
+        // 查询旧数据，对比照片列表，清理被移除的旧照片文件
+        val oldEntity = eventDao.getEventByIdOnce(event.id)
+        if (oldEntity != null) {
+            val removedPhotos = oldEntity.photos.toSet() - event.photos.toSet()
+            if (removedPhotos.isNotEmpty()) {
+                deletePhotoFiles(removedPhotos.toList())
+            }
+        }
         eventDao.updateEvent(event.toEntity())
+    }
 
     override suspend fun deleteEvent(id: Long) = database.withTransaction {
         eventDao.getEventByIdOnce(id)?.let { entity ->
@@ -89,6 +98,8 @@ class EventRepositoryImpl @Inject constructor(
 
     override fun getEventCount(): Flow<Int> = eventDao.getEventCount()
 
+    override fun getPhotoCount(): Flow<Int> = eventDao.getPhotoCount()
+
     private suspend fun deletePhotoFiles(photos: List<String>) =
-        ImageCacheManager.deleteLocalPhotos(photos)
+        ImageFileManager.deleteLocalPhotos(photos)
 }

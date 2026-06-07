@@ -29,13 +29,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.tang.prm.domain.divination.model.DivinationRecord
+import com.tang.prm.domain.util.DateUtils
 import com.tang.prm.engine.divination.model.LiuyaoData
 import com.tang.prm.engine.divination.model.MeihuaData
 import com.tang.prm.ui.theme.SignalGreen
 import kotlinx.serialization.json.Json
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
 
 @Composable
 internal fun RecordItem(
@@ -69,8 +67,7 @@ internal fun RecordItem(
     val changedName = liuyaoData?.changedName ?: meihuaData?.changedName ?: ""
     val methodKey = meihuaData?.calculation?.methodKey ?: ""
 
-    val dateFormat = SimpleDateFormat("MM/dd HH:mm", Locale.getDefault())
-    val dateStr = dateFormat.format(Date(record.createdAt))
+    val dateStr = DateUtils.formatMonthDaySlashTime(record.createdAt)
 
     Surface(
         modifier = Modifier

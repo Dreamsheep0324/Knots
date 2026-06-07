@@ -22,6 +22,7 @@ import javax.inject.Inject
 data class ThoughtsDataState(
     val allThoughts: List<Thought> = emptyList(),
     val contacts: List<Contact> = emptyList(),
+    val contactMap: Map<Long, Contact> = emptyMap(),
     val contactThoughts: List<ContactThoughts> = emptyList(),
     val todoThoughts: List<Thought> = emptyList(),
     val filteredThoughts: List<Thought> = emptyList(),
@@ -74,9 +75,6 @@ class ThoughtsViewModel @Inject constructor(
     private val _dialogType = MutableStateFlow(ThoughtType.MURMUR)
     private val _favoriteIds = MutableStateFlow<Set<Long>>(emptySet())
 
-    // O(1) 联系人查找 Map
-    private val contactMap = mutableMapOf<Long, Contact>()
-
     init {
         viewModelScope.launch {
             favoriteToggleUseCase.getFavoriteIds(SourceTypes.THOUGHT).collect { ids ->
@@ -115,14 +113,11 @@ class ThoughtsViewModel @Inject constructor(
         dialogState,
         _favoriteIds
     ) { listState, filter, dialog, favIds ->
-        // 维护 O(1) 查找 Map
-        contactMap.clear()
-        listState.contacts.forEach { contactMap[it.id] = it }
-
         ThoughtsUiState(
             data = ThoughtsDataState(
                 allThoughts = listState.allThoughts,
                 contacts = listState.contacts,
+                contactMap = listState.contacts.associateBy { it.id },
                 contactThoughts = listState.contactThoughts,
                 todoThoughts = listState.todoThoughts,
                 filteredThoughts = listState.filteredThoughts,
@@ -139,7 +134,7 @@ class ThoughtsViewModel @Inject constructor(
             ),
             gamification = listState.gamification
         )
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), ThoughtsUiState())
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(30_000), ThoughtsUiState())
 
     fun thoughtExp(thought: Thought): Int = thoughtListUseCase.thoughtExp(thought)
 
@@ -224,12 +219,12 @@ class ThoughtsViewModel @Inject constructor(
     /** O(1) Map 查找替代原 O(n) 线性扫描 */
     fun getContactName(contactId: Long?): String? {
         if (contactId == null) return null
-        return contactMap[contactId]?.name
+        return uiState.value.data.contactMap[contactId]?.name
     }
 
     fun getContactAvatar(contactId: Long?): String? {
         if (contactId == null) return null
-        return contactMap[contactId]?.avatar
+        return uiState.value.data.contactMap[contactId]?.avatar
     }
 
     fun toggleFavorite(thoughtId: Long, content: String) {

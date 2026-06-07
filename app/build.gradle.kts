@@ -23,8 +23,8 @@ android {
         applicationId = "com.tang.prm"
         minSdk = 26
         targetSdk = 35
-        versionCode = 10201
-        versionName = "1.2.1"
+        versionCode = 10300
+        versionName = "1.3.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -79,15 +79,21 @@ android {
 
 dependencies {
     // 模块依赖
-    implementation(project(":core:data"))
     implementation(project(":core:domain"))
+    implementation(project(":core:data"))   // Hilt @Binds 需要编译时可见
     implementation(project(":core:ui"))
     implementation(project(":engine:divination"))
     implementation(project(":feature:divination"))
     implementation(project(":feature:remember"))
     implementation(project(":feature:people"))
-    implementation(project(":feature:encounter"))
+    implementation(project(":feature:events"))
+    implementation(project(":feature:chat"))
+    implementation(project(":feature:gifts"))
     implementation(project(":feature:reflect"))
+    implementation(project(":feature:subscription"))
+    implementation(project(":feature:profile"))
+    implementation(project(":feature:circle"))
+    implementation(project(":feature:home"))
 
     // Coil — app 直接使用 AsyncImage（core:data 不再 api 透传）
     implementation("io.coil-kt:coil-compose:2.7.0")
@@ -106,6 +112,7 @@ dependencies {
     implementation("androidx.core:core-ktx:1.15.0")
     implementation("androidx.activity:activity-compose:1.9.3")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.7")
+    implementation("androidx.lifecycle:lifecycle-process:2.8.7")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.7")
     implementation("androidx.lifecycle:lifecycle-runtime-compose:2.8.7")
     implementation("androidx.navigation:navigation-compose:2.8.5")

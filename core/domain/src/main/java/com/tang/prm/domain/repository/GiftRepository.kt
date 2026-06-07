@@ -14,4 +14,5 @@ interface GiftRepository {
     suspend fun deleteGiftsByContactId(contactId: Long)
     suspend fun saveGiftWithPhotos(gift: Gift, photoUris: List<String>): Pair<Long, Int>
     fun getGiftCount(): Flow<Int>
+    fun getPhotoCount(): Flow<Int>
 }

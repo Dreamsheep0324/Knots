@@ -15,7 +15,7 @@ import androidx.room.PrimaryKey
             onDelete = ForeignKey.SET_NULL
         )
     ],
-    indices = [Index("contactId")]
+    indices = [Index("contactId"), Index("type"), Index("isTodo")]
 )
 data class ThoughtEntity(
     @PrimaryKey(autoGenerate = true)

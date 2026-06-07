@@ -1,5 +1,6 @@
 package com.tang.prm.data.local.entity
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
@@ -15,7 +16,7 @@ import androidx.room.PrimaryKey
             onDelete = ForeignKey.CASCADE
         )
     ],
-    indices = [Index("contactId")]
+    indices = [Index("contactId"), Index("date")]
 )
 data class GiftEntity(
     @PrimaryKey(autoGenerate = true)
@@ -30,6 +31,8 @@ data class GiftEntity(
     val description: String?,
     val location: String?,
     val photos: List<String> = emptyList(),
+    @ColumnInfo(name = "photos_count", defaultValue = "0")
+    val photosCount: Int = 0,
     val createdAt: Long = System.currentTimeMillis(),
     val updatedAt: Long = System.currentTimeMillis()
 )

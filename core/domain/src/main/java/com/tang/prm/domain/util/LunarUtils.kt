@@ -8,23 +8,33 @@ import java.util.Calendar
 object LunarUtils {
     data class SolarDate(val year: Int, val month: Int, val day: Int)
 
+    // 缓存：同一天内 solarToLunar 结果不变，避免重复查表计算
+    private val solarToLunarCache = mutableMapOf<String, SolarDate?>()
+    private val lunarToSolarCache = mutableMapOf<String, Triple<Int, Int, Int>?>()
+
     fun lunarToSolar(year: Int, lunarMonth: Int, lunarDay: Int, isLeap: Boolean = false): Triple<Int, Int, Int>? {
-        return try {
-            val lunar = Lunar.fromYmd(year, lunarMonth, lunarDay)
-            val solar = lunar.solar
-            Triple(solar.year, solar.month, solar.day)
-        } catch (e: Exception) {
-            null
+        val key = "$year-$lunarMonth-$lunarDay-$isLeap"
+        return lunarToSolarCache.getOrPut(key) {
+            try {
+                val lunar = Lunar.fromYmd(year, lunarMonth, lunarDay)
+                val solar = lunar.solar
+                Triple(solar.year, solar.month, solar.day)
+            } catch (e: Exception) {
+                null
+            }
         }
     }
 
     fun solarToLunar(year: Int, month: Int, day: Int): SolarDate? {
-        return try {
-            val solar = Solar.fromYmd(year, month, day)
-            val lunar = solar.lunar
-            SolarDate(lunar.year, lunar.month, lunar.day)
-        } catch (e: Exception) {
-            null
+        val key = "$year-$month-$day"
+        return solarToLunarCache.getOrPut(key) {
+            try {
+                val solar = Solar.fromYmd(year, month, day)
+                val lunar = solar.lunar
+                SolarDate(lunar.year, lunar.month, lunar.day)
+            } catch (e: Exception) {
+                null
+            }
         }
     }
 

@@ -1,4 +1,4 @@
-﻿package com.tang.prm.ui.components
+package com.tang.prm.ui.components
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -208,12 +208,18 @@ fun AddTypeDialog(
         "#14B8A6", "#06B6D4", "#3B82F6",
         "#6366F1", "#8B5CF6", "#EC4899"
     )
-    val iconOptions = listOf(
+    val iconOptions = if (showIconPicker) listOf(
         "People", "Person", "Group", "Restaurant", "LocalCafe", "Flight",
         "DirectionsCar", "Hotel", "Phone", "Message", "Videocam", "Email",
         "Work", "School", "Home", "Event", "Favorite", "Star",
         "AutoAwesome", "Celebration", "CardGiftcard", "Cake", "MusicNote", "SportsSoccer",
         "FitnessCenter", "ShoppingBag", "Pets", "LocalHospital", "ChildCare", "RocketLaunch"
+    ) else listOf(
+        "Cloud", "Storage", "Security", "Language", "SmartDisplay", "Headphones",
+        "Videocam", "Palette", "Brush", "AutoStories", "MenuBook", "Podcasts",
+        "SportsEsports", "FitnessCenter", "HealthAndSafety", "CreditCard", "Receipt", "ShoppingCart",
+        "Subscriptions", "Devices", "Wifi", "VpnKey", "Backup", "Terminal",
+        "Work", "School", "Home", "MusicNote", "ShoppingBag", "Pets"
     )
 
     Dialog(onDismissRequest = onDismiss) {

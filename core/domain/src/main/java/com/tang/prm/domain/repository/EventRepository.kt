@@ -20,4 +20,5 @@ interface EventRepository {
     suspend fun deleteEventParticipant(eventId: Long, contactId: Long)
 
     fun getEventCount(): Flow<Int>
+    fun getPhotoCount(): Flow<Int>
 }

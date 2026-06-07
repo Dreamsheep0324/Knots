@@ -5,6 +5,110 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.0] - 2026-06-07
+
+### Added
+
+- **订阅功能** — 完整的订阅管理模块 (`:feature:subscription`)
+  - 订阅列表页：搜索栏、统计摘要卡片、分类筛选标签、分类分组卡片、空状态
+  - 新建/编辑页：TagSelector 单选分类（图标+颜色）、价格与周期选择、日期选择、备注
+  - 订阅详情页：HeroCard、日均/月均/年均费用转换、订阅时长（年/月/日）、扣费进度、日期信息、周期信息、备注
+  - 订阅统计页：年度预估、关键指标网格、分类占比圆环图（含每分类订阅列表）、扣费日历
+  - 首页订阅角标：HomeStatsUseCase 12-Flow combine，首页信号卡片显示订阅数量
+  - `SubscriptionCycle` 枚举：WEEKLY/MONTHLY/QUARTERLY/YEARLY/ONE_TIME
+  - `computeNextBillingDate()` 扩展：基于 startDate + cycle 计算下次扣费日期
+  - `computedStatus()` 扩展：在 VM 层计算 EXPIRED 状态（nextBillingDate < now）
+  - 数据库 v33→v34：新增 `subscriptions` 表
+
+- **头像裁剪功能** — 新建/编辑人物时上传头像支持裁剪
+  - `AvatarCropDialog` 组件：圆形蒙版预览、单指拖动、双指缩放
+  - Canvas 直接绘制图片 + 4 矩形遮罩（兼容所有设备）
+  - 降采样加载预览图（`loadSampledBitmap`，800px 采样，避免大图卡顿）
+  - 裁剪输出 512x512 JPEG，预览与裁剪坐标精确映射（`scaleFactor` 偏移量缩放）
+
+- **相册多人物显示** — 每日/事件/网格视图均显示所有关联人物
+  - `AlbumPhoto` 新增 `allContactNames`/`allContactAvatars` 列表字段
+  - `PhotoAlbumAggregationUseCase` 收集所有参与者信息（不再只取 `firstOrNull()`）
+  - 每日视图：顿号连接显示所有联系人名字
+  - 事件视图：遍历显示所有联系人头像+名字
+  - 照片查看器：显示所有联系人头像+名字
+  - 网格视图：不显示人物，右上角显示类型图标（事件/对话/礼物）
+
+- **扣费日历组件** — 订阅统计页新增月历视图
+  - 完整月历网格（日一二三四五六）
+  - 扣费日高亮（Amber 底色），今天高亮（Primary 底色）
+  - 每个扣费日下方显示分类颜色圆点
+  - 右上角显示本月扣费次数标签
+
+- **WebDAV 增量同步** — 通过 WebDAV 协议将数据增量同步到用户自有云存储，仅传输变更文件
+  - `WebDavClient`：15 个协议方法，按职责分为 5 组（连接与目录/旧版全量文件/增量同步专用/小文件与元数据），基于 OkHttp + XmlPullParser 解析 multistatus XML 响应
+  - `SyncManifest` + `FileEntry`：增量同步清单模型（kotlinx-serialization），记录版本号/时间戳/数据库文件名/图片文件列表，作为同步索引
+  - `WebDavRepositoryImpl` 增量同步调度：
+    - 上传 7 步流程：确保远程目录→读取远端清单→扫描本地文件（过滤孤立文件）→计算 diff→上传数据库（删除旧 DB）→逐个上传图片+清理远端多余→更新并上传 manifest
+    - 下载 6 步流程：读取远端清单（无清单降级全量 ZIP）→扫描本地文件→计算反向 diff→逐个下载图片→删除本地多余图片→恢复数据库
+    - `computeFileDiff()`/`computeDownloadDiff()`：基于 `FileEntry.modified` 时间戳的双向 diff
+    - `isDbChanged()`：比较本地 DB 文件（含 WAL）修改时间与 manifest 中 `dbTimestamp`
+  - 远程目录结构：`/knots_backup/`（manifest.json + db/ + images/ + gift_photos/）
+  - `WebDavSyncUseCase`：8 个方法（含 `cleanOrphanedImages`），Domain 层统一入口
+  - `WebDavSyncScreen` 完整 UI：服务器配置表单、测试连接、上传/恢复操作卡片、自动同步开关、清理孤立图片按钮（`CleanOrphanedImagesButton`）、云端版本列表（增量版本显示图片数量）、上次同步时间
+  - 兼容性：无 manifest 时自动降级为旧版全量 ZIP 流程
+  - 设置页新增独立入口（WebDAV 同步），与备份恢复并列
+
+### Changed
+
+- **订阅详情页重组**：
+  - 移除 PaymentForecastCard（费用预测）和 ForecastRow 组件
+  - CostConversionRow 移至 HeroCard 下方，标签改为日均/月均/年均
+  - SubscriptionTimelineCard 移至 BillingProgressCard 上方
+  - SubscriptionTimelineCard 移除累计已付（Coral 高亮），时长顺序改为年/月/日
+
+- **订阅统计页重设计**：
+  - 移除 CostAnalysisCard 和 SubscriptionHealthCard
+  - YearlyProjectionCard 移至最上方
+  - CategoryBreakdownCard 改为圆环图设计（Canvas 绘制，中心显示年度总计，下方图例含每分类订阅列表）
+  - 圆环配色优化：柔蓝、薄荷绿、暖金、珊瑚红、天青、紫藤、蜜橙、青碧
+
+- **足迹列表**：移除每条足迹右下角的联系人头像和名字
+
+- **TagSelector 图标修复**：事件类型和订阅分类的图标列表修正（之前两组图标写反了）
+
+### Fixed
+
+- 修复订阅保存失败：`nextBillingDate` 默认为当前时间导致立即 EXPIRED，改为 `computeNextBillingDate()` 计算未来日期
+- 修复新建人物日期无法选择：`Modifier.then(if...)` 不可点击，改为条件变量 + `clip().clickable()`
+- 修复首页动画重置：LazyColumn 回收 OrbitalCalendarCanvas 导致动画状态丢失，改为 Column + verticalScroll
+- 修复首页订阅角标显示为零：补全 SubscriptionRepository → HomeStatsUseCase → HomeViewModel → HomeScreen 数据链
+- 修复相册"查看全部X张"点击无反应：`clickable { }` 空实现改为 `clickable { onPhotoClick(4) }`
+- 修复相册只显示第一个人物：UseCase 中 `participants.firstOrNull()` 改为收集所有参与者
+- 修复编辑礼物替换照片后旧照片文件残留：`updateGift()` 新增 `oldPhotos.toSet() - newPhotos.toSet()` 差集计算并删除被替换的照片文件
+- 修复编辑事件替换照片后旧照片文件残留：`updateEvent()` 同上逻辑，删除被移除的照片文件
+- 修复删除联系人后头像和礼物照片文件未清理：`deleteContact()` 在 CASCADE 删除前收集图片路径，CASCADE 后清理文件
+- 修复编辑联系人头像变更后旧头像文件残留：`updateContact()` 头像变更时删除旧头像文件
+- 修复 WebDAV 云端备份大小始终显示 0B：HEAD 请求不可靠，改用 PROPFIND + XML 解析 `getcontentlength` 获取文件大小
+- 修复 WebDAV 远程数据库 ZIP 文件累积：上传新备份后自动删除旧文件
+- 修复孤立图片文件累积：新增 `cleanOrphanedImages()` 清理未被数据库引用的图片文件
+- 修复备份包含孤立图片文件：`backupToFileInternal()` 只打包数据库引用的图片，跳过孤立文件
+- 修复 `computeDataFingerprint` 统计孤立文件导致误触发自动备份：改为只统计数据库引用的图片
+- 修复 `AddChatViewModel.loadContacts()` 使用 `collect` 导致旧值处理未取消：改为 `collectLatest`
+
+### Architecture
+
+- **EventsViewModel 响应式重构 (ARCH-1)**：3 个独立 `launch + collectLatest` 命令式管道 → `combine + stateIn` 声明式单一数据源管道
+  - 移除 `_uiState` MutableStateFlow、`init` 块、`loadContacts()`/`loadEventTypes()`/`loadEvents()`/`clearError()` 方法
+  - `uiState` 改为 `combine(dataFlow, uiSelections)` + `stateIn(WhileSubscribed(30_000))` 派生
+  - 嵌套 combine 解决 Kotlin `combine` 最多 5 参数限制（`dataFlow` 聚合 3 个数据源，`uiSelections` 聚合 5 个 UI 状态）
+  - 新增 `UiSelections` 私有数据类承载 UI 选择状态
+
+- **ImageFileManager 层级纠偏 (ARCH-2)**：消除 `core:data` → `core:ui` 的反向依赖
+  - 新增 `core:data/util/ImageFileManager.kt`：图片文件 I/O 操作（copyToInternalStorage/deleteImage/deleteLocalPhotos/isLocalPath/fileExists）
+  - `ContactRepositoryImpl`/`GiftRepositoryImpl`/`EventRepositoryImpl`/`BackupRepository` 全部改用 `ImageFileManager`
+  - `ImageCacheManager`（core:ui）恢复为独立实现，不再代理 `ImageFileManager`（core:ui 无法依赖 core:data，会造成循环依赖）
+
+- **BackupRepository 代码去重 (ARCH-3)**：消除 `getReferencedImageFileNames()` 和 `getReferencedImageFilesSync()` 约 30 行重复代码
+  - 合并为统一的 `queryReferencedImageFileNames()` 私有方法
+  - `getReferencedImageFileNames()`（公开接口）委托调用 `queryReferencedImageFileNames()`
+  - `backupToFileInternal()` 和 `computeDataFingerprint()` 内部调用也改为 `queryReferencedImageFileNames()`
+
 ## [1.2.1] - 2026-06-05
 
 ### Architecture

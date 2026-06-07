@@ -1,5 +1,6 @@
 package com.tang.prm.data.local.entity
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
@@ -7,7 +8,7 @@ import androidx.room.PrimaryKey
 
 @Entity(
     tableName = "events",
-    indices = [Index("time")]
+    indices = [Index("time"), Index("type")]
 )
 data class EventEntity(
     @PrimaryKey(autoGenerate = true)
@@ -22,6 +23,8 @@ data class EventEntity(
     val latitude: Double? = null,
     val longitude: Double? = null,
     val photos: List<String> = emptyList(),
+    @ColumnInfo(name = "photos_count", defaultValue = "0")
+    val photosCount: Int = 0,
     val emotion: String? = null,
     val weather: String? = null,
     val amount: Double? = null,
@@ -57,7 +60,14 @@ data class EventParticipantCrossRef(
     val contactId: Long
 )
 
-@Entity(tableName = "todo_items")
+@Entity(
+    tableName = "todo_items",
+    indices = [
+        Index("contactId"),
+        Index("isCompleted"),
+        Index("dueDate")
+    ]
+)
 data class TodoItemEntity(
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0,
@@ -70,7 +80,14 @@ data class TodoItemEntity(
     val createdAt: Long = System.currentTimeMillis()
 )
 
-@Entity(tableName = "reminders")
+@Entity(
+    tableName = "reminders",
+    indices = [
+        Index("contactId"),
+        Index("time"),
+        Index("isCompleted")
+    ]
+)
 data class ReminderEntity(
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0,

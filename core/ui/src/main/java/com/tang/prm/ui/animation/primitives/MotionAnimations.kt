@@ -5,11 +5,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.tang.prm.ui.animation.core.AnimationTokens
 import com.tang.prm.ui.animation.core.rememberPausableInfiniteFloatLoop
-import kotlinx.coroutines.delay
 
 enum class RotationDirection {
     Clockwise,
@@ -43,18 +43,18 @@ fun rememberOrbitalRotations(
         )
     }
     return produceState(initialValue = OrbitalRotationState()) {
-        var lastTime = System.currentTimeMillis()
+        var lastTime = System.nanoTime()
         var scan = 0f; var rotate = 0f; var particle = 0f; var crosshair = 0f
         while (true) {
-            val now = System.currentTimeMillis()
-            val delta = now - lastTime
-            lastTime = now
-            scan = (scan + speeds[0] * delta) % 360f
-            rotate = (rotate + speeds[1] * delta) % 360f
-            particle = (particle + speeds[2] * delta) % 360f
-            crosshair = (crosshair + speeds[3] * delta) % 360f
-            value = OrbitalRotationState(scan, rotate, particle, crosshair)
-            delay(16)
+            withFrameNanos { frameTime ->
+                val delta = (frameTime - lastTime) / 1_000_000f
+                lastTime = frameTime
+                scan = (scan + speeds[0] * delta) % 360f
+                rotate = (rotate + speeds[1] * delta) % 360f
+                particle = (particle + speeds[2] * delta) % 360f
+                crosshair = (crosshair + speeds[3] * delta) % 360f
+                value = OrbitalRotationState(scan, rotate, particle, crosshair)
+            }
         }
     }
 }
@@ -89,15 +89,15 @@ fun rememberContinuousRotation(
     val multiplier = if (direction == RotationDirection.Clockwise) 1f else -1f
     return produceState(initialValue = 0f) {
         val degreesPerMs = 360f * speed / cycleDuration
-        var lastTime = System.currentTimeMillis()
+        var lastTime = System.nanoTime()
         var accumulated = 0f
         while (true) {
-            val now = System.currentTimeMillis()
-            val delta = now - lastTime
-            lastTime = now
-            accumulated = (accumulated + degreesPerMs * delta * multiplier) % 360f
-            value = accumulated
-            delay(16)
+            withFrameNanos { frameTime ->
+                val delta = (frameTime - lastTime) / 1_000_000f
+                lastTime = frameTime
+                accumulated = (accumulated + degreesPerMs * delta * multiplier) % 360f
+                value = accumulated
+            }
         }
     }
 }

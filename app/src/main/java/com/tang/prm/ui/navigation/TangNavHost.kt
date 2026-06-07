@@ -57,8 +57,19 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.tang.prm.ui.profile.UpdateResult
-import com.tang.prm.ui.profile.checkForUpdate
+import com.tang.prm.feature.profile.UpdateResult
+import com.tang.prm.feature.profile.checkForUpdate
+import com.tang.prm.feature.chat.navigation.chatGraph
+import com.tang.prm.feature.circle.navigation.circleGraph
+import com.tang.prm.feature.divination.navigation.divinationGraph
+import com.tang.prm.feature.events.navigation.eventsGraph
+import com.tang.prm.feature.gifts.navigation.giftsGraph
+import com.tang.prm.feature.home.navigation.homeGraph
+import com.tang.prm.feature.people.navigation.peopleGraph
+import com.tang.prm.feature.profile.navigation.profileGraph
+import com.tang.prm.feature.reflect.navigation.reflectGraph
+import com.tang.prm.feature.remember.navigation.rememberGraph
+import com.tang.prm.feature.subscription.navigation.subscriptionGraph
 import com.tang.prm.ui.theme.DialogDefaults
 
 @Composable
@@ -149,11 +160,16 @@ fun TangNavHost(
             popExitTransition = transitions.popExitTransition
         ) {
             homeGraph(navController, overlayVisible) { overlayVisible = it }
+            giftsGraph(navController)
+            reflectGraph(navController)
+            circleGraph(navController)
+            divinationGraph(navController)
+            subscriptionGraph(navController)
+            peopleGraph(navController) { overlayVisible = it }
+            rememberGraph(navController)
+            profileGraph(navController)
             eventsGraph(navController)
-            anniversaryGraph(navController)
             chatGraph(navController)
-            contactsGraph(navController) { overlayVisible = it }
-            settingsGraph(navController)
         }
 
         if (showBottomBar && !overlayVisible) {
@@ -184,6 +200,18 @@ private fun GlassBottomBar(
 ) {
     val surfaceColor = MaterialTheme.colorScheme.surface
 
+    val topLineBrush = remember(surfaceColor) {
+        Brush.horizontalGradient(
+            colors = listOf(
+                Color.Transparent,
+                surfaceColor.copy(alpha = 0.54f),
+                surfaceColor.copy(alpha = 0.72f),
+                surfaceColor.copy(alpha = 0.54f),
+                Color.Transparent
+            )
+        )
+    }
+
     Box(
         modifier = modifier
             .fillMaxWidth()
@@ -206,15 +234,7 @@ private fun GlassBottomBar(
                         .align(Alignment.TopCenter)
                 ) {
                     drawLine(
-                        brush = Brush.horizontalGradient(
-                            colors = listOf(
-                                Color.Transparent,
-                                surfaceColor.copy(alpha = 0.54f),
-                                surfaceColor.copy(alpha = 0.72f),
-                                surfaceColor.copy(alpha = 0.54f),
-                                Color.Transparent
-                            )
-                        ),
+                        brush = topLineBrush,
                         start = Offset(0f, 0f),
                         end = Offset(size.width, 0f),
                         strokeWidth = 1f

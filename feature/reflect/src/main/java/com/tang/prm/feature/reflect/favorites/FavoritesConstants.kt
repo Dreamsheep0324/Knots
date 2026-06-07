@@ -119,7 +119,7 @@ internal fun getRouteForType(sourceType: String, sourceId: Long): Any? {
         SourceTypes.DIALOG -> ChatDetailRoute(sourceId)
         SourceTypes.THOUGHT -> ThoughtsRoute
         SourceTypes.GIFT -> GiftDetailRoute(sourceId)
-        SourceTypes.PHOTO -> PhotoAlbumRoute(sourceId)
+        SourceTypes.PHOTO -> PhotoAlbumRoute.targeting(sourceId)
         else -> null
     }
 }

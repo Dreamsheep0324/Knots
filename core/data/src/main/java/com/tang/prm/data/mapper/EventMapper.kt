@@ -21,7 +21,8 @@ fun Event.toEntity() = EventEntity(
     id = id, type = customTypeName ?: type.name, title = title, description = description,
     customTypeName = customTypeName,
     time = time, endTime = endTime, location = location, latitude = latitude, longitude = longitude,
-    photos = photos, emotion = emotion, weather = weather, amount = amount, remarks = remarks,
+    photos = photos, photosCount = photos.size,
+    emotion = emotion, weather = weather, amount = amount, remarks = remarks,
     promise = promise, conversationSummary = conversationSummary, giftName = giftName,
     createdAt = createdAt, updatedAt = updatedAt
 )

@@ -29,7 +29,9 @@ object DateUtils {
         TIME_WITH_SECONDS("HH:mm:ss"),
         DATE_TIME_HYPHEN("yyyy-MM-dd HH:mm"),
         MONTH_DAY_DOT("MM.dd"),
-        MONTH_DAY_DOT_TIME("MM.dd HH:mm");
+        MONTH_DAY_DOT_TIME("MM.dd HH:mm"),
+        MONTH_DAY_SLASH_TIME("MM/dd HH:mm"),
+        YEAR_MONTH_DAY_SLASH_TIME("yyyy/MM/dd HH:mm");
 
         val formatter = DateTimeFormatter.ofPattern(pattern, Locale.getDefault())
     }
@@ -106,6 +108,10 @@ object DateUtils {
     fun formatMonthDayDot(timestamp: Long): String = formatWith(timestamp, DateFormat.MONTH_DAY_DOT)
 
     fun formatMonthDayDotTime(timestamp: Long): String = formatWith(timestamp, DateFormat.MONTH_DAY_DOT_TIME)
+
+    fun formatMonthDaySlashTime(timestamp: Long): String = formatWith(timestamp, DateFormat.MONTH_DAY_SLASH_TIME)
+
+    fun formatYearMonthDaySlashTime(timestamp: Long): String = formatWith(timestamp, DateFormat.YEAR_MONTH_DAY_SLASH_TIME)
 
     fun formatShortDate(timestamp: Long): String = formatWith(timestamp, DateFormat.SHORT_DATE)
 

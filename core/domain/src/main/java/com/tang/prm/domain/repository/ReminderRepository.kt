@@ -14,4 +14,5 @@ interface ReminderRepository {
     suspend fun markReminderCompleted(id: Long)
     suspend fun markReminderIgnored(id: Long)
     suspend fun deleteReminder(id: Long)
+    suspend fun getActiveRemindersSync(currentTime: Long = System.currentTimeMillis()): List<Reminder>
 }

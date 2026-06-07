@@ -51,4 +51,7 @@ interface AnniversaryDao {
 
     @Query("DELETE FROM anniversaries WHERE contactId = :contactId")
     suspend fun deleteAnniversariesByContact(contactId: Long)
+
+    @Query("SELECT * FROM anniversaries WHERE contactId = :contactId")
+    suspend fun getAnniversariesByContactOnce(contactId: Long): List<AnniversaryEntity>
 }

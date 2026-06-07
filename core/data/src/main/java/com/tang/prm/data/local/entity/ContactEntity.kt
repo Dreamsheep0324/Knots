@@ -1,9 +1,19 @@
 package com.tang.prm.data.local.entity
 
 import androidx.room.Entity
+import androidx.room.Index
 import androidx.room.PrimaryKey
 
-@Entity(tableName = "contacts")
+@Entity(
+    tableName = "contacts",
+    indices = [
+        Index("intimacyScore"),
+        Index("lastInteractionTime"),
+        Index("groupId"),
+        Index("relationship"),
+        Index("name")
+    ]
+)
 data class ContactEntity(
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0,

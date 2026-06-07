@@ -4,7 +4,6 @@ import com.google.gson.Gson
 import com.tang.prm.data.remote.ChatMessage
 import com.tang.prm.data.remote.ChatRequest
 import com.tang.prm.data.remote.ChatStreamResponse
-import com.tang.prm.data.remote.TangApiService
 import com.tang.prm.domain.repository.AiRepository
 import com.tang.prm.domain.repository.SettingsRepository
 import kotlinx.coroutines.Dispatchers
@@ -17,13 +16,15 @@ import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
+import java.io.IOException
+import java.net.SocketTimeoutException
+import java.net.UnknownHostException
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class AiRepositoryImpl @Inject constructor(
     private val okHttpClient: OkHttpClient,
-    private val tangApiService: TangApiService,
     private val settingsRepository: SettingsRepository
 ) : AiRepository {
 
@@ -57,8 +58,9 @@ class AiRepositoryImpl @Inject constructor(
             .post(jsonBody.toRequestBody(jsonMediaType))
             .build()
 
+        val call = okHttpClient.newCall(httpRequest)
         try {
-            okHttpClient.newCall(httpRequest).execute().use { response ->
+            call.execute().use { response ->
                 if (!response.isSuccessful) {
                     val errorCode = response.code
                     val errorMsg = when (errorCode) {
@@ -96,12 +98,17 @@ class AiRepositoryImpl @Inject constructor(
                     }
                 }
             }
-        } catch (e: Exception) {
+        } catch (e: SocketTimeoutException) {
+            trySend("ERROR:TIMEOUT")
+        } catch (e: UnknownHostException) {
+            trySend("ERROR:DNS_FAILED")
+        } catch (e: IOException) {
             trySend("ERROR:NETWORK")
+        } catch (e: Exception) {
+            trySend("ERROR:${e.javaClass.simpleName}")
         }
 
-        close()
-        awaitClose()
+        awaitClose { call.cancel() }
     }.flowOn(Dispatchers.IO)
 
     override suspend fun testConnection(): Result<String> {
@@ -119,16 +126,25 @@ class AiRepositoryImpl @Inject constructor(
             maxTokens = 5
         )
 
+        val jsonBody = gson.toJson(request)
+        val httpRequest = Request.Builder()
+            .url(url)
+            .addHeader("Authorization", "Bearer $apiKey")
+            .addHeader("Content-Type", "application/json")
+            .post(jsonBody.toRequestBody(jsonMediaType))
+            .build()
+
         return try {
-            val response = tangApiService.chatCompletion(url, "Bearer $apiKey", request)
-            if (response.isSuccessful) {
-                Result.success("连接成功，模型: $model")
-            } else {
-                when (response.code()) {
-                    401 -> Result.failure(Exception("API密钥无效"))
-                    429 -> Result.failure(Exception("请求过于频繁，请稍后重试"))
-                    in 500..599 -> Result.failure(Exception("服务器错误(${response.code()})"))
-                    else -> Result.failure(Exception("请求失败(${response.code()})"))
+            okHttpClient.newCall(httpRequest).execute().use { response ->
+                if (response.isSuccessful) {
+                    Result.success("连接成功，模型: $model")
+                } else {
+                    when (response.code) {
+                        401 -> Result.failure(Exception("API密钥无效"))
+                        429 -> Result.failure(Exception("请求过于频繁，请稍后重试"))
+                        in 500..599 -> Result.failure(Exception("服务器错误(${response.code})"))
+                        else -> Result.failure(Exception("请求失败(${response.code})"))
+                    }
                 }
             }
         } catch (e: java.net.SocketTimeoutException) {

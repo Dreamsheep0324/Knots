@@ -8,7 +8,9 @@ import com.tang.prm.domain.model.Anniversary
 import com.tang.prm.domain.model.AnniversaryType
 import com.tang.prm.domain.repository.AnniversaryRepository
 import com.tang.prm.domain.util.DateCalcUtils
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import com.tang.prm.data.mapper.mapList
 import com.tang.prm.data.mapper.mapNullable
@@ -52,7 +54,7 @@ class AnniversaryRepositoryImpl @Inject constructor(
                 .sortedBy { it.second }
                 .take(limit)
                 .map { it.first }
-        }
+        }.flowOn(Dispatchers.Default)
     }
 
     override fun getPastAnniversaries(limit: Int): Flow<List<Anniversary>> {
@@ -64,7 +66,7 @@ class AnniversaryRepositoryImpl @Inject constructor(
                 .sortedByDescending { it.second }
                 .take(limit)
                 .map { it.first }
-        }
+        }.flowOn(Dispatchers.Default)
     }
 
     override fun getAnniversariesByType(type: String): Flow<List<Anniversary>> =

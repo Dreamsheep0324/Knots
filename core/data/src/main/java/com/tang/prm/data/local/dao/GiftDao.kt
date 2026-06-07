@@ -38,4 +38,7 @@ interface GiftDao {
 
     @Query("SELECT COUNT(*) FROM gifts")
     fun getGiftCount(): Flow<Int>
+
+    @Query("SELECT COALESCE(SUM(photos_count), 0) FROM gifts")
+    fun getPhotoCount(): Flow<Int>
 }

@@ -35,6 +35,9 @@ internal fun groupPhotosByDate(photos: List<AlbumPhoto>): List<PhotoGroup> {
     val grouped = photos.groupBy { DateUtils.formatYearMonthDayChineseFull(it.date) }
     return grouped.map { (dateLabel, datePhotos) ->
         val firstPhoto = datePhotos.first()
+        val contacts = datePhotos.flatMap { photo ->
+            photo.allContactNames.zip(photo.allContactAvatars).map { (name, avatar) -> Pair(avatar, name) }
+        }.distinctBy { it.second }
         PhotoGroup(
             groupType = "daily",
             groupKey = dateLabel,
@@ -42,6 +45,7 @@ internal fun groupPhotosByDate(photos: List<AlbumPhoto>): List<PhotoGroup> {
             subtitle = "${datePhotos.size}张照片",
             contactName = firstPhoto.contactName,
             contactAvatar = firstPhoto.contactAvatar,
+            contacts = contacts,
             date = firstPhoto.date,
             location = firstPhoto.location,
             photos = datePhotos
@@ -59,6 +63,9 @@ internal fun groupPhotosBySource(photos: List<AlbumPhoto>): List<PhotoGroup> {
             "gift" -> "礼物"
             else -> "其他"
         }
+        val contacts = groupPhotos.flatMap { photo ->
+            photo.allContactNames.zip(photo.allContactAvatars).map { (name, avatar) -> Pair(avatar, name) }
+        }.distinctBy { it.second }
         PhotoGroup(
             groupType = "event",
             groupKey = key,
@@ -66,6 +73,7 @@ internal fun groupPhotosBySource(photos: List<AlbumPhoto>): List<PhotoGroup> {
             subtitle = subtitle,
             contactName = firstPhoto.contactName,
             contactAvatar = firstPhoto.contactAvatar,
+            contacts = contacts,
             date = firstPhoto.date,
             location = firstPhoto.location,
             photos = groupPhotos

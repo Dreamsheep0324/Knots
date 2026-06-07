@@ -11,7 +11,7 @@ import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.tang.prm.MainActivity
 import com.tang.prm.R
-import com.tang.prm.data.local.dao.ReminderDao
+import com.tang.prm.domain.repository.ReminderRepository
 import dagger.hilt.android.EntryPointAccessors
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
@@ -23,7 +23,7 @@ import kotlinx.coroutines.launch
 @dagger.hilt.InstallIn(dagger.hilt.components.SingletonComponent::class)
 @dagger.hilt.EntryPoint
 interface ReminderEntryPoint {
-    fun reminderDao(): ReminderDao
+    fun reminderRepository(): ReminderRepository
 }
 
 class ReminderReceiver : BroadcastReceiver() {
@@ -47,12 +47,12 @@ class ReminderReceiver : BroadcastReceiver() {
                 context.applicationContext,
                 ReminderEntryPoint::class.java
             )
-            val reminderDao = entryPoint.reminderDao()
+            val reminderRepository = entryPoint.reminderRepository()
             val pendingResult = goAsync()
             val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
             scope.launch {
                 try {
-                    reminderDao.markReminderCompleted(reminderId)
+                    reminderRepository.markReminderCompleted(reminderId)
                 } finally {
                     scope.cancel()
                     pendingResult.finish()
@@ -122,7 +122,7 @@ class BootReceiver : BroadcastReceiver() {
                 context.applicationContext,
                 ReminderEntryPoint::class.java
             )
-            val reminderDao = entryPoint.reminderDao()
+            val reminderRepository = entryPoint.reminderRepository()
 
             val pendingResult = goAsync()
             val exceptionHandler = CoroutineExceptionHandler { _, throwable ->
@@ -131,7 +131,7 @@ class BootReceiver : BroadcastReceiver() {
             val scope = CoroutineScope(Dispatchers.IO + SupervisorJob() + exceptionHandler)
             scope.launch {
                 try {
-                    val reminders = reminderDao.getActiveRemindersSync()
+                    val reminders = reminderRepository.getActiveRemindersSync()
                     val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as android.app.AlarmManager
                     for (reminder in reminders) {
                         if (reminder.time > System.currentTimeMillis()) {

@@ -8,6 +8,8 @@ import com.tang.prm.domain.model.ClearDataResult
 import com.tang.prm.domain.model.RestoreResult
 import com.tang.prm.domain.repository.BackupRepositoryInterface
 import com.tang.prm.domain.usecase.BackupRestoreUseCase
+import com.tang.prm.feature.profile.BackupState
+import com.tang.prm.feature.profile.BackupViewModel
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.junit5.MockKExtension

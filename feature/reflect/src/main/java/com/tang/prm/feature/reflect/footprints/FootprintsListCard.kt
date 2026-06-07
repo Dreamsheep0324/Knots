@@ -147,12 +147,11 @@ internal fun ListCard(
             }
 
             val hasMeta = !footprint.weather.isNullOrBlank() || !footprint.emotion.isNullOrBlank()
-            if (hasMeta || footprint.contactName != null) {
+            if (hasMeta) {
                 Spacer(modifier = Modifier.height(12.dp))
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
                     Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                         if (!footprint.weather.isNullOrBlank()) {
@@ -172,31 +171,6 @@ internal fun ListCard(
                                 text = footprint.emotion!!,
                                 bgColor = eColor.copy(alpha = AnimationTokens.Alpha.faint),
                                 textColor = eColor
-                            )
-                        }
-                    }
-
-                    if (footprint.contactName != null) {
-                        val contactName = footprint.contactName!!
-                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                            Box(
-                                modifier = Modifier
-                                    .size(20.dp)
-                                    .background(accentColor, CircleShape),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text(
-                                    text = contactName.firstOrNull()?.toString() ?: "?",
-                                    color = Color.White,
-                                    fontFamily = FontFamily.Monospace,
-                                    fontSize = 9.sp,
-                                    fontWeight = FontWeight.Bold
-                                )
-                            }
-                            Text(
-                                text = contactName,
-                                fontSize = 12.sp,
-                                color = TextGray.copy(alpha = AnimationTokens.Alpha.visible)
                             )
                         }
                     }

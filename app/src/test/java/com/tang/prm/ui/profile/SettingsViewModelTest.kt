@@ -5,6 +5,8 @@ import com.google.common.truth.Truth.assertThat
 import com.tang.prm.domain.model.ThemeMode
 import com.tang.prm.domain.repository.AiRepository
 import com.tang.prm.domain.repository.SettingsRepository
+import com.tang.prm.feature.profile.SettingsViewModel
+import com.tang.prm.feature.profile.TestConnectionState
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every

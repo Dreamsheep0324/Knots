@@ -22,4 +22,5 @@ object CustomCategories {
     const val HABIT = "HABIT"
     const val DIET = "DIET"
     const val SKILL = "SKILL"
+    const val SUBSCRIPTION_CATEGORY = "SUBSCRIPTION_CATEGORY"
 }

@@ -26,6 +26,7 @@ import com.tang.prm.domain.model.AlbumPhoto
 import com.tang.prm.ui.components.ContactAvatar
 import com.tang.prm.domain.util.DateUtils
 import com.tang.prm.ui.theme.Dimens
+import com.tang.prm.ui.theme.FavoriteGold
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -126,25 +127,26 @@ internal fun SwipeablePhotoViewerDialog(
                             .align(Alignment.BottomStart)
                             .padding(20.dp)
                     ) {
-                        if (photo.contactName != null) {
-                            val contactName = photo.contactName!!
+                        if (photo.allContactNames.isNotEmpty()) {
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                horizontalArrangement = Arrangement.spacedBy(6.dp)
                             ) {
-                                ContactAvatar(
-                                    avatar = photo.contactAvatar,
-                                    name = contactName,
-                                    size = 32
-                                )
+                                photo.allContactNames.zip(photo.allContactAvatars).forEach { (name, avatar) ->
+                                    ContactAvatar(
+                                        avatar = avatar,
+                                        name = name,
+                                        size = 22
+                                    )
+                                }
                                 Text(
-                                    text = contactName,
-                                    style = MaterialTheme.typography.titleMedium,
-                                    color = Color.White,
-                                    fontWeight = FontWeight.Bold
+                                    text = photo.allContactNames.joinToString("、"),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = Color.White.copy(alpha = 0.9f),
+                                    fontWeight = FontWeight.Medium
                                 )
                             }
-                            Spacer(modifier = Modifier.height(8.dp))
+                            Spacer(modifier = Modifier.height(6.dp))
                         }
                         Text(
                             text = photo.sourceTitle,
@@ -209,7 +211,7 @@ internal fun SwipeablePhotoViewerDialog(
                     Icon(
                         if (currentIsFavorite) Icons.Default.Bookmark else Icons.Default.BookmarkBorder,
                         contentDescription = "收藏",
-                        tint = if (currentIsFavorite) Color(0xFFFFB300) else Color.White,
+                        tint = if (currentIsFavorite) FavoriteGold else Color.White,
                         modifier = Modifier.size(24.dp)
                     )
                 }

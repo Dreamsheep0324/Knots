@@ -44,6 +44,8 @@ class PhotoAlbumAggregationUseCase @Inject constructor(
         allEvents.forEach { event ->
             event.photos.forEachIndexed { photoIndex, photoUri ->
                 val participant = event.participants.firstOrNull()
+                val allNames = event.participants.map { it.name }
+                val allAvatars = event.participants.map { it.avatar }
                 val sourceType = if (event.type == EventType.CONVERSATION) SourceTypes.ALBUM_CHAT else SourceTypes.ALBUM_EVENT
                 allPhotos.add(
                     AlbumPhoto(
@@ -55,6 +57,8 @@ class PhotoAlbumAggregationUseCase @Inject constructor(
                         contactId = participant?.id,
                         contactName = participant?.name,
                         contactAvatar = participant?.avatar,
+                        allContactNames = allNames,
+                        allContactAvatars = allAvatars,
                         date = event.time,
                         location = event.location
                     )

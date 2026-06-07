@@ -18,7 +18,8 @@ data class HomeStats(
     val eventCount: Int = 0,
     val conversationCount: Int = 0,
     val photoCount: Int = 0,
-    val footprintCount: Int = 0
+    val footprintCount: Int = 0,
+    val subscriptionCount: Int = 0
 )
 
 class HomeStatsUseCase @Inject constructor(
@@ -28,7 +29,8 @@ class HomeStatsUseCase @Inject constructor(
     private val favoriteRepository: FavoriteRepository,
     private val circleRepository: CircleRepository,
     private val anniversaryRepository: AnniversaryRepository,
-    private val eventRepository: EventRepository
+    private val eventRepository: EventRepository,
+    private val subscriptionRepository: SubscriptionRepository
 ) {
     fun getStats(): Flow<HomeStats> = combine(
         giftRepository.getGiftCount().distinctUntilChanged(),
@@ -40,8 +42,9 @@ class HomeStatsUseCase @Inject constructor(
         eventRepository.getEventCount().distinctUntilChanged(),
         eventRepository.getEventsByType(EventType.CONVERSATION.name).map { it.size }.distinctUntilChanged(),
         eventRepository.getEventsWithLocation().map { it.size }.distinctUntilChanged(),
-        computeEventPhotoCount().distinctUntilChanged(),
-        computeGiftPhotoCount().distinctUntilChanged()
+        eventRepository.getPhotoCount().distinctUntilChanged(),
+        giftRepository.getPhotoCount().distinctUntilChanged(),
+        subscriptionRepository.getSubscriptionCount().distinctUntilChanged()
     ) { args: Array<Int> ->
         HomeStats(
             giftCount = args[0],
@@ -53,20 +56,8 @@ class HomeStatsUseCase @Inject constructor(
             eventCount = args[6],
             conversationCount = args[7],
             footprintCount = args[8],
-            photoCount = args[9] + args[10]
+            photoCount = args[9] + args[10],
+            subscriptionCount = args[11]
         )
     }
-
-    private fun computeEventPhotoCount(): Flow<Int> =
-        combine(
-            eventRepository.getAllEvents().distinctUntilChanged(),
-            eventRepository.getEventsByType(EventType.CONVERSATION.name).distinctUntilChanged()
-        ) { events, conversations ->
-            (events + conversations).sumOf { it.photos.size }
-        }
-
-    private fun computeGiftPhotoCount(): Flow<Int> =
-        giftRepository.getAllGifts().map { gifts ->
-            gifts.sumOf { it.photos.size }
-        }.distinctUntilChanged()
 }

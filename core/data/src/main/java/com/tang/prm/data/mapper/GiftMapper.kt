@@ -32,6 +32,7 @@ fun Gift.toEntity() = GiftEntity(
     description = description,
     location = location,
     photos = photos,
+    photosCount = photos.size,
     createdAt = createdAt,
     updatedAt = updatedAt
 )

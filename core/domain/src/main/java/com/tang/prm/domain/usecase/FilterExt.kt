@@ -5,8 +5,11 @@ import com.tang.prm.domain.model.AppStrings
 import com.tang.prm.domain.model.Contact
 import com.tang.prm.domain.model.Event
 import com.tang.prm.domain.model.FootprintItem
+import com.tang.prm.domain.model.Subscription
+import com.tang.prm.domain.model.SubscriptionStatus
 import com.tang.prm.domain.model.Thought
 import com.tang.prm.domain.model.ThoughtType
+import com.tang.prm.domain.model.computedStatus
 import java.util.Calendar
 
 // region Intimacy utilities
@@ -154,6 +157,23 @@ fun List<FootprintItem>.filterBy(
         }
     }
     return filtered
+}
+
+// endregion
+
+// region Subscription filtering
+
+/**
+ * Filter subscriptions by status, category, and/or keyword.
+ */
+fun List<Subscription>.filterBy(
+    status: SubscriptionStatus? = null,
+    category: String? = null,
+    keyword: String? = null
+): List<Subscription> = filter { sub ->
+    (status == null || sub.computedStatus() == status)
+    && (category.isNullOrBlank() || sub.category == category)
+    && (keyword.isNullOrBlank() || sub.name.contains(keyword, ignoreCase = true))
 }
 
 // endregion

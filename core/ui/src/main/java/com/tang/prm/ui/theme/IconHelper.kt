@@ -122,7 +122,20 @@ private val genericIconMap: Map<String, ImageVector> = mapOf(
     "CalendarToday" to Icons.Default.CalendarToday, "HolidayVillage" to Icons.Default.HolidayVillage,
     "FamilyRestroom" to Icons.Default.FamilyRestroom, "RocketLaunch" to Icons.Default.RocketLaunch,
     "EmojiEvents" to Icons.Default.EmojiEvents, "VolunteerActivism" to Icons.Default.VolunteerActivism,
-    "FavoriteBorder" to Icons.Default.FavoriteBorder, "ChildCare" to Icons.Default.ChildCare
+    "FavoriteBorder" to Icons.Default.FavoriteBorder, "ChildCare" to Icons.Default.ChildCare,
+    "Cloud" to Icons.Default.Cloud, "CloudQueue" to Icons.Default.CloudQueue,
+    "Storage" to Icons.Default.Storage, "Security" to Icons.Default.Security,
+    "Language" to Icons.Default.Language, "SmartDisplay" to Icons.Default.SmartDisplay,
+    "Headphones" to Icons.Default.Headphones, "Videocam" to Icons.Default.Videocam,
+    "Palette" to Icons.Default.Palette, "Brush" to Icons.Default.Brush,
+    "AutoStories" to Icons.Default.AutoStories, "MenuBook" to Icons.Default.MenuBook,
+    "Podcasts" to Icons.Default.Podcasts, "SportsEsports" to Icons.Default.SportsEsports,
+    "FitnessCenter" to Icons.Default.FitnessCenter, "HealthAndSafety" to Icons.Default.HealthAndSafety,
+    "AccountBalanceWallet" to Icons.Default.AccountBalanceWallet, "CreditCard" to Icons.Default.CreditCard,
+    "Receipt" to Icons.Default.Receipt, "ShoppingCart" to Icons.Default.ShoppingCart,
+    "Subscriptions" to Icons.Default.Subscriptions, "Devices" to Icons.Default.Devices,
+    "Wifi" to Icons.Default.Wifi, "VpnKey" to Icons.Default.VpnKey,
+    "Backup" to Icons.Default.Backup, "Terminal" to Icons.Default.Terminal
 )
 
 fun getGenericIcon(name: String?): ImageVector? = name?.let { genericIconMap[it] }

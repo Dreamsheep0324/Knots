@@ -35,4 +35,7 @@ interface ThoughtDao {
 
     @Query("DELETE FROM thoughts WHERE contactId = :contactId")
     suspend fun deleteThoughtsByContact(contactId: Long)
+
+    @Query("SELECT * FROM thoughts WHERE contactId = :contactId")
+    suspend fun getThoughtsByContactOnce(contactId: Long): List<ThoughtEntity>
 }

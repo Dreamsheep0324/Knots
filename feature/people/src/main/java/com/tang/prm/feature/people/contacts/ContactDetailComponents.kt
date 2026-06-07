@@ -61,6 +61,7 @@ import com.tang.prm.ui.animation.core.AnimationTokens
 import com.tang.prm.ui.theme.Dimens
 import com.tang.prm.ui.theme.DialogDefaults
 import com.tang.prm.ui.theme.Primary
+import com.tang.prm.ui.theme.SceneOrange
 import com.tang.prm.ui.theme.SignalAmber
 import com.tang.prm.ui.theme.SignalCoral
 import com.tang.prm.ui.theme.SignalGreen
@@ -75,7 +76,7 @@ internal val TabIcons = listOf(
 
 internal val TabColors = listOf(
     Color(0xFF42A5F5), Color(0xFF66BB6A), Color(0xFFF43F5E),
-    Color(0xFFF97316), Color(0xFFEAB308), Color(0xFF9575CD)
+    SceneOrange, Color(0xFFEAB308), Color(0xFF9575CD)
 )
 
 internal val ThoughtTypeColor = mapOf(
@@ -323,7 +324,7 @@ internal fun TabSection(selectedTab: Int, onTabSelected: (Int) -> Unit, tabs: Li
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(4.dp)
         ) {
-            itemsIndexed(tabs) { index, title ->
+            itemsIndexed(tabs, key = { _, title -> title }) { index, title ->
                 val isSelected = selectedTab == index
                 val tabIcon = TabIcons.getOrNull(index)
                 val selectedColor = TabColors.getOrElse(index) { Primary }

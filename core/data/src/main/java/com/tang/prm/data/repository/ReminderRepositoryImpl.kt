@@ -44,4 +44,7 @@ class ReminderRepositoryImpl @Inject constructor(
 
     override suspend fun deleteReminder(id: Long) =
         reminderDao.deleteReminderById(id)
+
+    override suspend fun getActiveRemindersSync(currentTime: Long): List<Reminder> =
+        reminderDao.getActiveRemindersSync(currentTime).map { it.toDomain() }
 }

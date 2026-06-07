@@ -109,7 +109,7 @@ fun PhotoSelectionArea(
         )
     } else {
         LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            itemsIndexed(photos) { index, photo ->
+            itemsIndexed(photos, key = { _, photo -> photo }) { index, photo ->
                 PhotoSlot(
                     mode = mode,
                     photoUri = photo,

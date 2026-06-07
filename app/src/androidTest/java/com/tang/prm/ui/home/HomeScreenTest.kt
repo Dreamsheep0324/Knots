@@ -6,7 +6,7 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.navigation.NavController
-import com.tang.prm.ui.home.HomeScreen
+import com.tang.prm.feature.home.HomeScreen
 import io.mockk.mockk
 import org.junit.Rule
 import org.junit.Test

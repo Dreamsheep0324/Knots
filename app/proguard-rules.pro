@@ -40,13 +40,6 @@
 -keep class * extends dagger.hilt.android.internal.managers.ComponentSupplier { *; }
 -dontwarn dagger.hilt.**
 
-# ---- Retrofit ----
--keepattributes Signature, Exceptions
--keepclassmembers,allowobfuscation interface * {
-    @retrofit2.http.* <methods>;
-}
--dontwarn retrofit2.**
-
 # ---- OkHttp SSE ----
 -dontwarn okhttp3.internal.sse.**
 -dontwarn okio.**
