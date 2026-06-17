@@ -8,6 +8,7 @@ import com.tang.prm.domain.usecase.ContactDetailAggregationUseCase
 import com.tang.prm.domain.usecase.FavoriteToggleUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -38,6 +39,10 @@ data class ContactDetailUiState(
     val dialog: ContactDetailDialogState = ContactDetailDialogState()
 )
 
+sealed class ContactDetailEvent {
+    object ContactDeleted : ContactDetailEvent()
+}
+
 @HiltViewModel
 class ContactDetailViewModel @Inject constructor(
     private val aggregationUseCase: ContactDetailAggregationUseCase,
@@ -49,6 +54,9 @@ class ContactDetailViewModel @Inject constructor(
 
     private val _uiState = MutableStateFlow(ContactDetailUiState())
     val uiState: StateFlow<ContactDetailUiState> = _uiState.asStateFlow()
+
+    private val _events = Channel<ContactDetailEvent>()
+    val events = _events.receiveAsFlow()
 
     init {
         loadContactDetail()
@@ -93,10 +101,10 @@ class ContactDetailViewModel @Inject constructor(
         _uiState.update { it.copy(dialog = it.dialog.copy(showDeleteDialog = false)) }
     }
 
-    fun deleteContact(onDeleted: () -> Unit) {
+    fun deleteContact() {
         viewModelScope.launch {
             aggregationUseCase.deleteContact(contactId)
-            onDeleted()
+            _events.send(ContactDetailEvent.ContactDeleted)
         }
     }
 

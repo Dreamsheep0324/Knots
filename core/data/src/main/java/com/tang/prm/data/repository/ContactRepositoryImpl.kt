@@ -1,6 +1,7 @@
 package com.tang.prm.data.repository
 
 import com.tang.prm.data.local.dao.*
+import com.tang.prm.data.local.dao.ContactListItemEntity
 import com.tang.prm.data.local.entity.ContactAttributeEntity
 import com.tang.prm.data.local.entity.ContactEntity
 import com.tang.prm.data.local.database.TangDatabase
@@ -36,6 +37,9 @@ class ContactRepositoryImpl @Inject constructor(
     override fun getAllContacts(): Flow<List<Contact>> =
         contactDao.getAllContacts().withAttributes(contactAttributeDao.getAttributesForAllContacts())
 
+    override fun getContactListItems(): Flow<List<Contact>> =
+        contactDao.getContactListItems().mapList { it.toDomain() }
+
     override fun getContactById(id: Long): Flow<Contact?> =
         contactDao.getContactById(id).combine(contactAttributeDao.getAttributesForContact(id)) { contact, attrs ->
             contact?.toDomainWithAttributes(attrs)
@@ -60,44 +64,41 @@ class ContactRepositoryImpl @Inject constructor(
 
     override fun getContactCount(): Flow<Int> = contactDao.getContactCount()
 
-    override suspend fun insertContact(contact: Contact): Long {
+    override suspend fun insertContact(contact: Contact): Long = database.withTransaction {
         val id = contactDao.insertContact(contact.toEntity())
         val attributes = contact.copy(id = id).toAttributeEntities()
         if (attributes.isNotEmpty()) {
             contactAttributeDao.insertAll(attributes)
         }
-        return id
+        id
     }
 
-    override suspend fun updateContact(contact: Contact) = database.withTransaction {
-        // 清理旧头像文件（头像变更时删除旧文件）
-        val oldContact = contactDao.getContactByIdOnce(contact.id)
-        if (oldContact != null && oldContact.avatar != contact.avatar) {
-            oldContact.avatar?.let { oldAvatar ->
-                ImageFileManager.deleteImage(oldAvatar)
+    override suspend fun updateContact(contact: Contact) {
+        // 先在事务内收集待删除的旧头像路径 + 更新数据库
+        val oldAvatar = database.withTransaction {
+            val oldContact = contactDao.getContactByIdOnce(contact.id)
+            contactDao.updateContact(contact.toEntity())
+            contactAttributeDao.deleteAllForContact(contact.id)
+            val attributes = contact.toAttributeEntities()
+            if (attributes.isNotEmpty()) {
+                contactAttributeDao.insertAll(attributes)
             }
+            oldContact?.avatar?.takeIf { it != contact.avatar }
         }
-        contactDao.updateContact(contact.toEntity())
-        contactAttributeDao.deleteAllForContact(contact.id)
-        val attributes = contact.toAttributeEntities()
-        if (attributes.isNotEmpty()) {
-            contactAttributeDao.insertAll(attributes)
-        }
+        // 事务外删除文件
+        oldAvatar?.let { ImageFileManager.deleteImage(it) }
     }
 
-    override suspend fun deleteContact(id: Long) = database.withTransaction {
-        // CASCADE 外键约束自动删除所有关联行，但不会清理图片文件
-        // 先收集关联数据的图片路径（仅 GiftEntity 有 photos 字段）
-        val photosToDelete = mutableListOf<String>()
-        giftDao.getGiftsByContactIdOnce(id).forEach { photosToDelete.addAll(it.photos) }
-
-        // 收集头像路径
-        contactDao.getContactByIdOnce(id)?.avatar?.let { photosToDelete.add(it) }
-
-        // 删除联系人 — CASCADE 自动删除所有关联表数据
-        contactDao.deleteContactById(id)
-
-        // 清理图片文件
+    override suspend fun deleteContact(id: Long) {
+        // 先在事务内收集待删除文件路径 + 删除数据库记录
+        val photosToDelete = database.withTransaction {
+            val photos = mutableListOf<String>()
+            giftDao.getGiftsByContactIdOnce(id).forEach { photos.addAll(it.photos) }
+            contactDao.getContactByIdOnce(id)?.avatar?.let { photos.add(it) }
+            contactDao.deleteContactById(id)
+            photos
+        }
+        // 事务外删除文件（非事务性，失败不影响数据库一致性）
         ImageFileManager.deleteLocalPhotos(photosToDelete)
     }
 

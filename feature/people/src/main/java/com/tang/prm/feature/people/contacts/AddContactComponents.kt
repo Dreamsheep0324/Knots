@@ -84,13 +84,17 @@ internal val sectionStyles = mapOf(
 
 internal data class IntimacyLevel(val range: IntRange, val name: String, val color: Color, val icon: ImageVector)
 
-internal val IntimacyLevels = listOf(
-    IntimacyLevel(0..20, AppStrings.Intimacy.NEW, IntimacyNew, Icons.Default.PersonAdd),
-    IntimacyLevel(21..40, AppStrings.Intimacy.ACQUAINTANCE, IntimacyAcquaintance, Icons.Default.PersonOutline),
-    IntimacyLevel(41..60, AppStrings.Intimacy.FRIEND, IntimacyFriend, Icons.Default.People),
-    IntimacyLevel(61..80, AppStrings.Intimacy.CLOSE, IntimacyClose, Icons.Default.Favorite),
-    IntimacyLevel(81..100, AppStrings.Intimacy.FAMILY, IntimacyFamily, Icons.Default.FavoriteBorder)
-)
+internal val IntimacyLevels = com.tang.prm.domain.model.IntimacyTier.entries.map { tier ->
+    val color = Color(tier.colorValue)
+    val icon = when (tier) {
+        com.tang.prm.domain.model.IntimacyTier.NEW -> Icons.Default.PersonAdd
+        com.tang.prm.domain.model.IntimacyTier.ACQUAINTANCE -> Icons.Default.PersonOutline
+        com.tang.prm.domain.model.IntimacyTier.FRIEND -> Icons.Default.People
+        com.tang.prm.domain.model.IntimacyTier.CLOSE -> Icons.Default.Favorite
+        com.tang.prm.domain.model.IntimacyTier.FAMILY -> Icons.Default.FavoriteBorder
+    }
+    IntimacyLevel(tier.minScore..tier.maxScore, tier.label, color, icon)
+}
 
 @Composable
 internal fun ProfileHeader(avatar: String?, onAvatarClick: () -> Unit) {

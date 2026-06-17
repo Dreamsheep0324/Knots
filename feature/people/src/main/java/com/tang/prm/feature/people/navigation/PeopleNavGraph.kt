@@ -36,9 +36,9 @@ fun NavGraphBuilder.peopleGraph(
         ) { result ->
             result.localPaths.firstOrNull()?.let { pendingCropPath = it }
         }
-        if (pendingCropPath != null) {
+        pendingCropPath?.let { path ->
             AvatarCropDialog(
-                imagePath = pendingCropPath!!,
+                imagePath = path,
                 onCropComplete = { croppedPath ->
                     viewModel.updateAvatar(croppedPath)
                     pendingCropPath = null
@@ -61,9 +61,9 @@ fun NavGraphBuilder.peopleGraph(
         ) { result ->
             result.localPaths.firstOrNull()?.let { pendingCropPath = it }
         }
-        if (pendingCropPath != null) {
+        pendingCropPath?.let { path ->
             AvatarCropDialog(
-                imagePath = pendingCropPath!!,
+                imagePath = path,
                 onCropComplete = { croppedPath ->
                     viewModel.updateAvatar(croppedPath)
                     pendingCropPath = null

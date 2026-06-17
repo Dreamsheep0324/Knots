@@ -15,13 +15,7 @@ object LiuyaoEngine {
         val targetDate = customDate ?: Date()
         val calendar = Calendar.getInstance().apply { time = targetDate }
 
-        val ganzhi = GanZhiCalculator.fromSolar(
-            calendar.get(Calendar.YEAR),
-            calendar.get(Calendar.MONTH) + 1,
-            calendar.get(Calendar.DAY_OF_MONTH),
-            calendar.get(Calendar.HOUR_OF_DAY),
-            calendar.get(Calendar.MINUTE)
-        )
+        val ganzhi = GanZhiCalculator.fromCalendar(calendar)
         val timestamp = targetDate.time
 
         val rawYaos = yaoArray ?: generateYaosByTime(timestamp, 6)
@@ -40,12 +34,17 @@ object LiuyaoEngine {
         val interYaos = getInterHexagram(mainYaos)
         val interBinary = interYaos.map { if (it == "阳") "1" else "0" }.reversed().joinToString("")
 
-        val mainHexagram = HexagramData.findByBinary(mainBinary)!!
-        val changedHexagram = HexagramData.findByBinary(changedBinary)!!
-        val interHexagram = HexagramData.findByBinary(interBinary)!!
+        val mainHexagram = HexagramData.findByBinary(mainBinary)
+            ?: throw IllegalStateException("无法识别主卦 (binary=$mainBinary)")
+        val changedHexagram = HexagramData.findByBinary(changedBinary)
+            ?: throw IllegalStateException("无法识别变卦 (binary=$changedBinary)")
+        val interHexagram = HexagramData.findByBinary(interBinary)
+            ?: throw IllegalStateException("无法识别互卦 (binary=$interBinary)")
 
-        val palaceName = PalaceData.hexagramPalaceMap[mainHexagram.name]!!
-        val palace = PalaceData.palaces[palaceName]!!
+        val palaceName = PalaceData.hexagramPalaceMap[mainHexagram.name]
+            ?: throw IllegalStateException("无法识别卦宫 (hexagram=${mainHexagram.name})")
+        val palace = PalaceData.palaces[palaceName]
+            ?: throw IllegalStateException("无法识别宫数据 (palace=$palaceName)")
 
         val yaosInfo = getNaJiaAndLiuQin(mainHexagram.name, palace)
         val shiYing = getShiYing(mainHexagram.name, palaceName)
@@ -132,7 +131,8 @@ object LiuyaoEngine {
     }
 
     private fun getNaJiaAndLiuQin(hexagramName: String, palace: PalaceData.Palace): List<YaoInfo> {
-        val najiaDizhiArray = NaJiaData.hexagramNaJia[hexagramName]!!
+        val najiaDizhiArray = NaJiaData.hexagramNaJia[hexagramName]
+            ?: throw IllegalStateException("无法找到纳甲数据 (hexagram=$hexagramName)")
         return najiaDizhiArray.map { dizhi ->
             val yaoWuxing = WuXingHelper.getWuXing(dizhi)
             val liuqin = WuXingHelper.getLiuQin(palace.wuxing, yaoWuxing)
@@ -145,8 +145,11 @@ object LiuyaoEngine {
     private data class ShiYing(val shi: Int, val ying: Int)
 
     private fun getShiYing(hexagramName: String, palaceName: String): ShiYing {
+        // 八宫世爻规律：本宫卦世在六爻，一世卦世在初爻，二世卦世在二爻，三世卦世在三爻，
+        // 四世卦世在四爻，五世卦世在五爻，游魂卦世在四爻，归魂卦世在三爻
         val shiYaoMap = mapOf(0 to 6, 1 to 1, 2 to 2, 3 to 3, 4 to 4, 5 to 5, 6 to 4, 7 to 3)
-        val hexagramsInPalace = PalaceData.palaceHexagrams[palaceName]!!
+        val hexagramsInPalace = PalaceData.palaceHexagrams[palaceName]
+            ?: throw IllegalStateException("无法找到宫卦数据 (palace=$palaceName)")
         val generation = hexagramsInPalace.indexOf(hexagramName)
         val shiYao = shiYaoMap[generation] ?: 6
         val yingYao = if (shiYao + 3 > 6) shiYao - 3 else shiYao + 3

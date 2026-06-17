@@ -31,6 +31,14 @@ sealed class SyncResult {
         val skippedImages: Int = 0
     ) : SyncResult()
 
+    /** 部分成功：核心数据已完成，但部分图片同步失败 */
+    data class PartialSuccess(
+        val fileName: String,
+        val succeeded: Int,
+        val failed: Int,
+        val skipped: Int
+    ) : SyncResult()
+
     data class Error(val message: String) : SyncResult()
 }
 

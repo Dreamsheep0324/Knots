@@ -241,8 +241,7 @@ private fun TimelineCard(
                         color = accentColor
                     )
                 }
-                if (!footprint.weather.isNullOrBlank()) {
-                    val weather = footprint.weather!!
+                footprint.weather?.takeIf { it.isNotBlank() }?.let { weather ->
                     FootprintMetaTag(
                         icon = getWeatherIconForFootprint(weather),
                         text = weather,

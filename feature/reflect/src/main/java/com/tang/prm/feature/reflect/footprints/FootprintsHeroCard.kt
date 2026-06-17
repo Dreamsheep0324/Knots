@@ -136,8 +136,7 @@ internal fun HeroCard(footprint: FootprintItem, eventTypes: List<com.tang.prm.do
                     fontSize = 11.sp,
                     color = TextGray.copy(alpha = AnimationTokens.Alpha.visible)
                 )
-                if (!footprint.weather.isNullOrBlank()) {
-                    val weather = footprint.weather!!
+                footprint.weather?.takeIf { it.isNotBlank() }?.let { weather ->
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(
                             getWeatherIconForFootprint(weather),

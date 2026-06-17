@@ -27,19 +27,19 @@ val MIGRATION_24_31 = object : Migration(24, 31) {
         db.execSQL("CREATE INDEX IF NOT EXISTS index_circle_member_cross_ref_contactId ON circle_member_cross_ref(contactId)")
 
         // 迁移 memberIds 数据到 cross_ref 表
-        val cursor = db.query("SELECT id, memberIds FROM circles WHERE memberIds IS NOT NULL AND memberIds != ''")
-        if (cursor.moveToFirst()) {
-            do {
-                val circleId = cursor.getLong(cursor.getColumnIndexOrThrow("id"))
-                val memberIdsStr = cursor.getString(cursor.getColumnIndexOrThrow("memberIds"))
-                if (memberIdsStr != null) {
-                    memberIdsStr.split(",").mapNotNull { it.trim().toLongOrNull() }.forEach { contactId ->
-                        db.execSQL("INSERT OR IGNORE INTO circle_member_cross_ref (circleId, contactId) VALUES (?, ?)", arrayOf(circleId, contactId))
+        db.query("SELECT id, memberIds FROM circles WHERE memberIds IS NOT NULL AND memberIds != ''").use { cursor ->
+            if (cursor.moveToFirst()) {
+                do {
+                    val circleId = cursor.getLong(cursor.getColumnIndexOrThrow("id"))
+                    val memberIdsStr = cursor.getString(cursor.getColumnIndexOrThrow("memberIds"))
+                    if (memberIdsStr != null) {
+                        memberIdsStr.split(",").mapNotNull { it.trim().toLongOrNull() }.forEach { contactId ->
+                            db.execSQL("INSERT OR IGNORE INTO circle_member_cross_ref (circleId, contactId) VALUES (?, ?)", arrayOf(circleId, contactId))
+                        }
                     }
-                }
-            } while (cursor.moveToNext())
+                } while (cursor.moveToNext())
+            }
         }
-        cursor.close()
 
         // 重建 circles 表，移除 memberIds 列
         db.execSQL("CREATE TABLE circles_new (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, name TEXT NOT NULL, description TEXT, color TEXT NOT NULL DEFAULT '#6366F1', icon TEXT NOT NULL DEFAULT 'people', waveform TEXT NOT NULL DEFAULT 'sine', parentCircleId INTEGER, intimacyThreshold INTEGER NOT NULL DEFAULT 0, sortOrder INTEGER NOT NULL DEFAULT 0, createdAt INTEGER NOT NULL, updatedAt INTEGER NOT NULL)")

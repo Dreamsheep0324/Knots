@@ -316,7 +316,7 @@ internal fun ThoughtDialog(
                                 )
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Text(
-                                    if (dueDate != null) "截止 ${DateUtils.formatMonthDayChinese(dueDate!!)}" else "设置截止日期",
+                                    dueDate?.let { "截止 ${DateUtils.formatMonthDayChinese(it)}" } ?: "设置截止日期",
                                     fontSize = 12.sp,
                                     color = if (dueDate != null) SignalGreen else MaterialTheme.colorScheme.onSurfaceVariant
                                 )

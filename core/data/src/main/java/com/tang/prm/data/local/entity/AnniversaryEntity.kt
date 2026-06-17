@@ -25,6 +25,7 @@ data class AnniversaryEntity(
     val type: String,
     val date: Long,
     val isLunar: Boolean = false,
+    val isLeapMonth: Boolean = false,
     val isRepeat: Boolean = true,
     val reminderDays: Int = 1,
     val remarks: String? = null,

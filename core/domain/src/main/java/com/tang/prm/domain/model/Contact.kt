@@ -1,5 +1,7 @@
 package com.tang.prm.domain.model
 
+const val DEFAULT_INTIMACY_SCORE = 50
+
 enum class Gender(val value: Int) {
     UNKNOWN(0), MALE(1), FEMALE(2);
     companion object {
@@ -15,6 +17,7 @@ data class Contact(
     val gender: Gender = Gender.UNKNOWN,
     val birthday: Long? = null,
     val isLunarBirthday: Boolean = false,
+    val isLeapMonthBirthday: Boolean = false,
     val knowingDate: Long? = null,
     val phone: String? = null,
     val email: String? = null,
@@ -36,7 +39,7 @@ data class Contact(
     val relationshipLevel: Int = 0,
     val relationship: String? = null,
     val groupId: Long? = null,
-    val intimacyScore: Int = 50,
+    val intimacyScore: Int = DEFAULT_INTIMACY_SCORE,
     val lastInteractionTime: Long? = null,
     val customFields: String? = null,
     val notes: String? = null,

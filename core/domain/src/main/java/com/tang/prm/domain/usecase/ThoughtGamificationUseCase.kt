@@ -3,6 +3,7 @@ package com.tang.prm.domain.usecase
 import com.tang.prm.domain.model.Contact
 import com.tang.prm.domain.model.Thought
 import com.tang.prm.domain.model.ThoughtType
+import com.tang.prm.domain.util.DateUtils
 import java.util.Calendar
 import javax.inject.Inject
 
@@ -32,6 +33,14 @@ data class ContactThoughts(
 
 class ThoughtGamificationUseCase @Inject constructor() {
 
+    companion object {
+        const val XP_BASE = 3
+        const val XP_DONE_BONUS = 2
+        const val XP_CONTACT_BONUS = 1
+        const val XP_STREAK_BONUS = 1
+        const val BASE_XP_PER_LEVEL = 15
+    }
+
     fun calcLevel(exp: Int): Int {
         var level = 1
         while (expForLevel(level + 1) <= exp) level++
@@ -40,7 +49,7 @@ class ThoughtGamificationUseCase @Inject constructor() {
 
     fun expForLevel(level: Int): Int {
         if (level <= 1) return 0
-        return 15 * level * (level - 1) / 2
+        return BASE_XP_PER_LEVEL * level * (level - 1) / 2
     }
 
     fun calcStreak(thoughts: List<Thought>): Int {
@@ -50,7 +59,7 @@ class ThoughtGamificationUseCase @Inject constructor() {
         calendar.set(Calendar.MINUTE, 0)
         calendar.set(Calendar.SECOND, 0)
         calendar.set(Calendar.MILLISECOND, 0)
-        val dayMs = 24 * 60 * 60 * 1000L
+        val dayMs = DateUtils.MILLIS_PER_DAY
         val daysWithThoughts = thoughts.map { it.createdAt / dayMs }.toSet()
         var streak = 0
         var checkDay = calendar.timeInMillis / dayMs
@@ -63,7 +72,7 @@ class ThoughtGamificationUseCase @Inject constructor() {
     }
 
     fun thoughtExp(thought: Thought): Int =
-        3 + (if (thought.isDone) 2 else 0) + (if (thought.contactId != null) 1 else 0)
+        XP_BASE + (if (thought.isDone) XP_DONE_BONUS else 0) + (if (thought.contactId != null) XP_CONTACT_BONUS else 0)
 
     fun getGamificationState(
         allThoughts: List<Thought>,
@@ -75,10 +84,10 @@ class ThoughtGamificationUseCase @Inject constructor() {
         val planCount = allThoughts.count { it.type == ThoughtType.PLAN }
         val murmurCount = allThoughts.count { it.type == ThoughtType.MURMUR }
         val streak = calcStreak(allThoughts)
-        val currentExp = allThoughts.size * 3 +
-                todoThoughts.count { it.isDone } * 2 +
-                contactThoughts.size * 1 +
-                streak * 1
+        val currentExp = allThoughts.size * XP_BASE +
+                todoThoughts.count { it.isDone } * XP_DONE_BONUS +
+                contactThoughts.size * XP_CONTACT_BONUS +
+                streak * XP_STREAK_BONUS
         val currentLevel = calcLevel(currentExp)
         val nextLevel = currentLevel + 1
         val expInLevel = currentExp - expForLevel(currentLevel)

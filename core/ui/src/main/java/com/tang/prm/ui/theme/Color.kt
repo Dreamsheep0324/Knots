@@ -3,6 +3,7 @@ package com.tang.prm.ui.theme
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ReadOnlyComposable
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
 
 val Primary = Color(0xFF2196F3)
@@ -100,11 +101,51 @@ val SemanticCoralBg: Color
     @Composable @ReadOnlyComposable get() = if (isSystemInDarkTheme()) Color(0xFF3A1A1A) else Color(0xFFFEE2E2)
 val SemanticCoralText = Color(0xFFDC2626)
 
-val IntimacyNew = Color(0xFF94A3B8)
-val IntimacyAcquaintance = Color(0xFF64748B)
-val IntimacyFriend = Color(0xFF6366F1)
-val IntimacyClose = Color(0xFFF97316)
-val IntimacyFamily = Color(0xFFF43F5E)
+/** 亲密度等级颜色（与 IntimacyTier.colorValue 保持一致） */
+val IntimacyNew = Color(0xFF94A3B8)         // N 灰
+val IntimacyAcquaintance = Color(0xFF3B82F6) // R 蓝
+val IntimacyFriend = Color(0xFF8B5CF6)       // SR 紫
+val IntimacyClose = Color(0xFFEF4444)        // SSR 红
+val IntimacyFamily = Color(0xFFF59E0B)       // UR 金
+
+/** 亲密度等级颜色方案，支持深色模式覆盖 */
+data class IntimacyColors(
+    val new: Color,
+    val acquaintance: Color,
+    val friend: Color,
+    val close: Color,
+    val family: Color
+) {
+    /** 根据 IntimacyTier 获取对应颜色 */
+    fun forTier(tier: com.tang.prm.domain.model.IntimacyTier): Color = when (tier) {
+        com.tang.prm.domain.model.IntimacyTier.NEW -> new
+        com.tang.prm.domain.model.IntimacyTier.ACQUAINTANCE -> acquaintance
+        com.tang.prm.domain.model.IntimacyTier.FRIEND -> friend
+        com.tang.prm.domain.model.IntimacyTier.CLOSE -> close
+        com.tang.prm.domain.model.IntimacyTier.FAMILY -> family
+    }
+
+    /** 根据亲密度分数获取对应颜色 */
+    fun forScore(score: Int): Color = forTier(com.tang.prm.domain.model.IntimacyTier.of(score))
+}
+
+val LightIntimacyColors = IntimacyColors(
+    new = Color(0xFF94A3B8),
+    acquaintance = Color(0xFF3B82F6),
+    friend = Color(0xFF8B5CF6),
+    close = Color(0xFFEF4444),
+    family = Color(0xFFF59E0B)
+)
+
+val DarkIntimacyColors = IntimacyColors(
+    new = Color(0xFFB0BEC5),
+    acquaintance = Color(0xFF60A5FA),
+    friend = Color(0xFFA78BFA),
+    close = Color(0xFFF87171),
+    family = Color(0xFFFBBF24)
+)
+
+val LocalIntimacyColors = staticCompositionLocalOf { LightIntimacyColors }
 
 val AnniversaryBirthday = Color(0xFFF97316)
 val AnniversaryDate = Color(0xFFE91E63)

@@ -3,6 +3,7 @@ package com.tang.prm.data.repository
 import android.content.Context
 import android.net.Uri
 import android.provider.DocumentsContract
+import android.util.Log
 import com.tang.prm.data.local.database.TangDatabase
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
@@ -36,6 +37,7 @@ class BackupRepository @Inject constructor(
     private val database: TangDatabase
 ) : BackupRepositoryInterface {
     companion object {
+        private const val TAG = "BackupRepository"
         private const val DB_NAME = "tang_database"
         private const val DATASTORE_NAME = "settings"
         private const val BACKUP_PREFIX = "tang_backup_"
@@ -73,7 +75,9 @@ class BackupRepository @Inject constructor(
             val takeFlags = android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION or
                     android.content.Intent.FLAG_GRANT_WRITE_URI_PERMISSION
             context.contentResolver.takePersistableUriPermission(Uri.parse(uri), takeFlags)
-        } catch (_: Exception) {}
+        } catch (e: Exception) {
+            Log.w(TAG, "获取持久化URI权限失败", e)
+        }
     }
 
     override fun hasBackupDir(): Boolean {
@@ -164,7 +168,9 @@ class BackupRepository @Inject constructor(
                         }
                     }
                 }
-            } catch (_: Exception) {}
+            } catch (e: Exception) {
+                Log.w(TAG, "查询备份文件列表失败", e)
+            }
 
             files.sortedByDescending { it.timestamp }
         }
@@ -198,8 +204,15 @@ class BackupRepository @Inject constructor(
         }
 
         val result = withContext(Dispatchers.IO) {
+            val dbFile = context.getDatabasePath(DB_NAME)
+            val backupSnapshot = File(dbFile.parent, "$DB_NAME.before_restore")
             try {
+                // 恢复前先 checkpoint 并关闭数据库，确保 WAL 内容写入主文件，
+                // 避免覆盖后旧 WAL 残留导致数据不一致
+                database.checkpoint()
                 database.close()
+                // 备份当前数据库文件，用于失败时回滚
+                if (dbFile.exists()) dbFile.copyTo(backupSnapshot, overwrite = true)
                 val extractDirs = getExtractDirs()
                 context.contentResolver.openInputStream(docUri)?.use { inputStream ->
                     extractFromStream(inputStream, extractDirs)
@@ -207,6 +220,13 @@ class BackupRepository @Inject constructor(
                 restartApp()
                 RestoreResult.Success
             } catch (e: Exception) {
+                // 回滚数据库文件
+                if (backupSnapshot.exists()) {
+                    try { backupSnapshot.copyTo(dbFile, overwrite = true) } catch (_: Exception) {}
+                    try { backupSnapshot.delete() } catch (_: Exception) {}
+                }
+                // 必须重启：数据库已关闭，当前进程无法继续使用
+                restartApp()
                 RestoreResult.Error("恢复失败：${e.message}")
             }
         }
@@ -253,7 +273,9 @@ class BackupRepository @Inject constructor(
                     }
                 }
             }
-        } catch (_: Exception) {}
+        } catch (e: Exception) {
+            Log.w(TAG, "查找文档URI失败: $fileName", e)
+        }
         return null
     }
 
@@ -300,9 +322,14 @@ class BackupRepository @Inject constructor(
     override suspend fun restoreDbOnly(uri: String): Flow<RestoreResult> = flow {
         val parsedUri = Uri.parse(uri)
         val result = withContext(Dispatchers.IO) {
+            val dbFile = context.getDatabasePath(DB_NAME)
+            val backupSnapshot = File(dbFile.parent, "$DB_NAME.before_restore")
             try {
+                // 恢复前先 checkpoint 并关闭数据库，确保 WAL 内容写入主文件
+                database.checkpoint()
                 database.close()
-                val dbFile = context.getDatabasePath(DB_NAME)
+                // 备份当前数据库文件，用于失败时回滚
+                if (dbFile.exists()) dbFile.copyTo(backupSnapshot, overwrite = true)
                 val walFile = File(dbFile.parent, "$DB_NAME-wal")
                 val shmFile = File(dbFile.parent, "$DB_NAME-shm")
                 val datastoreDir = File(context.filesDir.parent, "datastore")
@@ -313,12 +340,12 @@ class BackupRepository @Inject constructor(
                         var entry = zipIn.nextEntry
                         while (entry != null) {
                             when {
-                                entry.name == ENTRY_DATABASE -> writeFileFromZip(zipIn, dbFile)
-                                entry.name == ENTRY_WAL -> writeFileFromZip(zipIn, walFile)
-                                entry.name == ENTRY_SHM -> writeFileFromZip(zipIn, shmFile)
+                                entry.name == ENTRY_DATABASE -> writeFileFromZip(zipIn, dbFile, dbFile.parentFile ?: dbFile)
+                                entry.name == ENTRY_WAL -> writeFileFromZip(zipIn, walFile, walFile.parentFile ?: walFile)
+                                entry.name == ENTRY_SHM -> writeFileFromZip(zipIn, shmFile, shmFile.parentFile ?: shmFile)
                                 entry.name == ENTRY_DATASTORE -> {
                                     datastoreDir.mkdirs()
-                                    writeFileFromZip(zipIn, datastoreFile)
+                                    writeFileFromZip(zipIn, datastoreFile, datastoreDir)
                                 }
                             }
                             zipIn.closeEntry()
@@ -329,6 +356,13 @@ class BackupRepository @Inject constructor(
                 restartApp()
                 RestoreResult.Success
             } catch (e: Exception) {
+                // 回滚数据库文件
+                if (backupSnapshot.exists()) {
+                    try { backupSnapshot.copyTo(dbFile, overwrite = true) } catch (_: Exception) {}
+                    try { backupSnapshot.delete() } catch (_: Exception) {}
+                }
+                // 必须重启：数据库已关闭，当前进程无法继续使用
+                restartApp()
                 RestoreResult.Error("恢复失败：${e.message}")
             }
         }
@@ -436,8 +470,14 @@ class BackupRepository @Inject constructor(
     override suspend fun restoreFromUri(uri: String): Flow<RestoreResult> = flow {
         val parsedUri = Uri.parse(uri)
         val result = withContext(Dispatchers.IO) {
+            val dbFile = context.getDatabasePath(DB_NAME)
+            val backupSnapshot = File(dbFile.parent, "$DB_NAME.before_restore")
             try {
+                // 恢复前先 checkpoint 并关闭数据库，确保 WAL 内容写入主文件
+                database.checkpoint()
                 database.close()
+                // 备份当前数据库文件，用于失败时回滚
+                if (dbFile.exists()) dbFile.copyTo(backupSnapshot, overwrite = true)
                 val extractDirs = getExtractDirs()
                 context.contentResolver.openInputStream(parsedUri)?.use { inputStream ->
                     extractFromStream(inputStream, extractDirs)
@@ -445,6 +485,13 @@ class BackupRepository @Inject constructor(
                 restartApp()
                 RestoreResult.Success
             } catch (e: Exception) {
+                // 回滚数据库文件
+                if (backupSnapshot.exists()) {
+                    try { backupSnapshot.copyTo(dbFile, overwrite = true) } catch (_: Exception) {}
+                    try { backupSnapshot.delete() } catch (_: Exception) {}
+                }
+                // 必须重启：数据库已关闭，当前进程无法继续使用
+                restartApp()
                 RestoreResult.Error("恢复失败：${e.message}")
             }
         }
@@ -525,20 +572,26 @@ class BackupRepository @Inject constructor(
             var entry = zipIn.nextEntry
             while (entry != null) {
                 when {
-                    entry.name == ENTRY_DATABASE -> writeFileFromZip(zipIn, dirs.dbFile)
-                    entry.name == ENTRY_WAL -> writeFileFromZip(zipIn, dirs.walFile)
-                    entry.name == ENTRY_SHM -> writeFileFromZip(zipIn, dirs.shmFile)
+                    entry.name == ENTRY_DATABASE -> writeFileFromZip(zipIn, dirs.dbFile, dirs.dbFile.parentFile ?: dirs.dbFile)
+                    entry.name == ENTRY_WAL -> writeFileFromZip(zipIn, dirs.walFile, dirs.walFile.parentFile ?: dirs.walFile)
+                    entry.name == ENTRY_SHM -> writeFileFromZip(zipIn, dirs.shmFile, dirs.shmFile.parentFile ?: dirs.shmFile)
                     entry.name == ENTRY_DATASTORE -> {
                         dirs.datastoreDir.mkdirs()
-                        writeFileFromZip(zipIn, dirs.datastoreFile)
+                        writeFileFromZip(zipIn, dirs.datastoreFile, dirs.datastoreDir)
                     }
                     entry.name.startsWith(ENTRY_IMAGES_DIR) && !entry.isDirectory -> {
                         val name = entry.name.removePrefix(ENTRY_IMAGES_DIR)
-                        if (name.isNotBlank()) { dirs.imagesDir.mkdirs(); writeFileFromZip(zipIn, File(dirs.imagesDir, name)) }
+                        if (name.isNotBlank()) {
+                            dirs.imagesDir.mkdirs()
+                            writeFileFromZip(zipIn, File(dirs.imagesDir, name), dirs.imagesDir)
+                        }
                     }
                     entry.name.startsWith(ENTRY_GIFT_PHOTOS_DIR) && !entry.isDirectory -> {
                         val name = entry.name.removePrefix(ENTRY_GIFT_PHOTOS_DIR)
-                        if (name.isNotBlank()) { dirs.giftPhotosDir.mkdirs(); writeFileFromZip(zipIn, File(dirs.giftPhotosDir, name)) }
+                        if (name.isNotBlank()) {
+                            dirs.giftPhotosDir.mkdirs()
+                            writeFileFromZip(zipIn, File(dirs.giftPhotosDir, name), dirs.giftPhotosDir)
+                        }
                     }
                 }
                 zipIn.closeEntry()
@@ -562,10 +615,28 @@ class BackupRepository @Inject constructor(
         zipOut.closeEntry()
     }
 
-    private fun writeFileFromZip(zipIn: ZipInputStream, targetFile: File) {
+    /**
+     * 从 ZIP 流写入文件，严格校验目标路径在允许目录内，防止路径遍历攻击。
+     *
+     * 旧实现比较 [targetFile.canonicalPath] 与 [targetFile.parentFile.canonicalPath]，
+     * 由于父目录必然是目标文件路径的前缀，该条件恒真，防护形同虚设。
+     *
+     * 新实现比较目标文件规范路径与允许目录的规范路径，使用 [File.separator] 作为分隔符
+     * 防止前缀碰撞（如 /app_images_evil 不应匹配 /app_images）。
+     *
+     * @param zipIn ZIP 输入流
+     * @param targetFile 目标文件
+     * @param allowedDir 允许写入的根目录（canonicalPath 校验）
+     */
+    private fun writeFileFromZip(zipIn: ZipInputStream, targetFile: File, allowedDir: File) {
         val canonicalTarget = targetFile.canonicalPath
-        val canonicalParent = targetFile.parentFile?.canonicalPath
-        if (canonicalParent != null && !canonicalTarget.startsWith(canonicalParent)) return
+        val canonicalAllowed = allowedDir.canonicalPath
+        if (!canonicalTarget.startsWith(canonicalAllowed + File.separator) &&
+            canonicalTarget != canonicalAllowed) {
+            android.util.Log.w("BackupRepository",
+                "路径遍历拦截: $canonicalTarget 不在 $canonicalAllowed 内")
+            return
+        }
         targetFile.parentFile?.mkdirs()
         java.io.BufferedOutputStream(FileOutputStream(targetFile), BUFFER_SIZE).use { bos ->
             val buffer = ByteArray(BUFFER_SIZE)
@@ -576,7 +647,29 @@ class BackupRepository @Inject constructor(
         }
     }
 
+    /**
+     * 强制重启应用进程。
+     *
+     * **为什么必须使用 System.exit(0) 而非正常 Activity 重建？**
+     * 备份恢复会将 Room 数据库文件（.db / .db-wal / .db-shm）整体覆盖，
+     * 导致进程中所有已打开的 SQLite 连接指向的文件句柄失效——
+     * Room 的 SQLiteDatabase 对象仍持有旧文件的 fd，后续任何读写都会抛出
+     * "database disk image is malformed" 或 SQLITE_CORRUPT。
+     * 由于 Room 的连接池由框架内部管理，无法可靠地使所有 DAO / Repository
+     * 的引用失效并重建，因此必须杀死进程让系统重新创建 Application，
+     * 从而重新打开数据库。
+     *
+     * **代价**：System.exit(0) 会跳过 Activity/Service 的 onDestroy 生命周期，
+     * 未刷新的日志可能丢失。因此调用方必须在调用本方法之前完成 WAL checkpoint
+     * 和关键日志的刷新。
+     *
+     * **1 秒延迟**：AlarmManager 设定 1 秒后启动新 Activity，这段窗口期
+     * 用于确保 Log.i 输出被系统日志守护进程刷新到磁盘，避免重启后日志丢失。
+     */
     private fun restartApp() {
+        Log.i(TAG, "应用即将因备份恢复重启进程：Room 数据库文件已被覆盖，" +
+                "现有连接失效，需要进程级重启以重建数据库连接池")
+
         val intent = context.packageManager.getLaunchIntentForPackage(context.packageName)
         if (intent != null) {
             intent.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK or android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK)
@@ -585,6 +678,7 @@ class BackupRepository @Inject constructor(
                 android.app.PendingIntent.FLAG_ONE_SHOT or android.app.PendingIntent.FLAG_IMMUTABLE
             )
             val alarmManager = context.getSystemService(android.content.Context.ALARM_SERVICE) as android.app.AlarmManager
+            // 1 秒延迟：给系统日志守护进程时间将 Log 输出刷新到磁盘
             alarmManager.set(android.app.AlarmManager.ELAPSED_REALTIME_WAKEUP,
                 android.os.SystemClock.elapsedRealtime() + 1000, pendingIntent)
         }

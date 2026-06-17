@@ -9,6 +9,7 @@ package com.tang.prm.data.mapper
 // 5. Room migration (if entity schema changes)
 // 6. UI forms (AddContactScreen, ContactDetailScreen)
 
+import com.tang.prm.data.local.dao.ContactListItemEntity
 import com.tang.prm.data.local.entity.ContactAttributeEntity
 import com.tang.prm.data.local.entity.ContactEntity
 import com.tang.prm.data.local.entity.ContactGroupEntity
@@ -17,10 +18,11 @@ import com.tang.prm.domain.model.Contact
 import com.tang.prm.domain.model.ContactGroup
 import com.tang.prm.domain.model.ContactTag
 import com.tang.prm.domain.model.Gender
+import org.json.JSONArray
 
 fun ContactEntity.toDomain() = Contact(
     id = id, name = name, avatar = avatar, nickname = nickname, gender = Gender.fromValue(gender),
-    birthday = birthday, isLunarBirthday = isLunarBirthday, knowingDate = knowingDate,
+    birthday = birthday, isLunarBirthday = isLunarBirthday, isLeapMonthBirthday = isLeapMonthBirthday, knowingDate = knowingDate,
     phone = phone, email = email, city = city, address = address, education = education,
     company = company, jobTitle = jobTitle, industry = industry, hobby = hobby, habit = habit,
     diet = diet, skill = skill, mbti = mbti, spouseName = spouseName,
@@ -30,9 +32,17 @@ fun ContactEntity.toDomain() = Contact(
     customFields = customFields, notes = notes, createdAt = createdAt, updatedAt = updatedAt
 )
 
+/** Map lightweight [ContactListItemEntity] to domain [Contact], with unused fields at defaults. */
+fun ContactListItemEntity.toDomain() = Contact(
+    id = id, name = name, avatar = avatar, nickname = nickname,
+    phone = phone, relationship = relationship, groupId = groupId,
+    intimacyScore = intimacyScore, lastInteractionTime = lastInteractionTime,
+    updatedAt = updatedAt
+)
+
 fun Contact.toEntity() = ContactEntity(
     id = id, name = name, avatar = avatar, nickname = nickname, gender = gender.value,
-    birthday = birthday, isLunarBirthday = isLunarBirthday, knowingDate = knowingDate,
+    birthday = birthday, isLunarBirthday = isLunarBirthday, isLeapMonthBirthday = isLeapMonthBirthday, knowingDate = knowingDate,
     phone = phone, email = email, city = city, address = address, education = education,
     company = company, jobTitle = jobTitle, industry = industry, hobby = hobby, habit = habit,
     diet = diet, skill = skill, mbti = mbti, spouseName = spouseName,
@@ -50,7 +60,7 @@ fun ContactEntity.toDomainWithAttributes(attributes: List<ContactAttributeEntity
     val attrMap = attributes.groupBy { it.category.lowercase() }
     return Contact(
         id = id, name = name, avatar = avatar, nickname = nickname, gender = Gender.fromValue(gender),
-        birthday = birthday, isLunarBirthday = isLunarBirthday, knowingDate = knowingDate,
+        birthday = birthday, isLunarBirthday = isLunarBirthday, isLeapMonthBirthday = isLeapMonthBirthday, knowingDate = knowingDate,
         phone = phone, email = email, city = city, address = address, education = education,
         company = company, jobTitle = jobTitle, industry = industry,
         hobby = attrMap["hobby"]?.toJsonString() ?: hobby,
@@ -72,15 +82,16 @@ private fun List<ContactAttributeEntity>.toJsonString(): String {
 
 /**
  * Parse a JSON string like ["篮球","足球"] into a list of string values.
+ * Uses JSONArray for robust parsing instead of string splitting.
  */
 fun parseJsonList(json: String?): List<String> {
     if (json.isNullOrBlank() || json == "[]") return emptyList()
-    return json
-        .trim()
-        .removeSurrounding("[", "]")
-        .split(",")
-        .map { it.trim().removeSurrounding("\"") }
-        .filter { it.isNotBlank() }
+    return try {
+        val arr = JSONArray(json)
+        (0 until arr.length()).map { arr.getString(it) }
+    } catch (e: Exception) {
+        emptyList()
+    }
 }
 
 /**

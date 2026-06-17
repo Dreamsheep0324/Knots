@@ -11,43 +11,43 @@ class CardRarityTest {
     }
 
     @Test
-    fun getCardRarity_20_returnsN() {
-        assertThat(getCardRarity(20)).isEqualTo(CardRarity.N)
+    fun getCardRarity_14_returnsN() {
+        assertThat(getCardRarity(14)).isEqualTo(CardRarity.N)
     }
 
     @Test
-    fun getCardRarity_21_returnsR() {
-        assertThat(getCardRarity(21)).isEqualTo(CardRarity.R)
+    fun getCardRarity_15_returnsR() {
+        assertThat(getCardRarity(15)).isEqualTo(CardRarity.R)
     }
 
     @Test
-    fun getCardRarity_40_returnsR() {
-        assertThat(getCardRarity(40)).isEqualTo(CardRarity.R)
+    fun getCardRarity_39_returnsR() {
+        assertThat(getCardRarity(39)).isEqualTo(CardRarity.R)
     }
 
     @Test
-    fun getCardRarity_41_returnsSR() {
-        assertThat(getCardRarity(41)).isEqualTo(CardRarity.SR)
+    fun getCardRarity_40_returnsSR() {
+        assertThat(getCardRarity(40)).isEqualTo(CardRarity.SR)
     }
 
     @Test
-    fun getCardRarity_60_returnsSR() {
-        assertThat(getCardRarity(60)).isEqualTo(CardRarity.SR)
+    fun getCardRarity_74_returnsSR() {
+        assertThat(getCardRarity(74)).isEqualTo(CardRarity.SR)
     }
 
     @Test
-    fun getCardRarity_61_returnsSSR() {
-        assertThat(getCardRarity(61)).isEqualTo(CardRarity.SSR)
+    fun getCardRarity_75_returnsSSR() {
+        assertThat(getCardRarity(75)).isEqualTo(CardRarity.SSR)
     }
 
     @Test
-    fun getCardRarity_80_returnsSSR() {
-        assertThat(getCardRarity(80)).isEqualTo(CardRarity.SSR)
+    fun getCardRarity_89_returnsSSR() {
+        assertThat(getCardRarity(89)).isEqualTo(CardRarity.SSR)
     }
 
     @Test
-    fun getCardRarity_81_returnsUR() {
-        assertThat(getCardRarity(81)).isEqualTo(CardRarity.UR)
+    fun getCardRarity_90_returnsUR() {
+        assertThat(getCardRarity(90)).isEqualTo(CardRarity.UR)
     }
 
     @Test

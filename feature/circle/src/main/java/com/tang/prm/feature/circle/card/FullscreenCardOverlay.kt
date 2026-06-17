@@ -2,11 +2,11 @@ package com.tang.prm.feature.circle.card
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
-import com.tang.prm.domain.model.CardRarity
+import com.tang.prm.domain.model.IntimacyTier
 import com.tang.prm.domain.model.Contact
-import com.tang.prm.domain.model.getCardRarity
 import com.tang.prm.ui.animation.composites.HolographicCardOverlay
 import com.tang.prm.ui.animation.composites.HolographicConfig
+import com.tang.prm.ui.theme.LocalIntimacyColors
 
 @Composable
 internal fun FullscreenCardOverlay(
@@ -18,8 +18,8 @@ internal fun FullscreenCardOverlay(
     onRemove: () -> Unit,
     onContactClick: () -> Unit
 ) {
-    val rarity = getCardRarity(contact.intimacyScore)
-    val rarityColor = Color(rarity.colorValue)
+    val rarity = IntimacyTier.of(contact.intimacyScore)
+    val rarityColor = LocalIntimacyColors.current.forTier(rarity)
 
     HolographicCardOverlay(
         isFlipped = isFlipped,

@@ -14,6 +14,9 @@ enum class SubscriptionStatus {
     EXPIRED
 }
 
+private const val WEEKS_PER_MONTH = 52.0 / 12.0
+private const val DEFAULT_TIMEZONE = "Asia/Shanghai"
+
 data class Subscription(
     val id: Long = 0,
     val name: String,
@@ -29,7 +32,7 @@ data class Subscription(
     val notes: String? = null,
     val createdAt: Long = System.currentTimeMillis(),
     val updatedAt: Long = System.currentTimeMillis(),
-    val timezone: String = "UTC"
+    val timezone: String = DEFAULT_TIMEZONE
 )
 
 fun Subscription.computedStatus(): SubscriptionStatus {
@@ -43,7 +46,7 @@ fun Subscription.computedStatus(): SubscriptionStatus {
 }
 
 fun Subscription.monthlyEquivalent(): Double = when (cycle) {
-    SubscriptionCycle.WEEKLY -> price * 4.33
+    SubscriptionCycle.WEEKLY -> price * WEEKS_PER_MONTH
     SubscriptionCycle.MONTHLY -> price
     SubscriptionCycle.QUARTERLY -> price / 3
     SubscriptionCycle.YEARLY -> price / 12

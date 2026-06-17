@@ -21,13 +21,13 @@ fun AnniversaryEntity.toDomain(contactName: String?, contactAvatar: String?) = A
             Log.w("AnniversaryMapper", "Unknown AnniversaryType '$type', falling back to BIRTHDAY for anniversary id=$id")
         }
     },
-    date = date, isLunar = isLunar, isRepeat = isRepeat, reminderDays = reminderDays,
+    date = date, isLunar = isLunar, isLeapMonth = isLeapMonth, isRepeat = isRepeat, reminderDays = reminderDays,
     remarks = remarks, contactName = contactName, contactAvatar = contactAvatar,
     icon = icon, createdAt = createdAt, updatedAt = updatedAt
 )
 
 fun Anniversary.toEntity() = AnniversaryEntity(
     id = id, contactId = contactId ?: 0L, name = name, type = type.name,
-    date = date, isLunar = isLunar, isRepeat = isRepeat, reminderDays = reminderDays,
+    date = date, isLunar = isLunar, isLeapMonth = isLeapMonth, isRepeat = isRepeat, reminderDays = reminderDays,
     remarks = remarks, icon = icon, createdAt = createdAt, updatedAt = updatedAt
 )

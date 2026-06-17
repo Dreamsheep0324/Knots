@@ -3,7 +3,6 @@ package com.tang.prm.domain.usecase
 import com.tang.prm.domain.model.AlbumPhoto
 import com.tang.prm.domain.model.Contact
 import com.tang.prm.domain.model.EventType
-import com.tang.prm.domain.model.Gift
 import com.tang.prm.domain.model.SourceTypes
 import com.tang.prm.domain.repository.ContactRepository
 import com.tang.prm.domain.repository.EventRepository
@@ -33,15 +32,13 @@ class PhotoAlbumAggregationUseCase @Inject constructor(
 ) {
     fun getAggregateData(): Flow<PhotoAlbumAggregateData> = combine(
         eventRepository.getAllEvents().distinctUntilChanged(),
-        eventRepository.getEventsByType(EventType.CONVERSATION.name).distinctUntilChanged(),
         giftRepository.getAllGifts().distinctUntilChanged(),
         contactRepository.getAllContacts().distinctUntilChanged()
-    ) { events, conversations, gifts, contacts ->
-        val allEvents = events + conversations
+    ) { events, gifts, contacts ->
         val contactMap = contacts.associateBy { it.id }
         val allPhotos = mutableListOf<AlbumPhoto>()
 
-        allEvents.forEach { event ->
+        events.forEach { event ->
             event.photos.forEachIndexed { photoIndex, photoUri ->
                 val participant = event.participants.firstOrNull()
                 val allNames = event.participants.map { it.name }

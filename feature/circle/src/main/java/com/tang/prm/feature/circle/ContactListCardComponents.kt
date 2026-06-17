@@ -23,14 +23,14 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.tang.prm.domain.model.CardRarity
+import com.tang.prm.domain.model.IntimacyTier
 import com.tang.prm.domain.model.Contact
 import com.tang.prm.ui.theme.SignalGreen
 import java.util.Locale
 
 
 @Composable
-internal fun TerminalCardHeader(contact: Contact, rarity: CardRarity, rarityColor: Color) {
+internal fun TerminalCardHeader(contact: Contact, rarity: IntimacyTier, rarityColor: Color) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,

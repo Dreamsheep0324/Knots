@@ -1,9 +1,9 @@
 plugins {
-    id("com.android.library")
-    id("org.jetbrains.kotlin.android")
-    id("org.jetbrains.kotlin.plugin.serialization")
-    id("com.google.dagger.hilt.android")
-    id("com.google.devtools.ksp")
+    alias(libs.plugins.android.library)
+    alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.hilt)
+    alias(libs.plugins.ksp)
 }
 
 android {
@@ -33,52 +33,51 @@ android {
 
 dependencies {
     implementation(project(":core:domain"))
-    implementation(project(":core:ui"))
     implementation(project(":engine:divination"))
 
     // Room
-    implementation("androidx.room:room-runtime:2.7.0")
-    implementation("androidx.room:room-ktx:2.7.0")
-    ksp("androidx.room:room-compiler:2.7.0")
+    implementation(libs.room.runtime)
+    implementation(libs.room.ktx)
+    ksp(libs.room.compiler)
 
     // kotlinx-serialization
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
+    implementation(libs.kotlinx.serialization.json)
 
     // Hilt
-    implementation("com.google.dagger:hilt-android:2.55")
-    ksp("com.google.dagger:hilt-compiler:2.55")
+    implementation(libs.hilt.android)
+    ksp(libs.hilt.compiler)
 
     // DataStore + security
-    implementation("androidx.datastore:datastore-preferences:1.1.3")
-    implementation("androidx.security:security-crypto:1.1.0-alpha06")
+    implementation(libs.datastore.preferences)
+    implementation(libs.security.crypto)
 
     // OkHttp
-    implementation("com.squareup.okhttp3:okhttp:4.12.0")
+    implementation(libs.okhttp)
 
     // Gson
-    implementation("com.google.code.gson:gson:2.11.0")
+    implementation(libs.gson)
 
     // Core
-    implementation("androidx.core:core-ktx:1.15.0")
+    implementation(libs.core.ktx)
 
     // Coroutines
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.9.0")
+    implementation(libs.kotlinx.coroutines.core)
+    implementation(libs.kotlinx.coroutines.android)
 
     // Coil
-    implementation("io.coil-kt:coil-compose:2.7.0")
+    implementation(libs.coil.compose)
 
     // Lunar calendar
-    implementation("cn.6tail:lunar:1.7.7")
+    implementation(libs.lunar)
 
     // Test
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.10.2")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.10.2")
-    testImplementation("io.mockk:mockk:1.13.16")
-    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.9.0")
-    testImplementation("app.cash.turbine:turbine:1.1.0")
-    testImplementation("com.google.truth:truth:1.4.2")
-    androidTestImplementation("androidx.room:room-testing:2.7.0")
+    testImplementation(libs.junit.jupiter.api)
+    testRuntimeOnly(libs.junit.jupiter.engine)
+    testImplementation(libs.mockk)
+    testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.turbine)
+    testImplementation(libs.truth)
+    androidTestImplementation(libs.room.testing)
 }
 
 tasks.withType<Test> {

@@ -3,11 +3,13 @@ package com.tang.prm.data.repository
 import android.content.Context
 import android.net.Uri
 import com.tang.prm.data.local.dao.GiftDao
+import com.tang.prm.data.local.database.TangDatabase
 import com.tang.prm.data.mapper.toDomain
 import com.tang.prm.data.mapper.toEntity
 import com.tang.prm.domain.model.Gift
 import com.tang.prm.domain.repository.GiftRepository
 import com.tang.prm.data.util.ImageFileManager
+import androidx.room.withTransaction
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
 import com.tang.prm.data.mapper.mapList
@@ -18,6 +20,7 @@ import javax.inject.Singleton
 @Singleton
 class GiftRepositoryImpl @Inject constructor(
     private val giftDao: GiftDao,
+    private val database: TangDatabase,
     @ApplicationContext private val context: Context
 ) : GiftRepository {
 
@@ -36,29 +39,35 @@ class GiftRepositoryImpl @Inject constructor(
     override suspend fun insertGift(gift: Gift): Long = giftDao.insertGift(gift.toEntity())
 
     override suspend fun updateGift(gift: Gift) {
-        // 查询旧数据，对比照片列表，清理被移除的旧照片文件
+        // 先收集被移除的照片路径，更新数据库成功后再删除文件
         val oldEntity = giftDao.getGiftByIdOnce(gift.id)
-        if (oldEntity != null) {
-            val removedPhotos = oldEntity.photos.toSet() - gift.photos.toSet()
-            if (removedPhotos.isNotEmpty()) {
-                deletePhotoFiles(removedPhotos.toList())
-            }
+        val removedPhotos = oldEntity?.let { old ->
+            (old.photos.toSet() - gift.photos.toSet()).takeIf { it.isNotEmpty() }
         }
         giftDao.updateGift(gift.toEntity())
+        removedPhotos?.let { deletePhotoFiles(it.toList()) }
     }
 
     override suspend fun deleteGiftById(id: Long) {
-        giftDao.getGiftByIdOnce(id)?.let { entity ->
-            deletePhotoFiles(entity.photos)
+        // 先在事务内收集待删除文件路径 + 删除数据库记录
+        val photosToDelete = database.withTransaction {
+            val photos = giftDao.getGiftByIdOnce(id)?.photos ?: emptyList()
+            giftDao.deleteGiftById(id)
+            photos
         }
-        giftDao.deleteGiftById(id)
+        // 事务外删除文件
+        deletePhotoFiles(photosToDelete)
     }
 
     override suspend fun deleteGiftsByContactId(contactId: Long) {
-        giftDao.getGiftsByContactIdOnce(contactId).forEach { entity ->
-            deletePhotoFiles(entity.photos)
+        // 先在事务内收集待删除文件路径 + 删除数据库记录
+        val allPhotos = database.withTransaction {
+            val photos = giftDao.getGiftsByContactIdOnce(contactId).flatMap { it.photos }
+            giftDao.deleteGiftsByContactId(contactId)
+            photos
         }
-        giftDao.deleteGiftsByContactId(contactId)
+        // 事务外删除文件
+        deletePhotoFiles(allPhotos)
     }
 
     private suspend fun deletePhotoFiles(photos: List<String>) =

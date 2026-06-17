@@ -125,22 +125,23 @@ internal fun ThoughtFeedCard(
                                 tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = AnimationTokens.Alpha.half)
                             )
                         }
-                        if (thought.isTodo && thought.dueDate != null) {
-                            val dueDate = thought.dueDate!!
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Box(
-                                modifier = Modifier
-                                    .size(3.dp)
-                                    .clip(CircleShape)
-                                    .background(MaterialTheme.colorScheme.outline)
-                            )
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text(
-                                "截止 ${DateUtils.formatMonthDayChinese(dueDate)}",
-                                fontFamily = FontFamily.Monospace,
-                                fontSize = 10.sp,
-                                color = SignalGreen
-                            )
+                        if (thought.isTodo) {
+                            thought.dueDate?.let { dueDate ->
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Box(
+                                    modifier = Modifier
+                                        .size(3.dp)
+                                        .clip(CircleShape)
+                                        .background(MaterialTheme.colorScheme.outline)
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text(
+                                    "截止 ${DateUtils.formatMonthDayChinese(dueDate)}",
+                                    fontFamily = FontFamily.Monospace,
+                                    fontSize = 10.sp,
+                                    color = SignalGreen
+                                )
+                            }
                         }
                     }
                 }

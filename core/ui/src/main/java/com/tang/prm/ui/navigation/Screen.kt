@@ -86,35 +86,35 @@ data class BottomNavItem(
 
 val bottomNavItems = listOf(
     BottomNavItem(
-        route = HomeRoute::class.qualifiedName!!,
+        route = checkNotNull(HomeRoute::class.qualifiedName) { "HomeRoute 缺少 qualifiedName" },
         routeObject = HomeRoute,
         title = "首页",
         selectedIcon = Icons.Filled.Home,
         unselectedIcon = Icons.Outlined.Home
     ),
     BottomNavItem(
-        route = EventsRoute::class.qualifiedName!!,
+        route = checkNotNull(EventsRoute::class.qualifiedName) { "EventsRoute 缺少 qualifiedName" },
         routeObject = EventsRoute,
         title = "事件",
         selectedIcon = Icons.Filled.Event,
         unselectedIcon = Icons.Outlined.Event
     ),
     BottomNavItem(
-        route = AnniversariesRoute::class.qualifiedName!!,
+        route = checkNotNull(AnniversariesRoute::class.qualifiedName) { "AnniversariesRoute 缺少 qualifiedName" },
         routeObject = AnniversariesRoute,
         title = "纪念",
         selectedIcon = Icons.Filled.Cake,
         unselectedIcon = Icons.Outlined.Cake
     ),
     BottomNavItem(
-        route = ChatRoute::class.qualifiedName!!,
+        route = checkNotNull(ChatRoute::class.qualifiedName) { "ChatRoute 缺少 qualifiedName" },
         routeObject = ChatRoute,
         title = "对话",
         selectedIcon = Icons.AutoMirrored.Filled.Chat,
         unselectedIcon = Icons.Outlined.Chat
     ),
     BottomNavItem(
-        route = ContactsRoute::class.qualifiedName!!,
+        route = checkNotNull(ContactsRoute::class.qualifiedName) { "ContactsRoute 缺少 qualifiedName" },
         routeObject = ContactsRoute,
         title = "人物",
         selectedIcon = Icons.Filled.People,

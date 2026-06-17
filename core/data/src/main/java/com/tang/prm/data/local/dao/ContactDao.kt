@@ -12,6 +12,14 @@ interface ContactDao {
     @Query("SELECT * FROM contacts ORDER BY updatedAt DESC")
     fun getAllContacts(): Flow<List<ContactEntity>>
 
+    /**
+     * Lightweight column-projection query for contact list display.
+     * Avoids reading large columns (notes, customFields, hobby, habit, diet, skill, etc.)
+     * that are not needed in list/grid/card views.
+     */
+    @Query("SELECT id, name, avatar, nickname, phone, relationship, groupId, intimacyScore, lastInteractionTime, updatedAt FROM contacts ORDER BY updatedAt DESC")
+    fun getContactListItems(): Flow<List<ContactListItemEntity>>
+
     @Query("SELECT * FROM contacts WHERE id = :id")
     fun getContactById(id: Long): Flow<ContactEntity?>
 
@@ -36,7 +44,7 @@ interface ContactDao {
     @Query("SELECT COUNT(*) FROM contacts")
     fun getContactCount(): Flow<Int>
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertContact(contact: ContactEntity): Long
 
     @Update
@@ -54,6 +62,7 @@ interface ContactDao {
     @Query("DELETE FROM contact_tag_cross_ref WHERE contactId = :contactId")
     suspend fun deleteCrossRefsByContact(contactId: Long)
 
+    /** Callers MUST escape the [value] parameter with [com.tang.prm.util.escapeSqlWildcards] before passing it, otherwise `%`, `_`, `\` will be treated as SQL wildcards. */
     @Query("SELECT id, hobby, habit, diet, skill FROM contacts WHERE hobby LIKE '%' || :value || '%' ESCAPE '\\' OR habit LIKE '%' || :value || '%' ESCAPE '\\' OR diet LIKE '%' || :value || '%' ESCAPE '\\' OR skill LIKE '%' || :value || '%' ESCAPE '\\'")
     suspend fun getContactsWithListFieldValue(value: String): List<ListFieldData>
 
@@ -65,6 +74,24 @@ interface ContactDao {
         val skill: String?
     )
 }
+
+/**
+ * Lightweight POJO for contact list queries.
+ * Only includes columns needed for list/grid/card display,
+ * avoiding large columns like notes, customFields, hobby, habit, diet, skill.
+ */
+data class ContactListItemEntity(
+    val id: Long,
+    val name: String,
+    val avatar: String? = null,
+    val nickname: String? = null,
+    val phone: String? = null,
+    val relationship: String? = null,
+    val groupId: Long? = null,
+    val intimacyScore: Int = 50,
+    val lastInteractionTime: Long? = null,
+    val updatedAt: Long = System.currentTimeMillis()
+)
 
 @Dao
 interface ContactGroupDao {

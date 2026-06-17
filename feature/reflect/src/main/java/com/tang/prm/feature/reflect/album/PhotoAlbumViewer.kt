@@ -169,8 +169,7 @@ internal fun SwipeablePhotoViewerDialog(
                                     color = Color.White.copy(alpha = 0.6f)
                                 )
                             }
-                            if (photo.location != null) {
-                                val location = photo.location!!
+                            photo.location?.let { location ->
                                 Row(
                                     verticalAlignment = Alignment.CenterVertically,
                                     horizontalArrangement = Arrangement.spacedBy(4.dp)

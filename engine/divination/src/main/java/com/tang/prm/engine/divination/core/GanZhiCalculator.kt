@@ -21,24 +21,32 @@ object GanZhiCalculator {
         )
     }
 
+    fun fromCalendar(calendar: java.util.Calendar): GanZhiInfo = fromSolar(
+        calendar.get(java.util.Calendar.YEAR),
+        calendar.get(java.util.Calendar.MONTH) + 1,
+        calendar.get(java.util.Calendar.DAY_OF_MONTH),
+        calendar.get(java.util.Calendar.HOUR_OF_DAY),
+        calendar.get(java.util.Calendar.MINUTE)
+    )
+
     fun getLunarMonthDay(year: Int, month: Int, day: Int): Pair<Int, Int> {
         val solar = Solar.fromYmd(year, month, day)
         val lunar = solar.lunar
         return Pair(abs(lunar.month), lunar.day)
     }
 
-    fun getDayGan(year: Int, month: Int, day: Int): String {
+    private fun getEightChar(year: Int, month: Int, day: Int): EightChar {
         val solar = Solar.fromYmd(year, month, day)
         val lunar = solar.lunar
-        val eightChar = EightChar.fromLunar(lunar)
-        return eightChar.dayGan
+        return EightChar.fromLunar(lunar)
+    }
+
+    fun getDayGan(year: Int, month: Int, day: Int): String {
+        return getEightChar(year, month, day).dayGan
     }
 
     fun getDayGanZhi(year: Int, month: Int, day: Int): String {
-        val solar = Solar.fromYmd(year, month, day)
-        val lunar = solar.lunar
-        val eightChar = EightChar.fromLunar(lunar)
-        return eightChar.day
+        return getEightChar(year, month, day).day
     }
 
     fun getHourZhi(hour: Int): String {

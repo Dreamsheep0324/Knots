@@ -102,7 +102,7 @@ object ExternalOmenData {
 
         val upperTrigramIndex = mapped[0].second.trigramIndex
         val lowerTrigramIndex = mapped[1].second.trigramIndex
-        val movingYaoIndex = if (count % 6 == 0) 6 else count % 6
+        val movingYaoIndex = mod6(count)
 
         return Triple(upperTrigramIndex, lowerTrigramIndex, movingYaoIndex)
     }
@@ -119,5 +119,10 @@ object ExternalOmenData {
         return priority.mapNotNull { key ->
             selections[key]?.let { "${categoryLabels[key]}：${it.name}（${it.trigramName}）" }
         }.joinToString("；") + "；数量：$count"
+    }
+
+    private fun mod6(value: Int): Int {
+        val r = value % 6
+        return if (r == 0) 6 else r
     }
 }

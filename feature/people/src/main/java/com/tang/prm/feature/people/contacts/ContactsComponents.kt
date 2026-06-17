@@ -306,21 +306,11 @@ internal fun ContactGridCard(
     }
 }
 
-internal fun getContactListIntimacyColor(score: Int): Color = when {
-    score >= 81 -> Color(0xFFF59E0B)
-    score >= 61 -> Color(0xFFEF4444)
-    score >= 41 -> Color(0xFF8B5CF6)
-    score >= 21 -> Color(0xFF3B82F6)
-    else -> Color(0xFF94A3B8)
-}
+internal fun getContactListIntimacyColor(score: Int): Color =
+    Color(com.tang.prm.domain.model.IntimacyTier.of(score).colorValue)
 
-internal fun getContactListIntimacyLevel(score: Int): String = when {
-    score >= 81 -> AppStrings.Intimacy.FAMILY
-    score >= 61 -> AppStrings.Intimacy.CLOSE
-    score >= 41 -> AppStrings.Intimacy.FRIEND
-    score >= 21 -> AppStrings.Intimacy.ACQUAINTANCE
-    else -> AppStrings.Intimacy.NEW
-}
+internal fun getContactListIntimacyLevel(score: Int): String =
+    com.tang.prm.domain.model.IntimacyTier.of(score).label
 
 @Composable
 internal fun ContactListCard(
@@ -379,8 +369,7 @@ internal fun ContactListCard(
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
-                    if (!contact.relationship.isNullOrEmpty()) {
-                        val relationship = contact.relationship!!
+                    contact.relationship?.let { relationship ->
                         Surface(
                             shape = RoundedCornerShape(6.dp),
                             color = intimacyColor.copy(alpha = 0.1f)

@@ -1,4 +1,4 @@
-﻿package com.tang.prm.feature.gifts
+package com.tang.prm.feature.gifts
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -66,16 +66,17 @@ fun AddGiftScreen(
 
     LaunchedEffect(editingGift, uiState.data.availableContacts) {
         if (isEditing && editingGift != null && !hasLoadedEditData && uiState.data.availableContacts.isNotEmpty()) {
-            val g = editingGift!!
-            val contact = uiState.data.availableContacts.find { it.id == g.contactId }
-            selectedContact = contact
-            giftName = g.giftName
-            giftType = g.giftType
-            isSent = g.isSent
-            occasion = g.occasion ?: ""
-            description = g.description ?: ""
-            selectedPhotos = g.photos
-            selectedDate = g.date
+            editingGift?.let { g ->
+                val contact = uiState.data.availableContacts.find { it.id == g.contactId }
+                selectedContact = contact
+                giftName = g.giftName
+                giftType = g.giftType
+                isSent = g.isSent
+                occasion = g.occasion ?: ""
+                description = g.description ?: ""
+                selectedPhotos = g.photos
+                selectedDate = g.date
+            }
             hasLoadedEditData = true
         }
     }

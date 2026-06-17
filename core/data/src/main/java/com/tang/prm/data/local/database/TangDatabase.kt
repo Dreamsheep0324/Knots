@@ -27,7 +27,7 @@ import com.tang.prm.data.local.entity.*
         ContactAttributeEntity::class,
         SubscriptionEntity::class
     ],
-    version = 38,
+    version = 39,
     exportSchema = true
 )
 @TypeConverters(ListStringConverter::class)

@@ -14,7 +14,9 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeout
 import javax.inject.Inject
@@ -36,7 +38,8 @@ class AiViewModel @Inject constructor(
     private val _state = MutableStateFlow<AiDeepState>(AiDeepState.Idle)
     val state: StateFlow<AiDeepState> = _state.asStateFlow()
 
-    var onAnalysisComplete: ((String) -> Unit)? = null
+    private val _analysisCompleteEvent = Channel<String>()
+    val analysisCompleteEvent = _analysisCompleteEvent.receiveAsFlow()
 
     private val _apiKeyConfigured = MutableStateFlow(false)
     val apiKeyConfigured: StateFlow<Boolean> = _apiKeyConfigured.asStateFlow()
@@ -131,7 +134,7 @@ class AiViewModel @Inject constructor(
             if (_state.value is AiDeepState.Streaming) {
                 val content = contentBuilder.toString()
                 _state.value = AiDeepState.Result(content)
-                onAnalysisComplete?.invoke(content)
+                _analysisCompleteEvent.send(content)
             }
         } catch (e: kotlinx.coroutines.TimeoutCancellationException) {
             _state.value = AiDeepState.Error("请求超时，请检查网络后重试")

@@ -110,6 +110,7 @@ fun WebDavSyncScreen(
     var password by remember(config.password) { mutableStateOf(config.password) }
     var remotePath by remember(config.remotePath) { mutableStateOf(config.remotePath) }
     var autoSyncOnLaunch by remember(config.autoSyncOnLaunch) { mutableStateOf(config.autoSyncOnLaunch) }
+    var trustAllCertificates by remember(config.trustAllCertificates) { mutableStateOf(config.trustAllCertificates) }
     var passwordVisible by remember { mutableStateOf(false) }
     var configExpanded by remember { mutableStateOf(false) }
     var showRestoreDialog by remember { mutableStateOf<String?>(null) }
@@ -117,19 +118,20 @@ fun WebDavSyncScreen(
 
     val isConnected = connectionState is ConnectionState.Success
 
-    LaunchedEffect(serverUrl, username, password, remotePath, autoSyncOnLaunch) {
+    LaunchedEffect(serverUrl, username, password, remotePath, autoSyncOnLaunch, trustAllCertificates) {
         delay(500)
         viewModel.updateConfig(
             WebDavConfig(
                 serverUrl = serverUrl, username = username, password = password,
                 remotePath = remotePath, autoSyncOnLaunch = autoSyncOnLaunch,
-                lastSyncTime = config.lastSyncTime, lastSyncDirection = config.lastSyncDirection
+                lastSyncTime = config.lastSyncTime, lastSyncDirection = config.lastSyncDirection,
+                trustAllCertificates = trustAllCertificates
             )
         )
     }
 
     LaunchedEffect(syncState) {
-        if (syncState is SyncState.UploadSuccess || syncState is SyncState.DownloadSuccess || syncState is SyncState.Error) {
+        if (syncState is SyncState.UploadSuccess || syncState is SyncState.DownloadSuccess || syncState is SyncState.PartialSuccess || syncState is SyncState.Error) {
             kotlinx.coroutines.delay(3000)
             viewModel.resetSyncState()
         }
@@ -179,6 +181,7 @@ fun WebDavSyncScreen(
                     username = username, onUsernameChange = { username = it },
                     password = password, onPasswordChange = { password = it },
                     remotePath = remotePath, onRemotePathChange = { remotePath = it },
+                    trustAllCertificates = trustAllCertificates, onTrustAllCertificatesChange = { trustAllCertificates = it },
                     passwordVisible = passwordVisible, onPasswordToggle = { passwordVisible = !passwordVisible },
                     onTestConnection = { viewModel.testConnection() },
                     isTesting = connectionState is ConnectionState.Testing, isConnected = isConnected
@@ -222,6 +225,10 @@ fun WebDavSyncScreen(
             if (syncState is SyncState.DownloadSuccess) {
                 val s = syncState as SyncState.DownloadSuccess
                 item { SyncResultBanner("恢复成功 · 下载 ${s.downloadedImages} 张 · 跳过 ${s.skippedImages} 张", isSuccess = true) }
+            }
+            if (syncState is SyncState.PartialSuccess) {
+                val s = syncState as SyncState.PartialSuccess
+                item { SyncResultBanner("部分成功 · 成功 ${s.succeeded} 张 · 失败 ${s.failed} 张 · 跳过 ${s.skipped} 张", isSuccess = true) }
             }
             if (syncState is SyncState.Error) {
                 item { SyncResultBanner((syncState as SyncState.Error).message, isSuccess = false) }
@@ -346,6 +353,8 @@ private fun WebDavConfigPanel(
     onPasswordChange: (String) -> Unit,
     remotePath: String,
     onRemotePathChange: (String) -> Unit,
+    trustAllCertificates: Boolean,
+    onTrustAllCertificatesChange: (Boolean) -> Unit,
     passwordVisible: Boolean,
     onPasswordToggle: () -> Unit,
     onTestConnection: () -> Unit,
@@ -406,6 +415,27 @@ private fun WebDavConfigPanel(
                     isPassword = true, passwordVisible = passwordVisible, onPasswordToggle = onPasswordToggle
                 )
                 CompactConfigField(remotePath, onRemotePathChange, "远程目录", "/knots_backup/", Icons.Default.Folder)
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text("信任所有证书", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Medium)
+                        Text("自建服务器证书不受信任时开启", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 11.sp)
+                    }
+                    Switch(
+                        checked = trustAllCertificates,
+                        onCheckedChange = onTrustAllCertificatesChange,
+                        colors = SwitchDefaults.colors(
+                            checkedTrackColor = Primary,
+                            checkedThumbColor = Color.White,
+                            uncheckedTrackColor = MaterialTheme.colorScheme.surfaceVariant,
+                            uncheckedThumbColor = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    )
+                }
 
                 Spacer(modifier = Modifier.height(2.dp))
 

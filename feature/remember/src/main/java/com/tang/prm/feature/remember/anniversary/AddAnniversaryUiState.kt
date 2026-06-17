@@ -16,6 +16,7 @@ data class AddAnniversaryUiState(
     val date: Long = System.currentTimeMillis(),
     val dateText: String = DateUtils.formatDate(System.currentTimeMillis()),
     val isLunar: Boolean = false,
+    val isLeapMonth: Boolean = false,
     val isRepeat: Boolean = true,
     val remarks: String = "",
     val contacts: List<Contact> = emptyList(),

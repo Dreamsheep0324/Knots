@@ -18,10 +18,10 @@ class FilterExtTest {
     @Test
     fun `getIntimacyLevel returns correct level`() {
         assertThat(getIntimacyLevel(10)).isEqualTo(AppStrings.Intimacy.NEW)
-        assertThat(getIntimacyLevel(30)).isEqualTo(AppStrings.Intimacy.ACQUAINTANCE)
+        assertThat(getIntimacyLevel(25)).isEqualTo(AppStrings.Intimacy.ACQUAINTANCE)
         assertThat(getIntimacyLevel(50)).isEqualTo(AppStrings.Intimacy.FRIEND)
-        assertThat(getIntimacyLevel(70)).isEqualTo(AppStrings.Intimacy.CLOSE)
-        assertThat(getIntimacyLevel(90)).isEqualTo(AppStrings.Intimacy.FAMILY)
+        assertThat(getIntimacyLevel(80)).isEqualTo(AppStrings.Intimacy.CLOSE)
+        assertThat(getIntimacyLevel(95)).isEqualTo(AppStrings.Intimacy.FAMILY)
     }
 
     // endregion

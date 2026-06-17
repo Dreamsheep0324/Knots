@@ -86,7 +86,7 @@ fun MeihuaResultScreen(
         return
     }
 
-    val meihua = data!!
+    val meihua = checkNotNull(data) { "梅花数据不应为空" }
 
     LaunchedEffect(meihua) {
         viewModel.saveResult()

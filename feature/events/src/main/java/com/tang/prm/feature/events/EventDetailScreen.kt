@@ -136,10 +136,10 @@ fun EventDetailScreen(
                 item { Spacer(modifier = Modifier.height(32.dp)) }
             }
 
-            if (selectedPhotoIndex != null) {
+            selectedPhotoIndex?.let { index ->
                 PhotoPreviewDialog(
                     photos = event.photos,
-                    initialIndex = selectedPhotoIndex!!,
+                    initialIndex = index,
                     onDismiss = { selectedPhotoIndex = null }
                 )
             }

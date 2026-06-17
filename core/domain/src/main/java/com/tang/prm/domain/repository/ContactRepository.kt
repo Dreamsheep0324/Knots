@@ -7,6 +7,8 @@ import kotlinx.coroutines.flow.Flow
 
 interface ContactRepository {
     fun getAllContacts(): Flow<List<Contact>>
+    /** Lightweight query returning only columns needed for list display (avoids notes, customFields, etc.). */
+    fun getContactListItems(): Flow<List<Contact>>
     fun getContactById(id: Long): Flow<Contact?>
     fun searchContacts(keyword: String): Flow<List<Contact>>
     fun getContactsByGroup(groupId: Long): Flow<List<Contact>>

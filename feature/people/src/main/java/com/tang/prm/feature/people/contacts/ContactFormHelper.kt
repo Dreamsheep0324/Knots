@@ -52,12 +52,13 @@ class ContactFormHelper @Inject constructor(
         return arr.toString()
     }
 
-    suspend fun syncBirthdayAnniversary(contactId: Long, birthdayLong: Long, isLunar: Boolean, contactName: String, contactAvatar: String?) {
+    suspend fun syncBirthdayAnniversary(contactId: Long, birthdayLong: Long, isLunar: Boolean, isLeapMonth: Boolean, contactName: String, contactAvatar: String?) {
         anniversaryRepository.getAnniversariesByContact(contactId).first().filter { it.type == AnniversaryType.BIRTHDAY }.forEach { anniversary ->
             anniversaryRepository.updateAnniversary(
                 anniversary.copy(
                     date = birthdayLong,
                     isLunar = isLunar,
+                    isLeapMonth = isLeapMonth,
                     contactName = contactName,
                     contactAvatar = contactAvatar
                 )

@@ -169,12 +169,14 @@ fun TagSelector(
             showIconPicker = showIconPicker
         )
     }
-    if (showDeleteDialog && typeToDelete != null) {
-        DeleteTypeDialog(
-            typeName = typeToDelete!!.name,
-            onDismiss = { showDeleteDialog = false; typeToDelete = null },
-            onConfirm = { onDeleteItem(typeToDelete!!); showDeleteDialog = false; typeToDelete = null }
-        )
+    if (showDeleteDialog) {
+        typeToDelete?.let { toDelete ->
+            DeleteTypeDialog(
+                typeName = toDelete.name,
+                onDismiss = { showDeleteDialog = false; typeToDelete = null },
+                onConfirm = { onDeleteItem(toDelete); showDeleteDialog = false; typeToDelete = null }
+            )
+        }
     }
 }
 

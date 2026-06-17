@@ -7,5 +7,6 @@ data class WebDavConfig(
     val remotePath: String = "/knots_backup/",
     val autoSyncOnLaunch: Boolean = false,
     val lastSyncTime: Long = 0,
-    val lastSyncDirection: String = ""
+    val lastSyncDirection: String = "",
+    val trustAllCertificates: Boolean = false
 )

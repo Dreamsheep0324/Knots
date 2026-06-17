@@ -60,9 +60,8 @@
 -keep class com.nlf.calendar.** { *; }
 -keepclassmembers class com.nlf.calendar.** { *; }
 
-# ---- DataStore ----
--keepclassmembers class * extends com.google.protobuf.GeneratedMessageLite { <methods>; }
--dontwarn com.google.protobuf.**
+# ---- DataStore Preferences ----
+# (DataStore Preferences does not use Protobuf; no keep rules needed)
 
 # ---- EncryptedSharedPreferences ----
 -keep class androidx.security.crypto.** { *; }
@@ -72,15 +71,11 @@
 -dontwarn kotlinx.coroutines.**
 
 # ---- Navigation Compose ----
--keepnames class androidx.navigation.fragment.NavHostFragment
+-keep class com.tang.prm.ui.navigation.*Route { *; }
 -keep class * extends androidx.navigation.NavController { <init>(...); }
 
 # ---- Compose ----
 -dontwarn androidx.compose.**
-
-# ---- AndroidX Security / Biometric ----
--keep class androidx.biometric.** { *; }
--dontwarn androidx.biometric.**
 
 # ---- 应用自身 Model ----
 -keep class com.tang.prm.domain.model.** { *; }

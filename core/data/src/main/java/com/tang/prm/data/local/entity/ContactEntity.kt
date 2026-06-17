@@ -23,6 +23,7 @@ data class ContactEntity(
     val gender: Int = 0, // 0=未知, 1=男, 2=女
     val birthday: Long? = null,
     val isLunarBirthday: Boolean = false,
+    val isLeapMonthBirthday: Boolean = false,
     val knowingDate: Long? = null,
     val phone: String? = null,
     val email: String? = null,

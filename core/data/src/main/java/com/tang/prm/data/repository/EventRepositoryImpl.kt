@@ -69,25 +69,27 @@ class EventRepositoryImpl @Inject constructor(
         eventDao.insertEvent(event.toEntity())
 
     override suspend fun updateEvent(event: Event) {
-        // 查询旧数据，对比照片列表，清理被移除的旧照片文件
+        // 先收集被移除的照片路径，更新数据库成功后再删除文件
         val oldEntity = eventDao.getEventByIdOnce(event.id)
-        if (oldEntity != null) {
-            val removedPhotos = oldEntity.photos.toSet() - event.photos.toSet()
-            if (removedPhotos.isNotEmpty()) {
-                deletePhotoFiles(removedPhotos.toList())
-            }
+        val removedPhotos = oldEntity?.let { old ->
+            (old.photos.toSet() - event.photos.toSet()).takeIf { it.isNotEmpty() }
         }
         eventDao.updateEvent(event.toEntity())
+        removedPhotos?.let { deletePhotoFiles(it.toList()) }
     }
 
-    override suspend fun deleteEvent(id: Long) = database.withTransaction {
-        eventDao.getEventByIdOnce(id)?.let { entity ->
-            deletePhotoFiles(entity.photos)
+    override suspend fun deleteEvent(id: Long) {
+        // 先在事务内收集待删除文件路径 + 删除数据库记录
+        val photosToDelete = database.withTransaction {
+            val photos = eventDao.getEventByIdOnce(id)?.photos ?: emptyList()
+            favoriteDao.deleteEventFavorites(id, listOf(SourceTypes.EVENT))
+            todoDao.deleteTodosByEvent(id)
+            reminderDao.deleteRemindersByEvent(id)
+            eventDao.deleteEventById(id)
+            photos
         }
-        favoriteDao.deleteEventFavorites(id, listOf(SourceTypes.EVENT))
-        todoDao.deleteTodosByEvent(id)
-        reminderDao.deleteRemindersByEvent(id)
-        eventDao.deleteEventById(id)
+        // 事务外删除文件
+        deletePhotoFiles(photosToDelete)
     }
 
     override suspend fun insertEventParticipant(eventId: Long, contactId: Long) =

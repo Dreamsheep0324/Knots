@@ -16,6 +16,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -59,26 +60,26 @@ class AddAnniversaryViewModel @Inject constructor(
 
     private fun loadAnniversary(id: Long) {
         viewModelScope.launch {
-            anniversaryRepository.getAnniversaryById(id).collect { anniversary ->
-                anniversary?.let { ann ->
-                    val contactId = ann.contactId
-                    _uiState.update { state ->
-                        state.copy(
-                            id = ann.id,
-                            name = ann.name,
-                            contactId = if (contactId != null && contactId > 0) contactId else null,
-                            contactName = ann.contactName,
-                            selectedType = ann.type,
-                            selectedIcon = ann.icon ?: "Cake",
-                            date = ann.date,
-                            dateText = DateUtils.formatDate(ann.date),
-                            isLunar = ann.isLunar,
-                            isRepeat = ann.isRepeat,
-                            remarks = ann.remarks ?: "",
-                            isEditing = true,
-                            createdAt = ann.createdAt
-                        )
-                    }
+            val anniversary = anniversaryRepository.getAnniversaryById(id).first()
+            anniversary?.let { ann ->
+                val contactId = ann.contactId
+                _uiState.update { state ->
+                    state.copy(
+                        id = ann.id,
+                        name = ann.name,
+                        contactId = if (contactId != null && contactId > 0) contactId else null,
+                        contactName = ann.contactName,
+                        selectedType = ann.type,
+                        selectedIcon = ann.icon ?: "Cake",
+                        date = ann.date,
+                        dateText = DateUtils.formatDate(ann.date),
+                        isLunar = ann.isLunar,
+                        isLeapMonth = ann.isLeapMonth,
+                        isRepeat = ann.isRepeat,
+                        remarks = ann.remarks ?: "",
+                        isEditing = true,
+                        createdAt = ann.createdAt
+                    )
                 }
             }
         }
@@ -95,7 +96,8 @@ class AddAnniversaryViewModel @Inject constructor(
         val dateText = DateUtils.formatDate(millis)
         _uiState.update { it.copy(date = millis, dateText = dateText, hasUnsavedChanges = true) }
     }
-    fun updateIsLunar(value: Boolean) = _uiState.update { it.copy(isLunar = value, hasUnsavedChanges = true) }
+    fun updateIsLunar(value: Boolean) = _uiState.update { it.copy(isLunar = value, isLeapMonth = if (!value) false else it.isLeapMonth, hasUnsavedChanges = true) }
+    fun updateIsLeapMonth(value: Boolean) = _uiState.update { it.copy(isLeapMonth = value, hasUnsavedChanges = true) }
     fun updateIsRepeat(value: Boolean) = _uiState.update { it.copy(isRepeat = value, hasUnsavedChanges = true) }
     fun updateRemarks(value: String) = _uiState.update { it.copy(remarks = value, hasUnsavedChanges = true) }
 
@@ -128,6 +130,7 @@ class AddAnniversaryViewModel @Inject constructor(
                 type = state.selectedType,
                 date = state.date,
                 isLunar = state.isLunar,
+                isLeapMonth = state.isLeapMonth,
                 isRepeat = state.isRepeat,
                 reminderDays = 1,
                 remarks = state.remarks.ifBlank { null },

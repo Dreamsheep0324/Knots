@@ -52,6 +52,10 @@ object ImageFileManager {
         }
     }
 
+    fun countPhotosFromJson(photoJsons: List<String>): Int = photoJsons.sumOf { json ->
+        try { org.json.JSONArray(json).length() } catch (_: Exception) { 0 }
+    }
+
     suspend fun deleteLocalPhotos(photos: List<String>) {
         photos.forEach { path ->
             if (isLocalPath(path)) deleteImage(path)

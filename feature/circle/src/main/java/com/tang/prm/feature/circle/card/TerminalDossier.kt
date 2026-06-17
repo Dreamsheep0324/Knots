@@ -37,12 +37,13 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.tang.prm.domain.model.Contact
-import com.tang.prm.domain.model.getCardRarity
+import com.tang.prm.domain.model.IntimacyTier
 import com.tang.prm.ui.animation.core.AnimationTokens
 import com.tang.prm.ui.animation.primitives.rememberBreathingPulse
 import com.tang.prm.ui.theme.Dimens
 import com.tang.prm.ui.theme.Error
 import com.tang.prm.ui.theme.SignalPurple
+import com.tang.prm.ui.theme.LocalIntimacyColors
 import com.tang.prm.feature.circle.HologramCircle
 import com.tang.prm.feature.circle.TerminalDivider
 import com.tang.prm.feature.circle.TerminalMiniCardRow
@@ -69,7 +70,7 @@ internal fun TerminalDossier(
     val members = hologramCircle.members
     val memberCount = members.size
     val avgIntimacy = if (members.isEmpty()) 0 else members.map { it.intimacyScore }.average().toInt()
-    val rarity = getCardRarity(avgIntimacy)
+    val rarity = IntimacyTier.of(avgIntimacy)
     val circleColor = MaterialTheme.colorScheme.onSurface
 
     Column {
@@ -134,7 +135,7 @@ internal fun TerminalDossier(
                     String.format(Locale.US, "%02d%%", avgIntimacy),
                     fontFamily = FontFamily.Monospace,
                     fontSize = 11.sp,
-                    color = Color(rarity.colorValue),
+                    color = LocalIntimacyColors.current.forTier(rarity),
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.width(60.dp),
                     textAlign = TextAlign.Center

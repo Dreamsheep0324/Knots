@@ -28,18 +28,45 @@ import java.net.SocketTimeoutException
 import java.net.UnknownHostException
 import java.io.StringReader
 import java.net.URLEncoder
+import java.security.SecureRandom
+import java.security.cert.X509Certificate
 import java.text.SimpleDateFormat
 import java.util.Locale
 import javax.inject.Inject
+import javax.net.ssl.SSLContext
+import javax.net.ssl.TrustManager
+import javax.net.ssl.X509TrustManager
 
 class WebDavClient @Inject constructor(
     private val okHttpClient: OkHttpClient
 ) {
-    private val rfc1123Format = SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.ENGLISH)
-    private val displayFormat = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault())
+    private fun formatDisplayDate(millis: Long): String =
+        SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault()).format(java.util.Date(millis))
 
     companion object {
         private const val BUFFER_SIZE = 256 * 1024 // 256KB
+
+        private val TRUST_ALL_MANAGER = object : X509TrustManager {
+            override fun checkClientTrusted(chain: Array<out X509Certificate>?, authType: String?) {}
+            override fun checkServerTrusted(chain: Array<out X509Certificate>?, authType: String?) {}
+            override fun getAcceptedIssuers(): Array<X509Certificate> = arrayOf()
+        }
+
+        private val TRUST_ALL_SSL_CONTEXT: SSLContext = SSLContext.getInstance("TLS").apply {
+            init(null, arrayOf<TrustManager>(TRUST_ALL_MANAGER), SecureRandom())
+        }
+    }
+
+    /**
+     * 根据 config 返回合适的 OkHttpClient。
+     * trustAllCertificates=true 时跳过 SSL 证书校验和主机名验证。
+     */
+    private fun clientFor(config: WebDavConfig): OkHttpClient {
+        if (!config.trustAllCertificates) return okHttpClient
+        return okHttpClient.newBuilder()
+            .sslSocketFactory(TRUST_ALL_SSL_CONTEXT.socketFactory, TRUST_ALL_MANAGER)
+            .hostnameVerifier { _, _ -> true }
+            .build()
     }
 
     /**
@@ -55,12 +82,13 @@ class WebDavClient @Inject constructor(
                 .method("PROPFIND", "".toRequestBody())
                 .build()
 
-            val response = okHttpClient.newCall(request).execute()
-            when {
-                response.isSuccessful || response.code == 207 -> ConnectionTestResult.Success
-                response.code == 401 -> ConnectionTestResult.Error("认证失败，请检查用户名和密码")
-                response.code == 404 -> ConnectionTestResult.Error("服务器地址不存在")
-                else -> ConnectionTestResult.Error("连接失败 (${response.code})")
+            clientFor(config).newCall(request).execute().use { response ->
+                when {
+                    response.isSuccessful || response.code == 207 -> ConnectionTestResult.Success
+                    response.code == 401 -> ConnectionTestResult.Error("认证失败，请检查用户名和密码")
+                    response.code == 404 -> ConnectionTestResult.Error("服务器地址不存在")
+                    else -> ConnectionTestResult.Error("连接失败 (${response.code})")
+                }
             }
         } catch (e: SocketTimeoutException) {
             ConnectionTestResult.Error("连接超时，请检查网络")
@@ -85,9 +113,10 @@ class WebDavClient @Inject constructor(
                 .method("MKCOL", null)
                 .build()
 
-            val response = okHttpClient.newCall(request).execute()
-            if (!response.isSuccessful && response.code != 405) {
-                throw Exception("创建远程目录失败 (${response.code})")
+            clientFor(config).newCall(request).execute().use { response ->
+                if (!response.isSuccessful && response.code != 405) {
+                    throw Exception("创建远程目录失败 (${response.code})")
+                }
             }
         } catch (e: Exception) {
             // 目录可能已存在，忽略错误
@@ -106,8 +135,7 @@ class WebDavClient @Inject constructor(
                 .method("MKCOL", null)
                 .build()
 
-            val response = okHttpClient.newCall(request).execute()
-            // 405 = 目录已存在，视为成功
+            clientFor(config).newCall(request).execute().use { _ -> }
         } catch (_: Exception) {}
     }
 
@@ -135,13 +163,14 @@ class WebDavClient @Inject constructor(
                 .method("PROPFIND", propfindBody.toRequestBody())
                 .build()
 
-            val response = okHttpClient.newCall(request).execute()
-            if (!response.isSuccessful && response.code != 207) {
-                throw Exception("列出文件失败 (${response.code})")
-            }
+            clientFor(config).newCall(request).execute().use { response ->
+                if (!response.isSuccessful && response.code != 207) {
+                    throw Exception("列出文件失败 (${response.code})")
+                }
 
-            val body = response.body?.string() ?: return@withContext emptyList()
-            parsePropfindResponse(body, config.remotePath)
+                val body = response.body?.string() ?: return@withContext emptyList()
+                parsePropfindResponse(body, config.remotePath)
+            }
         } catch (e: SocketTimeoutException) {
             throw Exception("连接超时，请检查网络")
         } catch (e: UnknownHostException) {
@@ -165,9 +194,8 @@ class WebDavClient @Inject constructor(
             while (true) {
                 delay(500)
                 val written = bytesWrittenToSink.get()
-                val displayBytes = (written * 0.9).toLong()
-                if (displayBytes < totalBytes) {
-                    trySend(SyncResult.UploadProgress("上传中", 0, 0, "${formatFileSize(displayBytes)}/${formatFileSize(totalBytes)}"))
+                if (written < totalBytes) {
+                    trySend(SyncResult.UploadProgress("上传中", 0, 0, "${formatFileSize(written)}/${formatFileSize(totalBytes)}"))
                 }
             }
         }
@@ -199,15 +227,16 @@ class WebDavClient @Inject constructor(
                     .put(trackingBody)
                     .build()
 
-                val response = okHttpClient.newCall(request).execute()
-                monitorJob.cancel()
+                clientFor(config).newCall(request).execute().use { response ->
+                    monitorJob.cancel()
 
-                if (!response.isSuccessful && response.code != 201 && response.code != 204) {
-                    trySend(SyncResult.Error("上传失败 (${response.code})"))
-                } else {
-                    trySend(SyncResult.UploadSuccess(fileName))
+                    if (!response.isSuccessful && response.code != 201 && response.code != 204) {
+                        trySend(SyncResult.Error("上传失败 (${response.code})"))
+                    } else {
+                        trySend(SyncResult.UploadSuccess(fileName))
+                    }
+                    close()
                 }
-                close()
             } catch (e: Exception) {
                 monitorJob.cancel()
                 val error = when (e) {
@@ -242,38 +271,39 @@ class WebDavClient @Inject constructor(
                     .get()
                     .build()
 
-                val response = okHttpClient.newCall(request).execute()
-                if (!response.isSuccessful) {
-                    trySend(SyncResult.Error("下载失败 (${response.code})"))
-                    close()
-                    return@launch
-                }
-
-                val totalBytes = response.body?.contentLength() ?: -1L
-                val downloadedBytes = java.util.concurrent.atomic.AtomicLong(0L)
-
-                val monitorJob = launch(Dispatchers.IO) {
-                    while (true) {
-                        delay(500)
-                        val downloaded = downloadedBytes.get()
-                        trySend(SyncResult.DownloadProgress("下载中", 0, 0, "${formatFileSize(downloaded)}/${if (totalBytes > 0) formatFileSize(totalBytes) else "?"}"))
+                clientFor(config).newCall(request).execute().use { response ->
+                    if (!response.isSuccessful) {
+                        trySend(SyncResult.Error("下载失败 (${response.code})"))
+                        close()
+                        return@launch
                     }
-                }
 
-                response.body?.byteStream()?.use { input ->
-                    targetFile.outputStream().use { output ->
-                        val buffer = ByteArray(BUFFER_SIZE)
-                        var len: Int
-                        while (input.read(buffer).also { len = it } > 0) {
-                            output.write(buffer, 0, len)
-                            downloadedBytes.addAndGet(len.toLong())
+                    val totalBytes = response.body?.contentLength() ?: -1L
+                    val downloadedBytes = java.util.concurrent.atomic.AtomicLong(0L)
+
+                    val monitorJob = launch(Dispatchers.IO) {
+                        while (true) {
+                            delay(500)
+                            val downloaded = downloadedBytes.get()
+                            trySend(SyncResult.DownloadProgress("下载中", 0, 0, "${formatFileSize(downloaded)}/${if (totalBytes > 0) formatFileSize(totalBytes) else "?"}"))
                         }
                     }
-                } ?: throw Exception("下载失败：响应体为空")
 
-                monitorJob.cancel()
-                trySend(SyncResult.DownloadSuccess(fileName))
-                close()
+                    response.body?.byteStream()?.use { input ->
+                        targetFile.outputStream().use { output ->
+                            val buffer = ByteArray(BUFFER_SIZE)
+                            var len: Int
+                            while (input.read(buffer).also { len = it } > 0) {
+                                output.write(buffer, 0, len)
+                                downloadedBytes.addAndGet(len.toLong())
+                            }
+                        }
+                    } ?: throw Exception("下载失败：响应体为空")
+
+                    monitorJob.cancel()
+                    trySend(SyncResult.DownloadSuccess(fileName))
+                    close()
+                }
             } catch (e: Exception) {
                 val error = when (e) {
                     is SocketTimeoutException -> "连接超时，请检查网络"
@@ -303,8 +333,9 @@ class WebDavClient @Inject constructor(
                 .delete()
                 .build()
 
-            val response = okHttpClient.newCall(request).execute()
-            response.isSuccessful || response.code == 204
+            clientFor(config).newCall(request).execute().use { response ->
+                response.isSuccessful || response.code == 204
+            }
         } catch (e: SocketTimeoutException) {
             throw Exception("连接超时，请检查网络")
         } catch (e: UnknownHostException) {
@@ -331,10 +362,11 @@ class WebDavClient @Inject constructor(
                 .get()
                 .build()
 
-            val response = okHttpClient.newCall(request).execute()
-            if (response.code == 404) return@withContext null
-            if (!response.isSuccessful) return@withContext null
-            response.body?.string()
+            clientFor(config).newCall(request).execute().use { response ->
+                if (response.code == 404) return@withContext null
+                if (!response.isSuccessful) return@withContext null
+                response.body?.string()
+            }
         } catch (_: Exception) {
             null
         }
@@ -352,9 +384,10 @@ class WebDavClient @Inject constructor(
             .put(content.toRequestBody(mediaType))
             .build()
 
-        val response = okHttpClient.newCall(request).execute()
-        if (!response.isSuccessful && response.code != 201 && response.code != 204) {
-            throw Exception("上传清单失败 (${response.code})")
+        clientFor(config).newCall(request).execute().use { response ->
+            if (!response.isSuccessful && response.code != 201 && response.code != 204) {
+                throw Exception("上传清单失败 (${response.code})")
+            }
         }
     }
 
@@ -370,9 +403,10 @@ class WebDavClient @Inject constructor(
             .put(file.asRequestBody(mediaType))
             .build()
 
-        val response = okHttpClient.newCall(request).execute()
-        if (!response.isSuccessful && response.code != 201 && response.code != 204) {
-            throw Exception("上传图片失败 (${response.code})")
+        clientFor(config).newCall(request).execute().use { response ->
+            if (!response.isSuccessful && response.code != 201 && response.code != 204) {
+                throw Exception("上传图片失败 (${response.code})")
+            }
         }
     }
 
@@ -387,21 +421,22 @@ class WebDavClient @Inject constructor(
             .get()
             .build()
 
-        val response = okHttpClient.newCall(request).execute()
-        if (!response.isSuccessful) {
-            throw Exception("下载图片失败 (${response.code})")
-        }
-
-        response.body?.byteStream()?.use { input ->
-            targetFile.parentFile?.mkdirs()
-            BufferedOutputStream(FileOutputStream(targetFile), BUFFER_SIZE).use { output ->
-                val buffer = ByteArray(BUFFER_SIZE)
-                var len: Int
-                while (input.read(buffer).also { len = it } > 0) {
-                    output.write(buffer, 0, len)
-                }
+        clientFor(config).newCall(request).execute().use { response ->
+            if (!response.isSuccessful) {
+                throw Exception("下载图片失败 (${response.code})")
             }
-        } ?: throw Exception("下载图片失败：响应体为空")
+
+            response.body?.byteStream()?.use { input ->
+                targetFile.parentFile?.mkdirs()
+                BufferedOutputStream(FileOutputStream(targetFile), BUFFER_SIZE).use { output ->
+                    val buffer = ByteArray(BUFFER_SIZE)
+                    var len: Int
+                    while (input.read(buffer).also { len = it } > 0) {
+                        output.write(buffer, 0, len)
+                    }
+                }
+            } ?: throw Exception("下载图片失败：响应体为空")
+        }
     }
 
     /**
@@ -416,8 +451,9 @@ class WebDavClient @Inject constructor(
                 .delete()
                 .build()
 
-            val response = okHttpClient.newCall(request).execute()
-            response.isSuccessful || response.code == 204 || response.code == 404
+            clientFor(config).newCall(request).execute().use { response ->
+                response.isSuccessful || response.code == 204 || response.code == 404
+            }
         } catch (_: Exception) {
             false
         }
@@ -435,9 +471,10 @@ class WebDavClient @Inject constructor(
             .put(file.asRequestBody(mediaType))
             .build()
 
-        val response = okHttpClient.newCall(request).execute()
-        if (!response.isSuccessful && response.code != 201 && response.code != 204) {
-            throw Exception("上传数据库失败 (${response.code})")
+        clientFor(config).newCall(request).execute().use { response ->
+            if (!response.isSuccessful && response.code != 201 && response.code != 204) {
+                throw Exception("上传数据库失败 (${response.code})")
+            }
         }
     }
 
@@ -452,21 +489,22 @@ class WebDavClient @Inject constructor(
             .get()
             .build()
 
-        val response = okHttpClient.newCall(request).execute()
-        if (!response.isSuccessful) {
-            throw Exception("下载数据库失败 (${response.code})")
-        }
-
-        response.body?.byteStream()?.use { input ->
-            targetFile.parentFile?.mkdirs()
-            BufferedOutputStream(FileOutputStream(targetFile), BUFFER_SIZE).use { output ->
-                val buffer = ByteArray(BUFFER_SIZE)
-                var len: Int
-                while (input.read(buffer).also { len = it } > 0) {
-                    output.write(buffer, 0, len)
-                }
+        clientFor(config).newCall(request).execute().use { response ->
+            if (!response.isSuccessful) {
+                throw Exception("下载数据库失败 (${response.code})")
             }
-        } ?: throw Exception("下载数据库失败：响应体为空")
+
+            response.body?.byteStream()?.use { input ->
+                targetFile.parentFile?.mkdirs()
+                BufferedOutputStream(FileOutputStream(targetFile), BUFFER_SIZE).use { output ->
+                    val buffer = ByteArray(BUFFER_SIZE)
+                    var len: Int
+                    while (input.read(buffer).also { len = it } > 0) {
+                        output.write(buffer, 0, len)
+                    }
+                }
+            } ?: throw Exception("下载数据库失败：响应体为空")
+        }
     }
 
     /**
@@ -492,11 +530,12 @@ class WebDavClient @Inject constructor(
                 .method("PROPFIND", propfindBody.toRequestBody())
                 .build()
 
-            val response = okHttpClient.newCall(request).execute()
-            if (!response.isSuccessful && response.code != 207) return@withContext 0L
+            clientFor(config).newCall(request).execute().use { response ->
+                if (!response.isSuccessful && response.code != 207) return@withContext 0L
 
-            val body = response.body?.string() ?: return@withContext 0L
-            parseFileSizeFromPropfind(body, fileName)
+                val body = response.body?.string() ?: return@withContext 0L
+                parseFileSizeFromPropfind(body, fileName)
+            }
         } catch (_: Exception) { 0L }
     }
 
@@ -673,7 +712,7 @@ class WebDavClient @Inject constructor(
                                             .removeSuffix(".zip")
                                         val inputFormat = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault())
                                         val date = inputFormat.parse(timePart)
-                                        if (date != null) displayFormat.format(date) else fileName
+                                        if (date != null) formatDisplayDate(date.time) else fileName
                                     } catch (_: Exception) {
                                         fileName
                                     }

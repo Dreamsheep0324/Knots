@@ -21,8 +21,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.tang.prm.domain.model.Contact
-import com.tang.prm.domain.model.CardRarity
-import com.tang.prm.domain.model.getCardRarity
+import com.tang.prm.domain.model.IntimacyTier
 import com.tang.prm.ui.theme.*
 import java.util.Locale
 
@@ -35,11 +34,11 @@ internal fun TerminalStatsPanel(
     val totalContacts = contacts.size
     val totalCircles = circles.size
     val avgIntimacy = if (contacts.isEmpty()) 0 else contacts.map { it.intimacyScore }.average().toInt()
-    val urCount = contacts.count { getCardRarity(it.intimacyScore) == CardRarity.UR }
-    val ssrCount = contacts.count { getCardRarity(it.intimacyScore) == CardRarity.SSR }
-    val srCount = contacts.count { getCardRarity(it.intimacyScore) == CardRarity.SR }
-    val rCount = contacts.count { getCardRarity(it.intimacyScore) == CardRarity.R }
-    val nCount = contacts.count { getCardRarity(it.intimacyScore) == CardRarity.N }
+    val urCount = contacts.count { IntimacyTier.of(it.intimacyScore) == IntimacyTier.FAMILY }
+    val ssrCount = contacts.count { IntimacyTier.of(it.intimacyScore) == IntimacyTier.CLOSE }
+    val srCount = contacts.count { IntimacyTier.of(it.intimacyScore) == IntimacyTier.FRIEND }
+    val rCount = contacts.count { IntimacyTier.of(it.intimacyScore) == IntimacyTier.ACQUAINTANCE }
+    val nCount = contacts.count { IntimacyTier.of(it.intimacyScore) == IntimacyTier.NEW }
     val highIntimacy = contacts.count { it.intimacyScore >= 70 }
 
     val panelColor = SignalPurple
@@ -221,7 +220,7 @@ internal fun TerminalStatsPanel(
                 index = "04",
                 label = "高亲密度",
                 value = String.format(Locale.US, "%02d", highIntimacy),
-                accentColor = Color(CardRarity.UR.colorValue),
+                accentColor = LocalIntimacyColors.current.family,
                 modifier = Modifier.weight(1f)
             )
         }

@@ -36,13 +36,7 @@ object MeihuaEngine {
         val calendar = Calendar.getInstance().apply { time = targetDate }
         val timestamp = targetDate.time
 
-        val ganzhi = GanZhiCalculator.fromSolar(
-            calendar.get(Calendar.YEAR),
-            calendar.get(Calendar.MONTH) + 1,
-            calendar.get(Calendar.DAY_OF_MONTH),
-            calendar.get(Calendar.HOUR_OF_DAY),
-            calendar.get(Calendar.MINUTE)
-        )
+        val ganzhi = GanZhiCalculator.fromCalendar(calendar)
         val (lunarMonth, lunarDay) = GanZhiCalculator.getLunarMonthDay(
             calendar.get(Calendar.YEAR),
             calendar.get(Calendar.MONTH) + 1,
@@ -130,9 +124,11 @@ object MeihuaEngine {
                     WuXingHelper.getElementRelation(it.second.element, tiYong.tiGua.element)
                 } ?: "无",
                 changedRelation = changedTiYong?.let {
-                    WuXingHelper.getElementRelation(it.yongGua.element, it.tiGua.element)
+                    // 变卦用卦与原卦体卦的五行关系
+                    WuXingHelper.getElementRelation(it.yongGua.element, tiYong.tiGua.element)
                 } ?: "无变卦",
                 changedTiYongRelation = changedTiYong?.let {
+                    // 变卦内部体用关系
                     WuXingHelper.getElementRelation(it.yongGua.element, it.tiGua.element)
                 } ?: "无变卦"
             ),
@@ -263,6 +259,8 @@ object MeihuaEngine {
         val upperTrigram = TrigramData.byIndex[upperIndex]!!
         val lowerTrigram = TrigramData.byIndex[lowerIndex]!!
         val symbol = "${upperTrigram.symbol}${lowerTrigram.symbol}"
-        return HexagramData.all.find { it.symbol == symbol }!!
+        return requireNotNull(HexagramData.findBySymbol(symbol)) {
+            "未找到符号为 '$symbol' 的卦象（上卦索引=$upperIndex, 下卦索引=$lowerIndex）"
+        }
     }
 }

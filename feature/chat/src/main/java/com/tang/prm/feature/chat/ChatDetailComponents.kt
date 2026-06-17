@@ -95,13 +95,8 @@ internal fun parseDialogue(event: Event, contactName: String?): List<DialogueLin
     }
 }
 
-internal fun getIntimacyColor(score: Int): Color = when {
-    score >= 81 -> Color(0xFFF43F5E)
-    score >= 61 -> SceneOrange
-    score >= 41 -> Color(0xFF6366F1)
-    score >= 21 -> Color(0xFF64748B)
-    else -> Color(0xFF94A3B8)
-}
+internal fun getIntimacyColor(score: Int): Color =
+    Color(com.tang.prm.domain.model.IntimacyTier.of(score).colorValue)
 
 internal val MyBubbleColor = Primary
 internal val MyBubbleBg: Color
@@ -136,8 +131,7 @@ internal fun ScriptHeader(event: Event, contact: Contact?, intimacyColor: Color)
                     horizontalArrangement = Arrangement.spacedBy(6.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    if (contact?.relationship != null) {
-                        val relationship = contact.relationship!!
+                    contact?.relationship?.let { relationship ->
                         Surface(
                             shape = RoundedCornerShape(6.dp),
                             color = intimacyColor.copy(alpha = 0.1f)
@@ -171,8 +165,7 @@ internal fun ScriptHeader(event: Event, contact: Contact?, intimacyColor: Color)
                         )
                     }
 
-                    if (!event.weather.isNullOrBlank()) {
-                        val weather = event.weather!!
+                    event.weather?.takeIf { it.isNotBlank() }?.let { weather ->
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(3.dp)
@@ -192,8 +185,7 @@ internal fun ScriptHeader(event: Event, contact: Contact?, intimacyColor: Color)
                         }
                     }
 
-                    if (!event.emotion.isNullOrBlank()) {
-                        val emotion = event.emotion!!
+                    event.emotion?.takeIf { it.isNotBlank() }?.let { emotion ->
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(3.dp)

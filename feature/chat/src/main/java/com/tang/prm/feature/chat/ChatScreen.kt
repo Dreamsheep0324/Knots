@@ -120,13 +120,15 @@ fun ChatScreen(
 
         Spacer(modifier = Modifier.height(6.dp))
 
-        val filteredConversations = if (searchQuery.isNotBlank()) {
-            uiState.conversations.filter {
-                it.contactName.contains(searchQuery, ignoreCase = true) ||
-                it.lastMessage.contains(searchQuery, ignoreCase = true)
+        val filteredConversations = remember(uiState.conversations, searchQuery) {
+            if (searchQuery.isNotBlank()) {
+                uiState.conversations.filter {
+                    it.contactName.contains(searchQuery, ignoreCase = true) ||
+                    it.lastMessage.contains(searchQuery, ignoreCase = true)
+                }
+            } else {
+                uiState.conversations
             }
-        } else {
-            uiState.conversations
         }
 
         if (filteredConversations.isEmpty() && !uiState.isLoading) {

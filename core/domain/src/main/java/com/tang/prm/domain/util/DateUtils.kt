@@ -8,6 +8,8 @@ import java.util.Locale
 
 object DateUtils {
 
+    const val MILLIS_PER_DAY = 86_400_000L
+
     private enum class DateFormat(pattern: String) {
         DATE_TIME("yyyy年MM月dd日 HH:mm"),
         DATE("yyyy-MM-dd"),
@@ -46,7 +48,7 @@ object DateUtils {
         val diff = now - timestamp
         val minutes = diff / (60 * 1000)
         val hours = diff / (60 * 60 * 1000)
-        val days = diff / (24 * 60 * 60 * 1000)
+        val days = diff / MILLIS_PER_DAY
 
         return when {
             minutes < 1 && diff >= 0 -> "刚刚"
@@ -56,7 +58,7 @@ object DateUtils {
             diff < 0 -> {
                 val futureMinutes = -diff / (60 * 1000)
                 val futureHours = -diff / (60 * 60 * 1000)
-                val futureDays = -diff / (24 * 60 * 60 * 1000)
+                val futureDays = -diff / MILLIS_PER_DAY
                 when {
                     futureMinutes < 1 -> "即将"
                     futureHours < 1 -> "${futureMinutes}分钟后"

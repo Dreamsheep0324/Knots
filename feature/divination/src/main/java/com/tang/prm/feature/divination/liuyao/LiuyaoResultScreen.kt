@@ -89,7 +89,7 @@ fun LiuyaoResultScreen(
         return
     }
 
-    val liuyao = liuyaoData!!
+    val liuyao = checkNotNull(liuyaoData) { "六爻数据不应为空" }
 
     LaunchedEffect(liuyao) {
         viewModel.saveResult()

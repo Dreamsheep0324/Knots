@@ -116,10 +116,10 @@ fun ContactListScreen(
                         onAction = { viewModel.showCreateDialog() }
                     )
                 } else {
-                    val sortedCircles = uiState.data.sortedCircles.filter { hologramCircle ->
+                    val sortedCircles = remember(uiState.data.sortedCircles, searchState.query) {
                         val query = searchState.query
-                        if (query.isBlank()) true
-                        else {
+                        if (query.isBlank()) uiState.data.sortedCircles
+                        else uiState.data.sortedCircles.filter { hologramCircle ->
                             hologramCircle.circle.name.contains(query, ignoreCase = true) ||
                             hologramCircle.members.any { it.name.contains(query, ignoreCase = true) }
                         }

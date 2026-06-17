@@ -144,8 +144,8 @@ fun SubscriptionDetailScreen(
                 item { BillingProgressCard(sub) }
                 item { DateInfoCard(sub) }
                 item { SubscriptionCycleInfoCard(sub) }
-                if (!sub.notes.isNullOrBlank()) {
-                    item { NotesCard(sub.notes!!) }
+                sub.notes?.takeIf { it.isNotBlank() }?.let { notes ->
+                    item { NotesCard(notes) }
                 }
                 item { Spacer(modifier = Modifier.height(80.dp)) }
             }
@@ -187,8 +187,8 @@ private fun SubscriptionHeroCard(sub: Subscription) {
                     Spacer(modifier = Modifier.width(12.dp))
                     Column {
                         Text(sub.name, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
-                        if (sub.category != null) {
-                            Text(sub.category!!, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        sub.category?.let { category ->
+                            Text(category, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
                     }
                 }

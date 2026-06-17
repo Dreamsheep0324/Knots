@@ -5,6 +5,90 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.1] - 2026-06-17
+
+### Changed
+
+- **亲密度数值调整**：重新平衡五档亲密度阈值（初识 0-14 / 泛交 15-39 / 朋友 40-74 / 密友 75-89 / 至亲 90-100），更贴合真实社交距离感知
+- **软件图标配色更新**：更新应用图标配色方案，提升视觉辨识度
+- **亲密度七处重复定义统一**：`CardRarity` 枚举替换为 `IntimacyTier` 枚举（单一真相源），定义 label/cardRarity/minScore/maxScore/colorValue/stars；11 个文件从 `CardRarity`/`getCardRarity` 迁移到 `IntimacyTier`/`IntimacyTier.of()`
+- **ViewModel 多个 collect 合并**：`AddContactViewModel` 7 个独立 collect 合并为 1 个 combine+collect；`AddEventViewModel` 4 个独立 collect 合并为 1 个
+- **ContactDao 全表扫描优化**：新增 `getContactListItems()` 列投影查询（仅 10 列），列表页少读 ~20 列，不关联 `contact_attributes` 表
+- **ImageFileManager/ImageCacheManager 合并**：翻转依赖方向（core:data 移除对 core:ui 的未使用依赖），`ImageCacheManager` 委托 `ImageFileManager`，迁移 `countPhotosFromJson` 方法
+- **!! 非空断言安全化**：22 处危险 `!!` 替换为 `?.let`/`?.takeIf`/`checkNotNull`，覆盖 15 个文件
+- **颜色常量集中到主题**：新增 `IntimacyColors` 数据类 + `LocalIntimacyColors` CompositionLocal + 深色模式覆盖（`LightIntimacyColors`/`DarkIntimacyColors`）；10 处 Compose 代码从 `Color(tier.colorValue)` 迁移到 `LocalIntimacyColors.current.forTier()`
+- **魔法数字提取为命名常量**：`Subscription.timezone` 默认值 `"UTC"` → `DEFAULT_TIMEZONE = "Asia/Shanghai"`；`Contact.intimacyScore` 默认值 → `DEFAULT_INTIMACY_SCORE = 50`；`ThoughtGamificationUseCase` XP 权重提取为 `XP_BASE/XP_DONE_BONUS/XP_CONTACT_BONUS/XP_STREAK_BONUS`，等级公式提取 `BASE_XP_PER_LEVEL = 15`；`LiuyaoEngine` shiYaoMap 添加八宫世爻规律注释
+- **Version Catalog 全量迁移**：12 个模块的 `build.gradle.kts` 从硬编码版本字符串迁移到 `libs.versions.toml` 版本目录引用，统一测试依赖版本（junit 5.10.2, mockk 1.13.16）
+- **ProGuard 规则清理**：移除 `androidx.biometric` 规则（项目无此依赖）和 `NavHostFragment` keep 规则（项目使用 Navigation Compose）
+- **通知机制完善**：PendingIntent 添加 `FLAG_UPDATE_CURRENT`；通知小图标从系统默认改为 `R.mipmap.ic_launcher`；通知 ID Long→Int 溢出修复（`reminderId % Int.MAX_VALUE`）；BootReceiver 添加 `MY_PACKAGE_REPLACED` intent-filter
+
+### Security
+
+- **ZIP 路径遍历防护修正**：`BackupRepository.writeFileFromZip` 改为与 `allowedDir.canonicalPath` 比对（而非 `parentFile.canonicalPath`），堵住恶意 ZIP 通过 `../` 覆盖任意文件的漏洞
+- **加密 SharedPreferences 容错统一**：`provideEncryptedSharedPreferences` 新增 try-catch + fallback + 日志，与 `provideWebDavEncryptedPrefs` 统一容错策略；两个 fallback 均使用 `_fallback` 后缀文件名 + `Log.w` 日志，防止无 Keystore 设备崩溃
+- **加密降级标记**：EncryptedSharedPreferences 创建失败时，降级为明文存储并写入 `encryption_degraded` 标记，日志级别从 `Log.w` 提升为 `Log.e`，便于 UI 层警告用户
+- **WebDAV 上传原子性**：上传失败不再静默吞掉——记录失败数、manifest 仅包含成功上传的文件、上报 `SyncResult.PartialSuccess`；图片上传失败添加 `Log.w` 日志
+- **OnConflictStrategy.REPLACE 级联删除防护**：`ContactDao.insertContact`、`EventDao.insertEvent`、`CircleDao.insertCircle` 从 `REPLACE` 改为 `IGNORE`，避免 SQLite REPLACE 的 DELETE+INSERT 行为触发外键级联删除
+- **备份恢复失败回滚**：`restoreBackup`/`restoreDbOnly`/`restoreFromUri` 三处恢复方法添加预恢复快照备份（`.before_restore`），失败时自动回滚并重启应用
+- **SimpleDateFormat 线程安全**：`WebDavClient` 移除类级别共享的 `SimpleDateFormat` 实例，改为每次调用创建新实例
+
+### Fixed
+
+- **相册对话照片重复显示**：`PhotoAlbumAggregationUseCase` 中 `events + conversations` 将 CONVERSATION 事件拼接两次，移除对 `getEventsByType(CONVERSATION)` 的独立订阅，combine 从 4 源减为 3 源
+- **Subscription 月/年换算不一致**：WEEKLY 月等效 `price * 4.33`（4.33×12=51.96）与年等效 `price * 52` 不一致，统一使用 `WEEKS_PER_MONTH = 52.0/12.0` 系数
+- **梅花易数 changedRelation 与 changedTiYongRelation 值永远相同**：`changedRelation` 应为变卦用神与原卦体卦的五行关系，而非变卦体用关系，修复为 `WuXingHelper.getElementRelation(it.yongGua.element, tiYong.tiGua.element)`
+- **HomeScreen 时间显示永不更新**：`remember { System.currentTimeMillis() }` 无 key 导致时间停留在首次组合，改为 `mutableLongStateOf` + `LaunchedEffect` 每秒更新
+- **SSE 流读取可能无限循环**：`readUtf8Line()` 返回 null 时 `continue` 导致循环无法退出（source 可能未 exhausted），改为 `break`
+- **insertContact 缺少事务包裹**：先插入 Contact 再插入 Attributes 两步不在事务中，用 `database.withTransaction` 包裹
+- **updateEvent/updateGift 先删照片再更新数据库**：照片先删后更新导致失败时数据丢失，改为先更新 DB 成功后再删除文件
+- **deleteEvent/deleteGift 文件 I/O 在事务内**：事务内收集待删除路径，事务外再删文件
+- **updateContact 文件 I/O 在事务内**：事务返回旧头像路径，事务外删除文件
+- **EncryptedSharedPreferences 降级无感知**：降级为明文存储时用户无感知，添加 `encryption_degraded` 标记和 `Log.e` 日志
+- **ContactDetailViewModel 回调反模式**：`deleteContact(onDeleted: () -> Unit)` 接收 lambda 回调持有 UI 导航引用，改为 `Channel<ContactDetailEvent>` + `receiveAsFlow()`，UI 层通过 `LaunchedEffect` 观察事件
+- **AiViewModel 公开可变 lambda 属性**：`var onAnalysisComplete: ((String) -> Unit)?` 改为 `Channel<String>` + `receiveAsFlow()`，MeihuaAiDeepSection 同步适配
+- **编辑表单 collect 覆盖风险**：`AddAnniversaryViewModel.loadAnniversary` 和 `AddContactViewModel.loadContact` 从 `collect` 持续监听改为 `.first()` 一次性读取
+- **Compose 列表过滤未缓存**：`ChatScreen.filteredConversations` 和 `ContactListScreen.sortedCircles` 用 `remember` 缓存过滤结果
+- **CircleDao N+1 写入**：`updateCircleWithMembers`/`insertCircleWithMembers` 循环逐条 INSERT 改为批量 `insertMemberCrossRefs(List<CircleMemberCrossRef>)`
+- **LiuyaoEngine 7 处非空断言**：`!!` 替换为 `?: throw IllegalStateException("描述性消息")`
+- **4 处迁移 Cursor 资源泄漏**：`Migration_1_32`/`Migration_24_31`/`Migration_31_33`/`Migration_32_33` 的 Cursor 改为 `.use { }` 包裹
+- **JSON 解析脆弱性**：`ContactMapper.parseJsonList` 和 `Migration_31_33` 从 `split(",")` 改为 `JSONArray` 解析，含逗号值不再被错误分割
+- **SafeCall 破坏协程取消语义**：`safeDbCall`/`safeApiCall` 合并为 `safeCall`，添加 `CancellationException` 重抛
+- **7 处重复代码消除**：`MILLIS_PER_DAY` 常量统一、`getIntimacyLevel` 删除（统一用 `IntimacyTier.of()`）、`GanZhiCalculator.fromCalendar` 便捷方法、`ExternalOmenData.mod6` 工具函数、`FilterExt` 中 `getIntimacyLevel` 引用修正
+- **农历纪念日按公历计算**：`AnniversaryRepositoryImpl.effectiveDate()` 检测 `isLunar` 后调用 `LunarUtils.lunarToSolar()` 转换为当年对应公历日期，支持闰月（`isLeapMonth` 参数）
+  - `LunarUtils.lunarToSolar()` 修复 `isLeap` 参数未生效：使用负月份约定（`-lunarMonth` 表示闰月）
+  - 数据库 v38→v39：`anniversaries` 新增 `isLeapMonth` 列，`contacts` 新增 `isLeapMonthBirthday` 列
+  - 新建/编辑纪念日支持闰月切换（当农历开启时显示闰月开关）
+  - 新建/编辑人物生日支持闰月标记
+- **WebDAV 下载失败仍报告成功**：恢复流程重排为"数据库恢复→图片下载→清理→报告"；数据库恢复失败时 `return@flow` 立即停止；图片部分失败时 emit `SyncResult.PartialSuccess`
+- **SSE 流不响应取消**：`AiRepositoryImpl.streamChat` 改用 `launch(Dispatchers.IO)` 执行阻塞 IO + `awaitClose` 立即注册取消 + `finally { close() }` 确保 Flow 完成时关闭连接
+- **appScope 协程作用域永不取消**：自动备份从 `MainActivity` 下沉到 `TangApplication`，使用 `ProcessLifecycleOwner` + `DefaultLifecycleObserver` 监听应用前后台，旋转屏幕不再泄漏协程
+- **数据库迁移图断裂 v28→v31**：新增 `MIGRATION_28_31`（anniversaries 重建外键 + events 添加 customTypeName），注册到 DatabaseModule
+- **WebDavClient Response 未关闭**：15 处 `okHttpClient.newCall(request).execute()` 统一改为 `.use {}` 包裹，防止连接泄漏
+- **通知 ID 碰撞**：`ReminderReceiver` 使用 `AtomicInteger` 自增计数器替代 `currentTimeMillis().toInt()`
+- **GiftRepositoryImpl 缺少事务保护**：`deleteGiftById`/`deleteGiftsByContactId` 添加 `database.withTransaction` 包裹，先查后删在同一事务内
+- **ContactRepositoryImpl 文件 I/O 在事务内**：文件删除操作移到 `withTransaction` 外部，事务内仅做数据库操作
+- **SubscriptionRepositoryImpl 缺 @Singleton**：补上 `@Singleton` 注解
+- **AvatarCropDialog 位图泄漏**：`DisposableEffect` 回收预览位图；catch 块回收 sourceBitmap/outputBitmap；draw-phase 状态写入改为 `onGloballyPositioned`；`onCropComplete` 包裹在 `LaunchedEffect`；手势状态改用 `rememberSaveable`
+- **OrbitalCalendarCanvas draw 阶段内存分配**：`gridColors`/`rayColors`/`dashPathEffect`/`sortedSignalKeys` 及 7 个 `TextStyle` 提升到 `remember` 块
+- **SearchStateManager 没有 debounce**：新增 `debouncedQuery` Flow（300ms debounce + distinctUntilChanged）
+- **HomeViewModel greeting 不随时间更新**：`greetingFlow` 改为 30 分钟刷新周期
+- **uploadFileWithProgress 进度估算**：移除 `(written * 0.9).toLong()` 进度扭曲系数
+- **restartApp 用 System.exit**：添加 KDoc 说明必须使用 System.exit 的原因（Room DB 文件覆盖后连接不可重建）；3 处恢复方法补 `database.checkpoint()`；添加 `Log.i` 记录重启原因
+- **catch 静默吞没**：BackupRepository 3 处 + WebDavRepositoryImpl 1 处空 catch 块补充 `Log.w` 日志
+- **ReminderReceiver 编译错误**：合并重复的 `companion object`（`CHANNEL_ID` + `notificationIdCounter`）
+
+### Architecture
+
+- **Version Catalog 启用**：创建 `gradle/libs.versions.toml`（27 版本 + 40 库 + 6 bundle + 8 插件），全量迁移 16 个模块从硬编码依赖到 `libs.xxx` 引用
+- **HexagramData 查找优化**：预构建 `bySymbolMap`/`byBinaryMap`/`byNameMap` lazy Map，O(n)→O(1)；`!!` 替换为 `requireNotNull` 带描述性错误信息
+- **ViewModel 事件通道统一**：`ContactDetailViewModel` 和 `AiViewModel` 的回调/lambda 模式统一改为 `Channel` + `receiveAsFlow()` 单向事件流
+- **DAO insert 策略统一**：所有 `insertXxx` 方法从 `OnConflictStrategy.REPLACE` 改为 `IGNORE`，强制使用 `updateXxx` 更新已有数据
+
+### Database
+
+- 数据库版本 v38→v39：`anniversaries` 新增 `isLeapMonth INTEGER NOT NULL DEFAULT 0`，`contacts` 新增 `isLeapMonthBirthday INTEGER NOT NULL DEFAULT 0`
+- 新增 `MIGRATION_28_31`：覆盖 v1.0.0 用户（v28）直接升级到 v31 的路径
+
 ## [1.3.0] - 2026-06-07
 
 ### Added

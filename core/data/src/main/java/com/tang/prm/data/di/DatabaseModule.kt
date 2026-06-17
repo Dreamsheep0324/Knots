@@ -2,6 +2,7 @@ package com.tang.prm.data.di
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.util.Log
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStore
@@ -12,6 +13,7 @@ import com.tang.prm.data.local.dao.*
 import com.tang.prm.data.local.database.TangDatabase
 import com.tang.prm.data.local.database.migrations.MIGRATION_1_32
 import com.tang.prm.data.local.database.migrations.MIGRATION_24_31
+import com.tang.prm.data.local.database.migrations.MIGRATION_28_31
 import com.tang.prm.data.local.database.migrations.MIGRATION_31_33
 import com.tang.prm.data.local.database.migrations.MIGRATION_32_33
 import com.tang.prm.data.local.database.migrations.MIGRATION_33_34
@@ -19,6 +21,7 @@ import com.tang.prm.data.local.database.migrations.MIGRATION_34_35
 import com.tang.prm.data.local.database.migrations.MIGRATION_35_36
 import com.tang.prm.data.local.database.migrations.MIGRATION_36_37
 import com.tang.prm.data.local.database.migrations.MIGRATION_37_38
+import com.tang.prm.data.local.database.migrations.MIGRATION_38_39
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -41,7 +44,7 @@ object DatabaseModule {
             TangDatabase::class.java,
             "tang_database"
         )
-            .addMigrations(MIGRATION_1_32, MIGRATION_24_31, MIGRATION_31_33, MIGRATION_32_33, MIGRATION_33_34, MIGRATION_34_35, MIGRATION_35_36, MIGRATION_36_37, MIGRATION_37_38)
+            .addMigrations(MIGRATION_1_32, MIGRATION_24_31, MIGRATION_28_31, MIGRATION_31_33, MIGRATION_32_33, MIGRATION_33_34, MIGRATION_34_35, MIGRATION_35_36, MIGRATION_36_37, MIGRATION_37_38, MIGRATION_38_39)
             .build()
     }
 
@@ -97,16 +100,23 @@ object DatabaseModule {
     @Provides
     @Singleton
     fun provideEncryptedSharedPreferences(@ApplicationContext context: Context): SharedPreferences {
-        val masterKey = MasterKey.Builder(context)
-            .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
-            .build()
-        return EncryptedSharedPreferences.create(
-            context,
-            "secret_settings",
-            masterKey,
-            EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
-            EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
-        )
+        return try {
+            val masterKey = MasterKey.Builder(context)
+                .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+                .build()
+            EncryptedSharedPreferences.create(
+                context,
+                "secret_settings",
+                masterKey,
+                EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+                EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+            )
+        } catch (e: Exception) {
+            Log.e("DatabaseModule", "EncryptedSharedPreferences unavailable! Sensitive data will NOT be encrypted.", e)
+            context.getSharedPreferences("secret_settings_fallback", Context.MODE_PRIVATE).edit()
+                .putBoolean("encryption_degraded", true).apply()
+            context.getSharedPreferences("secret_settings_fallback", Context.MODE_PRIVATE)
+        }
     }
 
     @Provides
@@ -125,8 +135,10 @@ object DatabaseModule {
                 EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
             )
         } catch (e: Exception) {
-            // Fallback to plain SharedPreferences on incompatible ROMs
-            context.getSharedPreferences("webdav_config", Context.MODE_PRIVATE)
+            Log.e("DatabaseModule", "EncryptedSharedPreferences unavailable! Sensitive data will NOT be encrypted.", e)
+            context.getSharedPreferences("webdav_secret_fallback", Context.MODE_PRIVATE).edit()
+                .putBoolean("encryption_degraded", true).apply()
+            context.getSharedPreferences("webdav_secret_fallback", Context.MODE_PRIVATE)
         }
     }
 }

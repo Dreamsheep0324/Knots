@@ -57,13 +57,14 @@ class CreateContactUseCase @Inject constructor(
     suspend fun updateContact(
         contact: Contact,
         isLunarBirthday: Boolean = false,
+        isLeapMonthBirthday: Boolean = false,
         contactName: String = contact.name,
         contactAvatar: String? = contact.avatar
     ) {
         contactRepository.updateContact(contact)
 
         contact.birthday?.let { birthdayLong ->
-            syncBirthdayAnniversary(contact.id, birthdayLong, isLunarBirthday, contactName, contactAvatar)
+            syncBirthdayAnniversary(contact.id, birthdayLong, isLunarBirthday, isLeapMonthBirthday, contactName, contactAvatar)
         }
     }
 
@@ -74,6 +75,7 @@ class CreateContactUseCase @Inject constructor(
         contactId: Long,
         birthdayLong: Long,
         isLunar: Boolean,
+        isLeapMonth: Boolean,
         contactName: String,
         contactAvatar: String?
     ) {
@@ -84,6 +86,7 @@ class CreateContactUseCase @Inject constructor(
                     anniversary.copy(
                         date = birthdayLong,
                         isLunar = isLunar,
+                        isLeapMonth = isLeapMonth,
                         contactName = contactName,
                         contactAvatar = contactAvatar
                     )

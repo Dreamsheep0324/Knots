@@ -38,10 +38,11 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.tang.prm.domain.model.Contact
-import com.tang.prm.domain.model.getCardRarity
+import com.tang.prm.domain.model.IntimacyTier
 import com.tang.prm.ui.components.CardCornerBrackets
 import com.tang.prm.ui.components.ContactAvatar
 import com.tang.prm.ui.components.ContactRelationshipBadge
+import com.tang.prm.ui.theme.LocalIntimacyColors
 import com.tang.prm.ui.theme.SignalGreen
 import java.util.Locale
 
@@ -74,8 +75,8 @@ private fun ContactMiniCard(
     contact: Contact,
     onClick: () -> Unit
 ) {
-    val rarity = getCardRarity(contact.intimacyScore)
-    val rarityColor = Color(rarity.colorValue)
+    val rarity = IntimacyTier.of(contact.intimacyScore)
+    val rarityColor = LocalIntimacyColors.current.forTier(rarity)
 
     val statusAlpha by rememberBreathingPulse(
         minAlpha = 0.4f, maxAlpha = 1f,
@@ -198,7 +199,7 @@ private fun ContactMiniCard(
                             }
 
                             Text(
-                                "[${rarity.shortLabel}]",
+                                "[${rarity.cardRarity}]",
                                 fontFamily = FontFamily.Monospace,
                                 fontSize = 9.sp,
                                 color = rarityColor,

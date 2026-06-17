@@ -50,13 +50,14 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.tang.prm.domain.model.Contact
-import com.tang.prm.domain.model.getCardRarity
+import com.tang.prm.domain.model.IntimacyTier
 import com.tang.prm.ui.components.ContactAvatar
 import com.tang.prm.ui.components.ContactRelationshipBadge
 import com.tang.prm.ui.animation.core.AnimationTokens
 import com.tang.prm.ui.animation.primitives.rememberBreathingPulse
 import com.tang.prm.ui.theme.SignalGreen
 import com.tang.prm.ui.theme.SignalPurple
+import com.tang.prm.ui.theme.LocalIntimacyColors
 import kotlin.math.abs
 import java.util.Locale
 
@@ -218,8 +219,8 @@ private fun TerminalMiniCard(
     nodeIndex: Int = 0,
     totalNodes: Int = 1
 ) {
-    val rarity = getCardRarity(contact.intimacyScore)
-    val rarityColor = Color(rarity.colorValue)
+    val rarity = IntimacyTier.of(contact.intimacyScore)
+    val rarityColor = LocalIntimacyColors.current.forTier(rarity)
 
     val scale by animateFloatAsState(
         targetValue = 1f,

@@ -26,12 +26,14 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -42,6 +44,7 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.IntOffset
@@ -70,14 +73,25 @@ fun AvatarCropDialog(
     }
     val imageBitmap = remember(previewBitmap) { previewBitmap?.asImageBitmap() }
 
+    // Fix 1: Dialog 退出时回收 previewBitmap，避免内存泄漏
+    DisposableEffect(previewBitmap) {
+        onDispose {
+            previewBitmap?.recycle()
+        }
+    }
+
     // 变换状态
-    var userScale by remember { mutableFloatStateOf(1f) }
-    var userOffsetX by remember { mutableFloatStateOf(0f) }
-    var userOffsetY by remember { mutableFloatStateOf(0f) }
+    // Fix 5: 使用 rememberSaveable 保存手势状态，旋转配置变更后不丢失
+    var userScale by rememberSaveable { mutableFloatStateOf(1f) }
+    var userOffsetX by rememberSaveable { mutableFloatStateOf(0f) }
+    var userOffsetY by rememberSaveable { mutableFloatStateOf(0f) }
     var canvasPixelSize by remember { mutableFloatStateOf(0f) }
 
+    // Fix 4: 用 LaunchedEffect 包装 onCropComplete，避免在组合阶段触发状态变更导致递归重组
     if (imageBitmap == null) {
-        onCropComplete(imagePath)
+        LaunchedEffect(imagePath) {
+            onCropComplete(imagePath)
+        }
         return
     }
 
@@ -121,6 +135,10 @@ fun AvatarCropDialog(
                     Canvas(
                         modifier = Modifier
                             .fillMaxSize()
+                            .onGloballyPositioned { coordinates ->
+                                // Fix 3: 在布局阶段获取尺寸，避免在 draw-phase 写入状态导致重组→重绘循环
+                                canvasPixelSize = coordinates.size.width.toFloat()
+                            }
                             .pointerInput(Unit) {
                                 detectDragGestures { _, dragAmount ->
                                     userOffsetX += dragAmount.x
@@ -136,7 +154,6 @@ fun AvatarCropDialog(
                             }
                     ) {
                         val canvasSize = size
-                        canvasPixelSize = canvasSize.width
 
                         // 裁剪圆占满整个 Canvas（直径 = Canvas 宽度）
                         val circleRadius = canvasSize.width / 2f
@@ -254,14 +271,17 @@ private suspend fun cropAvatar(
     userOffsetY: Float,
     canvasPixelSize: Float
 ): String? = withContext(Dispatchers.IO) {
+    // Fix 2: 将 bitmap 声明移到 try 外部，以便 catch 中也能回收
+    var sourceBitmap: Bitmap? = null
+    var outputBitmap: Bitmap? = null
     try {
-        val sourceBitmap = BitmapFactory.decodeFile(imagePath) ?: return@withContext null
+        sourceBitmap = BitmapFactory.decodeFile(imagePath) ?: return@withContext null
         val sourceWidth = sourceBitmap.width
         val sourceHeight = sourceBitmap.height
 
         // 输出 512x512 正方形，裁剪圆占满整个输出区域
         val outputSize = 512
-        val outputBitmap = Bitmap.createBitmap(outputSize, outputSize, Bitmap.Config.ARGB_8888)
+        outputBitmap = Bitmap.createBitmap(outputSize, outputSize, Bitmap.Config.ARGB_8888)
         val canvas = android.graphics.Canvas(outputBitmap)
 
         // 裁剪圆直径 = 输出尺寸（圆占满整个输出图）
@@ -302,6 +322,9 @@ private suspend fun cropAvatar(
 
         outputFile.absolutePath
     } catch (e: Exception) {
+        // Fix 2: catch 中也回收 bitmap，避免异常时内存泄漏
+        sourceBitmap?.recycle()
+        outputBitmap?.recycle()
         null
     }
 }

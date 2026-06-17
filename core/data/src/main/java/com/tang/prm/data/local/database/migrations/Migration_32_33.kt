@@ -27,29 +27,29 @@ val MIGRATION_32_33 = object : Migration(32, 33) {
         val columns = mapOf("hobby" to "HOBBY", "habit" to "HABIT", "diet" to "DIET", "skill" to "SKILL")
 
         for ((column, category) in columns) {
-            val cursor = db.query("SELECT id, $column FROM contacts WHERE $column IS NOT NULL AND $column != '[]' AND $column != ''")
-            if (cursor.moveToFirst()) {
-                do {
-                    val contactId = cursor.getLong(0)
-                    val jsonStr = cursor.getString(1) ?: continue
+            db.query("SELECT id, $column FROM contacts WHERE $column IS NOT NULL AND $column != '[]' AND $column != ''").use { cursor ->
+                if (cursor.moveToFirst()) {
+                    do {
+                        val contactId = cursor.getLong(0)
+                        val jsonStr = cursor.getString(1) ?: continue
 
-                    // Simple JSON array parsing: remove [ ] and split by ,
-                    val items = jsonStr
-                        .trim()
-                        .removeSurrounding("[", "]")
-                        .split(",")
-                        .map { it.trim().removeSurrounding("\"") }
-                        .filter { it.isNotBlank() }
+                        // Simple JSON array parsing: remove [ ] and split by ,
+                        val items = jsonStr
+                            .trim()
+                            .removeSurrounding("[", "]")
+                            .split(",")
+                            .map { it.trim().removeSurrounding("\"") }
+                            .filter { it.isNotBlank() }
 
-                    for (item in items) {
-                        db.execSQL(
-                            "INSERT INTO contact_attributes (contactId, category, value) VALUES (?, ?, ?)",
-                            arrayOf<Any>(contactId, category, item)
-                        )
-                    }
-                } while (cursor.moveToNext())
+                        for (item in items) {
+                            db.execSQL(
+                                "INSERT INTO contact_attributes (contactId, category, value) VALUES (?, ?, ?)",
+                                arrayOf<Any>(contactId, category, item)
+                            )
+                        }
+                    } while (cursor.moveToNext())
+                }
             }
-            cursor.close()
         }
 
         // Keep the original JSON columns for backward compatibility during transition

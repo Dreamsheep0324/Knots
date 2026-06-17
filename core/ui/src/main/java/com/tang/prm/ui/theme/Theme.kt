@@ -6,6 +6,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.SideEffect
@@ -75,11 +76,15 @@ fun TangTheme(
         }
     }
 
-    MaterialTheme(
-        colorScheme = colorScheme,
-        typography = Typography,
-        content = content
-    )
+    val intimacyColors = if (darkTheme) DarkIntimacyColors else LightIntimacyColors
+
+    CompositionLocalProvider(LocalIntimacyColors provides intimacyColors) {
+        MaterialTheme(
+            colorScheme = colorScheme,
+            typography = Typography,
+            content = content
+        )
+    }
 }
 
 object DialogDefaults {

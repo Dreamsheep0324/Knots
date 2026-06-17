@@ -13,6 +13,7 @@ import com.tang.prm.domain.repository.CustomTypeRepository
 import com.tang.prm.domain.usecase.CreateContactUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import com.tang.prm.domain.util.DateUtils
 import javax.inject.Inject
@@ -26,6 +27,7 @@ data class AddContactUiState(
     val jobTitle: String? = null,
     val birthday: String? = null,
     val isLunarBirthday: Boolean = false,
+    val isLeapMonthBirthday: Boolean = false,
     val knowingDate: String? = null,
     val nickname: String? = null,
     val relationship: String? = null,
@@ -69,73 +71,94 @@ class AddContactViewModel @Inject constructor(
     val uiState: StateFlow<AddContactUiState> = _uiState.asStateFlow()
 
     init {
-        loadGroups()
-        loadCustomTypes(CustomCategories.RELATIONSHIP) { state, types -> state.copy(relationships = types) }
-        loadCustomTypes(CustomCategories.EDUCATION) { state, types -> state.copy(educations = types) }
-        loadCustomTypes(CustomCategories.HOBBY) { state, types -> state.copy(hobbyOptions = types) }
-        loadCustomTypes(CustomCategories.HABIT) { state, types -> state.copy(habitOptions = types) }
-        loadCustomTypes(CustomCategories.DIET) { state, types -> state.copy(dietOptions = types) }
-        loadCustomTypes(CustomCategories.SKILL) { state, types -> state.copy(skillOptions = types) }
+        loadReferenceData()
         if (contactId != 0L) {
             loadContact(contactId)
         }
     }
 
-    private fun loadGroups() {
+    private fun loadReferenceData() {
         viewModelScope.launch {
-            groupRepository.getAllGroups().collect { groups ->
-                _uiState.update { it.copy(groups = groups) }
+            combine(
+                groupRepository.getAllGroups(),
+                combine(
+                    customTypeRepository.getTypesByCategory(CustomCategories.RELATIONSHIP),
+                    customTypeRepository.getTypesByCategory(CustomCategories.EDUCATION),
+                    customTypeRepository.getTypesByCategory(CustomCategories.HOBBY)
+                ) { relationships, educations, hobbies ->
+                    Triple(relationships, educations, hobbies)
+                },
+                combine(
+                    customTypeRepository.getTypesByCategory(CustomCategories.HABIT),
+                    customTypeRepository.getTypesByCategory(CustomCategories.DIET),
+                    customTypeRepository.getTypesByCategory(CustomCategories.SKILL)
+                ) { habits, diets, skills ->
+                    Triple(habits, diets, skills)
+                }
+            ) { groups, ref1, ref2 ->
+                CombinedRefData(groups, ref1.first, ref1.second, ref1.third, ref2.first, ref2.second, ref2.third)
+            }.collect { data ->
+                _uiState.update { state ->
+                    state.copy(
+                        groups = data.groups,
+                        relationships = data.relationships,
+                        educations = data.educations,
+                        hobbyOptions = data.hobbies,
+                        habitOptions = data.habits,
+                        dietOptions = data.diets,
+                        skillOptions = data.skills
+                    )
+                }
             }
         }
     }
 
-    private fun loadCustomTypes(
-        category: String,
-        reducer: (AddContactUiState, List<CustomType>) -> AddContactUiState
-    ) {
-        viewModelScope.launch {
-            customTypeRepository.getTypesByCategory(category).collect { types ->
-                _uiState.update { reducer(it, types) }
-            }
-        }
-    }
+    private data class CombinedRefData(
+        val groups: List<ContactGroup>,
+        val relationships: List<CustomType>,
+        val educations: List<CustomType>,
+        val hobbies: List<CustomType>,
+        val habits: List<CustomType>,
+        val diets: List<CustomType>,
+        val skills: List<CustomType>
+    )
 
     private fun loadContact(id: Long) {
         viewModelScope.launch {
-            contactRepository.getContactById(id).collect { contact ->
-                contact?.let {
-                    _uiState.update { state ->
-                        state.copy(
-                            id = it.id,
-                            name = it.name,
-                            phone = it.phone ?: "",
-                            email = it.email ?: "",
-                            company = it.company,
-                            jobTitle = it.jobTitle,
-                            nickname = it.nickname,
-                            relationship = it.relationship,
-                            city = it.city,
-                            address = it.address,
-                            education = it.education,
-                            hobbies = contactFormHelper.parseListField(it.hobby),
-                            habits = contactFormHelper.parseListField(it.habit),
-                            diets = contactFormHelper.parseListField(it.diet),
-                            skills = contactFormHelper.parseListField(it.skill),
-                            notes = it.notes,
-                            avatar = it.avatar,
-                            intimacyScore = it.intimacyScore,
-                            groupId = it.groupId,
-                            birthday = it.birthday?.let { b ->
-                                DateUtils.formatDate(b)
-                            },
-                            knowingDate = it.knowingDate?.let { kd ->
-                                DateUtils.formatDate(kd)
-                            },
-                            isEditing = true,
-                            createdAt = it.createdAt,
-                            isLunarBirthday = it.isLunarBirthday
-                        )
-                    }
+            val contact = contactRepository.getContactById(id).first()
+            contact?.let {
+                _uiState.update { state ->
+                    state.copy(
+                        id = it.id,
+                        name = it.name,
+                        phone = it.phone ?: "",
+                        email = it.email ?: "",
+                        company = it.company,
+                        jobTitle = it.jobTitle,
+                        nickname = it.nickname,
+                        relationship = it.relationship,
+                        city = it.city,
+                        address = it.address,
+                        education = it.education,
+                        hobbies = contactFormHelper.parseListField(it.hobby),
+                        habits = contactFormHelper.parseListField(it.habit),
+                        diets = contactFormHelper.parseListField(it.diet),
+                        skills = contactFormHelper.parseListField(it.skill),
+                        notes = it.notes,
+                        avatar = it.avatar,
+                        intimacyScore = it.intimacyScore,
+                        groupId = it.groupId,
+                        birthday = it.birthday?.let { b ->
+                            DateUtils.formatDate(b)
+                        },
+                        knowingDate = it.knowingDate?.let { kd ->
+                            DateUtils.formatDate(kd)
+                        },
+                        isEditing = true,
+                        createdAt = it.createdAt,
+                        isLunarBirthday = it.isLunarBirthday,
+                        isLeapMonthBirthday = it.isLeapMonthBirthday
+                    )
                 }
             }
         }
@@ -151,7 +174,8 @@ class AddContactViewModel @Inject constructor(
     fun updateCompany(value: String) = updateField { it.copy(company = value.ifBlank { null }) }
     fun updateJobTitle(value: String) = updateField { it.copy(jobTitle = value.ifBlank { null }) }
     fun updateBirthday(value: String?) = updateField { it.copy(birthday = value) }
-    fun updateIsLunarBirthday(value: Boolean) = updateField { it.copy(isLunarBirthday = value) }
+    fun updateIsLunarBirthday(value: Boolean) = updateField { it.copy(isLunarBirthday = value, isLeapMonthBirthday = if (!value) false else it.isLeapMonthBirthday) }
+    fun updateIsLeapMonthBirthday(value: Boolean) = updateField { it.copy(isLeapMonthBirthday = value) }
     fun updateKnowingDate(value: String?) = updateField { it.copy(knowingDate = value) }
     fun updateNickname(value: String) = updateField { it.copy(nickname = value.ifBlank { null }) }
     fun updateRelationship(value: String) = updateField { it.copy(relationship = value.ifBlank { null }) }
@@ -200,6 +224,8 @@ class AddContactViewModel @Inject constructor(
                 intimacyScore = state.intimacyScore,
                 groupId = state.groupId,
                 birthday = birthdayLong,
+                isLunarBirthday = state.isLunarBirthday,
+                isLeapMonthBirthday = state.isLeapMonthBirthday,
                 knowingDate = knowingDateLong,
                 createdAt = if (state.isEditing) state.createdAt else System.currentTimeMillis(),
                 updatedAt = System.currentTimeMillis()
@@ -209,6 +235,7 @@ class AddContactViewModel @Inject constructor(
                 createContactUseCase.updateContact(
                     contact = contact,
                     isLunarBirthday = state.isLunarBirthday,
+                    isLeapMonthBirthday = state.isLeapMonthBirthday,
                     contactName = state.name,
                     contactAvatar = state.avatar
                 )

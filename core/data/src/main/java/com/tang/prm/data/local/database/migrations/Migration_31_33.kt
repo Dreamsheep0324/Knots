@@ -2,6 +2,7 @@ package com.tang.prm.data.local.database.migrations
 
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
+import org.json.JSONArray
 
 /**
  * 迁移路径：v31 → v33
@@ -30,28 +31,31 @@ val MIGRATION_31_33 = object : Migration(31, 33) {
         val columns = mapOf("hobby" to "HOBBY", "habit" to "HABIT", "diet" to "DIET", "skill" to "SKILL")
 
         for ((column, category) in columns) {
-            val cursor = db.query("SELECT id, $column FROM contacts WHERE $column IS NOT NULL AND $column != '[]' AND $column != ''")
-            if (cursor.moveToFirst()) {
-                do {
-                    val contactId = cursor.getLong(0)
-                    val jsonStr = cursor.getString(1) ?: continue
+            db.query("SELECT id, $column FROM contacts WHERE $column IS NOT NULL AND $column != '[]' AND $column != ''").use { cursor ->
+                if (cursor.moveToFirst()) {
+                    do {
+                        val contactId = cursor.getLong(0)
+                        val jsonStr = cursor.getString(1) ?: continue
 
-                    val items = jsonStr
-                        .trim()
-                        .removeSurrounding("[", "]")
-                        .split(",")
-                        .map { it.trim().removeSurrounding("\"") }
-                        .filter { it.isNotBlank() }
+                        val items = try {
+                            val arr = JSONArray(jsonStr)
+                            (0 until arr.length()).map { arr.getString(it) }
+                        } catch (e: Exception) {
+                            jsonStr.trim().removeSurrounding("[", "]")
+                                .split(",")
+                                .map { it.trim().removeSurrounding("\"") }
+                                .filter { it.isNotBlank() }
+                        }
 
-                    for (item in items) {
-                        db.execSQL(
-                            "INSERT INTO contact_attributes (contactId, category, value) VALUES (?, ?, ?)",
-                            arrayOf<Any>(contactId, category, item)
-                        )
-                    }
-                } while (cursor.moveToNext())
+                        for (item in items) {
+                            db.execSQL(
+                                "INSERT INTO contact_attributes (contactId, category, value) VALUES (?, ?, ?)",
+                                arrayOf<Any>(contactId, category, item)
+                            )
+                        }
+                    } while (cursor.moveToNext())
+                }
             }
-            cursor.close()
         }
     }
 }

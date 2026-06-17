@@ -102,8 +102,7 @@ fun ChatDetailScreen(
                     )
                 }
 
-                if (event.remarks != null) {
-                    val remarks = event.remarks!!
+                event.remarks?.let { remarks ->
                     RemarksCard(remarks = remarks, accentColor = intimacyColor)
                 }
             }

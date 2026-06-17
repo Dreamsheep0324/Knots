@@ -1,4 +1,4 @@
-﻿@file:OptIn(ExperimentalMaterial3Api::class)
+@file:OptIn(ExperimentalMaterial3Api::class)
 
 package com.tang.prm.feature.gifts
 
@@ -104,7 +104,7 @@ fun GiftDetailScreen(
         }
     }
 
-    if (selectedPhotoUri != null) {
-        PhotoViewerDialog(photoUri = selectedPhotoUri!!, onDismiss = { selectedPhotoUri = null })
+    selectedPhotoUri?.let { uri ->
+        PhotoViewerDialog(photoUri = uri, onDismiss = { selectedPhotoUri = null })
     }
 }

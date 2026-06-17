@@ -5,6 +5,7 @@ import com.tang.prm.domain.model.AppStrings
 import com.tang.prm.domain.model.Contact
 import com.tang.prm.domain.model.Event
 import com.tang.prm.domain.model.FootprintItem
+import com.tang.prm.domain.model.IntimacyTier
 import com.tang.prm.domain.model.Subscription
 import com.tang.prm.domain.model.SubscriptionStatus
 import com.tang.prm.domain.model.Thought
@@ -14,23 +15,8 @@ import java.util.Calendar
 
 // region Intimacy utilities
 
-/** Get intimacy level display name from score */
-fun getIntimacyLevel(score: Int): String = when {
-    score <= 20 -> AppStrings.Intimacy.NEW
-    score <= 40 -> AppStrings.Intimacy.ACQUAINTANCE
-    score <= 60 -> AppStrings.Intimacy.FRIEND
-    score <= 80 -> AppStrings.Intimacy.CLOSE
-    else -> AppStrings.Intimacy.FAMILY
-}
-
 /** All intimacy level names in ascending order */
-val IntimacyLevels: List<String> = listOf(
-    AppStrings.Intimacy.NEW,
-    AppStrings.Intimacy.ACQUAINTANCE,
-    AppStrings.Intimacy.FRIEND,
-    AppStrings.Intimacy.CLOSE,
-    AppStrings.Intimacy.FAMILY
-)
+val IntimacyLevels: List<String> = IntimacyTier.entries.map { it.label }
 
 // endregion
 
@@ -61,7 +47,7 @@ fun List<Contact>.filterBy(
         filtered = filtered.filter { it.relationship == relationship }
     }
     if (intimacy != null) {
-        filtered = filtered.filter { getIntimacyLevel(it.intimacyScore) == intimacy }
+        filtered = filtered.filter { IntimacyTier.of(it.intimacyScore).label == intimacy }
     }
     return filtered.sortedByDescending { it.intimacyScore }
 }

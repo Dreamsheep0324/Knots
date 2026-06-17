@@ -30,7 +30,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.tang.prm.domain.model.CardRarity
+import com.tang.prm.domain.model.IntimacyTier
 import com.tang.prm.domain.model.Contact
 import com.tang.prm.ui.components.HoloCornerMarks
 import com.tang.prm.ui.components.HoloDataCell
@@ -39,18 +39,19 @@ import com.tang.prm.ui.components.HoloScanLineTexture
 import com.tang.prm.ui.animation.core.AnimationTokens
 import com.tang.prm.ui.animation.primitives.rememberScanLineOffset
 import com.tang.prm.ui.theme.Dimens
+import com.tang.prm.ui.theme.LocalIntimacyColors
 import com.tang.prm.feature.people.contacts.CardGreen
 import java.util.Locale
 
 @Composable
 internal fun ContactCardBack(
     contact: Contact,
-    rarity: CardRarity,
+    rarity: IntimacyTier,
     onContactClick: () -> Unit,
     onClose: () -> Unit,
     shadowElevation: Float = 12f
 ) {
-    val rarityColor = Color(rarity.colorValue)
+    val rarityColor = LocalIntimacyColors.current.forTier(rarity)
     val cardWidth = 340.dp
     val cardHeight = 476.dp
 
@@ -119,7 +120,7 @@ internal fun ContactCardBack(
                         letterSpacing = 2.sp
                     )
                     Text(
-                        rarity.shortLabel,
+                        rarity.cardRarity,
                         fontFamily = FontFamily.Monospace,
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Bold,
@@ -164,7 +165,7 @@ internal fun ContactCardBack(
                 ) {
                     HoloDataCell(
                         label = "RARITY",
-                        value = "${rarity.shortLabel} ${"★".repeat(rarity.stars)}",
+                        value = "${rarity.cardRarity} ${"★".repeat(rarity.stars)}",
                         valueColor = rarityColor,
                         tintColor = rarityColor,
                         modifier = Modifier.weight(1f)

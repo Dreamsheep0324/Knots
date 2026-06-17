@@ -42,7 +42,7 @@ interface CircleDao {
     @Query("SELECT * FROM circles WHERE parentCircleId IS NULL ORDER BY sortOrder ASC")
     fun getRootCirclesWithMembers(): Flow<List<CircleWithMembers>>
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertCircle(circle: CircleEntity): Long
 
     @Update
@@ -70,6 +70,9 @@ interface CircleDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertMemberCrossRef(crossRef: CircleMemberCrossRef)
 
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun insertMemberCrossRefs(crossRefs: List<CircleMemberCrossRef>)
+
     @Query("DELETE FROM circle_member_cross_ref WHERE circleId = :circleId AND contactId = :contactId")
     suspend fun deleteMemberCrossRef(circleId: Long, contactId: Long)
 
@@ -80,17 +83,17 @@ interface CircleDao {
     suspend fun updateCircleWithMembers(circle: CircleEntity, memberIds: List<Long>) {
         updateCircle(circle)
         deleteAllMembersForCircle(circle.id)
-        memberIds.forEach { contactId ->
-            insertMemberCrossRef(CircleMemberCrossRef(circleId = circle.id, contactId = contactId))
-        }
+        insertMemberCrossRefs(memberIds.map { contactId ->
+            CircleMemberCrossRef(circleId = circle.id, contactId = contactId)
+        })
     }
 
     @Transaction
     suspend fun insertCircleWithMembers(circle: CircleEntity, memberIds: List<Long>): Long {
         val id = insertCircle(circle)
-        memberIds.forEach { contactId ->
-            insertMemberCrossRef(CircleMemberCrossRef(circleId = id, contactId = contactId))
-        }
+        insertMemberCrossRefs(memberIds.map { contactId ->
+            CircleMemberCrossRef(circleId = id, contactId = contactId)
+        })
         return id
     }
 

@@ -154,8 +154,7 @@ internal fun ListCard(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                        if (!footprint.weather.isNullOrBlank()) {
-                            val weather = footprint.weather!!
+                        footprint.weather?.takeIf { it.isNotBlank() }?.let { weather ->
                             FootprintMetaTag(
                                 icon = getWeatherIconForFootprint(weather),
                                 text = weather,
@@ -163,12 +162,12 @@ internal fun ListCard(
                                 textColor = getWeatherColorForFootprint(weather)
                             )
                         }
-                        if (!footprint.emotion.isNullOrBlank()) {
-                            val eIcon = getEmotionIconForFootprint(footprint.emotion) ?: Icons.Default.Favorite
-                            val eColor = getEmotionColorForFootprint(footprint.emotion) ?: SignalPurple
+                        footprint.emotion?.takeIf { it.isNotBlank() }?.let { emotion ->
+                            val eIcon = getEmotionIconForFootprint(emotion) ?: Icons.Default.Favorite
+                            val eColor = getEmotionColorForFootprint(emotion) ?: SignalPurple
                             FootprintMetaTag(
                                 icon = eIcon,
-                                text = footprint.emotion!!,
+                                text = emotion,
                                 bgColor = eColor.copy(alpha = AnimationTokens.Alpha.faint),
                                 textColor = eColor
                             )

@@ -38,7 +38,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.tang.prm.domain.model.CardRarity
+import com.tang.prm.domain.model.IntimacyTier
 import com.tang.prm.domain.model.Contact
 import com.tang.prm.ui.animation.core.AnimationTokens
 import com.tang.prm.ui.animation.core.rememberPausableInfiniteFloatLoop
@@ -48,6 +48,7 @@ import com.tang.prm.ui.animation.primitives.rememberShimmerPhase
 import com.tang.prm.ui.components.ContactAvatar
 import com.tang.prm.ui.components.ContactRelationshipBadge
 import com.tang.prm.ui.theme.Dimens
+import com.tang.prm.ui.theme.LocalIntimacyColors
 import com.tang.prm.feature.circle.TerminalCardHeader
 import com.tang.prm.feature.circle.TerminalCornerBrackets
 import com.tang.prm.feature.circle.TerminalScanLineOverlay
@@ -59,12 +60,12 @@ import com.tang.prm.feature.circle.TerminalWaveformMonitor
 @Composable
 internal fun TerminalCardFrontV2(
     contact: Contact,
-    rarity: CardRarity,
+    rarity: IntimacyTier,
     waveformType: String = "sine",
     onFlip: () -> Unit,
     shadowElevation: Float = 12f
 ) {
-    val rarityColor = Color(rarity.colorValue)
+    val rarityColor = LocalIntimacyColors.current.forTier(rarity)
     val cardWidth = 340.dp
     val cardHeight = 476.dp
 

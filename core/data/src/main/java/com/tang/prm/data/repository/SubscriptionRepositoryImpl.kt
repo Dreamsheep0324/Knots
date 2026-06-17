@@ -10,7 +10,9 @@ import com.tang.prm.domain.repository.SubscriptionRepository
 import com.tang.prm.util.escapeSqlWildcards
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
+import javax.inject.Singleton
 
+@Singleton
 class SubscriptionRepositoryImpl @Inject constructor(
     private val subscriptionDao: SubscriptionDao
 ) : SubscriptionRepository {

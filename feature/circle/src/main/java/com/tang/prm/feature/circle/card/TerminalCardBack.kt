@@ -30,7 +30,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.tang.prm.domain.model.CardRarity
+import com.tang.prm.domain.model.IntimacyTier
 import com.tang.prm.domain.model.Contact
 import com.tang.prm.ui.animation.core.AnimationTokens
 import com.tang.prm.ui.animation.primitives.rememberScanLineOffset
@@ -39,6 +39,7 @@ import com.tang.prm.ui.components.HoloDataCell
 import com.tang.prm.ui.components.HoloScanLine
 import com.tang.prm.ui.components.HoloScanLineTexture
 import com.tang.prm.ui.theme.Dimens
+import com.tang.prm.ui.theme.LocalIntimacyColors
 import com.tang.prm.ui.theme.SignalGreen
 import com.tang.prm.feature.circle.TerminalTextMuted
 import java.util.Locale
@@ -46,12 +47,12 @@ import java.util.Locale
 @Composable
 internal fun TerminalCardBackV2(
     contact: Contact,
-    rarity: CardRarity,
+    rarity: IntimacyTier,
     onContactClick: () -> Unit,
     onRemove: () -> Unit,
     shadowElevation: Float = 12f
 ) {
-    val rarityColor = Color(rarity.colorValue)
+    val rarityColor = LocalIntimacyColors.current.forTier(rarity)
     val cardWidth = 340.dp
     val cardHeight = 476.dp
 

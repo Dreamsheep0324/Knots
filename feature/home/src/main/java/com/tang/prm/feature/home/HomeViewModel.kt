@@ -11,7 +11,9 @@ import com.tang.prm.domain.usecase.HomeDataAggregationUseCase
 import com.tang.prm.domain.usecase.HomeStats
 import com.tang.prm.domain.usecase.HomeStatsUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.util.*
 import javax.inject.Inject
@@ -49,9 +51,17 @@ class HomeViewModel @Inject constructor(
     private val reminderRepository: ReminderRepository
 ) : ViewModel() {
 
-    private val greeting: String = run {
+    /** 问候语随时间更新，每 30 分钟检查一次跨越早/中/晚分界 */
+    private val greetingFlow: Flow<String> = flow {
+        while (true) {
+            emit(calculateGreeting())
+            delay(30 * 60 * 1000L)
+        }
+    }.flowOn(Dispatchers.Default)
+
+    private fun calculateGreeting(): String {
         val hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
-        when {
+        return when {
             hour < 12 -> "早上好"
             hour < 18 -> "下午好"
             else -> "晚上好"
@@ -59,7 +69,7 @@ class HomeViewModel @Inject constructor(
     }
 
     val uiState: StateFlow<HomeUiState> = combine(
-        flowOf(greeting),
+        greetingFlow,
         settingsRepository.userName.distinctUntilChanged(),
         homeDataUseCase.getAggregateData().distinctUntilChanged(),
         homeStatsUseCase.getStats().distinctUntilChanged()

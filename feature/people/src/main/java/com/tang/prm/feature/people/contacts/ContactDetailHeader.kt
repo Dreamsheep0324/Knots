@@ -284,20 +284,19 @@ private fun IntimacyBadge(score: Int, color: Color, level: IntimacyLevelInfo) {
     }
 }
 
-internal fun getIntimacyColor(score: Int): Color = when {
-    score >= 81 -> Color(0xFFF43F5E)
-    score >= 61 -> Color(0xFFF97316)
-    score >= 41 -> Color(0xFF6366F1)
-    score >= 21 -> Color(0xFF64748B)
-    else -> Color(0xFF94A3B8)
-}
+internal fun getIntimacyColor(score: Int): Color =
+    Color(com.tang.prm.domain.model.IntimacyTier.of(score).colorValue)
 
-internal fun getIntimacyLevel(score: Int): IntimacyLevelInfo = when {
-    score >= 81 -> IntimacyLevelInfo(AppStrings.Intimacy.FAMILY, Icons.Default.FavoriteBorder)
-    score >= 61 -> IntimacyLevelInfo(AppStrings.Intimacy.CLOSE, Icons.Default.Favorite)
-    score >= 41 -> IntimacyLevelInfo(AppStrings.Intimacy.FRIEND, Icons.Default.People)
-    score >= 21 -> IntimacyLevelInfo(AppStrings.Intimacy.ACQUAINTANCE, Icons.Default.PersonOutline)
-    else -> IntimacyLevelInfo(AppStrings.Intimacy.NEW, Icons.Default.PersonAdd)
+internal fun getIntimacyLevel(score: Int): IntimacyLevelInfo {
+    val tier = com.tang.prm.domain.model.IntimacyTier.of(score)
+    val icon = when (tier) {
+        com.tang.prm.domain.model.IntimacyTier.FAMILY -> Icons.Default.FavoriteBorder
+        com.tang.prm.domain.model.IntimacyTier.CLOSE -> Icons.Default.Favorite
+        com.tang.prm.domain.model.IntimacyTier.FRIEND -> Icons.Default.People
+        com.tang.prm.domain.model.IntimacyTier.ACQUAINTANCE -> Icons.Default.PersonOutline
+        com.tang.prm.domain.model.IntimacyTier.NEW -> Icons.Default.PersonAdd
+    }
+    return IntimacyLevelInfo(tier.label, icon)
 }
 
 internal data class IntimacyLevelInfo(val name: String, val icon: ImageVector)

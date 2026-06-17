@@ -272,10 +272,10 @@ internal fun InterpretationSection(liuyaoData: LiuyaoData) {
                 )
             }
 
-            if (liuyaoData.specialAdvice != null) {
+            liuyaoData.specialAdvice?.let { advice ->
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = liuyaoData.specialAdvice!!,
+                    text = advice,
                     fontFamily = FontFamily.Monospace,
                     fontSize = 11.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,

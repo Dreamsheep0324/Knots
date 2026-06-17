@@ -44,7 +44,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.tang.prm.domain.model.CardRarity
+import com.tang.prm.domain.model.IntimacyTier
 import com.tang.prm.domain.model.Contact
 import com.tang.prm.ui.components.CardCornerBrackets
 import com.tang.prm.ui.components.CardScanLineOverlay
@@ -53,6 +53,7 @@ import com.tang.prm.ui.components.ContactRelationshipBadge
 import com.tang.prm.ui.animation.primitives.rememberBreathingPulse
 import com.tang.prm.ui.animation.primitives.rememberScanLineOffset
 import com.tang.prm.ui.theme.Dimens
+import com.tang.prm.ui.theme.LocalIntimacyColors
 import com.tang.prm.feature.people.contacts.CardGreen
 import java.util.Locale
 import kotlin.math.sin
@@ -60,11 +61,11 @@ import kotlin.math.sin
 @Composable
 internal fun ContactCardFront(
     contact: Contact,
-    rarity: CardRarity,
+    rarity: IntimacyTier,
     onFlip: () -> Unit,
     shadowElevation: Float = 12f
 ) {
-    val rarityColor = Color(rarity.colorValue)
+    val rarityColor = LocalIntimacyColors.current.forTier(rarity)
     val cardWidth = 340.dp
     val cardHeight = 476.dp
 
@@ -146,7 +147,7 @@ internal fun ContactCardFront(
                         }
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Text(
-                                rarity.shortLabel,
+                                rarity.cardRarity,
                                 fontFamily = FontFamily.Monospace,
                                 fontSize = 9.sp,
                                 color = rarityColor,

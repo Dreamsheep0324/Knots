@@ -62,6 +62,7 @@ class WebDavSyncViewModel @Inject constructor(
                     }
                     is SyncResult.DownloadProgress -> SyncState.Idle
                     is SyncResult.DownloadSuccess -> SyncState.Idle
+                    is SyncResult.PartialSuccess -> SyncState.Idle
                     is SyncResult.Error -> SyncState.Error(result.message)
                 }
             }
@@ -76,6 +77,7 @@ class WebDavSyncViewModel @Inject constructor(
                     is SyncResult.UploadProgress -> SyncState.Idle
                     is SyncResult.DownloadProgress -> SyncState.Downloading(result.phase, result.current, result.total, result.detail)
                     is SyncResult.DownloadSuccess -> SyncState.DownloadSuccess(result.fileName, result.downloadedImages, result.skippedImages)
+                    is SyncResult.PartialSuccess -> SyncState.PartialSuccess(result.fileName, result.succeeded, result.failed, result.skipped)
                     is SyncResult.UploadSuccess -> SyncState.Idle
                     is SyncResult.Error -> SyncState.Error(result.message)
                 }
@@ -154,6 +156,8 @@ sealed class SyncState {
     }
     data class UploadSuccess(val fileName: String, val uploadedImages: Int = 0, val skippedImages: Int = 0) : SyncState()
     data class DownloadSuccess(val fileName: String, val downloadedImages: Int = 0, val skippedImages: Int = 0) : SyncState()
+    /** 部分成功：核心数据已完成，但部分图片同步失败 */
+    data class PartialSuccess(val fileName: String, val succeeded: Int, val failed: Int, val skipped: Int) : SyncState()
     data class Error(val message: String) : SyncState()
 }
 

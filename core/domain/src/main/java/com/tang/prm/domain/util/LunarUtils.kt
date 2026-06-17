@@ -12,11 +12,22 @@ object LunarUtils {
     private val solarToLunarCache = mutableMapOf<String, SolarDate?>()
     private val lunarToSolarCache = mutableMapOf<String, Triple<Int, Int, Int>?>()
 
+    /**
+     * 农历转公历。
+     *
+     * @param year 农历年
+     * @param lunarMonth 农历月（1-12）
+     * @param lunarDay 农历日（1-30）
+     * @param isLeap 是否为闰月。lunar-javascript 库约定闰月用负数表示（如 -2 表示闰二月），
+     *               此处将 [lunarMonth] 取负后传入 [Lunar.fromYmd]。
+     */
     fun lunarToSolar(year: Int, lunarMonth: Int, lunarDay: Int, isLeap: Boolean = false): Triple<Int, Int, Int>? {
         val key = "$year-$lunarMonth-$lunarDay-$isLeap"
         return lunarToSolarCache.getOrPut(key) {
             try {
-                val lunar = Lunar.fromYmd(year, lunarMonth, lunarDay)
+                // 闰月用负数表示：lunar-javascript 库约定
+                val effectiveMonth = if (isLeap) -lunarMonth else lunarMonth
+                val lunar = Lunar.fromYmd(year, effectiveMonth, lunarDay)
                 val solar = lunar.solar
                 Triple(solar.year, solar.month, solar.day)
             } catch (e: Exception) {

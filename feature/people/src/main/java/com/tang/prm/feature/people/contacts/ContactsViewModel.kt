@@ -4,8 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tang.prm.domain.model.*
 import com.tang.prm.domain.repository.*
+import com.tang.prm.domain.model.IntimacyTier
 import com.tang.prm.domain.usecase.IntimacyLevels
-import com.tang.prm.domain.usecase.getIntimacyLevel
 import com.tang.prm.domain.usecase.filterBy
 import com.tang.prm.ui.common.SearchState
 import com.tang.prm.ui.common.SearchStateManager
@@ -83,7 +83,7 @@ class ContactsViewModel @Inject constructor(
                 FilterParams(query, groupId, relationship, intimacy)
             }.flatMapLatest { params ->
                 val keyword = params.query.ifBlank { null }
-                contactRepository.getAllContacts().map { contacts ->
+                contactRepository.getContactListItems().map { contacts ->
                     contacts.filterBy(keyword, params.groupId, params.relationship, params.intimacy)
                 }
             }.collect { filteredContacts ->
@@ -106,13 +106,13 @@ class ContactsViewModel @Inject constructor(
 
     fun getIntimacyStats(contacts: List<Contact>): List<IntimacyStats> {
         return IntimacyLevels.map { level ->
-            val count = contacts.count { getIntimacyLevel(it.intimacyScore) == level }
+            val count = contacts.count { IntimacyTier.of(it.intimacyScore).label == level }
             IntimacyStats(level, count)
         }
     }
 
     fun getContactsGroupedByIntimacy(contacts: List<Contact>): Map<String, List<Contact>> {
-        return contacts.groupBy { getIntimacyLevel(it.intimacyScore) }
+        return contacts.groupBy { IntimacyTier.of(it.intimacyScore).label }
     }
 
     private fun loadGroups() {

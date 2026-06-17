@@ -4,8 +4,9 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.net.Uri
 import android.util.Base64
+import android.util.Log
 import com.tang.prm.data.remote.WebDavClient
-import com.tang.prm.data.util.safeDbCall
+import com.tang.prm.data.util.safeCall
 import com.tang.prm.domain.model.CloudBackupVersion
 import com.tang.prm.domain.model.ConnectionTestResult
 import com.tang.prm.domain.model.FileEntry
@@ -36,6 +37,7 @@ class WebDavRepositoryImpl @Inject constructor(
 ) : WebDavRepository {
 
     companion object {
+        private const val TAG = "WebDavRepository"
         private const val PREFS_NAME = "webdav_config"
         private const val KEY_SERVER_URL = "server_url"
         private const val KEY_USERNAME = "username"
@@ -44,6 +46,7 @@ class WebDavRepositoryImpl @Inject constructor(
         private const val KEY_AUTO_SYNC_ON_LAUNCH = "auto_sync_on_launch"
         private const val KEY_LAST_SYNC_TIME = "last_sync_time"
         private const val KEY_LAST_SYNC_DIRECTION = "last_sync_direction"
+        private const val KEY_TRUST_ALL_CERTS = "trust_all_certificates"
     }
 
     private val json = Json { ignoreUnknownKeys = true; encodeDefaults = true }
@@ -57,12 +60,13 @@ class WebDavRepositoryImpl @Inject constructor(
     override fun getConfig(): Flow<WebDavConfig> = configCache
 
     override suspend fun saveConfig(config: WebDavConfig) {
-        safeDbCall {
+        safeCall {
             prefs.edit().apply {
                 putString(KEY_SERVER_URL, config.serverUrl)
                 putString(KEY_USERNAME, config.username)
                 putString(KEY_REMOTE_PATH, config.remotePath)
                 putBoolean(KEY_AUTO_SYNC_ON_LAUNCH, config.autoSyncOnLaunch)
+                putBoolean(KEY_TRUST_ALL_CERTS, config.trustAllCertificates)
                 putLong(KEY_LAST_SYNC_TIME, config.lastSyncTime)
                 putString(KEY_LAST_SYNC_DIRECTION, config.lastSyncDirection)
                 apply()
@@ -171,7 +175,9 @@ class WebDavRepositoryImpl @Inject constructor(
                 if (remoteManifest != null && remoteManifest.dbBackup.isNotBlank() && remoteManifest.dbBackup != info.fileName) {
                     try {
                         webDavClient.deleteRemoteFile(config, "db", remoteManifest.dbBackup)
-                    } catch (_: Exception) {}
+                    } catch (e: Exception) {
+                        Log.w(TAG, "删除远端旧数据库文件失败", e)
+                    }
                 }
                 dbFileName = info.fileName
             } finally {
@@ -180,6 +186,9 @@ class WebDavRepositoryImpl @Inject constructor(
         }
 
         // 5. 上传图片
+        var uploadFailures = 0
+        val uploadStartTime = System.currentTimeMillis()
+        val uploadedImageEntries = mutableMapOf<String, FileEntry>()
         for ((index, entry) in imagesToUpload.withIndex()) {
             currentStep++
             emit(SyncResult.UploadProgress("上传图片", currentStep, totalSteps,
@@ -187,9 +196,14 @@ class WebDavRepositoryImpl @Inject constructor(
             val file = backupRepository.getLocalImageFile("app_images", entry.name) ?: continue
             try {
                 webDavClient.uploadImageFile(config, "images", entry.name, file)
-            } catch (_: Exception) { continue }
+                uploadedImageEntries[entry.name] = entry.copy(uploadedAt = uploadStartTime)
+            } catch (e: Exception) {
+                android.util.Log.w("WebDavRepository", "图片上传失败: ${entry.name}", e)
+                uploadFailures++
+            }
         }
 
+        val uploadedGiftEntries = mutableMapOf<String, FileEntry>()
         for ((index, entry) in giftToUpload.withIndex()) {
             currentStep++
             emit(SyncResult.UploadProgress("上传图片", currentStep, totalSteps,
@@ -197,7 +211,11 @@ class WebDavRepositoryImpl @Inject constructor(
             val file = backupRepository.getLocalImageFile("gift_photos", entry.name) ?: continue
             try {
                 webDavClient.uploadImageFile(config, "gift_photos", entry.name, file)
-            } catch (_: Exception) { continue }
+                uploadedGiftEntries[entry.name] = entry.copy(uploadedAt = uploadStartTime)
+            } catch (e: Exception) {
+                android.util.Log.w("WebDavRepository", "礼物照片上传失败: ${entry.name}", e)
+                uploadFailures++
+            }
         }
 
         // 6. 清理远端多余文件
@@ -212,24 +230,40 @@ class WebDavRepositoryImpl @Inject constructor(
             webDavClient.deleteRemoteFile(config, "gift_photos", name)
         }
 
-        // 7. 更新并上传 manifest
+        // 7. 更新并上传 manifest（仅包含成功上传的文件，保证 manifest 与实际一致）
         currentStep++
         emit(SyncResult.UploadProgress("上传清单", currentStep, totalSteps, "正在更新同步清单..."))
         val now = System.currentTimeMillis()
+        // 未上传的图片保留远端旧条目（若存在），避免 manifest 丢失已上传文件记录
+        val imageEntries = (remoteManifest?.images ?: emptyMap()).toMutableMap()
+        imageEntries.putAll(uploadedImageEntries)
+        val giftEntries = (remoteManifest?.giftPhotos ?: emptyMap()).toMutableMap()
+        giftEntries.putAll(uploadedGiftEntries)
+
         val newManifest = SyncManifest(
             version = 1,
             lastSyncTime = now,
             dbBackup = dbFileName,
             dbTimestamp = now,
-            images = localImages.associate { it.name to it.copy(uploadedAt = now) },
-            giftPhotos = localGiftPhotos.associate { it.name to it.copy(uploadedAt = now) }
+            images = imageEntries,
+            giftPhotos = giftEntries
         )
         writeRemoteManifest(newManifest)
 
         saveLastSyncTime(now, "upload")
-        val totalUploaded = imagesToUpload.size + giftToUpload.size
-        val totalSkipped = (localImages.size + localGiftPhotos.size) - totalUploaded
-        emit(SyncResult.UploadSuccess(dbFileName, totalUploaded, totalSkipped))
+        val totalUploaded = imagesToUpload.size + giftToUpload.size - uploadFailures
+        val totalSkipped = (localImages.size + localGiftPhotos.size) - imagesToUpload.size - giftToUpload.size
+
+        if (uploadFailures > 0) {
+            emit(SyncResult.PartialSuccess(
+                dbFileName,
+                succeeded = totalUploaded,
+                failed = uploadFailures,
+                skipped = totalSkipped
+            ))
+        } else {
+            emit(SyncResult.UploadSuccess(dbFileName, totalUploaded, totalSkipped))
+        }
     }
 
     // ===== 增量下载 =====
@@ -288,7 +322,8 @@ class WebDavRepositoryImpl @Inject constructor(
                          (if (dbChanged) 1 else 0)
         var currentStep = 0
 
-        // 4. 下载图片
+        // 4. 先下载图片（数据库恢复会重启进程，必须放在最后）
+        var downloadFailures = 0
         for ((index, entry) in imagesToDownload.withIndex()) {
             currentStep++
             emit(SyncResult.DownloadProgress("下载图片", currentStep, totalSteps,
@@ -296,7 +331,10 @@ class WebDavRepositoryImpl @Inject constructor(
             val targetFile = File(File(context.filesDir, "app_images"), entry.name)
             try {
                 webDavClient.downloadImageFile(config, "images", entry.name, targetFile)
-            } catch (_: Exception) { continue }
+            } catch (e: Exception) {
+                android.util.Log.w("WebDavRepository", "图片下载失败: ${entry.name}", e)
+                downloadFailures++
+            }
         }
 
         for ((index, entry) in giftToDownload.withIndex()) {
@@ -306,10 +344,13 @@ class WebDavRepositoryImpl @Inject constructor(
             val targetFile = File(File(context.filesDir, "gift_photos"), entry.name)
             try {
                 webDavClient.downloadImageFile(config, "gift_photos", entry.name, targetFile)
-            } catch (_: Exception) { continue }
+            } catch (e: Exception) {
+                android.util.Log.w("WebDavRepository", "礼物照片下载失败: ${entry.name}", e)
+                downloadFailures++
+            }
         }
 
-        // 5. 删除本地多余图片
+        // 5. 清理本地多余图片（在数据库恢复前执行，因为恢复后会重启进程）
         for (name in imagesToDeleteLocal) {
             currentStep++
             emit(SyncResult.DownloadProgress("清理", currentStep, totalSteps, "正在清理本地文件..."))
@@ -321,7 +362,7 @@ class WebDavRepositoryImpl @Inject constructor(
             backupRepository.deleteLocalImageFile("gift_photos", name)
         }
 
-        // 6. 恢复数据库
+        // 6. 最后恢复数据库（会重启进程，必须放在所有操作之后）
         if (dbChanged && remoteManifest.dbBackup.isNotBlank()) {
             currentStep++
             emit(SyncResult.DownloadProgress("恢复数据库", currentStep, totalSteps, "正在恢复数据库..."))
@@ -329,21 +370,41 @@ class WebDavRepositoryImpl @Inject constructor(
             try {
                 webDavClient.downloadDbFile(config, remoteManifest.dbBackup, tempFile)
                 val uri = Uri.fromFile(tempFile).toString()
+                var dbRestoreFailed = false
                 backupRepository.restoreDbOnly(uri).collect { result ->
                     when (result) {
                         is RestoreResult.Success -> {}
-                        is RestoreResult.Error -> emit(SyncResult.Error(result.message))
+                        is RestoreResult.Error -> {
+                            dbRestoreFailed = true
+                            emit(SyncResult.Error(result.message))
+                        }
                     }
+                }
+                if (dbRestoreFailed) {
+                    return@flow
                 }
             } finally {
                 withContext(Dispatchers.IO) { tempFile.delete() }
             }
         }
 
+        // 7. 保存同步时间并报告结果
+        //    注意：如果数据库恢复成功，restartApp() 已杀死进程，以下代码不会执行。
+        //    但如果 dbChanged=false（不需要恢复数据库），则需要在这里报告结果。
         saveLastSyncTime(System.currentTimeMillis(), "download")
-        val totalDownloaded = imagesToDownload.size + giftToDownload.size
-        val totalSkipped = (localImages.size + localGiftPhotos.size) - totalDownloaded
-        emit(SyncResult.DownloadSuccess(remoteManifest.dbBackup, totalDownloaded, totalSkipped))
+        val totalDownloaded = imagesToDownload.size + giftToDownload.size - downloadFailures
+        val totalSkipped = (localImages.size + localGiftPhotos.size) - imagesToDownload.size - giftToDownload.size
+
+        if (downloadFailures > 0) {
+            emit(SyncResult.PartialSuccess(
+                remoteManifest.dbBackup,
+                succeeded = totalDownloaded,
+                failed = downloadFailures,
+                skipped = totalSkipped
+            ))
+        } else {
+            emit(SyncResult.DownloadSuccess(remoteManifest.dbBackup, totalDownloaded, totalSkipped))
+        }
     }
 
     override suspend fun deleteRemoteBackup(fileName: String): Boolean {
@@ -469,7 +530,8 @@ class WebDavRepositoryImpl @Inject constructor(
             remotePath = prefs.getString(KEY_REMOTE_PATH, "/knots_backup/") ?: "/knots_backup/",
             autoSyncOnLaunch = prefs.getBoolean(KEY_AUTO_SYNC_ON_LAUNCH, false),
             lastSyncTime = prefs.getLong(KEY_LAST_SYNC_TIME, 0),
-            lastSyncDirection = prefs.getString(KEY_LAST_SYNC_DIRECTION, "") ?: ""
+            lastSyncDirection = prefs.getString(KEY_LAST_SYNC_DIRECTION, "") ?: "",
+            trustAllCertificates = prefs.getBoolean(KEY_TRUST_ALL_CERTS, false)
         )
     }
 

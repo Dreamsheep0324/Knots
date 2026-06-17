@@ -83,19 +83,41 @@ internal fun OrbitalCalendarCanvas(
     val weekDayColor = SignalElectric.copy(alpha = 0.9f)
     val weekEndColor = SignalCoral.copy(alpha = 0.9f)
 
-    val dayTextStyle = TextStyle(fontFamily = FontFamily.Monospace, fontSize = 8.sp, fontWeight = FontWeight.Bold, color = darkText)
-    val dayTodayStyle = TextStyle(fontFamily = FontFamily.Monospace, fontSize = 9.sp, fontWeight = FontWeight.Bold, color = Color.White)
-    val dayEventStyle = TextStyle(fontFamily = FontFamily.Monospace, fontSize = 8.sp, fontWeight = FontWeight.Bold, color = SignalElectric.copy(alpha = 0.95f))
-    val centerDayStyle = TextStyle(fontFamily = FontFamily.Monospace, fontSize = 18.sp, fontWeight = FontWeight.Bold, color = SignalElectric)
-    val baguaStyle = TextStyle(fontFamily = FontFamily.Monospace, fontSize = 7.sp, fontWeight = FontWeight.Bold, color = SignalPurple.copy(alpha = 0.6f))
-    val weekLabelStyle = TextStyle(fontFamily = FontFamily.Monospace, fontSize = 6.sp, fontWeight = FontWeight.Bold, color = weekDayColor)
-    val weekEndLabelStyle = TextStyle(fontFamily = FontFamily.Monospace, fontSize = 6.sp, fontWeight = FontWeight.Bold, color = weekEndColor)
+    val dayTextStyle = remember { TextStyle(fontFamily = FontFamily.Monospace, fontSize = 8.sp, fontWeight = FontWeight.Bold) }
+    val dayTodayStyle = remember { TextStyle(fontFamily = FontFamily.Monospace, fontSize = 9.sp, fontWeight = FontWeight.Bold, color = Color.White) }
+    val dayEventStyle = remember { TextStyle(fontFamily = FontFamily.Monospace, fontSize = 8.sp, fontWeight = FontWeight.Bold) }
+    val centerDayStyle = remember { TextStyle(fontFamily = FontFamily.Monospace, fontSize = 18.sp, fontWeight = FontWeight.Bold, color = SignalElectric) }
+    val baguaStyle = remember { TextStyle(fontFamily = FontFamily.Monospace, fontSize = 7.sp, fontWeight = FontWeight.Bold, color = SignalPurple.copy(alpha = 0.6f)) }
+    val weekLabelStyle = remember { TextStyle(fontFamily = FontFamily.Monospace, fontSize = 6.sp, fontWeight = FontWeight.Bold) }
+    val weekEndLabelStyle = remember { TextStyle(fontFamily = FontFamily.Monospace, fontSize = 6.sp, fontWeight = FontWeight.Bold) }
+
+    // 将 draw 阶段不变的颜色列表提升到 remember，避免每帧创建新对象
+    val gridColors = remember {
+        listOf(
+            SignalElectric.copy(alpha = 0.04f),
+            SignalSky.copy(alpha = 0.03f),
+            SignalElectric.copy(alpha = 0.04f),
+            SignalSky.copy(alpha = 0.03f),
+            SignalElectric.copy(alpha = 0.03f),
+            SignalSky.copy(alpha = 0.03f),
+            SignalElectric.copy(alpha = 0.04f)
+        )
+    }
+    val rayColors = remember {
+        listOf(SignalElectric, SignalSky, SignalGreen, SignalPurple, SignalCoral, SignalElectric, SignalSky, SignalGreen)
+    }
+    val dashPathEffect = remember { PathEffect.dashPathEffect(floatArrayOf(4f, 8f), 0f) }
+    val sortedSignalKeys = remember(data.daySignalMap) { data.daySignalMap.keys.sorted() }
 
     val dayTextMeasures = remember(data.daysInMonth, data.isCurrentMonth, todayDay, data.daySignalMap) {
         (1..data.daysInMonth).map { day ->
             val isToday = data.isCurrentMonth && day == todayDay
             val signalCount = data.daySignalMap[day] ?: 0
-            val style = when { isToday -> dayTodayStyle; signalCount > 0 -> dayEventStyle; else -> dayTextStyle }
+            val style = when {
+                isToday -> dayTodayStyle
+                signalCount > 0 -> dayEventStyle.copy(color = SignalElectric.copy(alpha = 0.95f))
+                else -> dayTextStyle.copy(color = darkText)
+            }
             day to textMeasurer.measure(day.toString(), style)
         }
     }
@@ -104,7 +126,7 @@ internal fun OrbitalCalendarCanvas(
         (1..data.daysInMonth).map { day ->
             val dow = data.dayOfWeekMap[day] ?: 0
             val isWEnd = dow == 0 || dow == 6
-            val style = if (isWEnd) weekEndLabelStyle else weekLabelStyle
+            val style = if (isWEnd) weekEndLabelStyle.copy(color = weekEndColor) else weekLabelStyle.copy(color = weekDayColor)
             day to textMeasurer.measure(weekLabels[dow], style)
         }
     }
@@ -131,19 +153,9 @@ internal fun OrbitalCalendarCanvas(
         val outerR2 = minDim * 0.44f
         val particleR = minDim * 0.48f
 
-        val gridColors = listOf(
-            SignalElectric.copy(alpha = 0.04f),
-            SignalSky.copy(alpha = 0.03f),
-            SignalElectric.copy(alpha = 0.04f),
-            SignalSky.copy(alpha = 0.03f),
-            SignalElectric.copy(alpha = 0.03f),
-            SignalSky.copy(alpha = 0.03f),
-            SignalElectric.copy(alpha = 0.04f)
-        )
         for ((idx, r) in listOf(innerR, weekR, mainR, dateTextR, weekTextR, outerR, outerR2).withIndex()) {
             drawCircle(color = gridColors[idx], radius = r, center = center, style = Stroke(width = 0.5f))
         }
-        val rayColors = listOf(SignalElectric, SignalSky, SignalGreen, SignalPurple, SignalCoral, SignalElectric, SignalSky, SignalGreen)
         for (i in 0 until 8) {
             val a = Math.toRadians(i * 45.0 - 90.0)
             drawLine(
@@ -155,7 +167,7 @@ internal fun OrbitalCalendarCanvas(
         }
 
         drawCircle(color = SignalPurple.copy(alpha = 0.1f), radius = outerR2 + 4f, center = center, style = Stroke(width = 0.5f))
-        drawCircle(color = SignalElectric.copy(alpha = breathAlpha), radius = outerR2, center = center, style = Stroke(width = 2f, pathEffect = PathEffect.dashPathEffect(floatArrayOf(4f, 8f), 0f)))
+        drawCircle(color = SignalElectric.copy(alpha = breathAlpha), radius = outerR2, center = center, style = Stroke(width = 2f, pathEffect = dashPathEffect))
         drawCircle(color = SignalSky.copy(alpha = 0.25f), radius = outerR, center = center, style = Stroke(width = 1f))
 
         for (deg in 0 until 360 step 5) {
@@ -217,7 +229,7 @@ internal fun OrbitalCalendarCanvas(
             drawText(textLayoutResult = m, topLeft = Offset(bx - m.size.width / 2f, by - m.size.height / 2f))
         }
 
-        val eventDays = data.daySignalMap.keys.sorted()
+        val eventDays = sortedSignalKeys
         for (idx in 0 until eventDays.size - 1) {
             val day1 = eventDays[idx]
             val day2 = eventDays[idx + 1]

@@ -226,8 +226,7 @@ internal fun ContactThoughtDetailDialog(
                                 fontSize = 12.sp,
                                 color = if (thought.isDone) SignalGreen else MaterialTheme.colorScheme.onSurfaceVariant
                             )
-                            if (thought.dueDate != null) {
-                                val dueDate = thought.dueDate!!
+                            thought.dueDate?.let { dueDate ->
                                 Spacer(modifier = Modifier.width(6.dp))
                                 Text(
                                     "· 截止 ${DateUtils.formatMonthDayChinese(dueDate)}",

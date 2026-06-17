@@ -11,6 +11,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -42,6 +43,14 @@ fun ContactDetailScreen(
     val layoutDirection = LocalLayoutDirection.current
     var detailThoughtId by remember { mutableStateOf<Long?>(null) }
     val detailThought = detailThoughtId?.let { id -> uiState.data.thoughts.find { it.id == id } }
+
+    LaunchedEffect(Unit) {
+        viewModel.events.collect { event ->
+            when (event) {
+                ContactDetailEvent.ContactDeleted -> navController.popBackStack()
+            }
+        }
+    }
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.surface
@@ -97,7 +106,7 @@ fun ContactDetailScreen(
         DeleteConfirmDialog(
             title = "删除人物",
             message = "确定要删除 \"${contact?.name ?: ""}\" 吗？此操作不可撤销。",
-            onConfirm = { viewModel.deleteContact { navController.popBackStack() } },
+            onConfirm = { viewModel.deleteContact() },
             onDismiss = { viewModel.hideDeleteDialog() }
         )
     }

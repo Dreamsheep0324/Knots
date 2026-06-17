@@ -12,6 +12,7 @@ import androidx.core.app.NotificationCompat
 import com.tang.prm.MainActivity
 import com.tang.prm.R
 import com.tang.prm.domain.repository.ReminderRepository
+import java.util.concurrent.atomic.AtomicInteger
 import dagger.hilt.android.EntryPointAccessors
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
@@ -87,11 +88,11 @@ class ReminderReceiver : BroadcastReceiver() {
             context,
             0,
             intent,
-            PendingIntent.FLAG_IMMUTABLE
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
 
         val notification = NotificationCompat.Builder(context, CHANNEL_ID)
-            .setSmallIcon(android.R.drawable.ic_dialog_info)
+            .setSmallIcon(R.mipmap.ic_launcher)
             .setContentTitle(title)
             .setContentText(content)
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
@@ -99,12 +100,13 @@ class ReminderReceiver : BroadcastReceiver() {
             .setAutoCancel(true)
             .build()
 
-        val notifyId = if (reminderId > 0) reminderId.toInt() else System.currentTimeMillis().toInt()
+        val notifyId = if (reminderId > 0) (reminderId % Int.MAX_VALUE).toInt() else notificationIdCounter.incrementAndGet()
         notificationManager.notify(notifyId, notification)
     }
 
     companion object {
         const val CHANNEL_ID = "tang_reminder_channel"
+        private val notificationIdCounter = AtomicInteger(10_000)
     }
 }
 

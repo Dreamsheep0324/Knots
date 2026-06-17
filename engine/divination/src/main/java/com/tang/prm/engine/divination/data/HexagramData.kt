@@ -454,6 +454,11 @@ object HexagramData {
         )
     )
 
-    fun findByName(name: String): HexagramInfo? = all.find { it.name == name }
-    fun findByBinary(binary: String): HexagramInfo? = all.find { it.binarySymbol == binary }
+    private val bySymbolMap: Map<String, HexagramInfo> by lazy { all.associateBy { it.symbol } }
+    private val byBinaryMap: Map<String, HexagramInfo> by lazy { all.associateBy { it.binarySymbol } }
+    private val byNameMap: Map<String, HexagramInfo> by lazy { all.associateBy { it.name } }
+
+    fun findByName(name: String): HexagramInfo? = byNameMap[name]
+    fun findByBinary(binary: String): HexagramInfo? = byBinaryMap[binary]
+    fun findBySymbol(symbol: String): HexagramInfo? = bySymbolMap[symbol]
 }

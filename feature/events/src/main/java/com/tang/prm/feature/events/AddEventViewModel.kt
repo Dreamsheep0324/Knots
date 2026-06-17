@@ -16,6 +16,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -36,27 +37,38 @@ class AddEventViewModel @Inject constructor(
     val uiState: StateFlow<AddEventUiState> = _uiState.asStateFlow()
     private var editingEventId: Long? = null
 
-    init { loadContacts(); loadCustomTypes() }
+    init { loadReferenceData() }
 
-    private fun loadContacts() {
-        viewModelScope.launch { contactRepository.getAllContacts().collect { list -> _uiState.update { it.copy(availableContacts = list) } } }
-    }
-
-    private fun loadCustomTypes() {
-        viewModelScope.launch { customTypeRepository.getTypesByCategory(CustomCategories.EVENT_TYPE).collect { list -> _uiState.update { it.copy(eventTypes = list) } } }
+    private fun loadReferenceData() {
         viewModelScope.launch {
-            customTypeRepository.getTypesByCategory(CustomCategories.EMOTION).collect { list ->
-                if (list.isEmpty()) seedDefaultEmotions()
-                _uiState.update { it.copy(emotions = list) }
+            combine(
+                contactRepository.getAllContacts(),
+                customTypeRepository.getTypesByCategory(CustomCategories.EVENT_TYPE),
+                customTypeRepository.getTypesByCategory(CustomCategories.EMOTION),
+                customTypeRepository.getTypesByCategory(CustomCategories.WEATHER)
+            ) { contacts, eventTypes, emotions, weathers ->
+                RefData(contacts, eventTypes, emotions, weathers)
+            }.collect { data ->
+                if (data.emotions.isEmpty()) seedDefaultEmotions()
+                if (data.weathers.isEmpty()) seedDefaultWeathers()
+                _uiState.update {
+                    it.copy(
+                        availableContacts = data.contacts,
+                        eventTypes = data.eventTypes,
+                        emotions = data.emotions,
+                        weathers = data.weathers
+                    )
+                }
             }
         }
-        viewModelScope.launch {
-            customTypeRepository.getTypesByCategory(CustomCategories.WEATHER).collect { list ->
-                if (list.isEmpty()) seedDefaultWeathers()
-                _uiState.update { it.copy(weathers = list) }
-            }
-        }
     }
+
+    private data class RefData(
+        val contacts: List<Contact>,
+        val eventTypes: List<CustomType>,
+        val emotions: List<CustomType>,
+        val weathers: List<CustomType>
+    )
 
     private suspend fun seedDefaultWeathers() {
         if (customTypeRepository.getTypeCountByCategory(CustomCategories.WEATHER) > 0) return

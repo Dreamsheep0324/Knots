@@ -138,9 +138,11 @@ fun AddAnniversaryScreen(
                 AnniversaryDateSection(
                     dateText = uiState.dateText,
                     isLunar = uiState.isLunar,
+                    isLeapMonth = uiState.isLeapMonth,
                     isRepeat = uiState.isRepeat,
                     onDateClick = { showDatePicker = true },
                     onLunarChange = { viewModel.updateIsLunar(it) },
+                    onLeapMonthChange = { viewModel.updateIsLeapMonth(it) },
                     onRepeatChange = { viewModel.updateIsRepeat(it) }
                 )
             }

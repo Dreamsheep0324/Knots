@@ -72,7 +72,9 @@ fun MeihuaAiDeepSection(
     LaunchedEffect(savedGender) { gender = savedGender }
     LaunchedEffect(savedBirthDate) { birthDate = savedBirthDate }
     LaunchedEffect(Unit) { viewModel.refreshApiKeyStatus() }
-    LaunchedEffect(onAnalysisComplete) { viewModel.onAnalysisComplete = onAnalysisComplete }
+    LaunchedEffect(Unit) {
+        viewModel.analysisCompleteEvent.collect { content -> onAnalysisComplete(content) }
+    }
 
     val initialDateMillis = remember(birthDate) {
         if (birthDate.isNotBlank()) {
