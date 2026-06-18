@@ -34,6 +34,9 @@ jobs:
         with:
           cache-read-only: true
 
+      - name: 赋予 gradlew 执行权限
+        run: chmod +x gradlew
+
       - name: 编译检查
         run: ./gradlew compileDebugKotlin --no-daemon
 

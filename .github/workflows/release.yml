@@ -39,6 +39,9 @@ jobs:
       - name: 设置 Gradle
         uses: gradle/actions/setup-gradle@v4
 
+      - name: 赋予 gradlew 执行权限
+        run: chmod +x gradlew
+
       - name: 提取版本号
         id: version
         run: |
