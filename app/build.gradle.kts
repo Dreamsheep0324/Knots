@@ -34,14 +34,16 @@ android {
 
     signingConfigs {
         create("release") {
-            storeFile = file(keystoreProperties.getProperty("storeFile", ""))
-            storePassword = keystoreProperties.getProperty("storePassword", "")
-            keyAlias = keystoreProperties.getProperty("keyAlias", "")
-            keyPassword = keystoreProperties.getProperty("keyPassword", "")
-            @Suppress("UnstableApiUsage")
-            enableV1Signing = true
-            @Suppress("UnstableApiUsage")
-            enableV2Signing = true
+            if (keystorePropertiesFile.exists()) {
+                storeFile = file(keystoreProperties.getProperty("storeFile", ""))
+                storePassword = keystoreProperties.getProperty("storePassword", "")
+                keyAlias = keystoreProperties.getProperty("keyAlias", "")
+                keyPassword = keystoreProperties.getProperty("keyPassword", "")
+                @Suppress("UnstableApiUsage")
+                enableV1Signing = true
+                @Suppress("UnstableApiUsage")
+                enableV2Signing = true
+            }
         }
     }
 
