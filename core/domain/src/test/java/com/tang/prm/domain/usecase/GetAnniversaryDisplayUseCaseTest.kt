@@ -1,32 +1,85 @@
 package com.tang.prm.domain.usecase
 
+import com.google.common.truth.Truth.assertThat
 import com.tang.prm.domain.model.Anniversary
 import com.tang.prm.domain.model.AnniversaryType
-import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.DisplayName
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import com.google.common.truth.Truth.assertThat
+import java.time.LocalDate
+import java.time.ZoneId
 
 class GetAnniversaryDisplayUseCaseTest {
-    private lateinit var useCase: GetAnniversaryDisplayUseCase
 
-    @BeforeEach
-    fun setup() {
-        useCase = GetAnniversaryDisplayUseCase()
+    private val useCase = GetAnniversaryDisplayUseCase()
+    private val zoneId = ZoneId.systemDefault()
+
+    private fun dateMillis(year: Int, month: Int, day: Int): Long =
+        LocalDate.of(year, month, day).atStartOfDay(zoneId).toInstant().toEpochMilli()
+
+    @Nested
+    @DisplayName("invoke 单个纪念日")
+    inner class InvokeTest {
+
+        @Test
+        fun birthday_usesNextBirthdayDate() {
+            val ann = Anniversary(id = 1, name = "生日", type = AnniversaryType.BIRTHDAY,
+                date = dateMillis(1990, 6, 15), isRepeat = true)
+            val info = useCase(ann)
+            assertThat(info.effectiveDate).isGreaterThan(0L)
+            assertThat(info.daysUntil).isAtLeast(0)
+        }
+
+        @Test
+        fun repeatingAnniversary_usesNextRepeatDate() {
+            val ann = Anniversary(id = 1, name = "纪念日", type = AnniversaryType.ANNIVERSARY,
+                date = dateMillis(2020, 1, 1), isRepeat = true)
+            val info = useCase(ann)
+            assertThat(info.effectiveDate).isGreaterThan(0L)
+        }
+
+        @Test
+        fun nonRepeatingAnniversary_usesOriginalDate() {
+            val date = dateMillis(2025, 12, 25)
+            val ann = Anniversary(id = 1, name = "一次性", type = AnniversaryType.ANNIVERSARY,
+                date = date, isRepeat = false)
+            val info = useCase(ann)
+            assertThat(info.effectiveDate).isEqualTo(date)
+        }
     }
 
-    @Test
-    fun `invoke returns display info with effective date`() {
-        val anniversary = Anniversary(id = 1, name = "Test", date = System.currentTimeMillis(), type = AnniversaryType.HOLIDAY, isRepeat = false)
-        val result = useCase(anniversary)
-        assertThat(result.anniversary).isEqualTo(anniversary)
-    }
+    @Nested
+    @DisplayName("categorizeAnniversaries 分类")
+    inner class CategorizeTest {
 
-    @Test
-    fun `categorizeAnniversaries returns triple`() {
-        val now = System.currentTimeMillis()
-        val past = Anniversary(id = 1, name = "Past", date = now - 100000L, type = AnniversaryType.HOLIDAY, isRepeat = false)
-        val anniversaries = listOf(past)
-        val (all, upcoming, pastList) = useCase.categorizeAnniversaries(anniversaries)
-        assertThat(all).isNotEmpty()
+        @Test
+        fun returnsTripleOfLists() {
+            val anns = listOf(
+                Anniversary(id = 1, name = "A", type = AnniversaryType.BIRTHDAY,
+                    date = dateMillis(1990, 1, 1), isRepeat = true)
+            )
+            val (all, upcoming, past) = useCase.categorizeAnniversaries(anns)
+            assertThat(all.size + upcoming.size + past.size).isAtLeast(1)
+        }
+
+        @Test
+        fun emptyList_returnsEmptyTriple() {
+            val (all, upcoming, past) = useCase.categorizeAnniversaries(emptyList())
+            assertThat(all).isEmpty()
+            assertThat(upcoming).isEmpty()
+            assertThat(past).isEmpty()
+        }
+
+        @Test
+        fun allList_containsAllAnniversaries() {
+            val anns = listOf(
+                Anniversary(id = 1, name = "A", type = AnniversaryType.BIRTHDAY,
+                    date = dateMillis(1990, 1, 1), isRepeat = true),
+                Anniversary(id = 2, name = "B", type = AnniversaryType.ANNIVERSARY,
+                    date = dateMillis(2020, 6, 15), isRepeat = true)
+            )
+            val (all, _, _) = useCase.categorizeAnniversaries(anns)
+            assertThat(all).hasSize(2)
+        }
     }
 }

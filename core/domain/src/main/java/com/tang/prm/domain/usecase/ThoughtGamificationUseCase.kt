@@ -3,8 +3,9 @@ package com.tang.prm.domain.usecase
 import com.tang.prm.domain.model.Contact
 import com.tang.prm.domain.model.Thought
 import com.tang.prm.domain.model.ThoughtType
-import com.tang.prm.domain.util.DateUtils
-import java.util.Calendar
+import java.time.Instant
+import java.time.LocalDate
+import java.time.ZoneId
 import javax.inject.Inject
 
 data class GamificationState(
@@ -54,15 +55,13 @@ class ThoughtGamificationUseCase @Inject constructor() {
 
     fun calcStreak(thoughts: List<Thought>): Int {
         if (thoughts.isEmpty()) return 0
-        val calendar = Calendar.getInstance()
-        calendar.set(Calendar.HOUR_OF_DAY, 0)
-        calendar.set(Calendar.MINUTE, 0)
-        calendar.set(Calendar.SECOND, 0)
-        calendar.set(Calendar.MILLISECOND, 0)
-        val dayMs = DateUtils.MILLIS_PER_DAY
-        val daysWithThoughts = thoughts.map { it.createdAt / dayMs }.toSet()
+        val zone = ZoneId.systemDefault()
+        val daysWithThoughts = thoughts.map {
+            Instant.ofEpochMilli(it.createdAt).atZone(zone).toLocalDate().toEpochDay()
+        }.toSet()
+        val today = LocalDate.now(zone).toEpochDay()
         var streak = 0
-        var checkDay = calendar.timeInMillis / dayMs
+        var checkDay = today
         if (daysWithThoughts.contains(checkDay)) {
             streak = 1
             checkDay--

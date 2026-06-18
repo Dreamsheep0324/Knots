@@ -3,13 +3,15 @@ package com.tang.prm.feature.reflect.thoughts
 import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat
 import com.tang.prm.domain.model.Contact
-import com.tang.prm.domain.model.Favorite
+import com.tang.prm.domain.model.SourceTypes
 import com.tang.prm.domain.model.Thought
 import com.tang.prm.domain.model.ThoughtType
 import com.tang.prm.domain.repository.ContactRepository
 import com.tang.prm.domain.repository.FavoriteRepository
 import com.tang.prm.domain.repository.ThoughtRepository
+import com.tang.prm.domain.usecase.FavoriteToggleUseCase
 import com.tang.prm.domain.usecase.ThoughtGamificationUseCase
+import com.tang.prm.domain.usecase.ThoughtListUseCase
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -38,6 +40,8 @@ class ThoughtsViewModelTest {
     @MockK
     private lateinit var favoriteRepository: FavoriteRepository
 
+    private lateinit var favoriteToggleUseCase: FavoriteToggleUseCase
+    private lateinit var thoughtListUseCase: ThoughtListUseCase
     private lateinit var viewModel: ThoughtsViewModel
 
     private val testThought = Thought(id = 1, content = "Hello", type = ThoughtType.MURMUR)
@@ -51,9 +55,13 @@ class ThoughtsViewModelTest {
         every { thoughtRepository.getAllThoughts() } returns flowOf(listOf(testThought, testFriendThought))
         every { thoughtRepository.getTodoThoughts() } returns flowOf(emptyList<Thought>())
         every { contactRepository.getAllContacts() } returns flowOf(listOf(testContact))
-        every { favoriteRepository.getFavoritesByType(any<String>()) } returns flowOf(emptyList<Favorite>())
+        every { favoriteRepository.getFavoritesByType(SourceTypes.THOUGHT) } returns flowOf(emptyList())
+        every { favoriteRepository.isFavorite(any<String>(), any()) } returns flowOf(false)
 
-        viewModel = ThoughtsViewModel(thoughtRepository, contactRepository, favoriteRepository, ThoughtGamificationUseCase())
+        favoriteToggleUseCase = FavoriteToggleUseCase(favoriteRepository)
+        thoughtListUseCase = ThoughtListUseCase(thoughtRepository, contactRepository, ThoughtGamificationUseCase())
+
+        viewModel = ThoughtsViewModel(thoughtRepository, favoriteToggleUseCase, thoughtListUseCase)
     }
 
     @AfterEach
@@ -65,8 +73,7 @@ class ThoughtsViewModelTest {
     fun init_loadsThoughts() = runTest {
         viewModel.uiState.test {
             val state = awaitItem()
-            assertThat(state.allThoughts).hasSize(2)
-            assertThat(state.isLoading).isFalse()
+            assertThat(state.data.allThoughts).hasSize(2)
         }
     }
 
@@ -74,8 +81,8 @@ class ThoughtsViewModelTest {
     fun init_loadsContactThoughts() = runTest {
         viewModel.uiState.test {
             val state = awaitItem()
-            assertThat(state.contactThoughts).hasSize(1)
-            assertThat(state.contactThoughts[0].contact.name).isEqualTo("Alice")
+            assertThat(state.data.contactThoughts).hasSize(1)
+            assertThat(state.data.contactThoughts[0].contact.name).isEqualTo("Alice")
         }
     }
 
@@ -85,9 +92,9 @@ class ThoughtsViewModelTest {
 
         viewModel.uiState.test {
             val state = awaitItem()
-            assertThat(state.selectedFilter).isEqualTo("friend")
-            assertThat(state.filteredThoughts).hasSize(1)
-            assertThat(state.filteredThoughts[0].type).isEqualTo(ThoughtType.FRIEND)
+            assertThat(state.data.selectedFilter).isEqualTo("friend")
+            assertThat(state.data.filteredThoughts).hasSize(1)
+            assertThat(state.data.filteredThoughts[0].type).isEqualTo(ThoughtType.FRIEND)
         }
     }
 
@@ -97,9 +104,9 @@ class ThoughtsViewModelTest {
 
         viewModel.uiState.test {
             val state = awaitItem()
-            assertThat(state.selectedFilter).isEqualTo("murmur")
-            assertThat(state.filteredThoughts).hasSize(1)
-            assertThat(state.filteredThoughts[0].type).isEqualTo(ThoughtType.MURMUR)
+            assertThat(state.data.selectedFilter).isEqualTo("murmur")
+            assertThat(state.data.filteredThoughts).hasSize(1)
+            assertThat(state.data.filteredThoughts[0].type).isEqualTo(ThoughtType.MURMUR)
         }
     }
 
@@ -109,7 +116,7 @@ class ThoughtsViewModelTest {
 
         viewModel.uiState.test {
             val state = awaitItem()
-            assertThat(state.filteredThoughts).hasSize(2)
+            assertThat(state.data.filteredThoughts).hasSize(2)
         }
     }
 
@@ -137,7 +144,7 @@ class ThoughtsViewModelTest {
 
         viewModel.uiState.test {
             val state = awaitItem()
-            assertThat(state.selectedContactId).isEqualTo(1L)
+            assertThat(state.data.selectedContactId).isEqualTo(1L)
         }
     }
 
@@ -148,7 +155,7 @@ class ThoughtsViewModelTest {
 
         viewModel.uiState.test {
             val state = awaitItem()
-            assertThat(state.selectedContactId).isNull()
+            assertThat(state.data.selectedContactId).isNull()
         }
     }
 
@@ -158,7 +165,7 @@ class ThoughtsViewModelTest {
 
         viewModel.uiState.test {
             val state = awaitItem()
-            assertThat(state.searchQuery).isEqualTo("Hello")
+            assertThat(state.data.searchQuery).isEqualTo("Hello")
         }
     }
 }

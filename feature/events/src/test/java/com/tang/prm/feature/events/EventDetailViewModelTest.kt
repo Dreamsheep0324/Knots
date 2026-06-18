@@ -31,7 +31,7 @@ class EventDetailViewModelTest {
     private lateinit var favoriteToggleUseCase: FavoriteToggleUseCase
     private lateinit var viewModel: EventDetailViewModel
 
-    private val testEvent = Event(id = 1, contactId = 1, title = "测试事件", type = EventType.MEETING)
+    private val testEvent = Event(id = 1, title = "测试事件", type = EventType.MEETUP, time = 1000L)
 
     @BeforeEach
     fun setUp() {
@@ -41,7 +41,7 @@ class EventDetailViewModelTest {
 
         every { eventRepository.getEventById(1L) } returns flowOf(testEvent)
         every { favoriteToggleUseCase.isFavorite(SourceTypes.EVENT, 1L) } returns flowOf(false)
-        coEvery { favoriteToggleUseCase(any(), any(), any(), any()) } returns Unit
+        coEvery { favoriteToggleUseCase(any(), any(), any(), any()) } returns true
         coEvery { eventRepository.updateEvent(any()) } returns Unit
         coEvery { eventRepository.deleteEvent(any()) } returns Unit
 
@@ -67,12 +67,26 @@ class EventDetailViewModelTest {
 
     @Test
     fun `toggleFavorite calls useCase with event data`() = runTest {
+        // Wait for uiState to have the event loaded
+        viewModel.uiState.test {
+            val state = awaitItem()
+            assertThat(state.data.event).isNotNull()
+            cancelAndIgnoreRemainingEvents()
+        }
+
         viewModel.toggleFavorite()
         coVerify { favoriteToggleUseCase(SourceTypes.EVENT, 1L, "测试事件", any()) }
     }
 
     @Test
     fun `updateRemarks saves and sets isRemarkSaved`() = runTest {
+        // Wait for uiState to have the event loaded
+        viewModel.uiState.test {
+            val state = awaitItem()
+            assertThat(state.data.event).isNotNull()
+            cancelAndIgnoreRemainingEvents()
+        }
+
         viewModel.updateRemarks("新备注")
         coVerify { eventRepository.updateEvent(match { it.remarks == "新备注" }) }
         viewModel.uiState.test {
@@ -83,6 +97,13 @@ class EventDetailViewModelTest {
 
     @Test
     fun `consumeRemarkSaved resets flag`() = runTest {
+        // Wait for uiState to have the event loaded
+        viewModel.uiState.test {
+            val state = awaitItem()
+            assertThat(state.data.event).isNotNull()
+            cancelAndIgnoreRemainingEvents()
+        }
+
         viewModel.updateRemarks("备注")
         viewModel.consumeRemarkSaved()
         viewModel.uiState.test {
@@ -93,6 +114,13 @@ class EventDetailViewModelTest {
 
     @Test
     fun `deleteEvent calls repository`() = runTest {
+        // Wait for uiState to have the event loaded
+        viewModel.uiState.test {
+            val state = awaitItem()
+            assertThat(state.data.event).isNotNull()
+            cancelAndIgnoreRemainingEvents()
+        }
+
         viewModel.deleteEvent()
         coVerify { eventRepository.deleteEvent(1L) }
     }

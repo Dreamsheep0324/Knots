@@ -33,10 +33,10 @@ class EventTypesAndCustomCategoriesTest {
     }
 
     @Test
-    fun customCategories_has10Constants() {
+    fun customCategories_has11Constants() {
         val fields = CustomCategories::class.java.declaredFields
             .filter { Modifier.isPublic(it.modifiers) && Modifier.isStatic(it.modifiers) && Modifier.isFinal(it.modifiers) && it.type == String::class.java }
-        assertThat(fields).hasSize(10)
+        assertThat(fields).hasSize(11)
     }
 
     @Test

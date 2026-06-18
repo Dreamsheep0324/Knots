@@ -42,4 +42,14 @@ dependencies {
     implementation(libs.activity.compose)
     implementation(libs.coil.compose)
     implementation(libs.kotlinx.serialization.json)
+
+    testImplementation(libs.junit.jupiter.api)
+    testRuntimeOnly(libs.junit.jupiter.engine)
+    testImplementation(libs.truth)
+    testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.turbine)
+}
+
+tasks.withType<Test> {
+    useJUnitPlatform()
 }

@@ -1,0 +1,126 @@
+# Release — 持续交付
+# 只有 push v* 格式的 tag 时才触发，自动打包 Release APK 并发布到 GitHub Release
+# 不会随意发布——必须手动打 tag 才会触发
+
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'    # 匹配 v1.3.2、v1.4.0 等
+  workflow_dispatch:  # 支持手动触发（备用）
+    inputs:
+      tag:
+        description: '版本号（如 v1.3.2）'
+        required: true
+        default: 'v0.0.0'
+
+# 同一 tag 只允许一次 Release
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: 打包 + 发布
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 设置 JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: 设置 Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: 提取版本号
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            TAG="${{ github.event.inputs.tag }}"
+          else
+            TAG="${GITHUB_REF#refs/tags/}"
+          fi
+          VERSION="${TAG#v}"  # 去掉 v 前缀
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "提取版本: $TAG ($VERSION)"
+
+      - name: 运行单元测试
+        run: ./gradlew testDebugUnitTest --no-daemon
+
+      - name: 配置 Release 签名
+        env:
+          # 从 GitHub Secrets 读取签名信息
+          KEYSTORE_BASE64: ${{ secrets.RELEASE_KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.RELEASE_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
+        run: |
+          # 解码 base64 keystore 并写入临时文件
+          echo "$KEYSTORE_BASE64" | base64 -d > app/release.keystore
+          # 生成 keystore.properties
+          cat > keystore.properties << EOF
+          storeFile=release.keystore
+          storePassword=$KEYSTORE_PASSWORD
+          keyAlias=$KEY_ALIAS
+          keyPassword=$KEY_PASSWORD
+          EOF
+
+      - name: 打包 Release APK
+        run: ./gradlew assembleRelease --no-daemon
+
+      - name: 重命名 APK
+        run: |
+          APK_PATH="app/build/outputs/apk/release/app-release.apk"
+          OUTPUT_NAME="Knots-${{ steps.version.outputs.tag }}.apk"
+          cp "$APK_PATH" "$OUTPUT_NAME"
+          echo "apk_path=$OUTPUT_NAME" >> $GITHUB_ENV
+
+      - name: 提取 Release Notes
+        id: notes
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          NOTES_FILE="release_notes.md"
+
+          # 从 CHANGELOG.md 提取对应版本的内容
+          # 匹配 ## [x.y.z] 到下一个 ## [ 之间的内容
+          awk -v ver="$VERSION" '
+            $0 ~ "## \\[" ver "\\]" { found=1; next }
+            found && $0 ~ /^## \[/ { found=0 }
+            found { print }
+          ' CHANGELOG.md > "$NOTES_FILE"
+
+          # 如果提取为空，使用默认内容
+          if [ ! -s "$NOTES_FILE" ]; then
+            echo "Release $VERSION" > "$NOTES_FILE"
+            echo "" >> "$NOTES_FILE"
+            echo "详见 [CHANGELOG.md](CHANGELOG.md)" >> "$NOTES_FILE"
+          fi
+
+          echo "notes_file=$NOTES_FILE" >> $GITHUB_OUTPUT
+
+      - name: 创建 GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.tag }}
+          name: ${{ steps.version.outputs.tag }}
+          body_path: release_notes.md
+          files: ${{ env.apk_path }}
+          draft: false
+          prerelease: false
+          generate_release_notes: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 清理签名文件
+        if: always()
+        run: |
+          rm -f app/release.keystore
+          rm -f keystore.properties

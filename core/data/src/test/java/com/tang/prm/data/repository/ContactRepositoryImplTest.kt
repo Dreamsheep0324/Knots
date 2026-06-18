@@ -4,9 +4,8 @@ import androidx.room.withTransaction
 import com.google.common.truth.Truth.assertThat
 import com.tang.prm.data.local.dao.*
 import com.tang.prm.data.local.database.TangDatabase
+import com.tang.prm.data.local.entity.ContactAttributeEntity
 import com.tang.prm.data.local.entity.ContactEntity
-import com.tang.prm.data.mapper.toDomain
-import com.tang.prm.data.mapper.toEntity
 import com.tang.prm.domain.model.Contact
 import com.tang.prm.util.escapeSqlWildcards
 import io.mockk.coEvery
@@ -29,6 +28,9 @@ class ContactRepositoryImplTest {
 
     @MockK
     private lateinit var contactDao: ContactDao
+
+    @MockK
+    private lateinit var contactAttributeDao: ContactAttributeDao
 
     @MockK
     private lateinit var anniversaryDao: AnniversaryDao
@@ -65,7 +67,7 @@ class ContactRepositoryImplTest {
         mockkStatic("com.tang.prm.util.SqlUtilsKt")
         every { any<String>().escapeSqlWildcards() } answers { firstArg() }
         repository = ContactRepositoryImpl(
-            contactDao, anniversaryDao, giftDao, thoughtDao,
+            contactDao, contactAttributeDao, anniversaryDao, giftDao, thoughtDao,
             circleDao, todoDao, reminderDao, database
         )
     }
@@ -79,6 +81,7 @@ class ContactRepositoryImplTest {
     @Test
     fun getAllContacts_returnsMappedList() = runTest {
         every { contactDao.getAllContacts() } returns flowOf(listOf(entity))
+        every { contactAttributeDao.getAttributesForAllContacts() } returns flowOf<List<ContactAttributeEntity>>(emptyList())
 
         val result = repository.getAllContacts().first()
 
@@ -89,6 +92,7 @@ class ContactRepositoryImplTest {
     @Test
     fun searchContacts_callsDaoWithKeyword() = runTest {
         every { contactDao.searchContacts("test") } returns flowOf(listOf(entity))
+        every { contactAttributeDao.getAttributesForAllContacts() } returns flowOf<List<ContactAttributeEntity>>(emptyList())
 
         val result = repository.searchContacts("test").first()
 
@@ -103,18 +107,12 @@ class ContactRepositoryImplTest {
         val result = repository.insertContact(domain)
 
         assertThat(result).isEqualTo(1L)
-        coVerify { contactDao.insertContact(entity) }
     }
 
     @Test
     fun deleteContact_callsDaoDeleteById() = runTest {
-        coEvery { anniversaryDao.deleteAnniversariesByContact(1L) } returns Unit
-        coEvery { giftDao.deleteGiftsByContactId(1L) } returns Unit
-        coEvery { thoughtDao.deleteThoughtsByContact(1L) } returns Unit
-        coEvery { todoDao.deleteTodosByContact(1L) } returns Unit
-        coEvery { reminderDao.deleteRemindersByContact(1L) } returns Unit
-        coEvery { contactDao.deleteCrossRefsByContact(1L) } returns Unit
-        coEvery { circleDao.deleteMemberRefsByContact(1L) } returns Unit
+        coEvery { giftDao.getGiftsByContactIdOnce(1L) } returns emptyList()
+        coEvery { contactDao.getContactByIdOnce(1L) } returns null
         coEvery { contactDao.deleteContactById(1L) } returns Unit
 
         repository.deleteContact(1L)

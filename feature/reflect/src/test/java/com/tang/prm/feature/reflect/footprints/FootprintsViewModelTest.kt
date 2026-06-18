@@ -2,14 +2,10 @@ package com.tang.prm.feature.reflect.footprints
 
 import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat
-import com.tang.prm.domain.model.Contact
-import com.tang.prm.domain.model.CustomCategories
 import com.tang.prm.domain.model.CustomType
-import com.tang.prm.domain.model.Event
-import com.tang.prm.domain.model.EventType
-import com.tang.prm.domain.repository.ContactRepository
-import com.tang.prm.domain.repository.CustomTypeRepository
-import com.tang.prm.domain.repository.EventRepository
+import com.tang.prm.domain.model.FootprintItem
+import com.tang.prm.domain.usecase.FootprintAggregationUseCase
+import com.tang.prm.domain.usecase.FootprintAggregateData
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
@@ -28,34 +24,30 @@ import org.junit.jupiter.api.extension.ExtendWith
 class FootprintsViewModelTest {
 
     @MockK
-    private lateinit var eventRepository: EventRepository
-
-    @MockK
-    private lateinit var contactRepository: ContactRepository
-
-    @MockK
-    private lateinit var customTypeRepository: CustomTypeRepository
+    private lateinit var footprintUseCase: FootprintAggregationUseCase
 
     private lateinit var viewModel: FootprintsViewModel
 
-    private val testEvent = Event(
-        id = 1,
-        title = "Trip",
-        type = EventType.TRAVEL,
-        time = 1000L,
-        location = "Beijing",
-        participants = listOf(Contact(id = 1, name = "Alice"))
+    private val testFootprint = FootprintItem(
+        id = 1, location = "Beijing", date = 1000L,
+        eventType = "TRAVEL", eventTitle = "Trip",
+        contactId = 1L, contactName = "Alice", contactAvatar = null,
+        description = null, weather = null, emotion = null, photoCount = 0
+    )
+
+    private val testAggregateData = FootprintAggregateData(
+        footprints = listOf(testFootprint),
+        contacts = emptyList(),
+        eventTypes = emptyList()
     )
 
     @BeforeEach
     fun setUp() {
         Dispatchers.setMain(UnconfinedTestDispatcher())
 
-        every { eventRepository.getEventsWithLocation() } returns flowOf(listOf(testEvent))
-        every { contactRepository.getAllContacts() } returns flowOf(emptyList<Contact>())
-        every { customTypeRepository.getTypesByCategory(CustomCategories.EVENT_TYPE) } returns flowOf(emptyList<CustomType>())
+        every { footprintUseCase.getAggregateData() } returns flowOf(testAggregateData)
 
-        viewModel = FootprintsViewModel(eventRepository, contactRepository, customTypeRepository)
+        viewModel = FootprintsViewModel(footprintUseCase)
     }
 
     @AfterEach
@@ -64,7 +56,7 @@ class FootprintsViewModelTest {
     }
 
     @Test
-    fun init_loadsEvents() = runTest {
+    fun init_loadsFootprints() = runTest {
         viewModel.uiState.test {
             val state = awaitItem()
             assertThat(state.footprints).hasSize(1)
@@ -79,7 +71,6 @@ class FootprintsViewModelTest {
         viewModel.uiState.test {
             val state = awaitItem()
             assertThat(state.totalFootprintCount).isEqualTo(1)
-            assertThat(state.totalContactCount).isEqualTo(1)
         }
     }
 
@@ -114,20 +105,6 @@ class FootprintsViewModelTest {
             assertThat(state.selectedContactId).isNull()
             assertThat(state.filterEventType).isNull()
             assertThat(state.selectedYear).isNull()
-        }
-    }
-
-    @Test
-    fun init_eventsWithoutLocation_areExcluded() = runTest {
-        val eventNoLocation = Event(id = 2, title = "NoLoc", type = EventType.MEETUP, time = 2000L, location = null)
-        every { eventRepository.getEventsWithLocation() } returns flowOf(listOf(testEvent, eventNoLocation))
-
-        val freshViewModel = FootprintsViewModel(eventRepository, contactRepository, customTypeRepository)
-
-        freshViewModel.uiState.test {
-            val state = awaitItem()
-            assertThat(state.footprints).hasSize(1)
-            assertThat(state.footprints[0].eventTitle).isEqualTo("Trip")
         }
     }
 

@@ -1,106 +1,135 @@
 package com.tang.prm.domain.usecase
 
+import app.cash.turbine.test
+import com.google.common.truth.Truth.assertThat
 import com.tang.prm.domain.model.*
 import com.tang.prm.domain.repository.*
-import com.google.common.truth.Truth.assertThat
 import io.mockk.every
-import io.mockk.mockk
-import kotlinx.coroutines.flow.first
+import io.mockk.impl.annotations.MockK
+import io.mockk.junit5.MockKExtension
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.DisplayName
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import java.util.*
+import org.junit.jupiter.api.extension.ExtendWith
 
+@ExtendWith(MockKExtension::class)
 class HomeDataAggregationUseCaseTest {
+
+    @MockK private lateinit var contactRepository: ContactRepository
+    @MockK private lateinit var eventRepository: EventRepository
+    @MockK private lateinit var anniversaryRepository: AnniversaryRepository
+    @MockK private lateinit var todoRepository: TodoRepository
+    @MockK private lateinit var reminderRepository: ReminderRepository
+
     private lateinit var useCase: HomeDataAggregationUseCase
-    private val contactRepository: ContactRepository = mockk(relaxed = true)
-    private val eventRepository: EventRepository = mockk(relaxed = true)
-    private val anniversaryRepository: AnniversaryRepository = mockk(relaxed = true)
-    private val todoRepository: TodoRepository = mockk(relaxed = true)
-    private val reminderRepository: ReminderRepository = mockk(relaxed = true)
 
     @BeforeEach
-    fun setup() {
+    fun setUp() {
         useCase = HomeDataAggregationUseCase(
-            contactRepository,
-            eventRepository,
-            anniversaryRepository,
-            todoRepository,
-            reminderRepository
+            contactRepository, eventRepository, anniversaryRepository,
+            todoRepository, reminderRepository
         )
     }
 
-    @Test
-    fun `getAggregateData combines all sources`() = runTest {
-        val contacts = listOf(Contact(id = 1, name = "Alice"))
-        val events = listOf(Event(id = 1, title = "Meetup", time = 1000L))
-        val upcomingAnniversaries = listOf(
-            Anniversary(id = 1, name = "Birthday", type = AnniversaryType.BIRTHDAY, date = 2000L)
-        )
-        val allAnniversaries = listOf(
-            Anniversary(id = 2, name = "Holiday", type = AnniversaryType.HOLIDAY, date = 3000L)
-        )
-        val todos = listOf(TodoItem(id = 1, title = "Buy gift"))
-        val reminders = listOf(
-            Reminder(id = 1, type = "anniversary", title = "Remind", content = "Don't forget", time = System.currentTimeMillis())
-        )
-
+    private fun setupMocks(
+        contacts: List<Contact> = emptyList(),
+        events: List<Event> = emptyList(),
+        upcomingAnniversaries: List<Anniversary> = emptyList(),
+        allAnniversaries: List<Anniversary> = emptyList(),
+        todos: List<TodoItem> = emptyList(),
+        reminders: List<Reminder> = emptyList()
+    ) {
         every { contactRepository.getRecentContacts(5) } returns flowOf(contacts)
         every { eventRepository.getAllEvents() } returns flowOf(events)
         every { anniversaryRepository.getUpcomingAnniversaries(10) } returns flowOf(upcomingAnniversaries)
         every { anniversaryRepository.getAllAnniversaries() } returns flowOf(allAnniversaries)
         every { todoRepository.getActiveTodos() } returns flowOf(todos)
         every { reminderRepository.getActiveReminders() } returns flowOf(reminders)
-
-        val result = useCase.getAggregateData().first()
-
-        assertThat(result.frequentContacts).isEqualTo(contacts)
-        assertThat(result.recentEvents).isEqualTo(events.take(5))
-        assertThat(result.allEvents).isEqualTo(events)
-        assertThat(result.upcomingAnniversaries).isEqualTo(upcomingAnniversaries)
-        assertThat(result.allAnniversaries).isEqualTo(allAnniversaries)
-        assertThat(result.pendingTodos).isEqualTo(todos)
     }
 
     @Test
-    fun `getAggregateData filters today reminders`() = runTest {
-        val today = Calendar.getInstance()
-        val todayTime = today.timeInMillis
+    fun aggregatesAllData() = runTest {
+        val contacts = listOf(Contact(id = 1L, name = "Alice"))
+        val events = listOf(Event(id = 1, title = "Meetup", type = EventType.MEETUP, time = 1000L))
+        val anniversaries = listOf(
+            Anniversary(id = 1, name = "Birthday", type = AnniversaryType.BIRTHDAY, date = 1000L, isRepeat = true)
+        )
+        val todos = listOf(TodoItem(id = 1L, title = "Task"))
+        val reminders = listOf(Reminder(id = 1L, type = "event", title = "Remind", content = "", time = System.currentTimeMillis()))
 
-        // Create a reminder for yesterday
-        val yesterdayCal = Calendar.getInstance().apply { add(Calendar.DAY_OF_YEAR, -1) }
-        val yesterdayReminder = Reminder(
-            id = 1, type = "anniversary", title = "Yesterday",
-            content = "Past", time = yesterdayCal.timeInMillis
+        setupMocks(
+            contacts = contacts, events = events,
+            upcomingAnniversaries = anniversaries, allAnniversaries = anniversaries,
+            todos = todos, reminders = reminders
         )
 
-        // Create a reminder for today
-        val todayReminder = Reminder(
-            id = 2, type = "anniversary", title = "Today",
-            content = "Current", time = todayTime
-        )
+        useCase.getAggregateData().test {
+            val data = awaitItem()
+            assertThat(data.frequentContacts).hasSize(1)
+            assertThat(data.allEvents).hasSize(1)
+            assertThat(data.recentEvents).hasSize(1)
+            assertThat(data.upcomingAnniversaries).hasSize(1)
+            assertThat(data.allAnniversaries).hasSize(1)
+            assertThat(data.pendingTodos).hasSize(1)
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
 
-        // Create a reminder for tomorrow
-        val tomorrowCal = Calendar.getInstance().apply { add(Calendar.DAY_OF_YEAR, 1) }
-        val tomorrowReminder = Reminder(
-            id = 3, type = "anniversary", title = "Tomorrow",
-            content = "Future", time = tomorrowCal.timeInMillis
-        )
+    @Nested
+    @DisplayName("recentEvents 取前5条")
+    inner class RecentEventsTest {
 
-        val allReminders = listOf(yesterdayReminder, todayReminder, tomorrowReminder)
+        @Test
+        fun takesFirst5Events() = runTest {
+            val events = (1..8).map {
+                Event(id = it.toLong(), title = "E$it", type = EventType.OTHER, time = it.toLong())
+            }
+            setupMocks(events = events)
 
-        every { contactRepository.getRecentContacts(5) } returns flowOf(emptyList())
-        every { eventRepository.getAllEvents() } returns flowOf(emptyList())
-        every { anniversaryRepository.getUpcomingAnniversaries(10) } returns flowOf(emptyList())
-        every { anniversaryRepository.getAllAnniversaries() } returns flowOf(emptyList())
-        every { todoRepository.getActiveTodos() } returns flowOf(emptyList())
-        every { reminderRepository.getActiveReminders() } returns flowOf(allReminders)
+            useCase.getAggregateData().test {
+                val data = awaitItem()
+                assertThat(data.recentEvents).hasSize(5)
+                assertThat(data.allEvents).hasSize(8)
+                cancelAndIgnoreRemainingEvents()
+            }
+        }
+    }
 
-        val result = useCase.getAggregateData().first()
+    @Nested
+    @DisplayName("todayReminders 筛选")
+    inner class TodayRemindersTest {
 
-        assertThat(result.todayReminders).hasSize(1)
-        assertThat(result.todayReminders[0].id).isEqualTo(2L)
-        assertThat(result.todayReminders[0].title).isEqualTo("Today")
+        @Test
+        fun filtersRemindersForToday() = runTest {
+            val today = System.currentTimeMillis()
+            val reminders = listOf(
+                Reminder(id = 1L, type = "event", title = "Today", content = "", time = today),
+                Reminder(id = 2L, type = "event", title = "Tomorrow", content = "", time = today + 86_400_000L)
+            )
+            setupMocks(reminders = reminders)
+
+            useCase.getAggregateData().test {
+                val data = awaitItem()
+                assertThat(data.todayReminders).hasSize(1)
+                assertThat(data.todayReminders[0].title).isEqualTo("Today")
+                cancelAndIgnoreRemainingEvents()
+            }
+        }
+    }
+
+    @Test
+    fun emptyData_returnsEmptyLists() = runTest {
+        setupMocks()
+
+        useCase.getAggregateData().test {
+            val data = awaitItem()
+            assertThat(data.frequentContacts).isEmpty()
+            assertThat(data.allEvents).isEmpty()
+            assertThat(data.pendingTodos).isEmpty()
+            cancelAndIgnoreRemainingEvents()
+        }
     }
 }

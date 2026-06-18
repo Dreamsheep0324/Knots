@@ -32,7 +32,7 @@ class ContactDetailViewModelTest {
 
     private val testAggregateData = ContactDetailAggregateData(
         contact = Contact(id = 1, name = "测试"),
-        events = listOf(Event(id = 1, contactId = 1, title = "事件")),
+        events = listOf(Event(id = 1, title = "事件", time = 1000L)),
         thoughts = listOf(Thought(id = 1, contactId = 1, content = "感悟")),
         isLoading = false
     )
@@ -47,7 +47,7 @@ class ContactDetailViewModelTest {
         coEvery { aggregationUseCase.deleteContact(any()) } returns Unit
         coEvery { aggregationUseCase.updateThought(any()) } returns Unit
         coEvery { aggregationUseCase.deleteThought(any()) } returns Unit
-        coEvery { favoriteToggleUseCase(any(), any(), any(), any()) } returns Unit
+        coEvery { favoriteToggleUseCase(any(), any(), any(), any()) } returns true
 
         val savedStateHandle = SavedStateHandle(mapOf("contactId" to 1L))
         viewModel = ContactDetailViewModel(aggregationUseCase, favoriteToggleUseCase, savedStateHandle)
@@ -97,17 +97,15 @@ class ContactDetailViewModelTest {
     }
 
     @Test
-    fun `deleteContact calls useCase and invokes callback`() = runTest {
-        var callbackInvoked = false
-        viewModel.deleteContact { callbackInvoked = true }
+    fun `deleteContact calls useCase`() = runTest {
+        viewModel.deleteContact()
         coVerify { aggregationUseCase.deleteContact(1L) }
-        assertThat(callbackInvoked).isTrue()
     }
 
     @Test
     fun `toggleFavorite calls favoriteToggleUseCase`() = runTest {
         viewModel.toggleFavorite(1L, "感悟内容")
-        coVerify { favoriteToggleUseCase(SourceTypes.THOUGHT, 1L, "感悟内容", "感悟内容") }
+        coVerify { favoriteToggleUseCase(type = SourceTypes.THOUGHT, sourceId = 1L, title = "感悟内容", description = any()) }
     }
 
     @Test

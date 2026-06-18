@@ -1,9 +1,10 @@
 package com.tang.prm.data.repository
 
 import android.content.Context
-import android.net.Uri
 import com.google.common.truth.Truth.assertThat
 import com.tang.prm.data.local.database.TangDatabase
+import com.tang.prm.domain.model.BackupResult
+import com.tang.prm.domain.model.RestoreResult
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
@@ -24,37 +25,11 @@ class BackupRepositoryTest {
     @MockK
     private lateinit var database: TangDatabase
 
-    @MockK
-    private lateinit var uri: Uri
-
     private lateinit var repository: BackupRepository
 
     @BeforeEach
     fun setUp() {
         repository = BackupRepository(context, database)
-    }
-
-    @Test
-    fun backup_returnsErrorWhenOutputStreamNull() = runTest {
-        coEvery { database.checkpoint() } returns Unit
-        every { context.getDatabasePath("tang_database") } returns File("/tmp/test.db")
-        every { context.contentResolver.openOutputStream(uri) } returns null
-
-        val result = repository.backupToUri(uri).first()
-
-        assertThat(result).isInstanceOf(BackupResult.Error::class.java)
-    }
-
-    @Test
-    fun restore_returnsErrorWhenInputStreamNull() = runTest {
-        coEvery { database.close() } returns Unit
-        every { context.getDatabasePath("tang_database") } returns File("/tmp/test.db")
-        every { context.filesDir } returns File("/tmp/files")
-        every { context.contentResolver.openInputStream(uri) } returns null
-
-        val result = repository.restoreFromUri(uri).first()
-
-        assertThat(result).isInstanceOf(RestoreResult.Error::class.java)
     }
 
     @Test

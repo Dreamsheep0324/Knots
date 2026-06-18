@@ -6,71 +6,71 @@ import org.junit.jupiter.api.Test
 class CardRarityTest {
 
     @Test
-    fun getCardRarity_0_returnsN() {
-        assertThat(getCardRarity(0)).isEqualTo(CardRarity.N)
+    fun getCardRarityLabel_0_returnsN() {
+        assertThat(getCardRarityLabel(0)).isEqualTo("N")
     }
 
     @Test
-    fun getCardRarity_14_returnsN() {
-        assertThat(getCardRarity(14)).isEqualTo(CardRarity.N)
+    fun getCardRarityLabel_14_returnsN() {
+        assertThat(getCardRarityLabel(14)).isEqualTo("N")
     }
 
     @Test
-    fun getCardRarity_15_returnsR() {
-        assertThat(getCardRarity(15)).isEqualTo(CardRarity.R)
+    fun getCardRarityLabel_15_returnsR() {
+        assertThat(getCardRarityLabel(15)).isEqualTo("R")
     }
 
     @Test
-    fun getCardRarity_39_returnsR() {
-        assertThat(getCardRarity(39)).isEqualTo(CardRarity.R)
+    fun getCardRarityLabel_39_returnsR() {
+        assertThat(getCardRarityLabel(39)).isEqualTo("R")
     }
 
     @Test
-    fun getCardRarity_40_returnsSR() {
-        assertThat(getCardRarity(40)).isEqualTo(CardRarity.SR)
+    fun getCardRarityLabel_40_returnsSR() {
+        assertThat(getCardRarityLabel(40)).isEqualTo("SR")
     }
 
     @Test
-    fun getCardRarity_74_returnsSR() {
-        assertThat(getCardRarity(74)).isEqualTo(CardRarity.SR)
+    fun getCardRarityLabel_74_returnsSR() {
+        assertThat(getCardRarityLabel(74)).isEqualTo("SR")
     }
 
     @Test
-    fun getCardRarity_75_returnsSSR() {
-        assertThat(getCardRarity(75)).isEqualTo(CardRarity.SSR)
+    fun getCardRarityLabel_75_returnsSSR() {
+        assertThat(getCardRarityLabel(75)).isEqualTo("SSR")
     }
 
     @Test
-    fun getCardRarity_89_returnsSSR() {
-        assertThat(getCardRarity(89)).isEqualTo(CardRarity.SSR)
+    fun getCardRarityLabel_89_returnsSSR() {
+        assertThat(getCardRarityLabel(89)).isEqualTo("SSR")
     }
 
     @Test
-    fun getCardRarity_90_returnsUR() {
-        assertThat(getCardRarity(90)).isEqualTo(CardRarity.UR)
+    fun getCardRarityLabel_90_returnsUR() {
+        assertThat(getCardRarityLabel(90)).isEqualTo("UR")
     }
 
     @Test
-    fun getCardRarity_100_returnsUR() {
-        assertThat(getCardRarity(100)).isEqualTo(CardRarity.UR)
+    fun getCardRarityLabel_100_returnsUR() {
+        assertThat(getCardRarityLabel(100)).isEqualTo("UR")
     }
 
     @Test
-    fun getCardRarity_negative_returnsN() {
-        assertThat(getCardRarity(-1)).isEqualTo(CardRarity.N)
+    fun getCardRarityLabel_negative_returnsN() {
+        assertThat(getCardRarityLabel(-1)).isEqualTo("N")
     }
 
     @Test
-    fun cardRarity_values_has5Entries() {
-        assertThat(CardRarity.entries).hasSize(5)
+    fun intimacyTier_entries_has5Entries() {
+        assertThat(IntimacyTier.entries).hasSize(5)
     }
 
     @Test
-    fun cardRarity_labels_areCorrect() {
-        assertThat(CardRarity.N.label).isEqualTo("初识")
-        assertThat(CardRarity.R.label).isEqualTo("泛交")
-        assertThat(CardRarity.SR.label).isEqualTo("朋友")
-        assertThat(CardRarity.SSR.label).isEqualTo("密友")
-        assertThat(CardRarity.UR.label).isEqualTo("至亲")
+    fun intimacyTier_cardRarityLabels_areCorrect() {
+        assertThat(IntimacyTier.NEW.cardRarity).isEqualTo("N")
+        assertThat(IntimacyTier.ACQUAINTANCE.cardRarity).isEqualTo("R")
+        assertThat(IntimacyTier.FRIEND.cardRarity).isEqualTo("SR")
+        assertThat(IntimacyTier.CLOSE.cardRarity).isEqualTo("SSR")
+        assertThat(IntimacyTier.FAMILY.cardRarity).isEqualTo("UR")
     }
 }

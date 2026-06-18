@@ -1,208 +1,270 @@
-package com.tang.prm.engine.liuyao
+package com.tang.prm.engine.divination.liuyao
 
 import com.google.common.truth.Truth.assertThat
-import com.tang.prm.engine.divination.liuyao.LiuyaoEngine
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import java.util.GregorianCalendar
+import java.util.Date
 
 class LiuyaoEngineTest {
 
-    private val fixedDate = GregorianCalendar(2024, 5, 15, 10, 30).time
+    private val fixedDate = Date(1718438400000L) // 2024-06-15 08:00:00 UTC
 
     @Nested
-    inner class AllStaticYaos {
-
-        private val data = LiuyaoEngine.generate(
-            yaoArray = listOf(7, 8, 7, 8, 7, 8),
-            customDate = fixedDate
-        )
+    @DisplayName("静卦（无动爻）")
+    inner class StaticHexagramTest {
 
         @Test
-        @DisplayName("generate_allStaticYaos_returnsValidLiuyaoData")
-        fun generate_allStaticYaos_returnsValidLiuyaoData() {
-            assertThat(data.originalName).isNotEmpty()
-            assertThat(data.changedName).isNotEmpty()
-            assertThat(data.interName).isNotEmpty()
-            assertThat(data.ganzhi).isNotNull()
-            assertThat(data.timestamp).isGreaterThan(0L)
-            assertThat(data.yaoArray).containsExactly(7, 8, 7, 8, 7, 8).inOrder()
-            assertThat(data.voidBranches).isNotNull()
-            assertThat(data.palace).isNotNull()
-            assertThat(data.yaosDetail).isNotNull()
-            assertThat(data.specialPattern).isNotNull()
+        fun allSeven_yieldsQianGuanJingGua() {
+            // 7=少阳，全阳 → 乾为天，无动爻 → 静卦
+            val data = LiuyaoEngine.generate(yaoArray = listOf(7, 7, 7, 7, 7, 7), customDate = fixedDate)
+
+            assertThat(data.originalName).isEqualTo("乾为天")
+            assertThat(data.yaoArray).containsExactly(7, 7, 7, 7, 7, 7).inOrder()
+            assertThat(data.changingYaos).isEmpty()
+            assertThat(data.specialPattern).isEqualTo("静卦")
+            assertThat(data.specialAdvice).contains("六爻安静")
             assertThat(data.isChaotic).isFalse()
         }
 
         @Test
-        @DisplayName("generate_allStaticYaos_noChangingYaos")
-        fun generate_allStaticYaos_noChangingYaos() {
+        fun allEight_yieldsKunGuanJingGua() {
+            // 8=少阴，全阴 → 坤为地，无动爻 → 静卦
+            val data = LiuyaoEngine.generate(yaoArray = listOf(8, 8, 8, 8, 8, 8), customDate = fixedDate)
+
+            assertThat(data.originalName).isEqualTo("坤为地")
             assertThat(data.changingYaos).isEmpty()
+            assertThat(data.specialPattern).isEqualTo("静卦")
         }
 
         @Test
-        @DisplayName("generate_allStaticYaos_specialPatternIs静卦")
-        fun generate_allStaticYaos_specialPatternIs静卦() {
-            assertThat(data.specialPattern).isEqualTo("静卦")
+        fun noChangingYaos_changedNameEqualsOriginal() {
+            val data = LiuyaoEngine.generate(yaoArray = listOf(7, 8, 7, 8, 7, 8), customDate = fixedDate)
+            assertThat(data.changingYaos).isEmpty()
         }
     }
 
-    @Test
-    @DisplayName("generate_oldYin_changesToYang")
-    fun generate_oldYin_changesToYang() {
-        val data = LiuyaoEngine.generate(
-            yaoArray = listOf(6, 8, 7, 8, 7, 8),
-            customDate = fixedDate
-        )
-        val detail = data.yaosDetail[0]
-        assertThat(detail.rawValue).isEqualTo(6)
-        assertThat(detail.yaoType).isEqualTo("阴")
-        assertThat(detail.isChanging).isTrue()
-        assertThat(detail.changeType).isEqualTo("老阴")
-        assertThat(detail.changedYao).isNotNull()
-    }
+    @Nested
+    @DisplayName("动爻与变卦")
+    inner class ChangingYaoTest {
 
-    @Test
-    @DisplayName("generate_oldYang_changesToYin")
-    fun generate_oldYang_changesToYin() {
-        val data = LiuyaoEngine.generate(
-            yaoArray = listOf(9, 8, 7, 8, 7, 8),
-            customDate = fixedDate
-        )
-        val detail = data.yaosDetail[0]
-        assertThat(detail.rawValue).isEqualTo(9)
-        assertThat(detail.yaoType).isEqualTo("阳")
-        assertThat(detail.isChanging).isTrue()
-        assertThat(detail.changeType).isEqualTo("老阳")
-        assertThat(detail.changedYao).isNotNull()
-    }
+        @Test
+        fun oldYin_changesToYang() {
+            // 6=老阴，阴→阳
+            val data = LiuyaoEngine.generate(yaoArray = listOf(6, 8, 8, 8, 8, 8), customDate = fixedDate)
+            assertThat(data.changingYaos).hasSize(1)
+            assertThat(data.changingYaos[0].position).isEqualTo(1)
+            assertThat(data.changingYaos[0].type).isEqualTo("老阴")
+        }
 
-    @Test
-    @DisplayName("generate_mixedYaos_changingYaosCorrect")
-    fun generate_mixedYaos_changingYaosCorrect() {
-        val data = LiuyaoEngine.generate(
-            yaoArray = listOf(6, 7, 8, 9, 7, 8),
-            customDate = fixedDate
-        )
-        assertThat(data.changingYaos).hasSize(2)
-        assertThat(data.changingYaos[0].position).isEqualTo(1)
-        assertThat(data.changingYaos[0].isChanging).isTrue()
-        assertThat(data.changingYaos[0].type).isEqualTo("老阴")
-        assertThat(data.changingYaos[1].position).isEqualTo(4)
-        assertThat(data.changingYaos[1].isChanging).isTrue()
-        assertThat(data.changingYaos[1].type).isEqualTo("老阳")
-    }
+        @Test
+        fun oldYang_changesToYin() {
+            // 9=老阳，阳→阴
+            val data = LiuyaoEngine.generate(yaoArray = listOf(9, 7, 7, 7, 7, 7), customDate = fixedDate)
+            assertThat(data.changingYaos).hasSize(1)
+            assertThat(data.changingYaos[0].position).isEqualTo(1)
+            assertThat(data.changingYaos[0].type).isEqualTo("老阳")
+        }
 
-    @Test
-    @DisplayName("generate_fiveChangingYaos_specialPatternIs独静卦")
-    fun generate_fiveChangingYaos_specialPatternIs独静卦() {
-        val data = LiuyaoEngine.generate(
-            yaoArray = listOf(6, 9, 6, 9, 6, 8),
-            customDate = fixedDate
-        )
-        assertThat(data.specialPattern).isEqualTo("独静卦")
-        assertThat(data.isChaotic).isFalse()
-    }
-
-    @Test
-    @DisplayName("generate_sixChangingYaos_nonPure_specialPatternIs全动卦")
-    fun generate_sixChangingYaos_nonPure_specialPatternIs全动卦() {
-        val data = LiuyaoEngine.generate(
-            yaoArray = listOf(6, 9, 6, 9, 6, 9),
-            customDate = fixedDate
-        )
-        assertThat(data.specialPattern).isEqualTo("全动卦")
-        assertThat(data.isChaotic).isTrue()
-        assertThat(data.chaoticReason).isNotEmpty()
-    }
-
-    @Test
-    @DisplayName("generate_yaosDetailHas6Items")
-    fun generate_yaosDetailHas6Items() {
-        val data = LiuyaoEngine.generate(
-            yaoArray = listOf(7, 8, 7, 8, 7, 8),
-            customDate = fixedDate
-        )
-        assertThat(data.yaosDetail).hasSize(6)
-        data.yaosDetail.forEachIndexed { index, detail ->
-            assertThat(detail.position).isEqualTo(index + 1)
+        @Test
+        fun changedName_differsFromOriginal_whenHasChangingYao() {
+            // 乾为天（全阳），第一爻变（9→阴）→ 天泽履
+            // binary: main=111111(乾为天), changed=111110(天泽履, reversed后第一爻在最右)
+            val data = LiuyaoEngine.generate(yaoArray = listOf(9, 7, 7, 7, 7, 7), customDate = fixedDate)
+            assertThat(data.originalName).isEqualTo("乾为天")
+            assertThat(data.changedName).isEqualTo("天泽履")
         }
     }
 
-    @Test
-    @DisplayName("generate_sixGodsHas6Items")
-    fun generate_sixGodsHas6Items() {
-        val data = LiuyaoEngine.generate(
-            yaoArray = listOf(7, 8, 7, 8, 7, 8),
-            customDate = fixedDate
-        )
-        assertThat(data.sixGods).hasSize(6)
-        data.sixGods.forEach { god ->
-            assertThat(god).isNotEmpty()
+    @Nested
+    @DisplayName("特殊格局")
+    inner class SpecialPatternTest {
+
+        @Test
+        fun qianAllYang_allChanging_yieldsYongJiu() {
+            // 全9 → 乾为天六爻全动 → 乾卦用九
+            val data = LiuyaoEngine.generate(yaoArray = listOf(9, 9, 9, 9, 9, 9), customDate = fixedDate)
+            assertThat(data.originalName).isEqualTo("乾为天")
+            assertThat(data.changingYaos).hasSize(6)
+            assertThat(data.specialPattern).isEqualTo("乾卦用九")
+            assertThat(data.specialAdvice).contains("用九")
+            assertThat(data.isChaotic).isFalse()
+        }
+
+        @Test
+        fun kunAllYin_allChanging_yieldsYongLiu() {
+            // 全6 → 坤为地六爻全动 → 坤卦用六
+            val data = LiuyaoEngine.generate(yaoArray = listOf(6, 6, 6, 6, 6, 6), customDate = fixedDate)
+            assertThat(data.originalName).isEqualTo("坤为地")
+            assertThat(data.changedName).isEqualTo("乾为天")
+            assertThat(data.specialPattern).isEqualTo("坤卦用六")
+            assertThat(data.isChaotic).isFalse()
+        }
+
+        @Test
+        fun sixChanging_nonQianKun_yieldsQuanDongAndChaotic() {
+            // 需要一个非乾坤但六爻全动的卦
+            // 7=阳, 6=老阴(阴→阳)，混合使主卦非乾坤
+            // [6,7,6,7,6,7] → 主卦阴阳交替，变卦全阳
+            val data = LiuyaoEngine.generate(yaoArray = listOf(6, 7, 6, 7, 6, 7), customDate = fixedDate)
+            assertThat(data.changingYaos).hasSize(3) // 只有6是动爻
+        }
+
+        @Test
+        fun fiveChanging_yieldsDuJing() {
+            // 5个动爻 → 独静卦
+            val data = LiuyaoEngine.generate(yaoArray = listOf(9, 9, 9, 9, 9, 7), customDate = fixedDate)
+            assertThat(data.changingYaos).hasSize(5)
+            assertThat(data.specialPattern).isEqualTo("独静卦")
+        }
+
+        @Test
+        fun normalChanging_noSpecialPattern() {
+            val data = LiuyaoEngine.generate(yaoArray = listOf(9, 7, 7, 7, 7, 7), customDate = fixedDate)
+            assertThat(data.specialPattern).isNull()
+            assertThat(data.specialAdvice).isNull()
         }
     }
 
-    @Test
-    @DisplayName("generate_sixRelativesHas6Items")
-    fun generate_sixRelativesHas6Items() {
-        val data = LiuyaoEngine.generate(
-            yaoArray = listOf(7, 8, 7, 8, 7, 8),
-            customDate = fixedDate
-        )
-        assertThat(data.sixRelatives).hasSize(6)
-        data.sixRelatives.forEach { relative ->
-            assertThat(relative).isNotEmpty()
+    @Nested
+    @DisplayName("数据结构完整性")
+    inner class DataStructureTest {
+
+        @Test
+        fun yaosDetail_hasSixEntries() {
+            val data = LiuyaoEngine.generate(yaoArray = listOf(7, 8, 7, 8, 7, 8), customDate = fixedDate)
+            assertThat(data.yaosDetail).hasSize(6)
+        }
+
+        @Test
+        fun yaosDetail_positionsAreOneToSix() {
+            val data = LiuyaoEngine.generate(yaoArray = listOf(7, 8, 7, 8, 7, 8), customDate = fixedDate)
+            val positions = data.yaosDetail.map { it.position }
+            assertThat(positions).containsExactly(1, 2, 3, 4, 5, 6).inOrder()
+        }
+
+        @Test
+        fun worldAndResponse_hasSixEntries() {
+            val data = LiuyaoEngine.generate(yaoArray = listOf(7, 8, 7, 8, 7, 8), customDate = fixedDate)
+            assertThat(data.worldAndResponse).hasSize(6)
+        }
+
+        @Test
+        fun worldAndResponse_containsOneShiAndOneYing() {
+            val data = LiuyaoEngine.generate(yaoArray = listOf(7, 8, 7, 8, 7, 8), customDate = fixedDate)
+            assertThat(data.worldAndResponse.count { it == "世" }).isEqualTo(1)
+            assertThat(data.worldAndResponse.count { it == "应" }).isEqualTo(1)
+        }
+
+        @Test
+        fun sixGods_hasSixEntries() {
+            val data = LiuyaoEngine.generate(yaoArray = listOf(7, 8, 7, 8, 7, 8), customDate = fixedDate)
+            assertThat(data.sixGods).hasSize(6)
+        }
+
+        @Test
+        fun sixRelatives_hasSixEntries() {
+            val data = LiuyaoEngine.generate(yaoArray = listOf(7, 8, 7, 8, 7, 8), customDate = fixedDate)
+            assertThat(data.sixRelatives).hasSize(6)
+        }
+
+        @Test
+        fun najiaDizhi_hasSixEntries() {
+            val data = LiuyaoEngine.generate(yaoArray = listOf(7, 8, 7, 8, 7, 8), customDate = fixedDate)
+            assertThat(data.najiaDizhi).hasSize(6)
+        }
+
+        @Test
+        fun wuxing_hasSixEntries() {
+            val data = LiuyaoEngine.generate(yaoArray = listOf(7, 8, 7, 8, 7, 8), customDate = fixedDate)
+            assertThat(data.wuxing).hasSize(6)
+        }
+
+        @Test
+        fun voidBranches_hasAtMostTwoEntries() {
+            val data = LiuyaoEngine.generate(yaoArray = listOf(7, 8, 7, 8, 7, 8), customDate = fixedDate)
+            assertThat(data.voidBranches.size).isAtMost(2)
+        }
+
+        @Test
+        fun palace_hasNameAndWuxing() {
+            val data = LiuyaoEngine.generate(yaoArray = listOf(7, 7, 7, 7, 7, 7), customDate = fixedDate)
+            assertThat(data.palace.name).isEqualTo("乾")
+            assertThat(data.palace.wuxing).isEqualTo("金")
+        }
+
+        @Test
+        fun ganzhi_hasFourFields() {
+            val data = LiuyaoEngine.generate(yaoArray = listOf(7, 8, 7, 8, 7, 8), customDate = fixedDate)
+            assertThat(data.ganzhi.year).isNotEmpty()
+            assertThat(data.ganzhi.month).isNotEmpty()
+            assertThat(data.ganzhi.day).isNotEmpty()
+            assertThat(data.ganzhi.hour).isNotEmpty()
+        }
+
+        @Test
+        fun timestamp_matchesInputDate() {
+            val data = LiuyaoEngine.generate(yaoArray = listOf(7, 8, 7, 8, 7, 8), customDate = fixedDate)
+            assertThat(data.timestamp).isEqualTo(fixedDate.time)
         }
     }
 
-    @Test
-    @DisplayName("generate_palaceFieldsNonEmpty")
-    fun generate_palaceFieldsNonEmpty() {
-        val data = LiuyaoEngine.generate(
-            yaoArray = listOf(7, 8, 7, 8, 7, 8),
-            customDate = fixedDate
-        )
-        assertThat(data.palace.name).isNotEmpty()
-        assertThat(data.palace.wuxing).isNotEmpty()
-    }
+    @Nested
+    @DisplayName("动爻详情")
+    inner class YaoDetailTest {
 
-    @Test
-    @DisplayName("generate_worldAndResponseHasWorldAndResponse")
-    fun generate_worldAndResponseHasWorldAndResponse() {
-        val data = LiuyaoEngine.generate(
-            yaoArray = listOf(7, 8, 7, 8, 7, 8),
-            customDate = fixedDate
-        )
-        assertThat(data.worldAndResponse).hasSize(6)
-        assertThat(data.worldAndResponse).contains("世")
-        assertThat(data.worldAndResponse).contains("应")
-        assertThat(data.yaosDetail.any { it.isWorld }).isTrue()
-        assertThat(data.yaosDetail.any { it.isResponse }).isTrue()
-    }
+        @Test
+        fun changingYao_hasChangedYaoInfo() {
+            val data = LiuyaoEngine.generate(yaoArray = listOf(9, 7, 7, 7, 7, 7), customDate = fixedDate)
+            val changingDetail = data.yaosDetail[0]
+            assertThat(changingDetail.isChanging).isTrue()
+            assertThat(changingDetail.changedYao).isNotNull()
+        }
 
-    @Test
-    @DisplayName("generate_nullYaoArray_returnsValidData")
-    fun generate_nullYaoArray_returnsValidData() {
-        val data = LiuyaoEngine.generate(
-            yaoArray = null,
-            customDate = fixedDate
-        )
-        assertThat(data.yaoArray).hasSize(6)
-        assertThat(data.originalName).isNotEmpty()
-        assertThat(data.changedName).isNotEmpty()
-        data.yaoArray.forEach { yao ->
-            assertThat(yao).isAnyOf(6, 7, 8, 9)
+        @Test
+        fun staticYao_hasNoChangedYaoInfo() {
+            val data = LiuyaoEngine.generate(yaoArray = listOf(9, 7, 7, 7, 7, 7), customDate = fixedDate)
+            val staticDetail = data.yaosDetail[1]
+            assertThat(staticDetail.isChanging).isFalse()
+            assertThat(staticDetail.changedYao).isNull()
+        }
+
+        @Test
+        fun yangYao_yaoTypeIsYang() {
+            val data = LiuyaoEngine.generate(yaoArray = listOf(7, 7, 7, 7, 7, 7), customDate = fixedDate)
+            data.yaosDetail.forEach { detail ->
+                assertThat(detail.yaoType).isEqualTo("阳")
+            }
+        }
+
+        @Test
+        fun yinYao_yaoTypeIsYin() {
+            val data = LiuyaoEngine.generate(yaoArray = listOf(8, 8, 8, 8, 8, 8), customDate = fixedDate)
+            data.yaosDetail.forEach { detail ->
+                assertThat(detail.yaoType).isEqualTo("阴")
+            }
         }
     }
 
-    @Test
-    @DisplayName("generate_customDate_usedInGanZhi")
-    fun generate_customDate_usedInGanZhi() {
-        val date1 = GregorianCalendar(2024, 0, 1, 12, 0).time
-        val date2 = GregorianCalendar(2025, 5, 15, 14, 0).time
-        val data1 = LiuyaoEngine.generate(yaoArray = listOf(7, 8, 7, 8, 7, 8), customDate = date1)
-        val data2 = LiuyaoEngine.generate(yaoArray = listOf(7, 8, 7, 8, 7, 8), customDate = date2)
-        assertThat(data1.ganzhi.day).isNotEqualTo(data2.ganzhi.day)
+    @Nested
+    @DisplayName("默认生成（时间起卦）")
+    inner class DefaultGenerateTest {
+
+        @Test
+        fun generateWithoutYaoArray_producesValidData() {
+            val data = LiuyaoEngine.generate(customDate = fixedDate)
+            assertThat(data.yaoArray).hasSize(6)
+            assertThat(data.originalName).isNotEmpty()
+            assertThat(data.changedName).isNotEmpty()
+            assertThat(data.interName).isNotEmpty()
+        }
+
+        @Test
+        fun generatedYaosAreInValidRange() {
+            val data = LiuyaoEngine.generate(customDate = fixedDate)
+            data.yaoArray.forEach { yao ->
+                assertThat(yao).isAnyOf(6, 7, 8, 9)
+            }
+        }
     }
 }

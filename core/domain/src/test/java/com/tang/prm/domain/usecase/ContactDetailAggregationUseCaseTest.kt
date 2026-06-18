@@ -28,10 +28,10 @@ class ContactDetailAggregationUseCaseTest {
     private lateinit var useCase: ContactDetailAggregationUseCase
 
     private val testContact = Contact(id = 1, name = "测试联系人", phone = "13800138000")
-    private val testEvent = Event(id = 1, contactId = 1, title = "事件", type = EventType.MEETING)
-    private val testConversation = Event(id = 2, contactId = 1, title = "对话", type = EventType.CONVERSATION)
-    private val testAnniversary = Anniversary(id = 1, contactId = 1, title = "纪念日")
-    private val testGift = Gift(id = 1, contactId = 1, name = "礼物")
+    private val testEvent = Event(id = 1, title = "事件", type = EventType.MEETUP, time = 1000L, participants = listOf(testContact))
+    private val testConversation = Event(id = 2, title = "对话", type = EventType.CONVERSATION, time = 2000L, participants = listOf(testContact))
+    private val testAnniversary = Anniversary(id = 1, contactId = 1, name = "纪念日", type = AnniversaryType.ANNIVERSARY, date = 1000L)
+    private val testGift = Gift(id = 1, contactId = 1, giftName = "礼物", date = 1000L, isSent = true)
     private val testThought = Thought(id = 1, contactId = 1, content = "感悟")
     private val testCustomType = CustomType(id = 1, category = CustomCategories.HOBBY, name = "阅读")
 

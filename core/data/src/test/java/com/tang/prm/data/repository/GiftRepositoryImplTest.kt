@@ -1,8 +1,10 @@
 package com.tang.prm.data.repository
 
 import android.content.Context
+import androidx.room.withTransaction
 import com.google.common.truth.Truth.assertThat
 import com.tang.prm.data.local.dao.GiftDao
+import com.tang.prm.data.local.database.TangDatabase
 import com.tang.prm.data.local.entity.GiftEntity
 import com.tang.prm.data.mapper.toDomain
 import com.tang.prm.data.mapper.toEntity
@@ -30,6 +32,9 @@ class GiftRepositoryImplTest {
     private lateinit var giftDao: GiftDao
 
     @MockK
+    private lateinit var database: TangDatabase
+
+    @MockK
     private lateinit var context: Context
 
     private lateinit var repository: GiftRepositoryImpl
@@ -47,12 +52,17 @@ class GiftRepositoryImplTest {
 
     @BeforeEach
     fun setUp() {
+        mockkStatic("androidx.room.RoomDatabaseKt")
+        coEvery { any<androidx.room.RoomDatabase>().withTransaction(any<suspend () -> Any>()) } coAnswers {
+            secondArg<suspend () -> Any>().invoke()
+        }
         mockkStatic("com.tang.prm.data.mapper.GiftMapperKt")
-        repository = GiftRepositoryImpl(giftDao, context)
+        repository = GiftRepositoryImpl(giftDao, database, context)
     }
 
     @AfterEach
     fun tearDown() {
+        unmockkStatic("androidx.room.RoomDatabaseKt")
         unmockkStatic("com.tang.prm.data.mapper.GiftMapperKt")
     }
 

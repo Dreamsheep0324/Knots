@@ -1,27 +1,44 @@
 package com.tang.prm.domain.usecase
 
 import com.tang.prm.domain.model.AlbumPhoto
-import com.tang.prm.domain.model.AppStrings
 import com.tang.prm.domain.model.Contact
 import com.tang.prm.domain.model.Event
 import com.tang.prm.domain.model.EventType
 import com.tang.prm.domain.model.FootprintItem
+import com.tang.prm.domain.model.IntimacyTier
+import com.tang.prm.domain.model.Subscription
+import com.tang.prm.domain.model.SubscriptionCycle
+import com.tang.prm.domain.model.SubscriptionStatus
 import com.tang.prm.domain.model.Thought
 import com.tang.prm.domain.model.ThoughtType
+import com.tang.prm.domain.model.computedStatus
 import com.google.common.truth.Truth.assertThat
 import org.junit.jupiter.api.Test
 
 class FilterExtTest {
 
-    // region getIntimacyLevel
+    private fun testSub(
+        name: String = "Test",
+        price: Double = 10.0,
+        cycle: SubscriptionCycle = SubscriptionCycle.MONTHLY,
+        category: String? = null,
+        status: SubscriptionStatus = SubscriptionStatus.ACTIVE,
+        nextBillingDate: Long = System.currentTimeMillis() + 30 * 86_400_000L
+    ) = Subscription(
+        name = name, price = price, cycle = cycle,
+        startDate = System.currentTimeMillis(), nextBillingDate = nextBillingDate,
+        status = status, category = category
+    )
+
+    // region IntimacyTier
 
     @Test
-    fun `getIntimacyLevel returns correct level`() {
-        assertThat(getIntimacyLevel(10)).isEqualTo(AppStrings.Intimacy.NEW)
-        assertThat(getIntimacyLevel(25)).isEqualTo(AppStrings.Intimacy.ACQUAINTANCE)
-        assertThat(getIntimacyLevel(50)).isEqualTo(AppStrings.Intimacy.FRIEND)
-        assertThat(getIntimacyLevel(80)).isEqualTo(AppStrings.Intimacy.CLOSE)
-        assertThat(getIntimacyLevel(95)).isEqualTo(AppStrings.Intimacy.FAMILY)
+    fun `IntimacyTier of returns correct tier for each score`() {
+        assertThat(IntimacyTier.of(10).label).isEqualTo("初识")
+        assertThat(IntimacyTier.of(25).label).isEqualTo("泛交")
+        assertThat(IntimacyTier.of(50).label).isEqualTo("朋友")
+        assertThat(IntimacyTier.of(80).label).isEqualTo("密友")
+        assertThat(IntimacyTier.of(95).label).isEqualTo("至亲")
     }
 
     // endregion
@@ -46,8 +63,8 @@ class FilterExtTest {
             Contact(id = 2, name = "B", intimacyScore = 70),
             Contact(id = 3, name = "C", intimacyScore = 50)
         )
-        val result = contacts.filterBy(intimacy = AppStrings.Intimacy.FRIEND)
-        assertThat(result.map { it.id }).containsExactly(3L)
+        val result = contacts.filterBy(intimacy = "朋友")
+        assertThat(result.map { it.id }).containsExactly(2L, 3L)
     }
 
     @Test
@@ -245,16 +262,67 @@ class FilterExtTest {
 
     // endregion
 
+    // region Subscription filtering
+
+    @Test
+    fun `filters subscriptions by status`() {
+        val subs = listOf(
+            testSub(name = "A", status = SubscriptionStatus.ACTIVE),
+            testSub(name = "B", status = SubscriptionStatus.EXPIRED),
+            testSub(name = "C", status = SubscriptionStatus.ACTIVE)
+        )
+        val result = subs.filterBy(status = SubscriptionStatus.ACTIVE)
+        assertThat(result.map { it.name }).containsExactly("A", "C")
+    }
+
+    @Test
+    fun `filters subscriptions by category`() {
+        val subs = listOf(
+            testSub(name = "A", category = "娱乐"),
+            testSub(name = "B", category = "工具"),
+            testSub(name = "C", category = "娱乐")
+        )
+        val result = subs.filterBy(category = "娱乐")
+        assertThat(result.map { it.name }).containsExactly("A", "C")
+    }
+
+    @Test
+    fun `filters subscriptions by keyword`() {
+        val subs = listOf(
+            testSub(name = "Netflix"),
+            testSub(name = "Spotify"),
+            testSub(name = "Netflix Premium")
+        )
+        val result = subs.filterBy(keyword = "netflix")
+        assertThat(result.map { it.name }).containsExactly("Netflix", "Netflix Premium")
+    }
+
+    @Test
+    fun `combines multiple subscription filters`() {
+        val subs = listOf(
+            testSub(name = "Netflix", status = SubscriptionStatus.ACTIVE, category = "娱乐"),
+            testSub(name = "Spotify", status = SubscriptionStatus.ACTIVE, category = "工具"),
+            testSub(name = "Netflix Premium", status = SubscriptionStatus.EXPIRED, category = "娱乐")
+        )
+        val result = subs.filterBy(status = SubscriptionStatus.ACTIVE, category = "娱乐")
+        assertThat(result.map { it.name }).containsExactly("Netflix")
+    }
+
+    @Test
+    fun `subscription filter with no matches returns empty`() {
+        val subs = listOf(testSub(name = "A", status = SubscriptionStatus.ACTIVE))
+        val result = subs.filterBy(status = SubscriptionStatus.EXPIRED)
+        assertThat(result).isEmpty()
+    }
+
+    // endregion
+
     // region IntimacyLevels
 
     @Test
     fun `IntimacyLevels contains all levels in order`() {
         assertThat(IntimacyLevels).containsExactly(
-            AppStrings.Intimacy.NEW,
-            AppStrings.Intimacy.ACQUAINTANCE,
-            AppStrings.Intimacy.FRIEND,
-            AppStrings.Intimacy.CLOSE,
-            AppStrings.Intimacy.FAMILY
+            "初识", "泛交", "朋友", "密友", "至亲"
         ).inOrder()
     }
 

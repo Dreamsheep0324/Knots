@@ -2,16 +2,12 @@ package com.tang.prm.feature.reflect.album
 
 import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat
-import com.tang.prm.domain.model.Contact
-import com.tang.prm.domain.model.Event
-import com.tang.prm.domain.model.EventType
-import com.tang.prm.domain.model.Favorite
-import com.tang.prm.domain.model.Gift
+import com.tang.prm.domain.model.AlbumPhoto
 import com.tang.prm.domain.model.SourceTypes
-import com.tang.prm.domain.repository.ContactRepository
-import com.tang.prm.domain.repository.EventRepository
-import com.tang.prm.domain.repository.FavoriteRepository
-import com.tang.prm.domain.repository.GiftRepository
+import com.tang.prm.domain.usecase.PhotoAlbumAggregationUseCase
+import com.tang.prm.domain.usecase.PhotoAlbumAggregateData
+import com.tang.prm.domain.usecase.FavoriteToggleUseCase
+import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
@@ -30,48 +26,34 @@ import org.junit.jupiter.api.extension.ExtendWith
 class PhotoAlbumViewModelTest {
 
     @MockK
-    private lateinit var eventRepository: EventRepository
+    private lateinit var photoAlbumUseCase: PhotoAlbumAggregationUseCase
 
     @MockK
-    private lateinit var giftRepository: GiftRepository
-
-    @MockK
-    private lateinit var contactRepository: ContactRepository
-
-    @MockK
-    private lateinit var favoriteRepository: FavoriteRepository
+    private lateinit var favoriteToggleUseCase: FavoriteToggleUseCase
 
     private lateinit var viewModel: PhotoAlbumViewModel
 
-    private val testContact = Contact(id = 1, name = "Alice")
-    private val testEvent = Event(
-        id = 1,
-        title = "Meetup",
-        type = EventType.MEETUP,
-        time = 1000L,
-        photos = listOf("photo1.jpg"),
-        participants = listOf(testContact)
+    private val testPhoto = AlbumPhoto(
+        id = "p1", uri = "photo1.jpg", sourceType = SourceTypes.ALBUM_EVENT,
+        sourceId = 1, sourceTitle = "Meetup",
+        contactId = 1L, contactName = "Alice", contactAvatar = null,
+        date = 1000L, location = null
     )
-    private val testGift = Gift(
-        id = 1,
-        contactId = 1,
-        giftName = "Book",
-        date = 2000L,
-        isSent = true,
-        photos = emptyList()
+
+    private val testAggregateData = PhotoAlbumAggregateData(
+        allPhotos = listOf(testPhoto),
+        contacts = emptyList()
     )
 
     @BeforeEach
     fun setUp() {
         Dispatchers.setMain(UnconfinedTestDispatcher())
 
-        every { eventRepository.getAllEvents() } returns flowOf(listOf(testEvent))
-        every { eventRepository.getEventsByType(EventType.CONVERSATION.name) } returns flowOf(emptyList<Event>())
-        every { giftRepository.getAllGifts() } returns flowOf(listOf(testGift))
-        every { contactRepository.getAllContacts() } returns flowOf(listOf(testContact))
-        every { favoriteRepository.getFavoritesByType(any<String>()) } returns flowOf(emptyList<Favorite>())
+        every { photoAlbumUseCase.getAggregateData() } returns flowOf(testAggregateData)
+        every { favoriteToggleUseCase.getFavoriteIds(SourceTypes.PHOTO) } returns flowOf(emptySet<Long>())
+        coEvery { favoriteToggleUseCase(any(), any(), any(), any()) } returns true
 
-        viewModel = PhotoAlbumViewModel(eventRepository, giftRepository, contactRepository, favoriteRepository)
+        viewModel = PhotoAlbumViewModel(photoAlbumUseCase, favoriteToggleUseCase)
     }
 
     @AfterEach
@@ -139,8 +121,8 @@ class PhotoAlbumViewModelTest {
             while (state.selectedContactId != null || state.filterSourceType != null) {
                 state = awaitItem()
             }
-            assertThat(state.selectedContactId).isNull()
-            assertThat(state.filterSourceType).isNull()
+            assertThat(state.selectedContactId == null).isTrue()
+            assertThat(state.filterSourceType == null).isTrue()
         }
     }
 }

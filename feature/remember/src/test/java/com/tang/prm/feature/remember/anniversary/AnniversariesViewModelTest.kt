@@ -51,6 +51,7 @@ class AnniversariesViewModelTest {
         every { DateCalcUtils.getNextBirthdayDate(any()) } returns System.currentTimeMillis() + 86400000L
         every { DateCalcUtils.getNextRepeatDate(any()) } returns System.currentTimeMillis() + 86400000L
         every { DateCalcUtils.calculateDaysInfo(any()) } returns DateCalcUtils.DaysInfo(daysPassed = 0, daysUntil = 1, isPast = false)
+        every { DateCalcUtils.getTodayStart() } returns System.currentTimeMillis()
 
         anniversaryRepository = mockk()
         contactRepository = mockk()
@@ -87,11 +88,11 @@ class AnniversariesViewModelTest {
     }
 
     @Test
-    fun onSearchQueryChangeUpdatesSearchQuery() = runTest {
+    fun onSearchQueryChangeUpdatesSearchState() = runTest {
         viewModel.onSearchQueryChange("Test")
-        viewModel.uiState.test {
+        viewModel.searchState.test {
             val state = awaitItem()
-            assertThat(state.data.searchQuery).isEqualTo("Test")
+            assertThat(state.query).isEqualTo("Test")
         }
     }
 
