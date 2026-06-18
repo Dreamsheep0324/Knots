@@ -25,6 +25,9 @@ jobs:
     name: 打包 + 发布
     runs-on: ubuntu-latest
     timeout-minutes: 45
+    permissions:
+      contents: write   # 创建 Release 必需
+      packages: write    # 上传资源必需
 
     steps:
       - name: 检出代码
