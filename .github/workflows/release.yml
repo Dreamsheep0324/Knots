@@ -66,8 +66,27 @@ jobs:
           KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
         run: |
-          # 解码 base64 keystore 并写入临时文件
-          echo "$KEYSTORE_BASE64" | base64 -d > app/release.keystore
+          # 解码 base64 keystore — tr 去除换行/回车/空格，防止二进制损坏
+          printf '%s' "$KEYSTORE_BASE64" | tr -d '\n\r ' | base64 -d > app/release.keystore
+
+          # 验证 keystore 文件大小（正常应 > 1KB）
+          KEYSTORE_SIZE=$(stat -c %s app/release.keystore 2>/dev/null || stat -f %z app/release.keystore)
+          echo "Keystore 大小: $KEYSTORE_SIZE bytes"
+          if [ "$KEYSTORE_SIZE" -lt 1000 ]; then
+            echo "::error::Keystore 文件过小 ($KEYSTORE_SIZE bytes)，base64 解码可能失败"
+            exit 1
+          fi
+
+          # 验证 keystore 是否可读取（密码 + alias 正确性）
+          keytool -list -keystore app/release.keystore \
+            -storepass "$KEYSTORE_PASSWORD" \
+            -alias "$KEY_ALIAS" \
+            -storetype PKCS12 || \
+          keytool -list -keystore app/release.keystore \
+            -storepass "$KEYSTORE_PASSWORD" \
+            -alias "$KEY_ALIAS" \
+            -storetype JKS
+
           # 生成 keystore.properties
           cat > keystore.properties << EOF
           storeFile=release.keystore
