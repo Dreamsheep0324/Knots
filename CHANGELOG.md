@@ -9,9 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- **自动化测试体系建设** — 从零构建覆盖 12/16 模块的单元测试体系，新增 26 个测试文件约 580 个测试用例
+- 自动化测试体系建设 — 从零构建覆盖 12/16 模块的单元测试体系，新增 26 个测试文件约 580 个测试用例
 
-- **Phase 2: P1 纯逻辑测试（零依赖，7 文件 ~96 用例）**
+- Phase 2: P1 纯逻辑测试（零依赖，7 文件 ~96 用例）
   - `ThoughtGamificationUseCaseTest` — 经验值计算、等级、连续打卡、游戏化状态
   - `SubscriptionTest` — 月/年等效费用换算、状态判断、周期 displayName
   - `IntimacyTierTest` — 亲密度边界值（15 参数化）、区间连续性、属性
@@ -20,7 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `SafeCallTest` — success/exception/CancellationException 重抛
   - `ListStringConverterTest` — List↔String 转换、round-trip 一致性
 
-- **Phase 3: P2 聚合逻辑测试（需 Mock，7 文件 ~39 用例）**
+- Phase 3: P2 聚合逻辑测试（需 Mock，7 文件 ~39 用例）
   - `SubscriptionStatsUseCaseTest` — 空订阅、活跃合计、过期排除、分类分组、7 天到期筛选
   - `FootprintAggregationUseCaseTest` — 事件→足迹映射、无位置过滤、日期降序
   - `HomeStatsUseCaseTest` — 12-Flow combine、photoCount 聚合
@@ -29,7 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `LunarDateUtilsTest` — 农历生日计算、格式化、天数信息
   - `RetryInterceptorTest` — PUT 不重试、SocketTimeout 重试 3 次、异常不重试
 
-- **Phase 4: 基础设施与扩展覆盖（6 文件 + 1 扩展 ~55 用例）**
+- Phase 4: 基础设施与扩展覆盖（6 文件 + 1 扩展 ~55 用例）
   - `FilterExtTest`（扩展）— 5 个 Subscription 筛选测试
   - `GetContactDisplayInfoUseCaseTest` — 星座、相识天数文本、亲密度
   - `GetAnniversaryDisplayUseCaseTest` — effectiveDate、categorizeAnniversaries
@@ -38,11 +38,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `SearchStateManagerTest` — 搜索状态管理、debounce
   - `ContactListViewModelTest` — 圆环展开、卡片翻转、成员选择、排序模式
 
-- **ViewModel 测试（2 文件 ~38 用例）**
+- ViewModel 测试（2 文件 ~38 用例）
   - `GiftsViewModelTest`（16 用例）— 初始化加载、筛选、收藏切换、CRUD、Flow 委托
   - `WebDavSyncViewModelTest`（22 用例）— 连接测试、上传/下载/删除备份、刷新版本、清理孤立图片、配置更新、进度百分比
 
-- **算法引擎测试（5 文件 ~153 用例）**
+- 算法引擎测试（5 文件 ~153 用例）
   - `GanZhiCalculatorTest`（~40 用例）— 时辰地支映射、干支索引、fromSolar/fromCalendar、日干支、农历月日
   - `LiuyaoEngineTest`（~25 用例）— 静卦/动爻/特殊格局（用九用六独静）、数据结构完整性、动爻详情、默认生成
   - `MeihuaEngineTest`（~30 用例）— 数字/时间/随机/外应四种起卦法、体用关系、数据结构完整性
@@ -51,10 +51,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- **Version Catalog 扩展**：`gradle/libs.versions.toml` 新增 `junit-jupiter-params` 和 `org.json:json` 库定义
-- **8 个模块 build.gradle.kts 新增测试依赖**：JUnit 5 (5.10.2) + MockK (1.13.16) + Truth (1.4.2) + Turbine (1.1.0) + kotlinx-coroutines-test (1.9.0) + `useJUnitPlatform()`
-- **ListStringConverterTest 需 `org.json:json` JVM 依赖**：`JSONArray` 是 Android SDK 类，JVM 单元测试不可用
-- **RetryInterceptorTest 适配当前 OkHttp 接口**：移除不存在的 `withConnectionPool`，PUT 请求需 `toRequestBody()`
+- Version Catalog 扩展：`gradle/libs.versions.toml` 新增 `junit-jupiter-params` 和 `org.json:json` 库定义
+- 8 个模块 build.gradle.kts 新增测试依赖：JUnit 5 (5.10.2) + MockK (1.13.16) + Truth (1.4.2) + Turbine (1.1.0) + kotlinx-coroutines-test (1.9.0) + `useJUnitPlatform()`
+- ListStringConverterTest 需 `org.json:json` JVM 依赖：`JSONArray` 是 Android SDK 类，JVM 单元测试不可用
+- RetryInterceptorTest 适配当前 OkHttp 接口：移除不存在的 `withConnectionPool`，PUT 请求需 `toRequestBody()`
 
 ## [1.3.1] - 2026-06-17
 
