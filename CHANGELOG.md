@@ -5,6 +5,28 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.3] - 2026-06-19
+
+### Added
+
+- Baseline Profile 模块 (`:baselineprofile`)：新增 `com.android.test` 模块用于生成 Baseline Profile，通过 Macrobenchmark `BaselineProfileRule` 采集应用启动路径的 AOT 编译配置，提升冷启动速度
+  - `baselineprofile/build.gradle.kts` — 测试模块配置，使用 `androidx.baselineprofile` 插件 + `benchmark-macro-junit4`
+  - `BaselineProfileGenerator` — 启动应用并采集 profile，简化为 `startActivityAndWait()` + `device.waitForIdle()` 避免 StaleObjectException
+  - `app/src/main/baseline-prof.txt` — 从设备拉取的真实 profile 数据（564KB），覆盖 Coil/Compose runtime/Hilt 等关键路径
+  - `app/src/benchmarkRelease/AndroidManifest.xml` — 添加 `<profileable android:shell="true" />` 标签，benchmark release 构建必需
+  - `gradle/libs.versions.toml` — 新增 `profileinstaller = "1.4.1"` 版本和依赖别名
+  - `app/build.gradle.kts` — 新增 `implementation(libs.profileinstaller)` 依赖（BaselineProfileRule 运行必需）
+
+- detekt 静态代码分析：全模块集成 detekt，CI/CD 流水线新增静态检查步骤
+  - `build.gradle.kts` — 根项目应用 detekt 插件，`subprojects {}` 全局配置 `ignoreFailures = true`（渐进式采用）
+  - `.github/workflows/ci.yml` — 新增 detekt 检查步骤
+  - `.github/workflows/pr.yml` — 新增 detekt 检查步骤
+
+### Changed
+
+- CI/CD 优化：`ci.yml` 新增 `paths-ignore` 配置，文档-only 变更（`*.md`、`docs/**`、`memory/**`）跳过 CI 运行，节省构建资源
+- Release 工作流修复：`release.yml` 修复 keystore base64 解码（`tr -d '\n\r '` 去除换行避免二进制损坏）、添加 `permissions: contents: write`、格式化修正
+
 ## [1.3.2] - 2026-06-18
 
 ### Added

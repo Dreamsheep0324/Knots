@@ -8,6 +8,7 @@ plugins {
     alias(libs.plugins.hilt) apply false
     alias(libs.plugins.ksp) apply false
     alias(libs.plugins.detekt) apply false
+    alias(libs.plugins.baselineprofile) apply false
 }
 
 // detekt 全局配置 — 所有子模块自动应用

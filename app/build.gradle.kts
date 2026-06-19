@@ -7,6 +7,7 @@ plugins {
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.hilt)
     alias(libs.plugins.ksp)
+    alias(libs.plugins.baselineprofile)
 }
 
 val keystorePropertiesFile = rootProject.file("keystore.properties")
@@ -96,6 +97,10 @@ dependencies {
     implementation(project(":feature:profile"))
     implementation(project(":feature:circle"))
     implementation(project(":feature:home"))
+
+    // Baseline Profile — release 构建自动集成 AOT 优化
+    baselineProfile(project(":baselineprofile"))
+    implementation(libs.profileinstaller)
 
     // Coil — app 直接使用 AsyncImage（core:data 不再 api 透传）
     implementation(libs.coil.compose)

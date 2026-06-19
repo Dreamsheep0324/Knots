@@ -27,6 +27,10 @@ benchmark-macro-junit4 = "1.3.3"
 test-ext-junit = "1.1.5"
 test-runner = "1.5.2"
 detekt = "1.23.7"
+espresso-core = "3.6.1"
+uiautomator = "2.3.0"
+baselineprofile = "1.3.3"
+profileinstaller = "1.4.1"
 
 [libraries]
 # Compose BOM
@@ -91,6 +95,9 @@ json = { group = "org.json", name = "json", version = "20231013" }
 benchmark-macro-junit4 = { group = "androidx.benchmark", name = "benchmark-macro-junit4", version.ref = "benchmark-macro-junit4" }
 test-ext-junit = { group = "androidx.test.ext", name = "junit", version.ref = "test-ext-junit" }
 test-runner = { group = "androidx.test", name = "runner", version.ref = "test-runner" }
+espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espresso-core" }
+uiautomator = { group = "androidx.test.uiautomator", name = "uiautomator", version.ref = "uiautomator" }
+profileinstaller = { group = "androidx.profileinstaller", name = "profileinstaller", version.ref = "profileinstaller" }
 
 [bundles]
 compose = ["compose-ui", "compose-ui-graphics", "compose-ui-tooling-preview", "compose-material3", "compose-material-icons-extended", "compose-foundation"]
@@ -110,3 +117,5 @@ kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", versi
 hilt = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt" }
+android-test = { id = "com.android.test", version.ref = "agp" }
+baselineprofile = { id = "androidx.baselineprofile", version.ref = "baselineprofile" }
