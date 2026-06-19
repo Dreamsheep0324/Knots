@@ -24,8 +24,8 @@ android {
         applicationId = "com.tang.prm"
         minSdk = 26
         targetSdk = 35
-        versionCode = 10302
-        versionName = "1.3.2"
+        versionCode = 10303
+        versionName = "1.3.3"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
