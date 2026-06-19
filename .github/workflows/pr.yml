@@ -40,6 +40,9 @@ jobs:
       - name: 编译检查
         run: ./gradlew compileDebugKotlin --no-daemon
 
+      - name: 静态代码分析
+        run: ./gradlew detekt --no-daemon
+
       - name: 单元测试
         run: ./gradlew testDebugUnitTest --no-daemon
 
@@ -47,10 +50,12 @@ jobs:
         run: ./gradlew lintDebug --no-daemon
         continue-on-error: true  # Lint 不阻塞，仅提供反馈
 
-      - name: 上传 Lint 报告
+      - name: 上传报告
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: lint-report
-          path: "**/build/reports/lint-results-*.html"
+          name: reports
+          path: |
+            "**/build/reports/lint-results-*.html"
+            "**/build/reports/detekt/"
           retention-days: 7

@@ -51,6 +51,9 @@ jobs:
       - name: 编译检查
         run: ./gradlew compileDebugKotlin --no-daemon
 
+      - name: 静态代码分析
+        run: ./gradlew detekt --no-daemon
+
       - name: 单元测试
         run: ./gradlew testDebugUnitTest --no-daemon
 
@@ -62,4 +65,5 @@ jobs:
           path: |
             "**/build/reports/tests/"
             "**/build/test-results/"
+            "**/build/reports/detekt/"
           retention-days: 7
