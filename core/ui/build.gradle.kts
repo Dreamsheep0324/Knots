@@ -40,6 +40,7 @@ dependencies {
 
     implementation(libs.core.ktx)
     implementation(libs.activity.compose)
+    implementation(libs.navigation.compose)
     implementation(libs.coil.compose)
     implementation(libs.kotlinx.serialization.json)
 

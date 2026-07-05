@@ -33,6 +33,7 @@ class SettingsRepositoryImpl @Inject constructor(
         val KEY_AI_BIRTH_DATE = stringPreferencesKey("ai_birth_date")
         val KEY_BACKUP_IMAGE_QUALITY = stringPreferencesKey("backup_image_quality")
         val KEY_AUTO_BACKUP_ENABLED = booleanPreferencesKey("auto_backup_enabled")
+        val KEY_TABLET_MODE_ENABLED = booleanPreferencesKey("tablet_mode_enabled")
 
         private const val ENC_KEY_API_KEY = "ai_api_key"
         private const val ENC_KEY_BASE_URL = "ai_base_url"
@@ -132,6 +133,16 @@ class SettingsRepositoryImpl @Inject constructor(
     override suspend fun setAutoBackupEnabled(enabled: Boolean) {
         dataStore.edit { prefs ->
             prefs[KEY_AUTO_BACKUP_ENABLED] = enabled
+        }
+    }
+
+    override val tabletModeEnabled: Flow<Boolean> = dataStore.data.map { prefs ->
+        prefs[KEY_TABLET_MODE_ENABLED] ?: false
+    }
+
+    override suspend fun setTabletModeEnabled(enabled: Boolean) {
+        dataStore.edit { prefs ->
+            prefs[KEY_TABLET_MODE_ENABLED] = enabled
         }
     }
 

@@ -7,6 +7,7 @@ import com.tang.prm.domain.model.*
 import com.tang.prm.domain.usecase.ContactDetailAggregationUseCase
 import com.tang.prm.domain.usecase.FavoriteToggleUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
@@ -50,7 +51,8 @@ class ContactDetailViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
-    private val contactId: Long = savedStateHandle.get<Long>("contactId") ?: 0L
+    private var contactId: Long = savedStateHandle.get<Long>("contactId") ?: 0L
+    private var loadJob: Job? = null
 
     private val _uiState = MutableStateFlow(ContactDetailUiState())
     val uiState: StateFlow<ContactDetailUiState> = _uiState.asStateFlow()
@@ -62,8 +64,18 @@ class ContactDetailViewModel @Inject constructor(
         loadContactDetail()
     }
 
+    /** 平板双栏模式：选中项变化时调用，触发详情刷新。 */
+    fun setContactId(id: Long) {
+        if (contactId != id) {
+            contactId = id
+            _uiState.update { ContactDetailUiState(data = ContactDetailDataState(isLoading = true)) }
+            loadContactDetail()
+        }
+    }
+
     private fun loadContactDetail() {
-        viewModelScope.launch {
+        loadJob?.cancel()
+        loadJob = viewModelScope.launch {
             _uiState.update { it.copy(data = it.data.copy(isLoading = true)) }
 
             aggregationUseCase.getContactDetail(contactId).collect { data ->

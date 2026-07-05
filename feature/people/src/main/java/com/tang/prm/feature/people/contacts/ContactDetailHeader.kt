@@ -41,7 +41,8 @@ internal fun ProfileHeader(
     relationshipTypes: List<CustomType> = emptyList(),
     onBack: () -> Unit,
     onEdit: () -> Unit,
-    onDelete: () -> Unit
+    onDelete: () -> Unit,
+    isTablet: Boolean = false
 ) {
     val intimacyColor = getIntimacyColor(contact.intimacyScore)
     val intimacyLevel = getIntimacyLevel(contact.intimacyScore)
@@ -59,11 +60,11 @@ internal fun ProfileHeader(
                     )
                 )
             )
-            .windowInsetsPadding(WindowInsets.statusBars)
-            .padding(horizontal = 4.dp)
+            .then(if (isTablet) Modifier.statusBarsPadding() else Modifier.windowInsetsPadding(WindowInsets.statusBars))
+            .padding(horizontal = if (isTablet) 12.dp else 4.dp)
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth().height(56.dp),
+            modifier = Modifier.fillMaxWidth().height(if (isTablet) 48.dp else 56.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             IconButton(onClick = onBack) {
@@ -81,7 +82,7 @@ internal fun ProfileHeader(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 16.dp),
+                .padding(horizontal = if (isTablet) 20.dp else 16.dp, vertical = 16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Box(

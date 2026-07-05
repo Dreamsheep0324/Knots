@@ -80,51 +80,125 @@ fun AnniversaryDetailScreen(
         },
         containerColor = MaterialTheme.colorScheme.surface
     ) { padding ->
-        uiState.anniversary?.let { anniversary ->
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(padding),
-                contentPadding = PaddingValues(16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                item {
-                    AnniversaryHeader(anniversary = anniversary)
+        AnniversaryDetailBody(
+            uiState = uiState,
+            onEdit = {
+                uiState.anniversary?.let {
+                    navController.navigate(EditAnniversaryRoute(it.id))
                 }
+            },
+            onDelete = { showDeleteDialog = true },
+            onContactClick = { contactId ->
+                navController.navigate(ContactDetailRoute(contactId))
+            },
+            modifier = Modifier.padding(padding)
+        )
+    }
+}
 
-                val contactId = anniversary.contactId
-                val contactName = anniversary.contactName
-                if (contactId != null && contactId > 0 && contactName != null) {
-                    item {
-                        ContactCard(
-                            contactId = contactId,
-                            contactName = contactName,
-                            contactAvatar = anniversary.contactAvatar,
-                            onClick = {
-                                navController.navigate(ContactDetailRoute(contactId))
-                            }
-                        )
+/**
+ * 平板双栏模式：纪念日详情内容（无 Scaffold/TopBar）。
+ * 供 AnniversariesScreen 的右栏嵌入。
+ */
+@Composable
+fun AnniversaryDetailContent(
+    anniversaryId: Long,
+    onEdit: () -> Unit,
+    onDelete: () -> Unit,
+    modifier: Modifier = Modifier,
+    viewModel: AnniversaryDetailViewModel = hiltViewModel()
+) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    var showDeleteDialog by remember { mutableStateOf(false) }
+
+    LaunchedEffect(anniversaryId) {
+        viewModel.loadAnniversary(anniversaryId)
+    }
+
+    if (showDeleteDialog) {
+        DeleteConfirmDialog(
+            title = "确认删除",
+            message = "确定要删除这个纪念日吗？删除后无法恢复。",
+            onConfirm = {
+                viewModel.deleteAnniversary()
+                showDeleteDialog = false
+                onDelete()
+            },
+            onDismiss = { showDeleteDialog = false }
+        )
+    }
+
+    AnniversaryDetailBody(
+        uiState = uiState,
+        onEdit = onEdit,
+        onDelete = { showDeleteDialog = true },
+        onContactClick = { /* tablet: could navigate or ignore */ },
+        modifier = modifier
+    )
+}
+
+@Composable
+private fun AnniversaryDetailBody(
+    uiState: AnniversaryDetailUiState,
+    onEdit: () -> Unit,
+    onDelete: () -> Unit,
+    onContactClick: (Long) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    uiState.anniversary?.let { anniversary ->
+        LazyColumn(
+            modifier = modifier.fillMaxSize(),
+            contentPadding = PaddingValues(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            item {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.End
+                ) {
+                    IconButton(onClick = onEdit) {
+                        Icon(Icons.Default.Edit, contentDescription = "编辑", tint = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
-                }
-
-                item {
-                    DateInfoSection(anniversary = anniversary)
-                }
-
-                if (!anniversary.remarks.isNullOrBlank()) {
-                    item {
-                        RemarksSection(remarks = anniversary.remarks ?: "")
+                    IconButton(onClick = onDelete) {
+                        Icon(Icons.Default.Delete, contentDescription = "删除", tint = Color.Red)
                     }
                 }
             }
-        } ?: run {
-            if (uiState.isLoading) {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    CircularProgressIndicator(color = Primary)
+
+            item {
+                AnniversaryHeader(anniversary = anniversary)
+            }
+
+            val contactId = anniversary.contactId
+            val contactName = anniversary.contactName
+            if (contactId != null && contactId > 0 && contactName != null) {
+                item {
+                    ContactCard(
+                        contactId = contactId,
+                        contactName = contactName,
+                        contactAvatar = anniversary.contactAvatar,
+                        onClick = { onContactClick(contactId) }
+                    )
                 }
+            }
+
+            item {
+                DateInfoSection(anniversary = anniversary)
+            }
+
+            if (!anniversary.remarks.isNullOrBlank()) {
+                item {
+                    RemarksSection(remarks = anniversary.remarks ?: "")
+                }
+            }
+        }
+    } ?: run {
+        if (uiState.isLoading) {
+            Box(
+                modifier = modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator(color = Primary)
             }
         }
     }

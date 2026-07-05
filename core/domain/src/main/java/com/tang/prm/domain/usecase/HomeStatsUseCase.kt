@@ -1,6 +1,7 @@
 package com.tang.prm.domain.usecase
 
 import com.tang.prm.domain.model.EventType
+import com.tang.prm.domain.model.IntimacyTier
 import com.tang.prm.domain.repository.*
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
@@ -19,7 +20,8 @@ data class HomeStats(
     val conversationCount: Int = 0,
     val photoCount: Int = 0,
     val footprintCount: Int = 0,
-    val subscriptionCount: Int = 0
+    val subscriptionCount: Int = 0,
+    val tierDistribution: Map<IntimacyTier, Int> = emptyMap()
 )
 
 class HomeStatsUseCase @Inject constructor(
@@ -44,20 +46,27 @@ class HomeStatsUseCase @Inject constructor(
         eventRepository.getEventsWithLocation().map { it.size }.distinctUntilChanged(),
         eventRepository.getPhotoCount().distinctUntilChanged(),
         giftRepository.getPhotoCount().distinctUntilChanged(),
-        subscriptionRepository.getSubscriptionCount().distinctUntilChanged()
-    ) { args: Array<Int> ->
+        subscriptionRepository.getSubscriptionCount().distinctUntilChanged(),
+        contactRepository.getAllContacts()
+            .map { contacts ->
+                contacts.groupingBy { IntimacyTier.of(it.intimacyScore) }
+                    .eachCount()
+            }
+            .distinctUntilChanged()
+    ) { args: Array<Any> ->
         HomeStats(
-            giftCount = args[0],
-            thoughtCount = args[1],
-            contactCount = args[2],
-            favoriteCount = args[3],
-            circleCount = args[4],
-            anniversaryCount = args[5],
-            eventCount = args[6],
-            conversationCount = args[7],
-            footprintCount = args[8],
-            photoCount = args[9] + args[10],
-            subscriptionCount = args[11]
+            giftCount = args[0] as Int,
+            thoughtCount = args[1] as Int,
+            contactCount = args[2] as Int,
+            favoriteCount = args[3] as Int,
+            circleCount = args[4] as Int,
+            anniversaryCount = args[5] as Int,
+            eventCount = args[6] as Int,
+            conversationCount = args[7] as Int,
+            footprintCount = args[8] as Int,
+            photoCount = (args[9] as Int) + (args[10] as Int),
+            subscriptionCount = args[11] as Int,
+            tierDistribution = args[12] as Map<IntimacyTier, Int>
         )
     }
 }

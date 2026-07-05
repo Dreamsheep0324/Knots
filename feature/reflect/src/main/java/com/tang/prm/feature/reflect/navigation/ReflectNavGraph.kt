@@ -13,11 +13,11 @@ import com.tang.prm.ui.navigation.FootprintsRoute
 import com.tang.prm.ui.navigation.PhotoAlbumRoute
 import com.tang.prm.ui.navigation.ThoughtsRoute
 
-fun NavGraphBuilder.reflectGraph(navController: NavHostController) {
+fun NavGraphBuilder.reflectGraph(navController: NavHostController, isTabletLayout: Boolean = false) {
     composable<PhotoAlbumRoute> { backStackEntry ->
         val route = backStackEntry.toRoute<PhotoAlbumRoute>()
         val photoId = route.photoId.let { if (it == 0L) null else it }
-        PhotoAlbumScreen(navController = navController, initialPhotoId = photoId)
+        PhotoAlbumScreen(navController = navController, initialPhotoId = photoId, isTabletLayout = isTabletLayout)
     }
     composable<FootprintsRoute> {
         FootprintsScreen(navController = navController)

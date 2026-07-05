@@ -12,9 +12,12 @@ import com.tang.prm.ui.navigation.AnniversariesRoute
 import com.tang.prm.ui.navigation.AnniversaryDetailRoute
 import com.tang.prm.ui.navigation.EditAnniversaryRoute
 
-fun NavGraphBuilder.rememberGraph(navController: NavHostController) {
+fun NavGraphBuilder.rememberGraph(
+    navController: NavHostController,
+    isTabletLayout: Boolean = false
+) {
     composable<AnniversariesRoute> {
-        AnniversariesScreen(navController = navController)
+        AnniversariesScreen(navController = navController, isTabletLayout = isTabletLayout)
     }
     composable<AddAnniversaryRoute> { backStackEntry ->
         val route = backStackEntry.toRoute<AddAnniversaryRoute>()

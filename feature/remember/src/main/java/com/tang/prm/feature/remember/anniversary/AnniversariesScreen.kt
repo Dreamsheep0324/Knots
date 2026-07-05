@@ -32,8 +32,8 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -44,7 +44,6 @@ import androidx.navigation.NavController
 import com.tang.prm.domain.model.AppStrings
 import com.tang.prm.ui.animation.primitives.staggeredAppear
 import com.tang.prm.ui.components.SearchBar
-import com.tang.prm.ui.common.SearchState
 import com.tang.prm.ui.navigation.AddAnniversaryRoute
 import com.tang.prm.ui.navigation.AnniversaryDetailRoute
 import com.tang.prm.ui.theme.Dimens
@@ -54,8 +53,15 @@ import com.tang.prm.ui.theme.Primary
 @Composable
 fun AnniversariesScreen(
     navController: NavController,
+    isTabletLayout: Boolean = false,
     viewModel: AnniversariesViewModel = hiltViewModel()
 ) {
+    // 平板模式：方案1 时光长廊（独立全屏设计，自带顶栏/搜索/Hero/时间轴/类型分组）
+    if (isTabletLayout) {
+        AnniversaryTabletScreen(navController = navController, viewModel = viewModel)
+        return
+    }
+
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val searchState by viewModel.searchState.collectAsStateWithLifecycle()
     val dataState = uiState.data

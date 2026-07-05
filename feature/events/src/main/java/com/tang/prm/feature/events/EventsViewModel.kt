@@ -11,7 +11,14 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
+import java.util.Calendar
 import javax.inject.Inject
+
+data class CalendarStats(
+    val eventCount: Int = 0,
+    val participantCount: Int = 0,
+    val totalSpending: Double = 0.0
+)
 
 data class EventsDataState(
     val events: List<Event> = emptyList(),
@@ -22,7 +29,12 @@ data class EventsDataState(
     val availableContacts: List<Contact> = emptyList(),
     val selectedDate: Long = System.currentTimeMillis(),
     val isLoading: Boolean = true,
-    val viewMode: String = "list"
+    val viewMode: String = "list",
+    val calendarMonthOffset: Int = 0,
+    val selectedCalendarDate: Long = System.currentTimeMillis(),
+    val calendarEvents: List<Event> = emptyList(),
+    val selectedDateEvents: List<Event> = emptyList(),
+    val calendarStats: CalendarStats = CalendarStats()
 )
 
 data class EventsDialogState(
@@ -35,6 +47,11 @@ private data class UiSelections(
     val selectedDate: Long,
     val viewMode: String,
     val dialog: EventsDialogState
+)
+
+private data class CalendarSelectionState(
+    val monthOffset: Int,
+    val selectedDate: Long
 )
 
 data class EventsUiState(
@@ -58,6 +75,8 @@ class EventsViewModel @Inject constructor(
     private val _dialogState = MutableStateFlow(EventsDialogState())
     private val _selectedDate = MutableStateFlow(System.currentTimeMillis())
     private val _viewMode = MutableStateFlow("list")
+    private val _calendarMonthOffset = MutableStateFlow(0)
+    private val _selectedCalendarDate = MutableStateFlow(System.currentTimeMillis())
 
     private val filterState = combine(
         _selectedType,
@@ -87,8 +106,32 @@ class EventsViewModel @Inject constructor(
         UiSelections(type, contact, date, mode, dialog)
     }
 
-    val uiState: StateFlow<EventsUiState> = combine(dataFlow, uiSelections) { data, ui ->
+    private val calendarSelection = combine(
+        _calendarMonthOffset, _selectedCalendarDate
+    ) { offset, selectedDate ->
+        CalendarSelectionState(offset, selectedDate)
+    }
+
+    val uiState: StateFlow<EventsUiState> = combine(dataFlow, uiSelections, calendarSelection) { data, ui, cal ->
         val (contacts, eventTypes, filteredEvents) = data
+
+        val monthRange = getMonthRange(cal.monthOffset)
+        val calendarEvents = filteredEvents.filter { event ->
+            event.time >= monthRange.first && event.time < monthRange.second
+        }
+
+        val selectedDateStart = getDayStart(cal.selectedDate)
+        val selectedDateEnd = selectedDateStart + MILLIS_PER_DAY
+        val selectedDateEvents = filteredEvents.filter { event ->
+            event.time >= selectedDateStart && event.time < selectedDateEnd
+        }.sortedBy { it.time }
+
+        val stats = CalendarStats(
+            eventCount = calendarEvents.size,
+            participantCount = calendarEvents.flatMap { it.participants }.distinctBy { it.id }.size,
+            totalSpending = calendarEvents.sumOf { it.amount ?: 0.0 }
+        )
+
         EventsUiState(
             data = EventsDataState(
                 events = filteredEvents,
@@ -99,7 +142,12 @@ class EventsViewModel @Inject constructor(
                 availableContacts = contacts,
                 selectedDate = ui.selectedDate,
                 isLoading = false,
-                viewMode = ui.viewMode
+                viewMode = ui.viewMode,
+                calendarMonthOffset = cal.monthOffset,
+                selectedCalendarDate = cal.selectedDate,
+                calendarEvents = calendarEvents,
+                selectedDateEvents = selectedDateEvents,
+                calendarStats = stats
             ),
             dialog = ui.dialog
         )
@@ -133,7 +181,49 @@ class EventsViewModel @Inject constructor(
         _dialogState.value = EventsDialogState(showDeleteConfirm = id)
     }
 
+    fun onPreviousMonth() {
+        _calendarMonthOffset.value--
+    }
+
+    fun onNextMonth() {
+        _calendarMonthOffset.value++
+    }
+
+    fun onTodayClick() {
+        _calendarMonthOffset.value = 0
+        _selectedCalendarDate.value = System.currentTimeMillis()
+    }
+
+    fun onCalendarDateSelected(dateMillis: Long) {
+        _selectedCalendarDate.value = dateMillis
+    }
+
     companion object {
         private const val DEBOUNCE_MS = 300L
+        private const val MILLIS_PER_DAY = 24L * 60 * 60 * 1000
+
+        fun getMonthRange(monthOffset: Int): Pair<Long, Long> {
+            val cal = Calendar.getInstance()
+            cal.add(Calendar.MONTH, monthOffset)
+            cal.set(Calendar.DAY_OF_MONTH, 1)
+            cal.set(Calendar.HOUR_OF_DAY, 0)
+            cal.set(Calendar.MINUTE, 0)
+            cal.set(Calendar.SECOND, 0)
+            cal.set(Calendar.MILLISECOND, 0)
+            val start = cal.timeInMillis
+            cal.add(Calendar.MONTH, 1)
+            val end = cal.timeInMillis
+            return start to end
+        }
+
+        fun getDayStart(timestamp: Long): Long {
+            val cal = Calendar.getInstance()
+            cal.timeInMillis = timestamp
+            cal.set(Calendar.HOUR_OF_DAY, 0)
+            cal.set(Calendar.MINUTE, 0)
+            cal.set(Calendar.SECOND, 0)
+            cal.set(Calendar.MILLISECOND, 0)
+            return cal.timeInMillis
+        }
     }
 }

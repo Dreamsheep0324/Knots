@@ -39,6 +39,7 @@ data class HomeUiState(
     val eventCount: Int = 0,
     val conversationCount: Int = 0,
     val subscriptionCount: Int = 0,
+    val tierDistribution: Map<IntimacyTier, Int> = emptyMap(),
     val isLoading: Boolean = true
 )
 
@@ -95,6 +96,7 @@ class HomeViewModel @Inject constructor(
             eventCount = stats.eventCount,
             conversationCount = stats.conversationCount,
             subscriptionCount = stats.subscriptionCount,
+            tierDistribution = stats.tierDistribution,
             isLoading = false
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(30_000), HomeUiState(isLoading = true))

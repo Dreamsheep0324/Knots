@@ -44,10 +44,12 @@ class SettingsViewModelTest {
         Dispatchers.setMain(UnconfinedTestDispatcher())
 
         every { settingsRepository.themeMode } returns flowOf(ThemeMode.SYSTEM)
+        every { settingsRepository.tabletModeEnabled } returns flowOf(false)
         every { settingsRepository.aiApiKey } returns flowOf("")
         every { settingsRepository.aiBaseUrl } returns flowOf("https://api.deepseek.com")
         every { settingsRepository.aiModel } returns flowOf("deepseek-v4-flash")
         coEvery { settingsRepository.setThemeMode(any()) } returns Unit
+        coEvery { settingsRepository.setTabletModeEnabled(any()) } returns Unit
         coEvery { settingsRepository.setAiApiKey(any()) } returns Unit
         coEvery { settingsRepository.setAiBaseUrl(any()) } returns Unit
         coEvery { settingsRepository.setAiModel(any()) } returns Unit

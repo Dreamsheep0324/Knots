@@ -9,9 +9,13 @@ import com.tang.prm.ui.navigation.HomeRoute
 fun NavGraphBuilder.homeGraph(
     navController: NavHostController,
     overlayVisible: Boolean,
-    onOverlayVisibleChange: (Boolean) -> Unit
+    onOverlayVisibleChange: (Boolean) -> Unit,
+    isTabletLayout: Boolean = false
 ) {
     composable<HomeRoute> {
-        HomeScreen(navController = navController)
+        HomeScreen(
+            navController = navController,
+            isTabletLayout = isTabletLayout
+        )
     }
 }

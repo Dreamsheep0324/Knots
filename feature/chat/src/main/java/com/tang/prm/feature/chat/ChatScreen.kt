@@ -33,15 +33,20 @@ import com.tang.prm.ui.navigation.ChatDetailRoute
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.tang.prm.ui.animation.core.AnimationTokens
 import com.tang.prm.ui.animation.primitives.staggeredAppear
-import com.tang.prm.ui.theme.Dimens
 import com.tang.prm.ui.theme.Primary
 import com.tang.prm.ui.theme.TextGray
 
 @Composable
 fun ChatScreen(
     navController: NavController,
+    isTabletLayout: Boolean = false,
     viewModel: ChatViewModel = hiltViewModel()
 ) {
+    if (isTabletLayout) {
+        ChatTabletScreen(navController = navController, viewModel = viewModel)
+        return
+    }
+
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     var searchQuery by remember { mutableStateOf("") }
     var isGrouped by remember { mutableStateOf(false) }
@@ -114,7 +119,7 @@ fun ChatScreen(
             onQueryChange = { searchQuery = it },
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = Dimens.paddingPage),
+                .padding(horizontal = 16.dp),
             placeholder = "搜索对话..."
         )
 

@@ -37,7 +37,8 @@ import com.tang.prm.ui.theme.TextGray
 @Composable
 internal fun DailyPhotoView(
     groups: List<PhotoGroup>,
-    onPhotoClick: (List<AlbumPhoto>, Int) -> Unit
+    onPhotoClick: (List<AlbumPhoto>, Int) -> Unit,
+    isTabletLayout: Boolean = false
 ) {
     LazyColumn(
         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
@@ -51,7 +52,8 @@ internal fun DailyPhotoView(
                 photos = group.photos,
                 onPhotoClick = { photoIndex -> onPhotoClick(group.photos, photoIndex) },
                 showTimeline = true,
-                isLast = isLast
+                isLast = isLast,
+                isTabletLayout = isTabletLayout
             )
             if (!isLast) {
                 Spacer(modifier = Modifier.height(16.dp))
@@ -66,7 +68,8 @@ private fun DailyPhotoCard(
     photos: List<AlbumPhoto>,
     onPhotoClick: (Int) -> Unit,
     showTimeline: Boolean = false,
-    isLast: Boolean = false
+    isLast: Boolean = false,
+    isTabletLayout: Boolean = false
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -137,7 +140,8 @@ private fun DailyPhotoCard(
 
             DailyPhotoGrid(
                 photos = photos,
-                onPhotoClick = onPhotoClick
+                onPhotoClick = onPhotoClick,
+                isTabletLayout = isTabletLayout
             )
         }
     }
@@ -146,17 +150,21 @@ private fun DailyPhotoCard(
 @Composable
 private fun DailyPhotoGrid(
     photos: List<AlbumPhoto>,
-    onPhotoClick: (Int) -> Unit
+    onPhotoClick: (Int) -> Unit,
+    isTabletLayout: Boolean = false
 ) {
-    val spacing = 4.dp
-    val cornerRadius = 8.dp
+    val spacing = if (isTabletLayout) 8.dp else 4.dp
+    val cornerRadius = if (isTabletLayout) 10.dp else 8.dp
+    val h1 = if (isTabletLayout) 200.dp else 140.dp
+    val h2 = if (isTabletLayout) 140.dp else 100.dp
+    val h4 = if (isTabletLayout) 110.dp else 80.dp
 
     when {
         photos.size == 1 -> {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(140.dp)
+                    .height(h1)
                     .clip(RoundedCornerShape(cornerRadius))
                     .background(Color(0xFFF3F4F6))
                     .clickable { onPhotoClick(0) }
@@ -178,7 +186,7 @@ private fun DailyPhotoGrid(
                     Box(
                         modifier = Modifier
                             .weight(1f)
-                            .height(100.dp)
+                            .height(h2)
                             .clip(RoundedCornerShape(cornerRadius))
                             .background(Color(0xFFF3F4F6))
                             .clickable { onPhotoClick(index) }
@@ -202,7 +210,7 @@ private fun DailyPhotoGrid(
                     Box(
                         modifier = Modifier
                             .weight(1f)
-                            .height(100.dp)
+                            .height(h2)
                             .clip(RoundedCornerShape(cornerRadius))
                             .background(Color(0xFFF3F4F6))
                             .clickable { onPhotoClick(index) }
@@ -228,7 +236,7 @@ private fun DailyPhotoGrid(
                         Box(
                             modifier = Modifier
                                 .weight(1f)
-                                .height(80.dp)
+                                .height(h4)
                                 .clip(RoundedCornerShape(cornerRadius))
                                 .background(Color(0xFFF3F4F6))
                                 .clickable { onPhotoClick(index) }
@@ -249,7 +257,7 @@ private fun DailyPhotoGrid(
                         Box(
                             modifier = Modifier
                                 .weight(1f)
-                                .height(80.dp)
+                                .height(h4)
                                 .clip(RoundedCornerShape(cornerRadius))
                                 .background(Color(0xFFF3F4F6))
                                 .clickable { onPhotoClick(index + 2) }
@@ -279,7 +287,7 @@ private fun DailyPhotoGrid(
                         Box(
                             modifier = Modifier
                                 .weight(1f)
-                                .height(80.dp)
+                                .height(h4)
                                 .clip(RoundedCornerShape(cornerRadius))
                                 .background(Color(0xFFF3F4F6))
                                 .clickable { onPhotoClick(index) }
@@ -303,7 +311,7 @@ private fun DailyPhotoGrid(
                         Box(
                             modifier = Modifier
                                 .weight(1f)
-                                .height(80.dp)
+                                .height(h4)
                                 .clip(RoundedCornerShape(cornerRadius))
                                 .background(Color(0xFFF3F4F6))
                                 .clickable { onPhotoClick(globalIndex) }

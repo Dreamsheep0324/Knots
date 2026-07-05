@@ -37,6 +37,15 @@ class SettingsViewModel @Inject constructor(
         }
     }
 
+    val tabletModeEnabled: StateFlow<Boolean> = settingsRepository.tabletModeEnabled
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
+
+    fun setTabletModeEnabled(enabled: Boolean) {
+        viewModelScope.launch {
+            settingsRepository.setTabletModeEnabled(enabled)
+        }
+    }
+
     val aiApiKey: StateFlow<String> = settingsRepository.aiApiKey
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), "")
 

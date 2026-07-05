@@ -29,4 +29,7 @@ interface SettingsRepository {
 
     fun getAutoBackupEnabled(): Flow<Boolean>
     suspend fun setAutoBackupEnabled(enabled: Boolean)
+
+    val tabletModeEnabled: Flow<Boolean>
+    suspend fun setTabletModeEnabled(enabled: Boolean)
 }

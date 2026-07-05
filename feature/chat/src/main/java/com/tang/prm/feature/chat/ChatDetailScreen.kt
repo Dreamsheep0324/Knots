@@ -23,6 +23,90 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.tang.prm.ui.theme.FavoriteGold
 import com.tang.prm.ui.theme.Primary
 
+/**
+ * 平板双栏模式：对话详情内容（无 Scaffold/TopBar）。
+ * 供 ChatScreen 的右栏嵌入。
+ */
+@Composable
+fun ChatDetailContent(
+    eventId: Long,
+    onEdit: () -> Unit,
+    onDelete: () -> Unit,
+    modifier: Modifier = Modifier,
+    viewModel: ChatDetailViewModel = hiltViewModel()
+) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    val contact = uiState.event?.participants?.firstOrNull()
+    val intimacyColor = contact?.let { getIntimacyColor(it.intimacyScore) } ?: Primary
+    var showDeleteDialog by remember { mutableStateOf(false) }
+
+    LaunchedEffect(eventId) {
+        viewModel.setEventId(eventId)
+    }
+
+    if (showDeleteDialog) {
+        DeleteConfirmDialog(
+            title = "删除对话",
+            message = "确定要删除这条对话记录吗？此操作不可撤销。",
+            onConfirm = { viewModel.deleteEvent(); onDelete() },
+            onDismiss = { showDeleteDialog = false }
+        )
+    }
+
+    uiState.event?.let { event ->
+        val dialogues = parseDialogue(event, contact?.name)
+
+        Column(
+            modifier = modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.surface)
+                .padding(horizontal = 16.dp, vertical = 8.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End
+            ) {
+                IconButton(onClick = onEdit) {
+                    Icon(Icons.Default.Edit, contentDescription = "编辑", tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+                IconButton(onClick = { viewModel.toggleFavorite() }) {
+                    Icon(
+                        if (uiState.isFavorite) Icons.Default.Bookmark else Icons.Default.BookmarkBorder,
+                        contentDescription = "收藏",
+                        tint = if (uiState.isFavorite) FavoriteGold else MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                IconButton(onClick = { showDeleteDialog = true }) {
+                    Icon(Icons.Default.Delete, contentDescription = "删除", tint = MaterialTheme.colorScheme.error)
+                }
+            }
+
+            ScriptHeader(event = event, contact = contact, intimacyColor = intimacyColor)
+
+            if (dialogues.isNotEmpty()) {
+                DialogueScriptCard(
+                    dialogues = dialogues,
+                    contactAvatar = contact?.avatar,
+                    accentColor = intimacyColor,
+                    modifier = Modifier.weight(1f)
+                )
+            }
+
+            event.remarks?.let { remarks ->
+                RemarksCard(remarks = remarks, accentColor = intimacyColor)
+            }
+        }
+    } ?: run {
+        if (uiState.isLoading) {
+            Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator(color = Primary, strokeWidth = 3.dp)
+            }
+        }
+    }
+}
+
 @Composable
 fun ChatDetailScreen(
     eventId: Long,

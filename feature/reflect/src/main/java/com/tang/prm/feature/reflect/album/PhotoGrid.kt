@@ -39,14 +39,17 @@ import com.tang.prm.ui.theme.SignalSky
 @Composable
 internal fun PhotoGridView(
     photos: List<AlbumPhoto>,
-    onPhotoClick: (Int) -> Unit
+    onPhotoClick: (Int) -> Unit,
+    isTabletLayout: Boolean = false
 ) {
+    val columns = if (isTabletLayout) 6 else 3
+    val spacing = if (isTabletLayout) 6.dp else 4.dp
     LazyVerticalGrid(
-        columns = GridCells.Fixed(3),
+        columns = GridCells.Fixed(columns),
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(16.dp, 8.dp, 16.dp, 16.dp),
-        horizontalArrangement = Arrangement.spacedBy(4.dp),
-        verticalArrangement = Arrangement.spacedBy(4.dp)
+        horizontalArrangement = Arrangement.spacedBy(spacing),
+        verticalArrangement = Arrangement.spacedBy(spacing)
     ) {
         itemsIndexed(photos, key = { _, photo -> photo.id }) { index, photo ->
             PhotoGridItem(

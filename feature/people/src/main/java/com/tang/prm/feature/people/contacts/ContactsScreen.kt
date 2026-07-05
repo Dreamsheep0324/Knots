@@ -32,6 +32,7 @@ import com.tang.prm.ui.theme.*
 fun ContactsScreen(
     navController: NavController,
     onOverlayVisibleChange: (Boolean) -> Unit = {},
+    isTabletLayout: Boolean = false,
     viewModel: ContactsViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -53,106 +54,115 @@ fun ContactsScreen(
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.surface)
     ) {
-        Column(
-            modifier = Modifier.fillMaxSize()
-        ) {
-            TopAppBar(
-                title = {
-                    Text("人物", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.headlineSmall)
-                },
-                actions = {
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(4.dp)
-                    ) {
-                        listOf(
-                            Triple(Icons.Default.Apps, "网格", 0),
-                            Triple(Icons.AutoMirrored.Filled.List, "列表", 1),
-                            Triple(Icons.Default.Style, "卡牌", 2)
-                        ).forEach { (icon, _, mode) ->
-                            val selected = uiState.data.viewMode == mode
+        if (isTabletLayout) {
+            // 平板全宽列表，点击卡片导航到画廊精装详情界面
+            ContactsTabletScreen(
+                onAddContact = { navController.navigate(AddContactRoute) },
+                onContactClick = { id -> navController.navigate(ContactDetailRoute(id)) },
+                viewModel = viewModel
+            )
+        } else {
+            Column(
+                modifier = Modifier.fillMaxSize()
+            ) {
+                TopAppBar(
+                    title = {
+                        Text("人物", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.headlineSmall)
+                    },
+                    actions = {
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            listOf(
+                                Triple(Icons.Default.Apps, "网格", 0),
+                                Triple(Icons.AutoMirrored.Filled.List, "列表", 1),
+                                Triple(Icons.Default.Style, "卡牌", 2)
+                            ).forEach { (icon, _, mode) ->
+                                val selected = uiState.data.viewMode == mode
+                                Box(
+                                    modifier = Modifier
+                                        .size(36.dp)
+                                        .background(
+                                            if (selected) Primary else MaterialTheme.colorScheme.surfaceVariant,
+                                            RoundedCornerShape(8.dp)
+                                        )
+                                        .clickable { viewModel.onViewModeChange(mode) },
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        icon,
+                                        contentDescription = null,
+                                        tint = if (selected) Color.White else MaterialTheme.colorScheme.onSurfaceVariant,
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                }
+                            }
+                        }
+
+                        IconButton(onClick = { navController.navigate(AddContactRoute) }) {
                             Box(
                                 modifier = Modifier
-                                    .size(36.dp)
-                                    .background(
-                                        if (selected) Primary else MaterialTheme.colorScheme.surfaceVariant,
-                                        RoundedCornerShape(8.dp)
-                                    )
-                                    .clickable { viewModel.onViewModeChange(mode) },
+                                    .size(44.dp)
+                                    .background(Primary.copy(alpha = 0.1f), CircleShape),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Icon(
-                                    icon,
-                                    contentDescription = null,
-                                    tint = if (selected) Color.White else MaterialTheme.colorScheme.onSurfaceVariant,
-                                    modifier = Modifier.size(20.dp)
+                                    Icons.Default.Add,
+                                    contentDescription = "新建人物",
+                                    tint = Primary,
+                                    modifier = Modifier.size(24.dp)
                                 )
                             }
                         }
-                    }
-
-                    IconButton(onClick = { navController.navigate(AddContactRoute) }) {
-                        Box(
-                            modifier = Modifier
-                                .size(44.dp)
-                                .background(Primary.copy(alpha = 0.1f), CircleShape),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                Icons.Default.Add,
-                                contentDescription = "新建人物",
-                                tint = Primary,
-                                modifier = Modifier.size(24.dp)
-                            )
-                        }
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.Transparent
-                )
-            )
-
-            SearchBar(
-                query = searchState.query,
-                onQueryChange = viewModel::onSearchQueryChange,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = Dimens.paddingPage),
-                placeholder = "搜索姓名、电话..."
-            )
-
-            Spacer(modifier = Modifier.height(4.dp))
-
-            RelationshipFilterChips(
-                relationships = uiState.data.relationships,
-                selectedRelationship = uiState.data.selectedRelationship,
-                onRelationshipSelected = { viewModel.onRelationshipSelected(it) }
-            )
-
-            if (uiState.data.contacts.isEmpty() && !uiState.data.isLoading) {
-                EmptyState(
-                    icon = Icons.Default.PersonAdd,
-                    title = "还没有联系人",
-                    description = "添加你的第一个联系人开始管理你的人际关系",
-                    actionLabel = "添加联系人",
-                    onAction = { navController.navigate(AddContactRoute) }
-                )
-            } else {
-                ContactsContent(
-                    contacts = uiState.data.contacts,
-                    viewMode = uiState.data.viewMode,
-                    isReorderMode = uiState.data.isReorderMode,
-                    onContactClick = { contact ->
-                        if (!uiState.data.isReorderMode) {
-                            navController.navigate(ContactDetailRoute(contact.id))
-                        }
                     },
-                    onCardSelect = { contactId ->
-                        viewModel.selectCard(contactId)
-                    },
-                    onToggleReorder = { viewModel.toggleReorderMode() },
-                    onMoveContact = { from, to -> viewModel.moveContact(from, to) },
-                    modifier = Modifier.weight(1f)
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = Color.Transparent
+                    )
                 )
+
+                SearchBar(
+                    query = searchState.query,
+                    onQueryChange = viewModel::onSearchQueryChange,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = Dimens.paddingPage),
+                    placeholder = "搜索姓名、电话..."
+                )
+
+                Spacer(modifier = Modifier.height(4.dp))
+
+                RelationshipFilterChips(
+                    relationships = uiState.data.relationships,
+                    selectedRelationship = uiState.data.selectedRelationship,
+                    onRelationshipSelected = { viewModel.onRelationshipSelected(it) }
+                )
+
+                if (uiState.data.contacts.isEmpty() && !uiState.data.isLoading) {
+                    EmptyState(
+                        icon = Icons.Default.PersonAdd,
+                        title = "还没有联系人",
+                        description = "添加你的第一个联系人开始管理你的人际关系",
+                        actionLabel = "添加联系人",
+                        onAction = { navController.navigate(AddContactRoute) }
+                    )
+                } else {
+                    ContactsContent(
+                        contacts = uiState.data.contacts,
+                        viewMode = uiState.data.viewMode,
+                        isReorderMode = uiState.data.isReorderMode,
+                        onContactClick = { contact ->
+                            if (!uiState.data.isReorderMode) {
+                                navController.navigate(ContactDetailRoute(contact.id))
+                            }
+                        },
+                        onCardSelect = { contactId ->
+                            viewModel.selectCard(contactId)
+                        },
+                        onToggleReorder = { viewModel.toggleReorderMode() },
+                        onMoveContact = { from, to -> viewModel.moveContact(from, to) },
+                        modifier = Modifier.weight(1f)
+                    )
+                }
             }
         }
 

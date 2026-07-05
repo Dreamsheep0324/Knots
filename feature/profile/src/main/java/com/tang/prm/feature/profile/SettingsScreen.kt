@@ -21,6 +21,7 @@ import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material.icons.filled.SettingsBrightness
 import androidx.compose.material.icons.filled.SmartToy
+import androidx.compose.material.icons.filled.TabletAndroid
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -56,6 +57,7 @@ fun SettingsScreen(
     viewModel: SettingsViewModel = hiltViewModel()
 ) {
     val themeMode by viewModel.themeMode.collectAsStateWithLifecycle()
+    val tabletModeEnabled by viewModel.tabletModeEnabled.collectAsStateWithLifecycle()
 
     Scaffold(
         topBar = {
@@ -82,6 +84,14 @@ fun SettingsScreen(
                     ThemeEntryItem(
                         currentMode = themeMode,
                         onClick = { navController.navigate(ThemeSettingsRoute) }
+                    )
+                    SettingsToggleItem(
+                        icon = Icons.Default.TabletAndroid,
+                        iconTint = SignalPurple,
+                        title = "平板模式",
+                        subtitle = "在大屏设备上启用侧边栏与双栏布局",
+                        checked = tabletModeEnabled,
+                        onCheckedChange = { viewModel.setTabletModeEnabled(it) }
                     )
                 }
             }

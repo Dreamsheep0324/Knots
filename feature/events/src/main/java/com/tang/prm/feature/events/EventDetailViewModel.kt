@@ -1,4 +1,4 @@
-﻿package com.tang.prm.feature.events
+package com.tang.prm.feature.events
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
@@ -8,10 +8,12 @@ import com.tang.prm.domain.model.SourceTypes
 import com.tang.prm.domain.repository.EventRepository
 import com.tang.prm.domain.usecase.FavoriteToggleUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
@@ -33,6 +35,7 @@ data class EventDetailUiState(
     val dialog: EventDetailDialogState = EventDetailDialogState()
 )
 
+@OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class EventDetailViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
@@ -40,29 +43,36 @@ class EventDetailViewModel @Inject constructor(
     private val favoriteToggleUseCase: FavoriteToggleUseCase
 ) : ViewModel() {
 
-    private val eventId: Long = savedStateHandle["eventId"] ?: 0L
+    private val _eventIdFlow = MutableStateFlow(savedStateHandle["eventId"] ?: 0L)
     private val _dialogState = MutableStateFlow(EventDetailDialogState())
 
-    val uiState: StateFlow<EventDetailUiState> = if (eventId == 0L) {
-        combine(flowOf(EventDetailDataState()), _dialogState) { data, dialog ->
-            EventDetailUiState(data = data, dialog = dialog)
-        }
-    } else {
-        combine(
-            eventRepository.getEventById(eventId),
-            favoriteToggleUseCase.isFavorite(SourceTypes.EVENT, eventId),
-            _dialogState
-        ) { event, isFavorite, dialog ->
-            EventDetailUiState(
-                data = EventDetailDataState(
-                    event = event,
-                    isLoading = false,
-                    isFavorite = isFavorite
-                ),
-                dialog = dialog
-            )
+    val uiState: StateFlow<EventDetailUiState> = _eventIdFlow.flatMapLatest { eventId ->
+        if (eventId == 0L) {
+            combine(flowOf(EventDetailDataState()), _dialogState) { data, dialog ->
+                EventDetailUiState(data = data, dialog = dialog)
+            }
+        } else {
+            combine(
+                eventRepository.getEventById(eventId),
+                favoriteToggleUseCase.isFavorite(SourceTypes.EVENT, eventId),
+                _dialogState
+            ) { event, isFavorite, dialog ->
+                EventDetailUiState(
+                    data = EventDetailDataState(
+                        event = event,
+                        isLoading = false,
+                        isFavorite = isFavorite
+                    ),
+                    dialog = dialog
+                )
+            }
         }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), EventDetailUiState())
+
+    /** 平板双栏模式：选中项变化时调用，触发详情刷新。 */
+    fun setEventId(id: Long) {
+        _eventIdFlow.value = id
+    }
 
     fun toggleFavorite() {
         viewModelScope.launch {

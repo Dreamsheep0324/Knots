@@ -48,7 +48,8 @@ import com.tang.prm.domain.util.DateUtils
 @Composable
 internal fun EventPhotoView(
     groups: List<PhotoGroup>,
-    onPhotoClick: (List<AlbumPhoto>, Int) -> Unit
+    onPhotoClick: (List<AlbumPhoto>, Int) -> Unit,
+    isTabletLayout: Boolean = false
 ) {
     LazyColumn(
         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
@@ -62,7 +63,8 @@ internal fun EventPhotoView(
                 photos = group.photos,
                 onPhotoClick = { photoIndex -> onPhotoClick(group.photos, photoIndex) },
                 showTimeline = true,
-                isLast = isLast
+                isLast = isLast,
+                isTabletLayout = isTabletLayout
             )
             if (!isLast) {
                 Spacer(modifier = Modifier.height(16.dp))
@@ -77,7 +79,8 @@ private fun EventPhotoCard(
     photos: List<AlbumPhoto>,
     onPhotoClick: (Int) -> Unit,
     showTimeline: Boolean = false,
-    isLast: Boolean = false
+    isLast: Boolean = false,
+    isTabletLayout: Boolean = false
 ) {
     val dateFormat: (Long) -> String = { DateUtils.formatMonthDayChineseFull(it) }
     val sourceColor = when (group.subtitle) {
@@ -189,7 +192,8 @@ private fun EventPhotoCard(
 
             EventPhotoGrid(
                 photos = photos.take(4),
-                onPhotoClick = onPhotoClick
+                onPhotoClick = onPhotoClick,
+                isTabletLayout = isTabletLayout
             )
 
             if (photos.size > 4) {
@@ -244,17 +248,21 @@ private fun EventPhotoCard(
 @Composable
 private fun EventPhotoGrid(
     photos: List<AlbumPhoto>,
-    onPhotoClick: (Int) -> Unit
+    onPhotoClick: (Int) -> Unit,
+    isTabletLayout: Boolean = false
 ) {
-    val spacing = 4.dp
-    val cornerRadius = 8.dp
+    val spacing = if (isTabletLayout) 8.dp else 4.dp
+    val cornerRadius = if (isTabletLayout) 10.dp else 8.dp
+    val h1 = if (isTabletLayout) 180.dp else 120.dp
+    val h2 = if (isTabletLayout) 130.dp else 90.dp
+    val h4 = if (isTabletLayout) 100.dp else 70.dp
 
     when {
         photos.size == 1 -> {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(120.dp)
+                    .height(h1)
                     .clip(RoundedCornerShape(cornerRadius))
                     .background(Color(0xFFF3F4F6))
                     .clickable { onPhotoClick(0) }
@@ -276,7 +284,7 @@ private fun EventPhotoGrid(
                     Box(
                         modifier = Modifier
                             .weight(1f)
-                            .height(90.dp)
+                            .height(h2)
                             .clip(RoundedCornerShape(cornerRadius))
                             .background(Color(0xFFF3F4F6))
                             .clickable { onPhotoClick(index) }
@@ -300,7 +308,7 @@ private fun EventPhotoGrid(
                     Box(
                         modifier = Modifier
                             .weight(1f)
-                            .height(90.dp)
+                            .height(h2)
                             .clip(RoundedCornerShape(cornerRadius))
                             .background(Color(0xFFF3F4F6))
                             .clickable { onPhotoClick(index) }
@@ -329,7 +337,7 @@ private fun EventPhotoGrid(
                         Box(
                             modifier = Modifier
                                 .weight(1f)
-                                .height(70.dp)
+                                .height(h4)
                                 .clip(RoundedCornerShape(cornerRadius))
                                 .background(Color(0xFFF3F4F6))
                                 .clickable { onPhotoClick(index) }
@@ -353,7 +361,7 @@ private fun EventPhotoGrid(
                         Box(
                             modifier = Modifier
                                 .weight(1f)
-                                .height(70.dp)
+                                .height(h4)
                                 .clip(RoundedCornerShape(cornerRadius))
                                 .background(Color(0xFFF3F4F6))
                                 .clickable { onPhotoClick(globalIndex) }

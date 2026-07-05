@@ -12,9 +12,12 @@ import com.tang.prm.ui.navigation.ChatDetailRoute
 import com.tang.prm.ui.navigation.ChatRoute
 import com.tang.prm.ui.navigation.EditChatRoute
 
-fun NavGraphBuilder.chatGraph(navController: NavHostController) {
+fun NavGraphBuilder.chatGraph(
+    navController: NavHostController,
+    isTabletLayout: Boolean = false
+) {
     composable<ChatRoute> {
-        ChatScreen(navController = navController)
+        ChatScreen(navController = navController, isTabletLayout = isTabletLayout)
     }
     composable<AddChatRoute> { backStackEntry ->
         val route = backStackEntry.toRoute<AddChatRoute>()

@@ -8,30 +8,15 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.SystemUpdateAlt
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -42,16 +27,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -70,10 +51,14 @@ import com.tang.prm.feature.profile.navigation.profileGraph
 import com.tang.prm.feature.reflect.navigation.reflectGraph
 import com.tang.prm.feature.remember.navigation.rememberGraph
 import com.tang.prm.feature.subscription.navigation.subscriptionGraph
+import com.tang.prm.ui.components.GlassBottomBar
+import com.tang.prm.ui.components.GlassSideBar
+import com.tang.prm.ui.navigation.SettingsRoute
 import com.tang.prm.ui.theme.DialogDefaults
 
 @Composable
 fun TangNavHost(
+    tabletModeEnabled: Boolean = false,
     navController: NavHostController = rememberNavController()
 ) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
@@ -90,6 +75,9 @@ fun TangNavHost(
     val context = LocalContext.current
     val uriHandler = LocalUriHandler.current
     var updateInfo by remember { mutableStateOf<UpdateResult.HasUpdate?>(null) }
+
+    val configuration = LocalConfiguration.current
+    val isTabletLayout = tabletModeEnabled && configuration.screenWidthDp >= 600
 
     LaunchedEffect(Unit) {
         val currentVersion = runCatching {
@@ -149,160 +137,83 @@ fun TangNavHost(
         )
     }
 
-    Box(modifier = Modifier.fillMaxSize()) {
-        NavHost(
-            navController = navController,
-            startDestination = HomeRoute,
-            modifier = Modifier.fillMaxSize(),
-            enterTransition = transitions.enterTransition,
-            exitTransition = transitions.exitTransition,
-            popEnterTransition = transitions.popEnterTransition,
-            popExitTransition = transitions.popExitTransition
-        ) {
-            homeGraph(navController, overlayVisible) { overlayVisible = it }
-            giftsGraph(navController)
-            reflectGraph(navController)
-            circleGraph(navController)
-            divinationGraph(navController)
-            subscriptionGraph(navController)
-            peopleGraph(navController) { overlayVisible = it }
-            rememberGraph(navController)
-            profileGraph(navController)
-            eventsGraph(navController)
-            chatGraph(navController)
-        }
-
-        if (showBottomBar && !overlayVisible) {
-            GlassBottomBar(
-                items = bottomNavItems,
-                currentDestination = currentDestination,
-                onNavigate = { routeObject ->
-                    navController.navigate(routeObject) {
-                        popUpTo(navController.graph.findStartDestination().id) {
-                            saveState = true
-                        }
-                        launchSingleTop = true
-                        restoreState = true
-                    }
-                },
-                modifier = Modifier.align(Alignment.BottomCenter)
-            )
-        }
-    }
-}
-
-@Composable
-private fun GlassBottomBar(
-    items: List<BottomNavItem>,
-    currentDestination: androidx.navigation.NavDestination?,
-    onNavigate: (Any) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    val surfaceColor = MaterialTheme.colorScheme.surface
-
-    val topLineBrush = remember(surfaceColor) {
-        Brush.horizontalGradient(
-            colors = listOf(
-                Color.Transparent,
-                surfaceColor.copy(alpha = 0.54f),
-                surfaceColor.copy(alpha = 0.72f),
-                surfaceColor.copy(alpha = 0.54f),
-                Color.Transparent
-            )
-        )
-    }
-
-    Box(
-        modifier = modifier
-            .fillMaxWidth()
-            .navigationBarsPadding()
-            .padding(start = 20.dp, end = 20.dp, bottom = 12.dp),
-        contentAlignment = Alignment.BottomCenter
-    ) {
-        Surface(
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(28.dp),
-            color = surfaceColor.copy(alpha = 0.95f),
-            border = BorderStroke(1.5.dp, MaterialTheme.colorScheme.outline),
-            shadowElevation = 32.dp,
-        ) {
-            Box(modifier = Modifier.fillMaxWidth()) {
-                Canvas(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(1.dp)
-                        .align(Alignment.TopCenter)
-                ) {
-                    drawLine(
-                        brush = topLineBrush,
-                        start = Offset(0f, 0f),
-                        end = Offset(size.width, 0f),
-                        strokeWidth = 1f
-                    )
-                }
-
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 8.dp, vertical = 12.dp),
-                    horizontalArrangement = Arrangement.SpaceEvenly,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    items.forEach { item ->
-                        val selected = currentDestination?.hierarchy?.any { it.route == item.route } == true
-                        GlassNavItem(
-                            item = item,
-                            selected = selected,
-                            onClick = { onNavigate(item.routeObject) }
-                        )
-                    }
-                }
+    val navigateTo: (Any) -> Unit = { routeObject ->
+        navController.navigate(routeObject) {
+            popUpTo(navController.graph.findStartDestination().id) {
+                saveState = true
             }
+            launchSingleTop = true
+            restoreState = true
         }
     }
-}
 
-@Composable
-private fun GlassNavItem(
-    item: BottomNavItem,
-    selected: Boolean,
-    onClick: () -> Unit
-) {
-    val dotSize = if (selected) 5.dp else 0.dp
-    val primaryColor = MaterialTheme.colorScheme.primary
-
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center,
-        modifier = Modifier
-            .clip(RoundedCornerShape(16.dp))
-            .clickable(
-                interactionSource = remember { MutableInteractionSource() },
-                indication = null,
-                onClick = onClick
-            )
-            .padding(horizontal = 16.dp, vertical = 4.dp)
-    ) {
-        Icon(
-            imageVector = if (selected) item.selectedIcon else item.unselectedIcon,
-            contentDescription = item.title,
-            tint = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.size(26.dp)
-        )
-
-        Spacer(modifier = Modifier.height(4.dp))
-
-        Box(modifier = Modifier.size(dotSize)) {
-            Canvas(modifier = Modifier.fillMaxSize()) {
-                drawCircle(
-                    color = primaryColor,
-                    radius = size.minDimension / 2
+    if (isTabletLayout) {
+        Row(modifier = Modifier.fillMaxSize()) {
+            if (showBottomBar && !overlayVisible) {
+                GlassSideBar(
+                    items = bottomNavItems,
+                    currentDestination = currentDestination,
+                    onNavigate = navigateTo,
+                    onSettingsClick = { navController.navigate(SettingsRoute) }
                 )
             }
-        }
 
-        if (!selected) {
-            Spacer(modifier = Modifier.height(5.dp))
+            Box(modifier = Modifier.weight(1f).fillMaxSize()) {
+                NavHost(
+                    navController = navController,
+                    startDestination = HomeRoute,
+                    modifier = Modifier.fillMaxSize(),
+                    enterTransition = transitions.enterTransition,
+                    exitTransition = transitions.exitTransition,
+                    popEnterTransition = transitions.popEnterTransition,
+                    popExitTransition = transitions.popExitTransition
+                ) {
+                    homeGraph(navController, overlayVisible, { overlayVisible = it }, isTabletLayout)
+                    giftsGraph(navController)
+                    reflectGraph(navController, isTabletLayout)
+                    circleGraph(navController)
+                    divinationGraph(navController)
+                    subscriptionGraph(navController)
+                    peopleGraph(navController, { overlayVisible = it }, isTabletLayout)
+                    rememberGraph(navController, isTabletLayout)
+                    profileGraph(navController)
+                    eventsGraph(navController, isTabletLayout)
+                    chatGraph(navController, isTabletLayout)
+                }
+            }
+        }
+    } else {
+        Box(modifier = Modifier.fillMaxSize()) {
+            NavHost(
+                navController = navController,
+                startDestination = HomeRoute,
+                modifier = Modifier.fillMaxSize(),
+                enterTransition = transitions.enterTransition,
+                exitTransition = transitions.exitTransition,
+                popEnterTransition = transitions.popEnterTransition,
+                popExitTransition = transitions.popExitTransition
+            ) {
+                homeGraph(navController, overlayVisible, { overlayVisible = it }, isTabletLayout)
+                giftsGraph(navController)
+                reflectGraph(navController)
+                circleGraph(navController)
+                divinationGraph(navController)
+                subscriptionGraph(navController)
+                peopleGraph(navController, { overlayVisible = it })
+                rememberGraph(navController)
+                profileGraph(navController)
+                eventsGraph(navController)
+                chatGraph(navController)
+            }
+
+            if (showBottomBar && !overlayVisible) {
+                GlassBottomBar(
+                    items = bottomNavItems,
+                    currentDestination = currentDestination,
+                    onNavigate = navigateTo,
+                    modifier = Modifier.align(Alignment.BottomCenter)
+                )
+            }
         }
     }
 }

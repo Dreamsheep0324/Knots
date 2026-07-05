@@ -10,6 +10,12 @@ object Dimens {
     val spacingItem = 10.dp
 
     val cornerCard = 16.dp
+    val cornerNav = 28.dp
+
+    val railWidth = 205.dp
+
+    val listPaneWeight = 0.4f
+    val homeLeftWeight = 0.38f
 
     val iconSmall = 16.dp
     val iconMedium = 24.dp

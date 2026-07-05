@@ -31,7 +31,8 @@ private val AlbumAccent = SignalPurple
 fun PhotoAlbumScreen(
     navController: NavController,
     viewModel: PhotoAlbumViewModel = hiltViewModel(),
-    initialPhotoId: Long? = null
+    initialPhotoId: Long? = null,
+    isTabletLayout: Boolean = false
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     var viewMode by remember { mutableStateOf("daily") }
@@ -121,11 +122,13 @@ fun PhotoAlbumScreen(
                     .fillMaxSize()
                     .padding(padding)
                     .background(MaterialTheme.colorScheme.surface)
+                    .then(if (isTabletLayout) Modifier.padding(horizontal = 48.dp) else Modifier)
             ) {
                 PhotoStatsSection(
                     photoCount = uiState.totalPhotoCount,
                     contactCount = uiState.totalContactCount,
-                    locationCount = uiState.totalLocationCount
+                    locationCount = uiState.totalLocationCount,
+                    isTabletLayout = isTabletLayout
                 )
 
                 FilterTabsSection(
@@ -144,7 +147,8 @@ fun PhotoAlbumScreen(
                         onPhotoClick = { index ->
                             allPhotos = uiState.photos
                             selectedPhotoIndex = index
-                        }
+                        },
+                        isTabletLayout = isTabletLayout
                     )
                 } else {
                     when (viewMode) {
@@ -153,14 +157,16 @@ fun PhotoAlbumScreen(
                             onPhotoClick = { photos, index ->
                                 allPhotos = photos
                                 selectedPhotoIndex = index
-                            }
+                            },
+                            isTabletLayout = isTabletLayout
                         )
                         "event" -> EventPhotoView(
                             groups = groupedPhotos,
                             onPhotoClick = { photos, index ->
                                 allPhotos = photos
                                 selectedPhotoIndex = index
-                            }
+                            },
+                            isTabletLayout = isTabletLayout
                         )
                     }
                 }

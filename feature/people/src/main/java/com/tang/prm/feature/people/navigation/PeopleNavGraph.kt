@@ -12,6 +12,7 @@ import androidx.navigation.toRoute
 import com.tang.prm.feature.people.contacts.AddContactScreen
 import com.tang.prm.feature.people.contacts.AddContactViewModel
 import com.tang.prm.feature.people.contacts.ContactDetailScreen
+import com.tang.prm.feature.people.contacts.ContactDetailTabletScreen
 import com.tang.prm.feature.people.contacts.ContactsScreen
 import com.tang.prm.ui.components.photo.AvatarCropDialog
 import com.tang.prm.ui.components.photo.PhotoPickerConfig
@@ -23,10 +24,15 @@ import com.tang.prm.ui.navigation.EditContactRoute
 
 fun NavGraphBuilder.peopleGraph(
     navController: NavHostController,
-    onOverlayVisibleChange: (Boolean) -> Unit
+    onOverlayVisibleChange: (Boolean) -> Unit,
+    isTabletLayout: Boolean = false
 ) {
     composable<ContactsRoute> {
-        ContactsScreen(navController = navController, onOverlayVisibleChange = onOverlayVisibleChange)
+        ContactsScreen(
+            navController = navController,
+            onOverlayVisibleChange = onOverlayVisibleChange,
+            isTabletLayout = isTabletLayout
+        )
     }
     composable<AddContactRoute> {
         val viewModel: AddContactViewModel = hiltViewModel()
@@ -50,7 +56,11 @@ fun NavGraphBuilder.peopleGraph(
     }
     composable<ContactDetailRoute> { backStackEntry ->
         val route = backStackEntry.toRoute<ContactDetailRoute>()
-        ContactDetailScreen(contactId = route.contactId, navController = navController)
+        if (isTabletLayout) {
+            ContactDetailTabletScreen(contactId = route.contactId, navController = navController)
+        } else {
+            ContactDetailScreen(contactId = route.contactId, navController = navController)
+        }
     }
     composable<EditContactRoute> { backStackEntry ->
         val route = backStackEntry.toRoute<EditContactRoute>()

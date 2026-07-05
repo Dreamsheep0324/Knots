@@ -3,28 +3,29 @@
 package com.tang.prm.feature.home
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -46,7 +47,6 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
-import com.tang.prm.ui.components.AppCard
 import com.tang.prm.ui.navigation.SettingsRoute
 import com.tang.prm.ui.navigation.GiftsRoute
 import com.tang.prm.ui.navigation.ContactListRoute
@@ -84,6 +84,7 @@ internal val channels = listOf(
 @Composable
 fun HomeScreen(
     navController: NavController,
+    isTabletLayout: Boolean = false,
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -98,40 +99,91 @@ fun HomeScreen(
     val timeStr = DateUtils.formatTimeWithSeconds(currentTime)
     val dateStr = DateUtils.formatYearMonthDay(currentTime)
 
+    val signalStrengths = remember(uiState) {
+        mapOf(
+            GiftsRoute to uiState.giftCount,
+            ContactListRoute to uiState.circleCount,
+            PhotoAlbumRoute.default() to uiState.photoCount,
+            FootprintsRoute to uiState.footprintCount,
+            ThoughtsRoute to uiState.thoughtCount,
+            FavoritesRoute to uiState.favoriteCount,
+            DivinationRoute to 0,
+            SubscriptionsRoute to uiState.subscriptionCount
+        )
+    }
+    val onChannelClick = { route: Any -> navController.navigate(route) }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.surface)
     ) {
-        TopAppBar(
-            title = {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Box(
-                        modifier = Modifier
-                            .size(6.dp)
-                            .clip(CircleShape)
-                            .background(TerminalGreen)
-                    )
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text(
-                        "SYS://结绳",
-                        fontFamily = FontFamily.Monospace,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 20.sp,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Text(
-                        timeStr,
-                        fontFamily = FontFamily.Monospace,
-                        fontSize = 13.sp,
-                        color = MaterialTheme.colorScheme.primary,
-                        fontWeight = FontWeight.Medium
-                    )
-                }
-            },
-            actions = {
-                IconButton(onClick = { navController.navigate(SettingsRoute) }) {
+        if (isTabletLayout) {
+            HomeTopBar(
+                timeStr = timeStr,
+                showSettings = false,
+                onSettingsClick = { navController.navigate(SettingsRoute) }
+            )
+
+            JournalTabletHome(
+                uiState = uiState,
+                channels = channels,
+                signalStrengths = signalStrengths,
+                onChannelClick = onChannelClick
+            )
+        } else {
+            HomeTopBar(
+                timeStr = timeStr,
+                showSettings = true,
+                onSettingsClick = { navController.navigate(SettingsRoute) }
+            )
+            PhoneHomeContent(
+                dateStr = dateStr,
+                uiState = uiState,
+                channels = channels,
+                signalStrengths = signalStrengths,
+                onChannelClick = onChannelClick
+            )
+        }
+    }
+}
+
+@Composable
+private fun HomeTopBar(
+    timeStr: String,
+    showSettings: Boolean = true,
+    onSettingsClick: () -> Unit
+) {
+    TopAppBar(
+        title = {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(
+                    modifier = Modifier
+                        .size(6.dp)
+                        .clip(CircleShape)
+                        .background(TerminalGreen)
+                )
+                Spacer(modifier = Modifier.width(6.dp))
+                Text(
+                    "SYS://结绳",
+                    fontFamily = FontFamily.Monospace,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 20.sp,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Spacer(modifier = Modifier.width(12.dp))
+                Text(
+                    timeStr,
+                    fontFamily = FontFamily.Monospace,
+                    fontSize = 13.sp,
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = FontWeight.Medium
+                )
+            }
+        },
+        actions = {
+            if (showSettings) {
+                IconButton(onClick = onSettingsClick) {
                     Icon(
                         Icons.Default.Settings,
                         contentDescription = "设置",
@@ -139,53 +191,112 @@ fun HomeScreen(
                         modifier = Modifier.size(22.dp)
                     )
                 }
-            },
-            colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = Color.Transparent
-            )
+            }
+        },
+        colors = TopAppBarDefaults.topAppBarColors(
+            containerColor = Color.Transparent
         )
+    )
+}
 
-        LazyColumn(
+@Composable
+private fun PhoneHomeContent(
+    dateStr: String,
+    uiState: HomeUiState,
+    channels: List<ChannelDef>,
+    signalStrengths: Map<Any, Int>,
+    onChannelClick: (Any) -> Unit
+) {
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = 16.dp, vertical = 2.dp),
+        verticalArrangement = Arrangement.spacedBy(10.dp),
+        contentPadding = PaddingValues(bottom = 80.dp)
+    ) {
+        item(key = "signal_card", contentType = "signal") {
+            IncomingSignalCard(
+                dateStr = dateStr,
+                contactCount = uiState.contactCount,
+                eventCount = uiState.eventCount,
+                giftCount = uiState.giftCount,
+                anniversaryCount = uiState.anniversaryCount,
+                conversationCount = uiState.conversationCount
+            )
+        }
+
+        item(key = "orbital_calendar", contentType = "calendar") {
+            OrbitalCalendar(
+                anniversaries = uiState.upcomingAnniversaries,
+                events = uiState.recentEvents
+            )
+        }
+
+        item(key = "channel_grid", contentType = "grid") {
+            ChannelGrid(
+                channels = channels,
+                signalStrengths = signalStrengths,
+                onChannelClick = onChannelClick
+            )
+        }
+    }
+}
+
+@Composable
+private fun TabletHomeContent(
+    dateStr: String,
+    uiState: HomeUiState,
+    channels: List<ChannelDef>,
+    signalStrengths: Map<Any, Int>,
+    onChannelClick: (Any) -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = 16.dp, vertical = 2.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        // 左栏：信号卡 + 频道网格 (weight 0.38)
+        Column(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 16.dp, vertical = 2.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp),
-            contentPadding = PaddingValues(bottom = 80.dp)
+                .weight(Dimens.homeLeftWeight)
+                .fillMaxHeight()
+                .verticalScroll(rememberScrollState()),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            item(key = "signal_card", contentType = "signal") {
-                IncomingSignalCard(
-                    dateStr = dateStr,
-                    contactCount = uiState.contactCount,
-                    eventCount = uiState.eventCount,
-                    giftCount = uiState.giftCount,
-                    anniversaryCount = uiState.anniversaryCount,
-                    conversationCount = uiState.conversationCount
-                )
-            }
+            IncomingSignalCard(
+                dateStr = dateStr,
+                contactCount = uiState.contactCount,
+                eventCount = uiState.eventCount,
+                giftCount = uiState.giftCount,
+                anniversaryCount = uiState.anniversaryCount,
+                conversationCount = uiState.conversationCount
+            )
 
-            item(key = "orbital_calendar", contentType = "calendar") {
-                OrbitalCalendar(
-                    anniversaries = uiState.upcomingAnniversaries,
-                    events = uiState.recentEvents
-                )
-            }
+            ChannelGrid(
+                channels = channels,
+                signalStrengths = signalStrengths,
+                onChannelClick = onChannelClick
+            )
 
-            item(key = "channel_grid", contentType = "grid") {
-                ChannelGrid(
-                    channels = channels,
-                    signalStrengths = mapOf(
-                        GiftsRoute to uiState.giftCount,
-                        ContactListRoute to uiState.circleCount,
-                        PhotoAlbumRoute.default() to uiState.photoCount,
-                        FootprintsRoute to uiState.footprintCount,
-                        ThoughtsRoute to uiState.thoughtCount,
-                        FavoritesRoute to uiState.favoriteCount,
-                        DivinationRoute to 0,
-                        SubscriptionsRoute to uiState.subscriptionCount
-                    ),
-                    onChannelClick = { route -> navController.navigate(route) }
-                )
-            }
+            Spacer(modifier = Modifier.padding(bottom = 80.dp))
+        }
+
+        // 右栏：大轨道罗盘 (weight 0.62)
+        Column(
+            modifier = Modifier
+                .weight(1f - Dimens.homeLeftWeight)
+                .fillMaxHeight()
+                .verticalScroll(rememberScrollState()),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            OrbitalCalendar(
+                anniversaries = uiState.upcomingAnniversaries,
+                events = uiState.recentEvents,
+                canvasModifier = Modifier.fillMaxWidth().aspectRatio(1f)
+            )
+
+            Spacer(modifier = Modifier.padding(bottom = 80.dp))
         }
     }
 }

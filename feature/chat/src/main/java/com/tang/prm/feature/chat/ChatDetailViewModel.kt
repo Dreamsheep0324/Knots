@@ -1,4 +1,4 @@
-﻿package com.tang.prm.feature.chat
+package com.tang.prm.feature.chat
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
@@ -8,9 +8,12 @@ import com.tang.prm.domain.model.SourceTypes
 import com.tang.prm.domain.repository.EventRepository
 import com.tang.prm.domain.usecase.FavoriteToggleUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -22,6 +25,7 @@ data class ChatDetailUiState(
     val isFavorite: Boolean = false
 )
 
+@OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class ChatDetailViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
@@ -29,22 +33,29 @@ class ChatDetailViewModel @Inject constructor(
     private val favoriteToggleUseCase: FavoriteToggleUseCase
 ) : ViewModel() {
 
-    private val eventId: Long = savedStateHandle["eventId"] ?: 0L
+    private val _eventIdFlow = MutableStateFlow(savedStateHandle["eventId"] ?: 0L)
 
-    val uiState: StateFlow<ChatDetailUiState> = if (eventId == 0L) {
-        flowOf(ChatDetailUiState())
-    } else {
-        combine(
-            eventRepository.getEventById(eventId),
-            favoriteToggleUseCase.isFavorite(SourceTypes.DIALOG, eventId)
-        ) { event, isFavorite ->
-            ChatDetailUiState(
-                event = event,
-                isLoading = false,
-                isFavorite = isFavorite
-            )
+    val uiState: StateFlow<ChatDetailUiState> = _eventIdFlow.flatMapLatest { eventId ->
+        if (eventId == 0L) {
+            flowOf(ChatDetailUiState())
+        } else {
+            combine(
+                eventRepository.getEventById(eventId),
+                favoriteToggleUseCase.isFavorite(SourceTypes.DIALOG, eventId)
+            ) { event, isFavorite ->
+                ChatDetailUiState(
+                    event = event,
+                    isLoading = false,
+                    isFavorite = isFavorite
+                )
+            }
         }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), ChatDetailUiState())
+
+    /** 平板双栏模式：选中项变化时调用，触发详情刷新。 */
+    fun setEventId(id: Long) {
+        _eventIdFlow.value = id
+    }
 
     fun toggleFavorite() {
         viewModelScope.launch {

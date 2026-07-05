@@ -31,6 +31,7 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             val themeMode by settingsRepository.themeMode.collectAsStateWithLifecycle(initialValue = ThemeMode.SYSTEM)
+            val tabletModeEnabled by settingsRepository.tabletModeEnabled.collectAsStateWithLifecycle(initialValue = false)
             val darkTheme = when (themeMode) {
                 ThemeMode.LIGHT -> false
                 ThemeMode.DARK -> true
@@ -43,7 +44,7 @@ class MainActivity : ComponentActivity() {
                         modifier = Modifier.fillMaxSize(),
                         color = MaterialTheme.colorScheme.background
                     ) {
-                        TangNavHost()
+                        TangNavHost(tabletModeEnabled = tabletModeEnabled)
                     }
                 }
             }

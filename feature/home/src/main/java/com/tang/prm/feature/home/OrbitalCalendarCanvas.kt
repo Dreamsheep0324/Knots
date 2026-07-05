@@ -1,6 +1,7 @@
 package com.tang.prm.feature.home
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.material3.MaterialTheme
@@ -50,7 +51,8 @@ private data class ParticleState(
 @Composable
 internal fun OrbitalCalendarCanvas(
     data: OrbitalCalendarData,
-    todayDay: Int
+    todayDay: Int,
+    modifier: Modifier = Modifier.fillMaxWidth().height(242.dp)
 ) {
     val pulsePhase by rememberFadePulse(cycleDuration = 2000)
     val rotations by rememberOrbitalRotations(
@@ -137,9 +139,7 @@ internal fun OrbitalCalendarCanvas(
     }
 
     Canvas(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(242.dp)
+        modifier = modifier
     ) {
         val center = Offset(size.width / 2, size.height / 2)
         val minDim = minOf(size.width, size.height) * 1.05f

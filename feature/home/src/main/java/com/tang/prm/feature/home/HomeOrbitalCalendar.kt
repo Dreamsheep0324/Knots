@@ -44,7 +44,9 @@ import java.util.Locale
 @Composable
 internal fun OrbitalCalendar(
     anniversaries: List<Anniversary>,
-    events: List<Event>
+    events: List<Event>,
+    canvasModifier: Modifier = Modifier.fillMaxWidth().height(242.dp),
+    modifier: Modifier = Modifier
 ) {
     val todayCal = Calendar.getInstance()
     val todayDay = todayCal.get(Calendar.DAY_OF_MONTH)
@@ -62,7 +64,7 @@ internal fun OrbitalCalendar(
     )
 
     AppCard(
-        modifier = Modifier.fillMaxWidth()
+        modifier = modifier.fillMaxWidth()
     ) {
         Column(modifier = Modifier.padding(Dimens.paddingCard)) {
             Row(
@@ -106,7 +108,7 @@ internal fun OrbitalCalendar(
 
             Spacer(modifier = Modifier.height(4.dp))
 
-            OrbitalCalendarCanvas(data = data, todayDay = todayDay)
+            OrbitalCalendarCanvas(data = data, todayDay = todayDay, modifier = canvasModifier)
 
             OrbitalCalendarEventList(
                 isCurrentMonth = data.isCurrentMonth,

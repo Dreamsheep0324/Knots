@@ -1,4 +1,4 @@
-﻿package com.tang.prm.feature.events
+package com.tang.prm.feature.events
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -7,8 +7,10 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ViewList
 import androidx.compose.material.icons.filled.*
@@ -20,6 +22,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.tang.prm.domain.model.AppStrings
@@ -32,11 +35,15 @@ import com.tang.prm.ui.navigation.AddEventRoute
 import com.tang.prm.ui.navigation.EventDetailRoute
 import com.tang.prm.ui.theme.Dimens
 import com.tang.prm.ui.theme.Primary
+import com.tang.prm.ui.theme.SignalGreen
+import com.tang.prm.ui.theme.SignalPurple
+import com.tang.prm.ui.theme.toComposeColor
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EventsScreen(
     navController: NavController,
+    isTabletLayout: Boolean = false,
     viewModel: EventsViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -51,118 +58,381 @@ fun EventsScreen(
     ) {
         TopAppBar(
             title = {
-                Text("事件", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.headlineSmall, color = MaterialTheme.colorScheme.onSurface)
+                Text(
+                    "事件",
+                    fontWeight = FontWeight.Bold,
+                    style = MaterialTheme.typography.headlineSmall,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
             },
             actions = {
-                Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                    viewModes.forEach { (key, label) ->
-                        val selected = uiState.data.viewMode == key
-                        Box(
-                            modifier = Modifier.size(36.dp).background(if (selected) Primary else MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(8.dp)).clickable { viewModel.onViewModeChange(key) },
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                when (key) {
-                                    "list" -> Icons.AutoMirrored.Filled.ViewList
-                                    else -> Icons.Default.Timeline
-                                },
-                                contentDescription = label,
-                                tint = if (selected) Color.White else MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.size(20.dp)
-                            )
+                if (!isTabletLayout) {
+                    Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                        viewModes.forEach { (key, label) ->
+                            val selected = uiState.data.viewMode == key
+                            Box(
+                                modifier = Modifier
+                                    .size(36.dp)
+                                    .background(
+                                        if (selected) Primary else MaterialTheme.colorScheme.surfaceVariant,
+                                        RoundedCornerShape(8.dp)
+                                    )
+                                    .clickable { viewModel.onViewModeChange(key) },
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    when (key) {
+                                        "list" -> Icons.AutoMirrored.Filled.ViewList
+                                        else -> Icons.Default.Timeline
+                                    },
+                                    contentDescription = label,
+                                    tint = if (selected) Color.White else MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
                         }
                     }
                 }
                 IconButton(onClick = { navController.navigate(AddEventRoute()) }) {
-                    Box(modifier = Modifier.size(40.dp).background(Primary.copy(alpha = 0.1f), CircleShape), contentAlignment = Alignment.Center) {
-                        Icon(Icons.Default.Add, contentDescription = "新建事件", tint = Primary, modifier = Modifier.size(22.dp))
+                    Box(
+                        modifier = Modifier
+                            .size(40.dp)
+                            .background(Primary.copy(alpha = 0.1f), CircleShape),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            Icons.Default.Add,
+                            contentDescription = "新建事件",
+                            tint = Primary,
+                            modifier = Modifier.size(22.dp)
+                        )
                     }
                 }
             },
             colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent)
         )
 
-        SearchBar(
-            query = searchState.query,
-            onQueryChange = viewModel::onSearchQueryChange,
-            modifier = Modifier.fillMaxWidth().padding(horizontal = Dimens.paddingPage),
-            placeholder = "搜索事件、描述、地点、人物"
-        )
+        if (isTabletLayout) {
+            TabletCalendarEventsContent(
+                uiState = uiState,
+                searchState = searchState,
+                onSearchQueryChange = viewModel::onSearchQueryChange,
+                onTypeSelect = viewModel::selectType,
+                onPreviousMonth = viewModel::onPreviousMonth,
+                onNextMonth = viewModel::onNextMonth,
+                onTodayClick = viewModel::onTodayClick,
+                onDateSelected = viewModel::onCalendarDateSelected,
+                onEventClick = { event -> navController.navigate(EventDetailRoute(event.id)) }
+            )
+        } else {
+            SearchBar(
+                query = searchState.query,
+                onQueryChange = viewModel::onSearchQueryChange,
+                modifier = Modifier.fillMaxWidth().padding(horizontal = Dimens.paddingPage),
+                placeholder = "搜索事件、描述、地点、人物"
+            )
 
-        Spacer(modifier = Modifier.height(6.dp))
+            Spacer(modifier = Modifier.height(6.dp))
 
-        LazyRow(
-            modifier = Modifier.padding(horizontal = Dimens.paddingPage),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            item {
-                val isAllSelected = uiState.data.selectedType == null
-                Surface(
-                    onClick = { viewModel.selectType(null) },
-                    shape = RoundedCornerShape(20.dp),
-                    color = if (isAllSelected) Primary else MaterialTheme.colorScheme.surfaceVariant
-                ) {
-                    Text(
-                        text = AppStrings.Tabs.ALL,
-                        modifier = Modifier.padding(horizontal = 14.dp, vertical = 5.dp),
-                        style = MaterialTheme.typography.labelMedium,
-                        fontWeight = if (isAllSelected) FontWeight.SemiBold else FontWeight.Normal,
-                        color = if (isAllSelected) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+            LazyRow(
+                modifier = Modifier.padding(horizontal = Dimens.paddingPage),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                item {
+                    val isAllSelected = uiState.data.selectedType == null
+                    Surface(
+                        onClick = { viewModel.selectType(null) },
+                        shape = RoundedCornerShape(20.dp),
+                        color = if (isAllSelected) Primary else MaterialTheme.colorScheme.surfaceVariant
+                    ) {
+                        Text(
+                            text = AppStrings.Tabs.ALL,
+                            modifier = Modifier.padding(horizontal = 14.dp, vertical = 5.dp),
+                            style = MaterialTheme.typography.labelMedium,
+                            fontWeight = if (isAllSelected) FontWeight.SemiBold else FontWeight.Normal,
+                            color = if (isAllSelected) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+                items(uiState.data.eventTypes, key = { it.id }) { eventType ->
+                    val isSelected = uiState.data.selectedType == eventType.name
+                    Surface(
+                        onClick = { viewModel.selectType(eventType.name) },
+                        shape = RoundedCornerShape(20.dp),
+                        color = if (isSelected) Primary else MaterialTheme.colorScheme.surfaceVariant
+                    ) {
+                        Text(
+                            text = eventType.name,
+                            modifier = Modifier.padding(horizontal = 14.dp, vertical = 5.dp),
+                            style = MaterialTheme.typography.labelMedium,
+                            fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
+                            color = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
                 }
             }
-            items(uiState.data.eventTypes, key = { it.id }) { eventType ->
-                val isSelected = uiState.data.selectedType == eventType.name
-                Surface(
-                    onClick = { viewModel.selectType(eventType.name) },
-                    shape = RoundedCornerShape(20.dp),
-                    color = if (isSelected) Primary else MaterialTheme.colorScheme.surfaceVariant
+
+            if (uiState.data.displayEvents.isEmpty() && !uiState.data.isLoading) {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Box(
+                            modifier = Modifier
+                                .size(100.dp)
+                                .background(Primary.copy(alpha = AnimationTokens.Alpha.faint), CircleShape),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                Icons.Default.Event,
+                                contentDescription = null,
+                                tint = Primary,
+                                modifier = Modifier.size(48.dp)
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(20.dp))
+                        Text(
+                            "还没有事件",
+                            style = MaterialTheme.typography.titleLarge,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Spacer(modifier = Modifier.height(6.dp))
+                        Text(
+                            "记录你的每一个重要时刻",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Spacer(modifier = Modifier.height(20.dp))
+                        Button(
+                            onClick = { navController.navigate(AddEventRoute()) },
+                            colors = ButtonDefaults.buttonColors(containerColor = Primary),
+                            shape = RoundedCornerShape(12.dp)
+                        ) {
+                            Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(18.dp))
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text("新建事件", fontWeight = FontWeight.SemiBold)
+                        }
+                    }
+                }
+            } else {
+                when (uiState.data.viewMode) {
+                    "list" -> {
+                        LazyColumn(
+                            modifier = Modifier.fillMaxSize(),
+                            contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 8.dp),
+                            verticalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            itemsIndexed(uiState.data.displayEvents, key = { _, it -> it.id }) { index, event ->
+                                EventCard(
+                                    event = event,
+                                    eventTypes = uiState.data.eventTypes,
+                                    onClick = { navController.navigate(EventDetailRoute(event.id)) },
+                                    modifier = Modifier.staggeredAppear(index = minOf(index, 15))
+                                )
+                            }
+                            item { Spacer(modifier = Modifier.height(100.dp).navigationBarsPadding()) }
+                        }
+                    }
+                    "timeline" -> {
+                        EventsTimelineView(
+                            events = uiState.data.displayEvents,
+                            onEventClick = { event -> navController.navigate(EventDetailRoute(event.id)) }
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// 平板日历+列表布局 (方案A)
+// ═══════════════════════════════════════════════════════════════
+
+@Composable
+private fun TabletCalendarEventsContent(
+    uiState: EventsUiState,
+    searchState: SearchState,
+    onSearchQueryChange: (String) -> Unit,
+    onTypeSelect: (String?) -> Unit,
+    onPreviousMonth: () -> Unit,
+    onNextMonth: () -> Unit,
+    onTodayClick: () -> Unit,
+    onDateSelected: (Long) -> Unit,
+    onEventClick: (com.tang.prm.domain.model.Event) -> Unit
+) {
+    Row(modifier = Modifier.fillMaxSize()) {
+        // ── 左面板：日历 + 统计 + 当日事件 ──
+        Column(
+            modifier = Modifier
+                .width(500.dp)
+                .fillMaxHeight()
+                .background(MaterialTheme.colorScheme.surface)
+                .verticalScroll(rememberScrollState())
+        ) {
+            CalendarHeader(
+                monthOffset = uiState.data.calendarMonthOffset,
+                onPrevious = onPreviousMonth,
+                onNext = onNextMonth,
+                onToday = onTodayClick
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            CalendarWeekdays()
+            CalendarGrid(
+                monthOffset = uiState.data.calendarMonthOffset,
+                selectedDate = uiState.data.selectedCalendarDate,
+                calendarEvents = uiState.data.calendarEvents,
+                onDateSelected = onDateSelected
+            )
+            CalendarStatsRow(stats = uiState.data.calendarStats)
+            HorizontalDivider(
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+                color = MaterialTheme.colorScheme.outline.copy(alpha = 0.15f)
+            )
+            SelectedDateEventsSection(
+                events = uiState.data.selectedDateEvents,
+                eventTypes = uiState.data.eventTypes,
+                onEventClick = onEventClick
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+        }
+
+        // ── 右面板：搜索 + 筛选 + 事件列表 ──
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxHeight()
+                .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.3f))
+        ) {
+            SearchBar(
+                query = searchState.query,
+                onQueryChange = onSearchQueryChange,
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 8.dp),
+                placeholder = "搜索事件、描述、地点、人物"
+            )
+
+            TabletFilterChips(
+                eventTypes = uiState.data.eventTypes,
+                selectedType = uiState.data.selectedType,
+                onTypeSelect = onTypeSelect
+            )
+
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 6.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "事件列表",
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Text(
+                    text = "${uiState.data.displayEvents.size} 件",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+
+            if (uiState.data.displayEvents.isEmpty() && !uiState.data.isLoading) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
                 ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Icon(
+                            Icons.Default.Event,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = AnimationTokens.Alpha.visible),
+                            modifier = Modifier.size(40.dp)
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = "没有符合条件的事件",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            } else {
+                DateGroupedEventList(
+                    events = uiState.data.displayEvents,
+                    eventTypes = uiState.data.eventTypes,
+                    onEventClick = onEventClick
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun TabletFilterChips(
+    eventTypes: List<com.tang.prm.domain.model.CustomType>,
+    selectedType: String?,
+    onTypeSelect: (String?) -> Unit
+) {
+    LazyRow(
+        modifier = Modifier.padding(horizontal = 24.dp, vertical = 6.dp),
+        horizontalArrangement = Arrangement.spacedBy(10.dp)
+    ) {
+        item {
+            val isAllSelected = selectedType == null
+            Surface(
+                onClick = { onTypeSelect(null) },
+                shape = RoundedCornerShape(22.dp),
+                color = if (isAllSelected) SignalGreen else MaterialTheme.colorScheme.surfaceVariant
+            ) {
+                Row(
+                    modifier = Modifier.padding(horizontal = 18.dp, vertical = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(8.dp)
+                            .background(
+                                if (isAllSelected) Color.White else SignalGreen,
+                                CircleShape
+                            )
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
                     Text(
-                        text = eventType.name,
-                        modifier = Modifier.padding(horizontal = 14.dp, vertical = 5.dp),
-                        style = MaterialTheme.typography.labelMedium,
-                        fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
-                        color = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
+                        text = AppStrings.Tabs.ALL,
+                        style = MaterialTheme.typography.labelLarge,
+                        fontWeight = if (isAllSelected) FontWeight.SemiBold else FontWeight.Normal,
+                        color = if (isAllSelected) Color.White else MaterialTheme.colorScheme.onSurfaceVariant,
+                        fontSize = 14.sp
                     )
                 }
             }
         }
-
-        if (uiState.data.displayEvents.isEmpty() && !uiState.data.isLoading) {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Box(modifier = Modifier.size(100.dp).background(Primary.copy(alpha = AnimationTokens.Alpha.faint), CircleShape), contentAlignment = Alignment.Center) {
-                        Icon(Icons.Default.Event, contentDescription = null, tint = Primary, modifier = Modifier.size(48.dp))
-                    }
-                    Spacer(modifier = Modifier.height(20.dp))
-                    Text("还没有事件", style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold)
-                    Spacer(modifier = Modifier.height(6.dp))
-                    Text("记录你的每一个重要时刻", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    Spacer(modifier = Modifier.height(20.dp))
-                    Button(onClick = { navController.navigate(AddEventRoute()) }, colors = ButtonDefaults.buttonColors(containerColor = Primary), shape = RoundedCornerShape(12.dp)) {
-                        Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(18.dp))
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Text("新建事件", fontWeight = FontWeight.SemiBold)
-                    }
-                }
-            }
-        } else {
-            when (uiState.data.viewMode) {
-                "list" -> {
-                    LazyColumn(
-                        modifier = Modifier.fillMaxSize(),
-                        contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 8.dp),
-                        verticalArrangement = Arrangement.spacedBy(10.dp)
-                    ) {
-                        itemsIndexed(uiState.data.displayEvents, key = { _, it -> it.id }) { index, event ->
-                            EventCard(event = event, eventTypes = uiState.data.eventTypes, onClick = { navController.navigate(EventDetailRoute(event.id)) }, modifier = Modifier.staggeredAppear(index = minOf(index, 15)))
-                        }
-                        item { Spacer(modifier = Modifier.height(100.dp).navigationBarsPadding()) }
-                    }
-                }
-                "timeline" -> {
-                    EventsTimelineView(events = uiState.data.displayEvents, onEventClick = { event -> navController.navigate(EventDetailRoute(event.id)) })
+        items(eventTypes, key = { it.id }) { eventType ->
+            val isSelected = selectedType == eventType.name
+            val chipColor = eventType.color?.toComposeColor(SignalPurple) ?: SignalPurple
+            Surface(
+                onClick = { onTypeSelect(eventType.name) },
+                shape = RoundedCornerShape(22.dp),
+                color = if (isSelected) chipColor else MaterialTheme.colorScheme.surfaceVariant
+            ) {
+                Row(
+                    modifier = Modifier.padding(horizontal = 18.dp, vertical = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(8.dp)
+                            .background(
+                                if (isSelected) Color.White else chipColor,
+                                CircleShape
+                            )
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        text = eventType.name,
+                        style = MaterialTheme.typography.labelLarge,
+                        fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
+                        color = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurfaceVariant,
+                        fontSize = 14.sp
+                    )
                 }
             }
         }

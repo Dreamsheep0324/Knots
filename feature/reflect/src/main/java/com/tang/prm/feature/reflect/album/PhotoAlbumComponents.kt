@@ -127,7 +127,8 @@ internal fun FilterTabsSection(
 internal fun PhotoStatsSection(
     photoCount: Int,
     contactCount: Int,
-    locationCount: Int
+    locationCount: Int,
+    isTabletLayout: Boolean = false
 ) {
     Surface(
         modifier = Modifier
@@ -158,35 +159,66 @@ internal fun PhotoStatsSection(
 
             Spacer(modifier = Modifier.height(14.dp))
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(10.dp)
-            ) {
+            if (isTabletLayout) {
+                // 平板：3列横排
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    PhotoStatCardItem(
+                        modifier = Modifier.weight(1f),
+                        title = "照片",
+                        value = photoCount.toString(),
+                        icon = Icons.Default.Image,
+                        color = SignalPurple
+                    )
+                    PhotoStatCardItem(
+                        modifier = Modifier.weight(1f),
+                        title = "人物",
+                        value = contactCount.toString(),
+                        icon = Icons.Default.People,
+                        color = SignalGreen
+                    )
+                    PhotoStatCardItem(
+                        modifier = Modifier.weight(1f),
+                        title = "地点",
+                        value = locationCount.toString(),
+                        icon = Icons.Default.Place,
+                        color = SignalAmber
+                    )
+                }
+            } else {
+                // 手机：2列 + 1行
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    PhotoStatCardItem(
+                        modifier = Modifier.weight(1f),
+                        title = "照片",
+                        value = photoCount.toString(),
+                        icon = Icons.Default.Image,
+                        color = SignalPurple
+                    )
+                    PhotoStatCardItem(
+                        modifier = Modifier.weight(1f),
+                        title = "人物",
+                        value = contactCount.toString(),
+                        icon = Icons.Default.People,
+                        color = SignalGreen
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(10.dp))
+
                 PhotoStatCardItem(
-                    modifier = Modifier.weight(1f),
-                    title = "照片",
-                    value = photoCount.toString(),
-                    icon = Icons.Default.Image,
-                    color = SignalPurple
-                )
-                PhotoStatCardItem(
-                    modifier = Modifier.weight(1f),
-                    title = "人物",
-                    value = contactCount.toString(),
-                    icon = Icons.Default.People,
-                    color = SignalGreen
+                    modifier = Modifier.fillMaxWidth(),
+                    title = "地点",
+                    value = locationCount.toString(),
+                    icon = Icons.Default.Place,
+                    color = SignalAmber
                 )
             }
-
-            Spacer(modifier = Modifier.height(10.dp))
-
-            PhotoStatCardItem(
-                modifier = Modifier.fillMaxWidth(),
-                title = "地点",
-                value = locationCount.toString(),
-                icon = Icons.Default.Place,
-                color = SignalAmber
-            )
         }
     }
 }
