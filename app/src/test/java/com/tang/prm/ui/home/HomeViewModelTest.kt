@@ -1,5 +1,6 @@
 package com.tang.prm.ui.home
 
+import androidx.lifecycle.viewModelScope
 import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat
 import com.tang.prm.domain.model.*
@@ -17,6 +18,7 @@ import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
@@ -76,6 +78,9 @@ class HomeViewModelTest {
 
     @AfterEach
     fun tearDown() {
+        // 取消 ViewModel 的 viewModelScope，清理 greetingFlow 在 Dispatchers.Default 上
+        // 运行的无限循环协程，避免未捕获异常推迟到下一个测试
+        viewModel.viewModelScope.cancel()
         Dispatchers.resetMain()
     }
 
@@ -98,6 +103,8 @@ class HomeViewModelTest {
             assertThat(state.contactCount).isEqualTo(10)
             cancelAndIgnoreRemainingEvents()
         }
+        // 清理 freshViewModel 的协程，避免 greetingFlow 在 Default 调度器上泄漏
+        freshViewModel.viewModelScope.cancel()
     }
 
     @Test
