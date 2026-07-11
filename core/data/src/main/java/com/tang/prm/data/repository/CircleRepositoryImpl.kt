@@ -55,9 +55,9 @@ class CircleRepositoryImpl @Inject constructor(
     }
 
     override suspend fun updateCircleOrder(circles: List<Circle>) {
-        circles.forEachIndexed { index, circle ->
-            circleDao.updateCircle(circle.copy(sortOrder = index).toEntity())
-        }
+        circleDao.updateCircleOrder(circles.mapIndexed { index, circle ->
+            circle.copy(sortOrder = index).toEntity()
+        })
     }
 
     override fun getCircleCount(): Flow<Int> = circleDao.getCircleCount()

@@ -1,4 +1,4 @@
-﻿package com.tang.prm.feature.chat
+package com.tang.prm.feature.chat
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -25,7 +25,6 @@ import androidx.compose.ui.unit.sp
 import com.tang.prm.ui.animation.core.AnimationTokens
 import com.tang.prm.ui.components.AppCard
 import com.tang.prm.ui.components.ContactAvatar
-import com.tang.prm.ui.theme.Primary
 
 @Composable
 internal fun ConversationItem(
@@ -68,7 +67,7 @@ internal fun ConversationItem(
                             androidx.compose.material3.Icon(
                                 Icons.AutoMirrored.Filled.Chat,
                                 contentDescription = null,
-                                tint = Primary.copy(alpha = 0.6f),
+                                tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.6f),
                                 modifier = Modifier.size(14.dp)
                             )
                         }
@@ -107,7 +106,7 @@ internal fun ConversationItem(
                     Spacer(modifier = Modifier.height(6.dp))
                     Surface(
                         shape = RoundedCornerShape(4.dp),
-                        color = Primary.copy(alpha = AnimationTokens.Alpha.faint)
+                        color = MaterialTheme.colorScheme.primary.copy(alpha = AnimationTokens.Alpha.faint)
                     ) {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
@@ -117,13 +116,13 @@ internal fun ConversationItem(
                             androidx.compose.material3.Icon(
                                 Icons.AutoMirrored.Filled.Chat,
                                 contentDescription = null,
-                                tint = Primary,
+                                tint = MaterialTheme.colorScheme.primary,
                                 modifier = Modifier.size(10.dp)
                             )
                             Text(
                                 text = conversation.title,
                                 style = MaterialTheme.typography.labelSmall,
-                                color = Primary,
+                                color = MaterialTheme.colorScheme.primary,
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis,
                                 fontSize = 10.sp

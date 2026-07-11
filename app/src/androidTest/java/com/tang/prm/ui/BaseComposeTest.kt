@@ -19,10 +19,12 @@ abstract class BaseComposeTest {
         composeTestRule.mainClock.advanceTimeBy(500)
     }
 
-    /** 等待异步数据加载 */
-    protected fun waitForData(timeoutMs: Long = 3000) {
-        composeTestRule.waitUntil(timeoutMs) {
-            true
-        }
+    /**
+     * 等待异步数据加载完成，直到 [condition] 返回 true 或超时。
+     *
+     * 示例：`waitForData { composeTestRule.onNodeWithText("加载中").assertDoesNotExist() }`
+     */
+    protected fun waitForData(timeoutMs: Long = 3000, condition: () -> Boolean) {
+        composeTestRule.waitUntil(timeoutMs, condition)
     }
 }

@@ -3,6 +3,7 @@ package com.tang.prm.ui.animation.primitives
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.withFrameNanos
@@ -72,12 +73,9 @@ fun rememberFloatingOffset(
         repeatMode = RepeatMode.Reverse,
         label = "FloatingOffset"
     )
-    return produceState(
-        initialValue = 0.dp,
-        key1 = floatValue.value
-    ) {
-        value = (floatValue.value * range.value).dp
-    }
+    // 用 derivedStateOf 替代 produceState(key1 = floatValue.value)，
+    // 避免每帧重建协程；derivedStateOf 自动追踪 floatValue 变化
+    return remember { derivedStateOf { (floatValue.value * range.value).dp } }
 }
 
 @Composable

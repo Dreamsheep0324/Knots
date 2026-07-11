@@ -107,6 +107,7 @@ class ContactRepositoryImplTest {
         val result = repository.insertContact(domain)
 
         assertThat(result).isEqualTo(1L)
+        coVerify { contactDao.insertContact(entity) }
     }
 
     @Test

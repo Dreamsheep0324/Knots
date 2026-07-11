@@ -35,6 +35,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.Stable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -61,6 +62,7 @@ import com.tang.prm.domain.util.DateUtils
 
 private val TerminalGreen = SignalGreen
 
+@Stable
 internal data class ChannelDef(
     val name: String,
     val color: Color,
@@ -129,7 +131,8 @@ fun HomeScreen(
                 uiState = uiState,
                 channels = channels,
                 signalStrengths = signalStrengths,
-                onChannelClick = onChannelClick
+                onChannelClick = onChannelClick,
+                onDecorPhotoPathChange = viewModel::setDecorPhotoPath
             )
         } else {
             HomeTopBar(

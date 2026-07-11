@@ -1,0 +1,104 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues></ManuallySuppressedIssues>
+  <CurrentIssues>
+    <ID>CyclomaticComplexMethod:LiuyaoCastComponents.kt$@Composable internal fun LastResultIndicator(yaoResults: List&lt;Int&gt;, lastCoinFlips: List&lt;Int&gt;)</ID>
+    <ID>CyclomaticComplexMethod:RecordDetailHeader.kt$@Composable internal fun RecordDetailHeader( originalName: String, description: String, isMeihua: Boolean, methodLabel: String, methodColor: Color, calculationMethod: String, palaceName: String, palaceWuxing: String, changedName: String, interName: String, voidBranches: List&lt;String&gt;, ganzhiStr: String, season: String, tiSeasonState: String, yongSeasonState: String, movingYaoName: String, movingYaoDesc: String, changingYaos: List&lt;Triple&lt;Int, Boolean, String&gt;&gt;, dateStr: String )</ID>
+    <ID>CyclomaticComplexMethod:RecordDetailScreen.kt$@Composable fun RecordDetailScreen( record: DivinationRecord, onBack: () -&gt; Unit, onDelete: () -&gt; Unit )</ID>
+    <ID>FunctionNaming:AiDeepSection.kt$@Composable fun AiDeepSection( liuyaoData: LiuyaoData, viewModel: AiViewModel, onQuestionChange: (String) -&gt; Unit = {}, onAnalysisComplete: (String) -&gt; Unit = {} )</ID>
+    <ID>FunctionNaming:DivinationHistoryComponents.kt$@Composable internal fun RecordItem( record: DivinationRecord, onClick: () -&gt; Unit, onDelete: () -&gt; Unit )</ID>
+    <ID>FunctionNaming:DivinationHistoryScreen.kt$@Composable fun DivinationHistoryScreen( navController: NavController, viewModel: DivinationHistoryViewModel = hiltViewModel() )</ID>
+    <ID>FunctionNaming:DivinationScreen.kt$@Composable fun DivinationScreen( navController: NavController, viewModel: DivinationViewModel = hiltViewModel() )</ID>
+    <ID>FunctionNaming:DivinationScreen.kt$@Composable private fun MethodCard( modifier: Modifier = Modifier, icon: String, name: String, desc: String, selected: Boolean, onClick: () -&gt; Unit )</ID>
+    <ID>FunctionNaming:DivinationScreen.kt$@Composable private fun StepIndicator(currentStep: Int, totalSteps: Int = 3)</ID>
+    <ID>FunctionNaming:ExternalOmenComponents.kt$@Composable internal fun CategoryCard( category: ExternalOmenData.OmenCategory, selected: ExternalOmenOption?, onSelect: (ExternalOmenOption) -&gt; Unit )</ID>
+    <ID>FunctionNaming:ExternalOmenComponents.kt$@Composable internal fun CountSection( count: String, onCountChange: (String) -&gt; Unit )</ID>
+    <ID>FunctionNaming:ExternalOmenComponents.kt$@Composable internal fun OptionChip( option: ExternalOmenOption, isSelected: Boolean, onClick: () -&gt; Unit, modifier: Modifier = Modifier )</ID>
+    <ID>FunctionNaming:ExternalOmenComponents.kt$@OptIn(ExperimentalLayoutApi::class) @Composable internal fun SelectedSummary(selections: Map&lt;String, ExternalOmenOption&gt;)</ID>
+    <ID>FunctionNaming:ExternalOmenScreen.kt$@Composable fun ExternalOmenScreen( navController: NavController, viewModel: DivinationViewModel = hiltViewModel( viewModelStoreOwner = navController.getBackStackEntry(DivinationRoute) ) )</ID>
+    <ID>FunctionNaming:GuaciSection.kt$@Composable internal fun GuaciSection( description: String, guaciMeaning: String, hexagramMeaning: String, isMeihua: Boolean, changingYaos: List&lt;Triple&lt;Int, Boolean, String&gt;&gt; )</ID>
+    <ID>FunctionNaming:HexagramDisplay.kt$@Composable fun HexagramDisplay( yaoData: List&lt;YaoDisplayData&gt;, modifier: Modifier = Modifier )</ID>
+    <ID>FunctionNaming:HexagramDisplay.kt$@Composable fun ResultHexagramDisplay( yaoData: List&lt;YaoDisplayData&gt;, changingNote: String, modifier: Modifier = Modifier )</ID>
+    <ID>FunctionNaming:HexagramDisplay.kt$@Composable fun ShallowDeepTabSwitcher( showDeep: Boolean, onTabChange: (Boolean) -&gt; Unit, accentColor: Color )</ID>
+    <ID>FunctionNaming:LiuyaoCastComponents.kt$@Composable internal fun CastActionsSection( allDone: Boolean, isCasting: Boolean, yaoResults: List&lt;Int&gt;, onCast: () -&gt; Unit, onReset: () -&gt; Unit, onViewResult: () -&gt; Unit )</ID>
+    <ID>FunctionNaming:LiuyaoCastComponents.kt$@Composable internal fun CastDisplaySection( yaoResults: List&lt;Int&gt;, lastCoinFlips: List&lt;Int&gt;, currentYaoIndex: Int, allDone: Boolean, coinScaleY: Float, glowAlpha: Float, isCasting: Boolean )</ID>
+    <ID>FunctionNaming:LiuyaoCastComponents.kt$@Composable internal fun CoinArea( isCasting: Boolean, coinScaleY: Float, lastCoinFlips: List&lt;Int&gt;, glowAlpha: Float )</ID>
+    <ID>FunctionNaming:LiuyaoCastComponents.kt$@Composable internal fun LastResultIndicator(yaoResults: List&lt;Int&gt;, lastCoinFlips: List&lt;Int&gt;)</ID>
+    <ID>FunctionNaming:LiuyaoCastComponents.kt$@Composable internal fun ProgressRow(currentYaoIndex: Int)</ID>
+    <ID>FunctionNaming:LiuyaoCastComponents.kt$@Composable internal fun StepIndicator(currentStep: Int, totalSteps: Int = 3)</ID>
+    <ID>FunctionNaming:LiuyaoCastScreen.kt$@Composable fun LiuyaoCastScreen( navController: NavController, viewModel: DivinationViewModel = hiltViewModel( viewModelStoreOwner = navController.getBackStackEntry(DivinationRoute) ) )</ID>
+    <ID>FunctionNaming:LiuyaoDetailContent.kt$@Composable internal fun LiuyaoTableSection( yaosDetail: List&lt;LiuyaoYaoRecord&gt; )</ID>
+    <ID>FunctionNaming:LiuyaoDetailContent.kt$@Composable internal fun LiuyaoYaoDetailSection( yaosDetail: List&lt;LiuyaoYaoRecord&gt;, specialPattern: String?, specialAdvice: String?, isChaotic: Boolean, chaoticReason: String )</ID>
+    <ID>FunctionNaming:LiuyaoResultComponents.kt$@Composable internal fun BottomNav(onReset: () -&gt; Unit, onShare: () -&gt; Unit)</ID>
+    <ID>FunctionNaming:LiuyaoResultComponents.kt$@Composable internal fun InfoRows(liuyaoData: LiuyaoData)</ID>
+    <ID>FunctionNaming:LiuyaoResultComponents.kt$@Composable internal fun InterpretationSection(liuyaoData: LiuyaoData)</ID>
+    <ID>FunctionNaming:LiuyaoResultComponents.kt$@Composable internal fun LiuyaoHexagramInfoSection(liuyaoData: LiuyaoData)</ID>
+    <ID>FunctionNaming:LiuyaoResultComponents.kt$@Composable internal fun TagsRow(liuyaoData: LiuyaoData)</ID>
+    <ID>FunctionNaming:LiuyaoResultComponents.kt$@Composable private fun InfoRow(label: String, value: String)</ID>
+    <ID>FunctionNaming:LiuyaoResultComponents.kt$@Composable private fun InfoTag(text: String, color: Color)</ID>
+    <ID>FunctionNaming:LiuyaoResultScreen.kt$@Composable fun LiuyaoResultScreen( navController: NavController, viewModel: DivinationViewModel = hiltViewModel( viewModelStoreOwner = navController.getBackStackEntry(DivinationRoute) ), aiViewModel: AiViewModel = hiltViewModel() )</ID>
+    <ID>FunctionNaming:LiuyaoResultTables.kt$@Composable internal fun YaoDetailTable(liuyaoData: LiuyaoData)</ID>
+    <ID>FunctionNaming:LiuyaoResultTables.kt$@Composable private fun RowScope.TableCell( text: String, weight: Float, color: Color )</ID>
+    <ID>FunctionNaming:LiuyaoResultTables.kt$@Composable private fun RowScope.TableHeaderCell(text: String, weight: Float)</ID>
+    <ID>FunctionNaming:MeihuaAiDeepSection.kt$@Composable fun MeihuaAiDeepSection( meihuaData: MeihuaData, viewModel: AiViewModel, onQuestionChange: (String) -&gt; Unit = {}, onAnalysisComplete: (String) -&gt; Unit = {} )</ID>
+    <ID>FunctionNaming:MeihuaDetailContent.kt$@Composable internal fun MeihuaRelationsSection( tiYongRelation: String, yongGuaName: String, lowerName: String, upperName: String, inter1Relation: String, inter2Relation: String, changedName: String, changedRelation: String )</ID>
+    <ID>FunctionNaming:MeihuaDetailContent.kt$@Composable internal fun MeihuaTiYongSection( tiGuaName: String, tiGuaElement: String, tiGuaNature: String, tiSeasonState: String, yongGuaName: String, yongGuaElement: String, yongGuaNature: String, yongSeasonState: String, tiYongRelation: String, interName: String, inter1Relation: String, inter2Relation: String, changedName: String, changedRelation: String )</ID>
+    <ID>FunctionNaming:MeihuaMethodComponents.kt$@Composable internal fun MethodCard( modifier: Modifier = Modifier, icon: ImageVector, name: String, desc: String, selected: Boolean, onClick: () -&gt; Unit )</ID>
+    <ID>FunctionNaming:MeihuaMethodComponents.kt$@Composable internal fun NumberInputDialog( currentValueA: String, currentValueB: String, onValueChangeA: (String) -&gt; Unit, onValueChangeB: (String) -&gt; Unit, onDismiss: () -&gt; Unit, onConfirm: () -&gt; Unit )</ID>
+    <ID>FunctionNaming:MeihuaMethodScreen.kt$@Composable fun MeihuaMethodScreen( navController: NavController, viewModel: DivinationViewModel = hiltViewModel( viewModelStoreOwner = navController.getBackStackEntry(DivinationRoute) ) )</ID>
+    <ID>FunctionNaming:MeihuaResultComponents.kt$@Composable internal fun BottomNav(onReset: () -&gt; Unit, onShare: () -&gt; Unit)</ID>
+    <ID>FunctionNaming:MeihuaResultComponents.kt$@Composable internal fun InterpretationSection(data: MeihuaData)</ID>
+    <ID>FunctionNaming:MeihuaResultComponents.kt$@Composable internal fun MeihuaHexagramInfoSection(data: MeihuaData)</ID>
+    <ID>FunctionNaming:MeihuaResultComponents.kt$@Composable internal fun MeihuaInfoRow(label: String, value: String)</ID>
+    <ID>FunctionNaming:MeihuaResultComponents.kt$@Composable internal fun MeihuaInfoTag(text: String, color: Color)</ID>
+    <ID>FunctionNaming:MeihuaResultComponents.kt$@Composable internal fun MeihuaSectionHeader(title: String)</ID>
+    <ID>FunctionNaming:MeihuaResultComponents.kt$@Composable internal fun StepIndicator(currentStep: Int, totalSteps: Int = 3)</ID>
+    <ID>FunctionNaming:MeihuaResultScreen.kt$@Composable fun MeihuaResultScreen( navController: NavController, viewModel: DivinationViewModel = hiltViewModel( viewModelStoreOwner = navController.getBackStackEntry(DivinationRoute) ), aiViewModel: AiViewModel = hiltViewModel() )</ID>
+    <ID>FunctionNaming:MeihuaResultTables.kt$@Composable internal fun RelationMap(data: MeihuaData)</ID>
+    <ID>FunctionNaming:MeihuaResultTables.kt$@Composable internal fun YaoDetailTable(yaos: List&lt;MeihuaYaoDetail&gt;, data: MeihuaData)</ID>
+    <ID>FunctionNaming:MeihuaResultTables.kt$@Composable private fun MeihuaRelationTag(relation: String)</ID>
+    <ID>FunctionNaming:MeihuaResultTables.kt$@Composable private fun RowScope.MeihuaTableCell(text: String, weight: Float, color: Color)</ID>
+    <ID>FunctionNaming:MeihuaResultTables.kt$@Composable private fun RowScope.MeihuaTableHeaderCell(text: String, weight: Float)</ID>
+    <ID>FunctionNaming:RecordDetailFooter.kt$@Composable internal fun RecordDetailFooter( aiAnalysis: String, onDelete: () -&gt; Unit )</ID>
+    <ID>FunctionNaming:RecordDetailHeader.kt$@Composable internal fun RecordDetailHeader( originalName: String, description: String, isMeihua: Boolean, methodLabel: String, methodColor: Color, calculationMethod: String, palaceName: String, palaceWuxing: String, changedName: String, interName: String, voidBranches: List&lt;String&gt;, ganzhiStr: String, season: String, tiSeasonState: String, yongSeasonState: String, movingYaoName: String, movingYaoDesc: String, changingYaos: List&lt;Triple&lt;Int, Boolean, String&gt;&gt;, dateStr: String )</ID>
+    <ID>FunctionNaming:RecordDetailScreen.kt$@Composable fun RecordDetailScreen( record: DivinationRecord, onBack: () -&gt; Unit, onDelete: () -&gt; Unit )</ID>
+    <ID>FunctionNaming:SharedComponents.kt$@Composable internal fun InfoRow(label: String, value: String)</ID>
+    <ID>FunctionNaming:SharedComponents.kt$@Composable internal fun InfoTag(text: String, color: Color)</ID>
+    <ID>FunctionNaming:SharedComponents.kt$@Composable internal fun RecordSectionHeader(title: String)</ID>
+    <ID>FunctionNaming:SharedComponents.kt$@Composable internal fun RelationTag(relation: String)</ID>
+    <ID>FunctionNaming:SharedComponents.kt$@Composable internal fun RowScope.TableCell( text: String, weight: Float, color: Color )</ID>
+    <ID>FunctionNaming:SharedComponents.kt$@Composable internal fun RowScope.TableHeaderCell(text: String, weight: Float)</ID>
+    <ID>LongMethod:AiDeepSection.kt$@Composable fun AiDeepSection( liuyaoData: LiuyaoData, viewModel: AiViewModel, onQuestionChange: (String) -&gt; Unit = {}, onAnalysisComplete: (String) -&gt; Unit = {} )</ID>
+    <ID>LongMethod:DivinationHistoryComponents.kt$@Composable internal fun RecordItem( record: DivinationRecord, onClick: () -&gt; Unit, onDelete: () -&gt; Unit )</ID>
+    <ID>LongMethod:DivinationHistoryScreen.kt$@Composable fun DivinationHistoryScreen( navController: NavController, viewModel: DivinationHistoryViewModel = hiltViewModel() )</ID>
+    <ID>LongMethod:DivinationScreen.kt$@Composable fun DivinationScreen( navController: NavController, viewModel: DivinationViewModel = hiltViewModel() )</ID>
+    <ID>LongMethod:ExternalOmenScreen.kt$@Composable fun ExternalOmenScreen( navController: NavController, viewModel: DivinationViewModel = hiltViewModel( viewModelStoreOwner = navController.getBackStackEntry(DivinationRoute) ) )</ID>
+    <ID>LongMethod:HexagramDisplay.kt$@Composable fun HexagramDisplay( yaoData: List&lt;YaoDisplayData&gt;, modifier: Modifier = Modifier )</ID>
+    <ID>LongMethod:HexagramDisplay.kt$@Composable fun ResultHexagramDisplay( yaoData: List&lt;YaoDisplayData&gt;, changingNote: String, modifier: Modifier = Modifier )</ID>
+    <ID>LongMethod:LiuyaoCastScreen.kt$@Composable fun LiuyaoCastScreen( navController: NavController, viewModel: DivinationViewModel = hiltViewModel( viewModelStoreOwner = navController.getBackStackEntry(DivinationRoute) ) )</ID>
+    <ID>LongMethod:LiuyaoDetailContent.kt$@Composable internal fun LiuyaoTableSection( yaosDetail: List&lt;LiuyaoYaoRecord&gt; )</ID>
+    <ID>LongMethod:LiuyaoResultComponents.kt$@Composable internal fun InterpretationSection(liuyaoData: LiuyaoData)</ID>
+    <ID>LongMethod:LiuyaoResultScreen.kt$@Composable fun LiuyaoResultScreen( navController: NavController, viewModel: DivinationViewModel = hiltViewModel( viewModelStoreOwner = navController.getBackStackEntry(DivinationRoute) ), aiViewModel: AiViewModel = hiltViewModel() )</ID>
+    <ID>LongMethod:LiuyaoResultTables.kt$@Composable internal fun YaoDetailTable(liuyaoData: LiuyaoData)</ID>
+    <ID>LongMethod:MeihuaAiDeepSection.kt$@Composable fun MeihuaAiDeepSection( meihuaData: MeihuaData, viewModel: AiViewModel, onQuestionChange: (String) -&gt; Unit = {}, onAnalysisComplete: (String) -&gt; Unit = {} )</ID>
+    <ID>LongMethod:MeihuaMethodComponents.kt$@Composable internal fun NumberInputDialog( currentValueA: String, currentValueB: String, onValueChangeA: (String) -&gt; Unit, onValueChangeB: (String) -&gt; Unit, onDismiss: () -&gt; Unit, onConfirm: () -&gt; Unit )</ID>
+    <ID>LongMethod:MeihuaMethodScreen.kt$@Composable fun MeihuaMethodScreen( navController: NavController, viewModel: DivinationViewModel = hiltViewModel( viewModelStoreOwner = navController.getBackStackEntry(DivinationRoute) ) )</ID>
+    <ID>LongMethod:MeihuaResultScreen.kt$@Composable fun MeihuaResultScreen( navController: NavController, viewModel: DivinationViewModel = hiltViewModel( viewModelStoreOwner = navController.getBackStackEntry(DivinationRoute) ), aiViewModel: AiViewModel = hiltViewModel() )</ID>
+    <ID>LongMethod:RecordDetailScreen.kt$@Composable fun RecordDetailScreen( record: DivinationRecord, onBack: () -&gt; Unit, onDelete: () -&gt; Unit )</ID>
+    <ID>LongParameterList:MeihuaDetailContent.kt$( tiGuaName: String, tiGuaElement: String, tiGuaNature: String, tiSeasonState: String, yongGuaName: String, yongGuaElement: String, yongGuaNature: String, yongSeasonState: String, tiYongRelation: String, interName: String, inter1Relation: String, inter2Relation: String, changedName: String, changedRelation: String )</ID>
+    <ID>LongParameterList:MeihuaDetailContent.kt$( tiYongRelation: String, yongGuaName: String, lowerName: String, upperName: String, inter1Relation: String, inter2Relation: String, changedName: String, changedRelation: String )</ID>
+    <ID>LongParameterList:RecordDetailHeader.kt$( originalName: String, description: String, isMeihua: Boolean, methodLabel: String, methodColor: Color, calculationMethod: String, palaceName: String, palaceWuxing: String, changedName: String, interName: String, voidBranches: List&lt;String&gt;, ganzhiStr: String, season: String, tiSeasonState: String, yongSeasonState: String, movingYaoName: String, movingYaoDesc: String, changingYaos: List&lt;Triple&lt;Int, Boolean, String&gt;&gt;, dateStr: String )</ID>
+    <ID>MatchingDeclarationName:HexagramDisplay.kt$YaoDisplayData</ID>
+    <ID>MatchingDeclarationName:SharedComponents.kt$LiuyaoYaoRecord</ID>
+    <ID>MaxLineLength:AiDeepSection.kt$border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = if (question.isNotBlank()) 0.6f else 0.2f))</ID>
+    <ID>MaxLineLength:AiDeepSection.kt$color = if (gender == option) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface</ID>
+    <ID>MaxLineLength:AiDeepSection.kt$containerColor = if (question.isNotBlank()) MaterialTheme.colorScheme.primary.copy(alpha = 0.08f) else MaterialTheme.colorScheme.surfaceVariant</ID>
+    <ID>MaxLineLength:DivinationScreen.kt$Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "返回", tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(22.dp))</ID>
+    <ID>MaxLineLength:ExternalOmenScreen.kt$containerColor = if (canProceed) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)</ID>
+    <ID>MaxLineLength:MeihuaAiDeepSection.kt$border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = if (question.isNotBlank()) 0.6f else 0.2f))</ID>
+    <ID>MaxLineLength:MeihuaAiDeepSection.kt$color = if (gender == option) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface</ID>
+    <ID>MaxLineLength:MeihuaAiDeepSection.kt$containerColor = if (question.isNotBlank()) MaterialTheme.colorScheme.primary.copy(alpha = 0.08f) else MaterialTheme.colorScheme.surfaceVariant</ID>
+    <ID>MaxLineLength:MeihuaResultComponents.kt$lines.add("体卦${data.tiGua.element}于${data.analysis.season}${data.analysis.tiSeasonState}，用卦${data.yongGua.element}于${data.analysis.season}${data.analysis.yongSeasonState}。")</ID>
+    <ID>TooGenericExceptionCaught:AiViewModel.kt$AiViewModel$e: Exception</ID>
+  </CurrentIssues>
+</SmellBaseline>

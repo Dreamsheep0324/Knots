@@ -23,7 +23,6 @@ import androidx.navigation.NavController
 import android.widget.Toast
 import androidx.compose.material.icons.automirrored.filled.Help
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.tang.prm.ui.theme.Primary
 import com.tang.prm.ui.theme.Dimens
 import com.tang.prm.ui.theme.DialogDefaults
 
@@ -72,7 +71,7 @@ fun ProfileScreen(navController: NavController, viewModel: ProfileViewModel = hi
 private fun ProfileHeader(userName: String, userSignature: String, onEditClick: () -> Unit) {
     Card(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(16.dp)) {
         Column(modifier = Modifier.fillMaxWidth().padding(24.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-            Box(modifier = Modifier.size(80.dp).background(Primary, CircleShape), contentAlignment = Alignment.Center) {
+            Box(modifier = Modifier.size(80.dp).background(MaterialTheme.colorScheme.primary, CircleShape), contentAlignment = Alignment.Center) {
                 Icon(Icons.Default.Person, contentDescription = null, tint = Color.White, modifier = Modifier.size(48.dp))
             }
             Spacer(modifier = Modifier.height(16.dp))
@@ -115,7 +114,7 @@ private fun EditProfileDialog(currentName: String, currentSignature: String, onD
 @Composable
 private fun SettingsSection(title: String, content: @Composable ColumnScope.() -> Unit) {
     Column {
-        Text(title, style = MaterialTheme.typography.titleSmall, color = Primary, fontWeight = FontWeight.Medium, modifier = Modifier.padding(vertical = 8.dp))
+        Text(title, style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Medium, modifier = Modifier.padding(vertical = 8.dp))
         Card(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(12.dp)) { Column(content = content) }
     }
 }
@@ -124,7 +123,7 @@ private fun SettingsSection(title: String, content: @Composable ColumnScope.() -
 private fun SettingsItem(icon: ImageVector, title: String, subtitle: String, onClick: () -> Unit) {
     Surface(onClick = onClick, color = Color.Transparent) {
         Row(modifier = Modifier.fillMaxWidth().padding(Dimens.paddingCard), verticalAlignment = Alignment.CenterVertically) {
-            Icon(icon, contentDescription = null, tint = Primary, modifier = Modifier.size(24.dp))
+            Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(24.dp))
             Spacer(modifier = Modifier.width(16.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(title, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Medium)

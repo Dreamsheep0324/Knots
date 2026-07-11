@@ -13,6 +13,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -51,9 +52,8 @@ class AddSubscriptionViewModel @Inject constructor(
 
     private fun loadCategoryOptions() {
         viewModelScope.launch {
-            customTypeRepository.getTypesByCategory(CustomCategories.SUBSCRIPTION_CATEGORY).collect { types ->
-                _uiState.update { it.copy(categoryOptions = types) }
-            }
+            val types = customTypeRepository.getTypesByCategory(CustomCategories.SUBSCRIPTION_CATEGORY).first()
+            _uiState.update { it.copy(categoryOptions = types) }
         }
     }
 

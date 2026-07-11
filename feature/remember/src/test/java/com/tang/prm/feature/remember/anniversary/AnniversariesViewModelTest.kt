@@ -10,6 +10,7 @@ import com.tang.prm.domain.usecase.GetAnniversaryDisplayUseCase
 import com.tang.prm.domain.util.DateCalcUtils
 import com.tang.prm.domain.util.DateUtils
 import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.junit5.MockKExtension
 import io.mockk.mockk
@@ -100,6 +101,6 @@ class AnniversariesViewModelTest {
     fun deleteAnniversaryCallsRepository() = runTest {
         coEvery { anniversaryRepository.deleteAnniversary(any()) } returns Unit
         viewModel.deleteAnniversary(1L)
-        coEvery { anniversaryRepository.deleteAnniversary(1L) }
+        coVerify { anniversaryRepository.deleteAnniversary(1L) }
     }
 }

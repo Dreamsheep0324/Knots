@@ -19,7 +19,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.tang.prm.ui.theme.Primary
 import com.tang.prm.ui.animation.core.AnimationTokens
 import com.tang.prm.ui.theme.DialogDefaults
 
@@ -68,7 +67,7 @@ fun AppDatePicker(
     initialDate: Long? = null,
     confirmText: String = "确定",
     dismissText: String = "取消",
-    confirmColor: Color = Primary,
+    confirmColor: Color = MaterialTheme.colorScheme.primary,
     dismissColor: Color = MaterialTheme.colorScheme.onSurfaceVariant
 ) {
     if (show) {
@@ -99,14 +98,14 @@ fun AppDatePicker(
                     weekdayContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
                     subheadContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
                     yearContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                    currentYearContentColor = Primary,
+                    currentYearContentColor = MaterialTheme.colorScheme.primary,
                     selectedYearContentColor = Color.White,
-                    selectedYearContainerColor = Primary,
+                    selectedYearContainerColor = MaterialTheme.colorScheme.primary,
                     dayContentColor = MaterialTheme.colorScheme.onSurface,
                     selectedDayContentColor = Color.White,
-                    selectedDayContainerColor = Primary,
-                    todayContentColor = Primary,
-                    todayDateBorderColor = Primary
+                    selectedDayContainerColor = MaterialTheme.colorScheme.primary,
+                    todayContentColor = MaterialTheme.colorScheme.primary,
+                    todayDateBorderColor = MaterialTheme.colorScheme.primary
                 )
             )
         }
@@ -135,7 +134,7 @@ fun FormScreenScaffold(
                 },
                 actions = {
                     TextButton(onClick = onSaveClick, enabled = saveEnabled) {
-                        Text("保存", color = Primary, fontWeight = FontWeight.Bold)
+                        Text("保存", color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent)
@@ -149,7 +148,7 @@ fun FormScreenScaffold(
 @Composable
 fun DetailSection(
     title: String,
-    accentColor: Color = Primary,
+    accentColor: Color = MaterialTheme.colorScheme.primary,
     content: @Composable ColumnScope.() -> Unit
 ) {
     AppCard(modifier = Modifier.fillMaxWidth()) {
@@ -172,7 +171,7 @@ fun DetailInfoRow(
     icon: ImageVector,
     label: String,
     value: String,
-    iconColor: Color = Primary,
+    iconColor: Color = MaterialTheme.colorScheme.primary,
     valueColor: Color = MaterialTheme.colorScheme.onSurface,
     maxLines: Int = 1
 ) {

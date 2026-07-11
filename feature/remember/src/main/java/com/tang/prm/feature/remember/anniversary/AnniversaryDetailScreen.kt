@@ -82,6 +82,7 @@ fun AnniversaryDetailScreen(
     ) { padding ->
         AnniversaryDetailBody(
             uiState = uiState,
+            showActionsInBody = false,
             onEdit = {
                 uiState.anniversary?.let {
                     navController.navigate(EditAnniversaryRoute(it.id))
@@ -130,6 +131,7 @@ fun AnniversaryDetailContent(
 
     AnniversaryDetailBody(
         uiState = uiState,
+        showActionsInBody = true,
         onEdit = onEdit,
         onDelete = { showDeleteDialog = true },
         onContactClick = { /* tablet: could navigate or ignore */ },
@@ -140,6 +142,7 @@ fun AnniversaryDetailContent(
 @Composable
 private fun AnniversaryDetailBody(
     uiState: AnniversaryDetailUiState,
+    showActionsInBody: Boolean,
     onEdit: () -> Unit,
     onDelete: () -> Unit,
     onContactClick: (Long) -> Unit,
@@ -151,16 +154,18 @@ private fun AnniversaryDetailBody(
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            item {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.End
-                ) {
-                    IconButton(onClick = onEdit) {
-                        Icon(Icons.Default.Edit, contentDescription = "编辑", tint = MaterialTheme.colorScheme.onSurfaceVariant)
-                    }
-                    IconButton(onClick = onDelete) {
-                        Icon(Icons.Default.Delete, contentDescription = "删除", tint = Color.Red)
+            if (showActionsInBody) {
+                item {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.End
+                    ) {
+                        IconButton(onClick = onEdit) {
+                            Icon(Icons.Default.Edit, contentDescription = "编辑", tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                        IconButton(onClick = onDelete) {
+                            Icon(Icons.Default.Delete, contentDescription = "删除", tint = Color.Red)
+                        }
                     }
                 }
             }
@@ -198,7 +203,7 @@ private fun AnniversaryDetailBody(
                 modifier = modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
             ) {
-                CircularProgressIndicator(color = Primary)
+                CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
             }
         }
     }

@@ -58,8 +58,9 @@ import com.tang.prm.domain.model.Anniversary
 import com.tang.prm.domain.model.AnniversaryType
 import com.tang.prm.domain.util.DateCalcUtils
 import com.tang.prm.domain.util.LunarDateUtils
+import com.tang.prm.ui.animation.primitives.staggeredAppear
+import com.tang.prm.ui.components.TabletSearchBar
 import com.tang.prm.ui.navigation.AddAnniversaryRoute
-import com.tang.prm.ui.theme.Primary
 import com.tang.prm.ui.theme.SignalSky
 import com.tang.prm.ui.theme.getAnniversaryIcon
 import java.time.Instant
@@ -82,6 +83,8 @@ fun AnniversaryTabletScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val searchState by viewModel.searchState.collectAsStateWithLifecycle()
     val dataState = uiState.data
+    // 每次进入界面生成新的触发键，让 staggeredAppear 重新播放
+    val appearKey = remember { Any() }
 
     Box(
         modifier = Modifier
@@ -100,7 +103,8 @@ fun AnniversaryTabletScreen(
                     pastCount = dataState.pastAnniversaries.size,
                     searchQuery = searchState.query,
                     onSearchQueryChange = viewModel::onSearchQueryChange,
-                    onAddClick = { navController.navigate(AddAnniversaryRoute()) }
+                    onAddClick = { navController.navigate(AddAnniversaryRoute()) },
+                    modifier = Modifier.staggeredAppear(index = 0, triggerKey = appearKey)
                 )
             }
 
@@ -108,7 +112,7 @@ fun AnniversaryTabletScreen(
             item {
                 GalleryHero(
                     upcoming = dataState.upcomingAnniversaries,
-                    onAnniversaryClick = { }
+                    modifier = Modifier.staggeredAppear(index = 1, triggerKey = appearKey)
                 )
             }
 
@@ -116,7 +120,7 @@ fun AnniversaryTabletScreen(
             item {
                 YearTimelineSection(
                     anniversaries = dataState.allAnniversaries,
-                    onAnniversaryClick = { }
+                    modifier = Modifier.staggeredAppear(index = 2, triggerKey = appearKey)
                 )
             }
 
@@ -124,7 +128,7 @@ fun AnniversaryTabletScreen(
             item {
                 ByTypeSection(
                     anniversaries = dataState.allAnniversaries,
-                    onAnniversaryClick = { }
+                    modifier = Modifier.staggeredAppear(index = 3, triggerKey = appearKey)
                 )
             }
         }
@@ -142,10 +146,11 @@ private fun GalleryTopBar(
     pastCount: Int,
     searchQuery: String,
     onSearchQueryChange: (String) -> Unit,
-    onAddClick: () -> Unit
+    onAddClick: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     Row(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .statusBarsPadding()
             .padding(horizontal = 48.dp, vertical = 20.dp),
@@ -175,47 +180,12 @@ private fun GalleryTopBar(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            Surface(
-                modifier = Modifier.width(360.dp),
-                shape = RoundedCornerShape(12.dp),
-                color = MaterialTheme.colorScheme.surfaceVariant,
-                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
-            ) {
-                Row(
-                    modifier = Modifier
-                        .height(40.dp)
-                        .padding(horizontal = 14.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(10.dp)
-                ) {
-                    Icon(
-                        Icons.Default.Search,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.size(18.dp)
-                    )
-                    BasicTextField(
-                        value = searchQuery,
-                        onValueChange = onSearchQueryChange,
-                        singleLine = true,
-                        textStyle = LocalTextStyle.current.copy(
-                            fontSize = 14.sp,
-                            color = MaterialTheme.colorScheme.onSurface
-                        ),
-                        modifier = Modifier.weight(1f),
-                        decorationBox = { innerTextField ->
-                            if (searchQuery.isEmpty()) {
-                                Text(
-                                    "搜索人物、纪念日...",
-                                    fontSize = 14.sp,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
-                            innerTextField()
-                        }
-                    )
-                }
-            }
+            TabletSearchBar(
+                query = searchQuery,
+                onQueryChange = onSearchQueryChange,
+                placeholder = "搜索人物、纪念日...",
+                modifier = Modifier.width(360.dp)
+            )
 
             Box(
                 modifier = Modifier
@@ -223,11 +193,11 @@ private fun GalleryTopBar(
                     .shadow(
                         elevation = 3.dp,
                         shape = RoundedCornerShape(12.dp),
-                        ambientColor = Primary.copy(alpha = 0.25f),
-                        spotColor = Primary.copy(alpha = 0.25f)
+                        ambientColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.25f),
+                        spotColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.25f)
                     )
                     .clip(RoundedCornerShape(12.dp))
-                    .background(Primary)
+                    .background(MaterialTheme.colorScheme.primary)
                     .clickable(onClick = onAddClick),
                 contentAlignment = Alignment.Center
             ) {
@@ -249,13 +219,13 @@ private fun GalleryTopBar(
 @Composable
 private fun GalleryHero(
     upcoming: List<Anniversary>,
-    onAnniversaryClick: (Long) -> Unit
+    modifier: Modifier = Modifier
 ) {
     val next = upcoming.firstOrNull()
     val typeColor = next?.let { getTypeColor(it.type) } ?: SignalSky
 
     Column(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 48.dp)
             .padding(bottom = 24.dp),
@@ -265,8 +235,7 @@ private fun GalleryHero(
         next?.let { anniversary ->
             UpcomingHeroCard(
                 anniversary = anniversary,
-                typeColor = typeColor,
-                onClick = { onAnniversaryClick(anniversary.id) }
+                typeColor = typeColor
             )
         } ?: EmptyHeroCard()
     }
@@ -275,8 +244,7 @@ private fun GalleryHero(
 @Composable
 private fun UpcomingHeroCard(
     anniversary: Anniversary,
-    typeColor: Color,
-    onClick: () -> Unit
+    typeColor: Color
 ) {
     val daysInfo = remember(anniversary.id, anniversary.date, anniversary.isLunar) {
         if (anniversary.isLunar) LunarDateUtils.calculateLunarDaysInfo(anniversary.date)
@@ -292,8 +260,7 @@ private fun UpcomingHeroCard(
 
     Surface(
         modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick),
+            .fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
         color = MaterialTheme.colorScheme.surface,
         border = BorderStroke(1.dp, typeColor.copy(alpha = 0.2f)),
@@ -498,7 +465,7 @@ private fun EmptyHeroCard() {
 @Composable
 private fun YearTimelineSection(
     anniversaries: List<Anniversary>,
-    onAnniversaryClick: (Long) -> Unit
+    modifier: Modifier = Modifier
 ) {
     val byMonth = remember(anniversaries) {
         (1..12).associateWith { month ->
@@ -514,7 +481,7 @@ private fun YearTimelineSection(
     }
 
     Column(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 48.dp)
             .padding(bottom = 32.dp)
@@ -537,7 +504,6 @@ private fun YearTimelineSection(
                     month = month,
                     anniversaries = byMonth[month].orEmpty(),
                     isCurrent = month == currentMonth,
-                    onAnniversaryClick = onAnniversaryClick,
                     modifier = Modifier.width(180.dp)
                 )
             }
@@ -550,7 +516,6 @@ private fun TimelineMonthColumn(
     month: Int,
     anniversaries: List<Anniversary>,
     isCurrent: Boolean,
-    onAnniversaryClick: (Long) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val monthName = remember(month) {
@@ -566,7 +531,7 @@ private fun TimelineMonthColumn(
         color = if (isCurrent) MaterialTheme.colorScheme.surfaceVariant else MaterialTheme.colorScheme.surface,
         border = BorderStroke(
             width = if (isCurrent) 2.dp else 1.dp,
-            color = if (isCurrent) Primary else if (hasEvents) accentColor.copy(alpha = 0.3f) else MaterialTheme.colorScheme.outline.copy(alpha = 0.4f)
+            color = if (isCurrent) MaterialTheme.colorScheme.primary else if (hasEvents) accentColor.copy(alpha = 0.3f) else MaterialTheme.colorScheme.outline.copy(alpha = 0.4f)
         )
     ) {
         Column(
@@ -586,7 +551,7 @@ private fun TimelineMonthColumn(
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Black,
                         fontFamily = FontFamily.Serif,
-                        color = if (isCurrent) Primary else MaterialTheme.colorScheme.onSurface
+                        color = if (isCurrent) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
                     )
                     Text(
                         text = "${month}月",
@@ -654,8 +619,7 @@ private fun TimelineMonthColumn(
                     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                         anniversaries.take(3).forEach { anniversary ->
                             TimelineEventChip(
-                                anniversary = anniversary,
-                                onClick = { onAnniversaryClick(anniversary.id) }
+                                anniversary = anniversary
                             )
                         }
                         if (anniversaries.size > 3) {
@@ -675,8 +639,7 @@ private fun TimelineMonthColumn(
 
 @Composable
 private fun TimelineEventChip(
-    anniversary: Anniversary,
-    onClick: () -> Unit
+    anniversary: Anniversary
 ) {
     val date = remember(anniversary.date) {
         Instant.ofEpochMilli(anniversary.date).atZone(ZoneId.systemDefault()).toLocalDate()
@@ -687,7 +650,6 @@ private fun TimelineEventChip(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(8.dp))
-            .clickable(onClick = onClick)
             .padding(vertical = 5.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -731,7 +693,7 @@ private fun TimelineEventChip(
 @Composable
 private fun ByTypeSection(
     anniversaries: List<Anniversary>,
-    onAnniversaryClick: (Long) -> Unit
+    modifier: Modifier = Modifier
 ) {
     val grouped = remember(anniversaries) {
         AnniversaryType.entries.associateWith { type ->
@@ -743,7 +705,7 @@ private fun ByTypeSection(
     }
 
     Column(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 48.dp)
             .padding(bottom = 80.dp)
@@ -763,7 +725,6 @@ private fun ByTypeSection(
                 TypeColumn(
                     type = type,
                     anniversaries = grouped[type].orEmpty(),
-                    onAnniversaryClick = onAnniversaryClick,
                     modifier = Modifier.weight(1f)
                 )
             }
@@ -775,7 +736,6 @@ private fun ByTypeSection(
 private fun TypeColumn(
     type: AnniversaryType,
     anniversaries: List<Anniversary>,
-    onAnniversaryClick: (Long) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val typeColor = getTypeColor(type)
@@ -849,8 +809,7 @@ private fun TypeColumn(
                 anniversaries.forEach { anniversary ->
                     TypeCard(
                         anniversary = anniversary,
-                        typeColor = typeColor,
-                        onClick = { onAnniversaryClick(anniversary.id) }
+                        typeColor = typeColor
                     )
                 }
             }
@@ -861,8 +820,7 @@ private fun TypeColumn(
 @Composable
 private fun TypeCard(
     anniversary: Anniversary,
-    typeColor: Color,
-    onClick: () -> Unit
+    typeColor: Color
 ) {
     val daysInfo = remember(anniversary.id, anniversary.date, anniversary.isLunar) {
         if (anniversary.isLunar) LunarDateUtils.calculateLunarDaysInfo(anniversary.date)
@@ -875,8 +833,7 @@ private fun TypeCard(
 
     Surface(
         modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick),
+            .fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
         color = MaterialTheme.colorScheme.surface,
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.4f))

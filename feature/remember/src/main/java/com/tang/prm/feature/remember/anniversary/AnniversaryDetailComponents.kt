@@ -42,7 +42,6 @@ import com.tang.prm.ui.animation.core.AnimationTokens
 import com.tang.prm.ui.components.AppCard
 import com.tang.prm.ui.theme.CardBorder
 import com.tang.prm.ui.theme.Dimens
-import com.tang.prm.ui.theme.Primary
 import com.tang.prm.ui.theme.SignalAmber
 import com.tang.prm.ui.theme.SignalGreen
 import com.tang.prm.ui.theme.SignalPurple
@@ -119,7 +118,7 @@ internal fun AnniversaryHeader(anniversary: Anniversary) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(
-                        color = if (daysInfo.isPast) MaterialTheme.colorScheme.outline.copy(alpha = 0.15f) else Primary.copy(alpha = 0.1f),
+                        color = if (daysInfo.isPast) MaterialTheme.colorScheme.outline.copy(alpha = 0.15f) else MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
                         shape = RoundedCornerShape(16.dp)
                     )
                     .padding(vertical = 24.dp, horizontal = 20.dp),
@@ -140,7 +139,7 @@ internal fun AnniversaryHeader(anniversary: Anniversary) {
                         text = "${daysInfo.daysPassed}",
                         style = MaterialTheme.typography.displayMedium,
                         fontWeight = FontWeight.Bold,
-                        color = if (daysInfo.isPast) MaterialTheme.colorScheme.outline else Primary
+                        color = if (daysInfo.isPast) MaterialTheme.colorScheme.outline else MaterialTheme.colorScheme.primary
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
@@ -278,7 +277,7 @@ internal fun DateInfoSection(anniversary: Anniversary) {
                     Icon(
                         Icons.Default.CalendarToday,
                         contentDescription = null,
-                        tint = Primary,
+                        tint = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.size(20.dp)
                     )
                 }
@@ -304,13 +303,13 @@ internal fun DateInfoSection(anniversary: Anniversary) {
                         modifier = Modifier
                             .size(40.dp)
                             .clip(CircleShape)
-                            .background(Primary.copy(alpha = 0.1f)),
+                            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
                             Icons.Default.CalendarMonth,
                             contentDescription = null,
-                            tint = Primary,
+                            tint = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.size(20.dp)
                         )
                     }
@@ -325,7 +324,7 @@ internal fun DateInfoSection(anniversary: Anniversary) {
                             text = LunarDateUtils.formatLunarDateShort(anniversary.date),
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
-                            color = Primary
+                            color = MaterialTheme.colorScheme.primary
                         )
                     }
                 }

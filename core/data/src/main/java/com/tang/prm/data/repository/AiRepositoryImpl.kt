@@ -16,6 +16,7 @@ import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -127,9 +128,9 @@ class AiRepositoryImpl @Inject constructor(
         }
     }.flowOn(Dispatchers.IO)
 
-    override suspend fun testConnection(): Result<String> {
+    override suspend fun testConnection(): Result<String> = withContext(Dispatchers.IO) {
         val apiKey = settingsRepository.aiApiKey.first()
-        if (apiKey.isBlank()) return Result.failure(Exception("API密钥未配置"))
+        if (apiKey.isBlank()) return@withContext Result.failure(Exception("API密钥未配置"))
 
         val baseUrl = settingsRepository.aiBaseUrl.first()
         val model = settingsRepository.aiModel.first()
@@ -150,7 +151,7 @@ class AiRepositoryImpl @Inject constructor(
             .post(jsonBody.toRequestBody(jsonMediaType))
             .build()
 
-        return try {
+        try {
             okHttpClient.newCall(httpRequest).execute().use { response ->
                 if (response.isSuccessful) {
                     Result.success("连接成功，模型: $model")

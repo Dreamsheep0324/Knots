@@ -46,77 +46,61 @@ class AnniversariesViewModel @Inject constructor(
     private val getAnniversaryDisplayUseCase: GetAnniversaryDisplayUseCase
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow(AnniversariesUiState())
-    val uiState: StateFlow<AnniversariesUiState> = _uiState.asStateFlow()
-
     private val searchManager = SearchStateManager()
     val searchState: StateFlow<SearchState> = searchManager.state
 
     private val _selectedTab = MutableStateFlow(0)
-
-    /** 单一分类结果源 — categorizeAnniversaries 仅调用一次 */
-    private val _categorized = MutableStateFlow(CategorizedAnniversaries())
+    private val _dialogState = MutableStateFlow(AnniversariesDialogState())
 
     companion object {
         private const val DEBOUNCE_MS = 300L
     }
 
-    init {
-        loadAnniversaries()
-        observeDisplayList()
-    }
-
-    private fun loadAnniversaries() {
-        viewModelScope.launch {
-            anniversaryRepository.getAllAnniversaries().collect { allList ->
+    val uiState: StateFlow<AnniversariesUiState> = combine(
+        anniversaryRepository.getAllAnniversaries()
+            .map { allList ->
                 val (all, upcoming, past) = getAnniversaryDisplayUseCase.categorizeAnniversaries(allList)
-                _categorized.value = CategorizedAnniversaries(all, upcoming, past)
-                _uiState.update { it.copy(data = it.data.copy(
-                    allAnniversaries = all,
-                    upcomingAnniversaries = upcoming,
-                    pastAnniversaries = past,
-                    isLoading = false
-                )) }
-            }
+                CategorizedAnniversaries(all, upcoming, past)
+            },
+        _selectedTab,
+        searchManager.state
+            .map { it.query }
+            .debounce { query -> if (query.isBlank()) 0L else DEBOUNCE_MS },
+        _dialogState
+    ) { categorized, tab, query, dialog ->
+        val source = when (tab) {
+            1 -> categorized.upcoming
+            2 -> categorized.past
+            else -> categorized.all
         }
-    }
-
-    private fun observeDisplayList() {
-        viewModelScope.launch {
-            combine(
-                _selectedTab,
-                searchManager.state
-                    .map { it.query }
-                    .debounce { query -> if (query.isBlank()) 0L else DEBOUNCE_MS },
-                _categorized
-            ) { tab, query, categorized ->
-                val source = when (tab) {
-                    1 -> categorized.upcoming
-                    2 -> categorized.past
-                    else -> categorized.all
-                }
-                val filtered = if (query.isNotBlank()) {
-                    source.filter { anniversary ->
-                        anniversary.name.contains(query, ignoreCase = true) ||
-                            anniversary.contactName?.contains(query, ignoreCase = true) == true
-                    }
-                } else {
-                    source
-                }
-                filtered.sortedBy { anniversary ->
-                    DateCalcUtils.calculateDaysInfo(anniversary.date).daysUntil
-                }
-            }.collect { displayList ->
-                _uiState.update { it.copy(data = it.data.copy(displayList = displayList)) }
+        val filtered = if (query.isNotBlank()) {
+            source.filter { anniversary ->
+                anniversary.name.contains(query, ignoreCase = true) ||
+                    anniversary.contactName?.contains(query, ignoreCase = true) == true
             }
+        } else {
+            source
         }
-    }
+        val displayList = filtered.sortedBy { anniversary ->
+            DateCalcUtils.calculateDaysInfo(anniversary.date).daysUntil
+        }
+        AnniversariesUiState(
+            data = AnniversariesDataState(
+                allAnniversaries = categorized.all,
+                upcomingAnniversaries = categorized.upcoming,
+                pastAnniversaries = categorized.past,
+                selectedTab = tab,
+                displayList = displayList,
+                isLoading = false
+            ),
+            dialog = dialog
+        )
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), AnniversariesUiState())
 
     fun onSearchQueryChange(query: String) = searchManager.onQueryChange(query)
 
     fun onTabSelected(tab: Int) {
         _selectedTab.value = tab
-        _uiState.update { it.copy(data = it.data.copy(selectedTab = tab)) }
     }
 
     fun deleteAnniversary(id: Long) {

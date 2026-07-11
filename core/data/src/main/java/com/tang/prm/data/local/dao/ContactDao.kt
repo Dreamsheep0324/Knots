@@ -62,6 +62,10 @@ interface ContactDao {
     @Query("DELETE FROM contact_tag_cross_ref WHERE contactId = :contactId")
     suspend fun deleteCrossRefsByContact(contactId: Long)
 
+    /** 仅查询引用了头像的联系人头像路径，用于清理孤儿图片时避免全表扫描 */
+    @Query("SELECT avatar FROM contacts WHERE avatar IS NOT NULL AND avatar != ''")
+    suspend fun getReferencedAvatarPaths(): List<String>
+
     /** Callers MUST escape the [value] parameter with [com.tang.prm.util.escapeSqlWildcards] before passing it, otherwise `%`, `_`, `\` will be treated as SQL wildcards. */
     @Query("SELECT id, hobby, habit, diet, skill FROM contacts WHERE hobby LIKE '%' || :value || '%' ESCAPE '\\' OR habit LIKE '%' || :value || '%' ESCAPE '\\' OR diet LIKE '%' || :value || '%' ESCAPE '\\' OR skill LIKE '%' || :value || '%' ESCAPE '\\'")
     suspend fun getContactsWithListFieldValue(value: String): List<ListFieldData>

@@ -17,7 +17,6 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.unit.dp
-import com.tang.prm.ui.theme.Primary
 import com.tang.prm.ui.theme.TextGray
 import com.tang.prm.ui.animation.core.AnimationTokens
 
@@ -55,7 +54,7 @@ fun SearchBar(
                 .padding(horizontal = 14.dp, vertical = 10.dp),
             singleLine = true,
             textStyle = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.onSurface),
-            cursorBrush = SolidColor(Primary),
+            cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
             decorationBox = { innerTextField ->
                 Row(
                     verticalAlignment = Alignment.CenterVertically

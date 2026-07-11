@@ -15,7 +15,8 @@ internal fun navTransitions(bottomRoutes: Set<String>): NavTransitions {
     return NavTransitions(
         enterTransition = {
             if (targetState.destination.route in bottomRoutes && initialState.destination.route in bottomRoutes) {
-                fadeIn(tween(0))
+                // Tab 间切换：纯 fade 过渡（无 scale，更轻盈），避免界面跳变
+                fadeIn(tween(300, easing = FastOutSlowInEasing))
             } else {
                 fadeIn(tween(450, delayMillis = 50, easing = FastOutSlowInEasing)) +
                     scaleIn(
@@ -26,7 +27,8 @@ internal fun navTransitions(bottomRoutes: Set<String>): NavTransitions {
         },
         exitTransition = {
             if (targetState.destination.route in bottomRoutes && initialState.destination.route in bottomRoutes) {
-                fadeOut(tween(0))
+                // Tab 间切换：纯 fade 过渡
+                fadeOut(tween(200, easing = FastOutSlowInEasing))
             } else {
                 fadeOut(tween(200)) +
                     scaleOut(
@@ -37,7 +39,7 @@ internal fun navTransitions(bottomRoutes: Set<String>): NavTransitions {
         },
         popEnterTransition = {
             if (targetState.destination.route in bottomRoutes && initialState.destination.route in bottomRoutes) {
-                fadeIn(tween(0))
+                fadeIn(tween(300, easing = FastOutSlowInEasing))
             } else {
                 fadeIn(tween(450, delayMillis = 50, easing = FastOutSlowInEasing)) +
                     scaleIn(
@@ -48,7 +50,7 @@ internal fun navTransitions(bottomRoutes: Set<String>): NavTransitions {
         },
         popExitTransition = {
             if (targetState.destination.route in bottomRoutes && initialState.destination.route in bottomRoutes) {
-                fadeOut(tween(0))
+                fadeOut(tween(200, easing = FastOutSlowInEasing))
             } else {
                 fadeOut(tween(200)) +
                     scaleOut(

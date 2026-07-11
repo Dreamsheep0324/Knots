@@ -16,6 +16,7 @@ import io.mockk.mockk
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
@@ -104,7 +105,7 @@ class AddSubscriptionViewModelTest {
         coEvery { subscriptionRepository.getSubscriptionByIdOnce(5L) } returns existing
 
         viewModel.initForEdit(5L)
-        Thread.sleep(100)
+        advanceUntilIdle()
 
         val state = viewModel.uiState.value
         assertThat(state.name).isEqualTo("Spotify")
@@ -122,7 +123,7 @@ class AddSubscriptionViewModelTest {
         coEvery { subscriptionRepository.getSubscriptionByIdOnce(5L) } returns existing
 
         viewModel.initForEdit(5L)
-        Thread.sleep(100)
+        advanceUntilIdle()
 
         viewModel.updateName("Spotify Premium")
         viewModel.saveSubscription()

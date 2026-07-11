@@ -1,0 +1,93 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues></ManuallySuppressedIssues>
+  <CurrentIssues>
+    <ID>ComplexCondition:BackupScreen.kt$state is BackupState.BackupSuccess || state is BackupState.RestoreSuccess || state is BackupState.BackupError || state is BackupState.RestoreError || state is BackupState.ClearSuccess || state is BackupState.ClearError</ID>
+    <ID>CyclomaticComplexMethod:BackupScreen.kt$@Composable fun BackupScreen( navController: NavController, viewModel: BackupViewModel = hiltViewModel() )</ID>
+    <ID>DestructuringDeclarationWithTooManyEntries:WebDavSyncScreen.kt$val (icon, label, tint, bgGradient) = when (state) { is ConnectionState.Success -&gt; Tuple4( Icons.Default.CloudDone, "已连接", SignalGreen, listOf(SignalGreen.copy(alpha = 0.15f), SignalGreen.copy(alpha = 0.05f)) ) is ConnectionState.Testing -&gt; Tuple4( Icons.Default.CloudSync, "正在连接...", MaterialTheme.colorScheme.primary, listOf(MaterialTheme.colorScheme.primary.copy(alpha = 0.12f), MaterialTheme.colorScheme.primary.copy(alpha = 0.03f)) ) is ConnectionState.Error -&gt; Tuple4( Icons.Default.CloudOff, "连接失败", Error, listOf(Error.copy(alpha = 0.12f), Error.copy(alpha = 0.03f)) ) else -&gt; Tuple4( Icons.Default.Cloud, if (config.serverUrl.isBlank()) "未配置" else "未连接", MaterialTheme.colorScheme.onSurfaceVariant, listOf(MaterialTheme.colorScheme.surfaceVariant, MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)) ) }</ID>
+    <ID>FunctionNaming:AboutComponents.kt$@Composable internal fun AboutCard(content: @Composable () -&gt; Unit)</ID>
+    <ID>FunctionNaming:AboutComponents.kt$@Composable internal fun AboutItem( icon: ImageVector, iconTint: Color, title: String, content: String )</ID>
+    <ID>FunctionNaming:AboutScreen.kt$@Composable fun AboutScreen( navController: NavController, updateViewModel: UpdateViewModel = hiltViewModel() )</ID>
+    <ID>FunctionNaming:AboutScreen.kt$@Composable private fun AppInfoHeader(versionName: String, versionCode: Int)</ID>
+    <ID>FunctionNaming:AboutScreen.kt$@Composable private fun UpdateCheckCard( versionName: String, isCheckingUpdate: Boolean, onCheckUpdate: () -&gt; Unit )</ID>
+    <ID>FunctionNaming:AiConfigComponents.kt$@Composable internal fun ApiKeySection( apiKeyInput: String, showApiKey: Boolean, onApiKeyInputChange: (String) -&gt; Unit, onToggleShowApiKey: () -&gt; Unit, onSave: () -&gt; Unit, hasChanges: Boolean )</ID>
+    <ID>FunctionNaming:AiConfigComponents.kt$@Composable internal fun BaseUrlSection( baseUrlInput: String, onBaseUrlInputChange: (String) -&gt; Unit, onSave: () -&gt; Unit, hasChanges: Boolean )</ID>
+    <ID>FunctionNaming:AiConfigComponents.kt$@Composable internal fun ModelSelectionSection( aiModel: String, onModelSelected: (String) -&gt; Unit )</ID>
+    <ID>FunctionNaming:AiConfigComponents.kt$@Composable internal fun TestConnectionSection( testState: TestConnectionState, apiKey: String, onTest: () -&gt; Unit )</ID>
+    <ID>FunctionNaming:AiConfigScreen.kt$@Composable fun AiConfigScreen( navController: NavController, viewModel: SettingsViewModel = hiltViewModel() )</ID>
+    <ID>FunctionNaming:BackupComponents.kt$@Composable internal fun BackupFileItem( fileInfo: BackupFileInfo, isDeleting: Boolean, onRestore: () -&gt; Unit, onDelete: () -&gt; Unit )</ID>
+    <ID>FunctionNaming:BackupComponents.kt$@Composable internal fun BackupSectionLabel(title: String)</ID>
+    <ID>FunctionNaming:BackupComponents.kt$@Composable internal fun ErrorTip(message: String?)</ID>
+    <ID>FunctionNaming:BackupComponents.kt$@Composable internal fun SuccessTip(message: String)</ID>
+    <ID>FunctionNaming:BackupScreen.kt$@Composable fun BackupScreen( navController: NavController, viewModel: BackupViewModel = hiltViewModel() )</ID>
+    <ID>FunctionNaming:ProfileScreen.kt$@Composable fun ProfileScreen(navController: NavController, viewModel: ProfileViewModel = hiltViewModel())</ID>
+    <ID>FunctionNaming:ProfileScreen.kt$@Composable private fun EditProfileDialog(currentName: String, currentSignature: String, onDismiss: () -&gt; Unit, onConfirm: (String, String) -&gt; Unit)</ID>
+    <ID>FunctionNaming:ProfileScreen.kt$@Composable private fun ProfileHeader(userName: String, userSignature: String, onEditClick: () -&gt; Unit)</ID>
+    <ID>FunctionNaming:ProfileScreen.kt$@Composable private fun SettingsItem(icon: ImageVector, title: String, subtitle: String, onClick: () -&gt; Unit)</ID>
+    <ID>FunctionNaming:ProfileScreen.kt$@Composable private fun SettingsSection(title: String, content: @Composable ColumnScope.() -&gt; Unit)</ID>
+    <ID>FunctionNaming:SettingsComponents.kt$@Composable internal fun SectionLabel(title: String)</ID>
+    <ID>FunctionNaming:SettingsComponents.kt$@Composable internal fun SettingsCard(content: @Composable () -&gt; Unit)</ID>
+    <ID>FunctionNaming:SettingsComponents.kt$@Composable internal fun SettingsEntryItem( icon: ImageVector, iconTint: Color, title: String, subtitle: String, onClick: () -&gt; Unit )</ID>
+    <ID>FunctionNaming:SettingsComponents.kt$@Composable internal fun SettingsToggleItem( icon: ImageVector, iconTint: Color, title: String, subtitle: String, checked: Boolean, onCheckedChange: (Boolean) -&gt; Unit )</ID>
+    <ID>FunctionNaming:SettingsComponents.kt$@Composable internal fun ThemeEntryItem( currentMode: ThemeMode, onClick: () -&gt; Unit )</ID>
+    <ID>FunctionNaming:SettingsComponents.kt$@Composable internal fun ThemeModeDivider()</ID>
+    <ID>FunctionNaming:SettingsComponents.kt$@Composable internal fun ThemeModeOption( icon: ImageVector, title: String, description: String, mode: ThemeMode, currentMode: ThemeMode, onModeSelected: (ThemeMode) -&gt; Unit )</ID>
+    <ID>FunctionNaming:SettingsScreen.kt$@Composable fun SettingsScreen( navController: NavController, viewModel: SettingsViewModel = hiltViewModel() )</ID>
+    <ID>FunctionNaming:SettingsScreen.kt$@Composable fun ThemeScreen( navController: NavController, viewModel: SettingsViewModel = hiltViewModel() )</ID>
+    <ID>FunctionNaming:SettingsScreen.kt$@Composable private fun EncryptionDegradedWarning()</ID>
+    <ID>FunctionNaming:WebDavSyncScreen.kt$@Composable fun WebDavSyncScreen( onBack: () -&gt; Unit, viewModel: WebDavSyncViewModel = hiltViewModel() )</ID>
+    <ID>FunctionNaming:WebDavSyncScreen.kt$@Composable private fun AutoSyncToggle( autoSyncOnLaunch: Boolean, onToggle: (Boolean) -&gt; Unit, lastSyncTime: Long, lastSyncDirection: String )</ID>
+    <ID>FunctionNaming:WebDavSyncScreen.kt$@Composable private fun CleanOrphanedImagesButton( onClean: () -&gt; Unit, isCleaning: Boolean, cleanCount: Int?, onDismiss: () -&gt; Unit )</ID>
+    <ID>FunctionNaming:WebDavSyncScreen.kt$@Composable private fun CloudBackupHeader(onRefresh: () -&gt; Unit)</ID>
+    <ID>FunctionNaming:WebDavSyncScreen.kt$@Composable private fun CloudBackupItem( version: CloudBackupVersion, onRestore: () -&gt; Unit, onDelete: () -&gt; Unit, isRestoring: Boolean )</ID>
+    <ID>FunctionNaming:WebDavSyncScreen.kt$@Composable private fun CloudEmptyState()</ID>
+    <ID>FunctionNaming:WebDavSyncScreen.kt$@Composable private fun CompactConfigField( value: String, onValueChange: (String) -&gt; Unit, label: String, placeholder: String, leadingIcon: ImageVector, isPassword: Boolean = false, passwordVisible: Boolean = false, onPasswordToggle: (() -&gt; Unit)? = null )</ID>
+    <ID>FunctionNaming:WebDavSyncScreen.kt$@Composable private fun ConnectionHeroSection(state: ConnectionState, config: WebDavConfig)</ID>
+    <ID>FunctionNaming:WebDavSyncScreen.kt$@Composable private fun SyncActionButton( modifier: Modifier = Modifier, icon: ImageVector, label: String, description: String, tint: Color, isLoading: Boolean, isSuccess: Boolean, onClick: () -&gt; Unit )</ID>
+    <ID>FunctionNaming:WebDavSyncScreen.kt$@Composable private fun SyncActionButtons( onUpload: () -&gt; Unit, onDownload: () -&gt; Unit, uploadState: Triple&lt;Boolean, Boolean, Boolean&gt;, downloadState: Triple&lt;Boolean, Boolean, Boolean&gt; )</ID>
+    <ID>FunctionNaming:WebDavSyncScreen.kt$@Composable private fun SyncProgressBar(phase: String, current: Int, total: Int, detail: String, tint: Color)</ID>
+    <ID>FunctionNaming:WebDavSyncScreen.kt$@Composable private fun SyncResultBanner(message: String, isSuccess: Boolean)</ID>
+    <ID>FunctionNaming:WebDavSyncScreen.kt$@Composable private fun WebDavConfigPanel( expanded: Boolean, onToggle: () -&gt; Unit, serverUrl: String, onServerUrlChange: (String) -&gt; Unit, username: String, onUsernameChange: (String) -&gt; Unit, password: String, onPasswordChange: (String) -&gt; Unit, remotePath: String, onRemotePathChange: (String) -&gt; Unit, trustAllCertificates: Boolean, onTrustAllCertificatesChange: (Boolean) -&gt; Unit, passwordVisible: Boolean, onPasswordToggle: () -&gt; Unit, onTestConnection: () -&gt; Unit, isTesting: Boolean, isConnected: Boolean )</ID>
+    <ID>LongMethod:AboutScreen.kt$@Composable fun AboutScreen( navController: NavController, updateViewModel: UpdateViewModel = hiltViewModel() )</ID>
+    <ID>LongMethod:AiConfigComponents.kt$@Composable internal fun ModelSelectionSection( aiModel: String, onModelSelected: (String) -&gt; Unit )</ID>
+    <ID>LongMethod:BackupScreen.kt$@Composable fun BackupScreen( navController: NavController, viewModel: BackupViewModel = hiltViewModel() )</ID>
+    <ID>LongMethod:SettingsScreen.kt$@Composable fun SettingsScreen( navController: NavController, viewModel: SettingsViewModel = hiltViewModel() )</ID>
+    <ID>LongMethod:WebDavSyncScreen.kt$@Composable fun WebDavSyncScreen( onBack: () -&gt; Unit, viewModel: WebDavSyncViewModel = hiltViewModel() )</ID>
+    <ID>LongMethod:WebDavSyncScreen.kt$@Composable private fun WebDavConfigPanel( expanded: Boolean, onToggle: () -&gt; Unit, serverUrl: String, onServerUrlChange: (String) -&gt; Unit, username: String, onUsernameChange: (String) -&gt; Unit, password: String, onPasswordChange: (String) -&gt; Unit, remotePath: String, onRemotePathChange: (String) -&gt; Unit, trustAllCertificates: Boolean, onTrustAllCertificatesChange: (Boolean) -&gt; Unit, passwordVisible: Boolean, onPasswordToggle: () -&gt; Unit, onTestConnection: () -&gt; Unit, isTesting: Boolean, isConnected: Boolean )</ID>
+    <ID>LongParameterList:WebDavSyncScreen.kt$( expanded: Boolean, onToggle: () -&gt; Unit, serverUrl: String, onServerUrlChange: (String) -&gt; Unit, username: String, onUsernameChange: (String) -&gt; Unit, password: String, onPasswordChange: (String) -&gt; Unit, remotePath: String, onRemotePathChange: (String) -&gt; Unit, trustAllCertificates: Boolean, onTrustAllCertificatesChange: (Boolean) -&gt; Unit, passwordVisible: Boolean, onPasswordToggle: () -&gt; Unit, onTestConnection: () -&gt; Unit, isTesting: Boolean, isConnected: Boolean )</ID>
+    <ID>LongParameterList:WebDavSyncScreen.kt$( modifier: Modifier = Modifier, icon: ImageVector, label: String, description: String, tint: Color, isLoading: Boolean, isSuccess: Boolean, onClick: () -&gt; Unit )</ID>
+    <ID>LongParameterList:WebDavSyncScreen.kt$( value: String, onValueChange: (String) -&gt; Unit, label: String, placeholder: String, leadingIcon: ImageVector, isPassword: Boolean = false, passwordVisible: Boolean = false, onPasswordToggle: (() -&gt; Unit)? = null )</ID>
+    <ID>MatchingDeclarationName:AiConfigComponents.kt$ModelOption</ID>
+    <ID>MaxLineLength:AiConfigComponents.kt$border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = if (testState !is TestConnectionState.Testing &amp;&amp; apiKey.isNotBlank()) 0.5f else 0.2f))</ID>
+    <ID>MaxLineLength:BackupScreen.kt$Text("请先选择备份文件夹", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(horizontal = 4.dp))</ID>
+    <ID>MaxLineLength:BackupScreen.kt$val isDeleting = state is BackupState.DeletingBackup &amp;&amp; (state as BackupState.DeletingBackup).fileName == fileInfo.fileName</ID>
+    <ID>MaxLineLength:ProfileScreen.kt$Box</ID>
+    <ID>MaxLineLength:ProfileScreen.kt$LazyColumn</ID>
+    <ID>MaxLineLength:ProfileScreen.kt$OutlinedTextField(value = name, onValueChange = { name = it }, label = { Text("昵称") }, singleLine = true, modifier = Modifier.fillMaxWidth())</ID>
+    <ID>MaxLineLength:ProfileScreen.kt$OutlinedTextField(value = signature, onValueChange = { signature = it }, label = { Text("个性签名") }, singleLine = true, modifier = Modifier.fillMaxWidth())</ID>
+    <ID>MaxLineLength:ProfileScreen.kt$Text(title, style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Medium, modifier = Modifier.padding(vertical = 8.dp))</ID>
+    <ID>MaxLineLength:ProfileScreen.kt$item { ProfileHeader(userName = uiState.userName, userSignature = uiState.userSignature, onEditClick = { showEditDialog = true }) }</ID>
+    <ID>MaxLineLength:WebDavSyncScreen.kt$CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.5.dp, color = MaterialTheme.colorScheme.primary)</ID>
+    <ID>MaxLineLength:WebDavSyncScreen.kt$Icon(Icons.Default.Cloud, contentDescription = null, modifier = Modifier.size(14.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)</ID>
+    <ID>MaxLineLength:WebDavSyncScreen.kt$Icon(Icons.Default.Cloud, contentDescription = null, modifier = Modifier.size(44.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.25f))</ID>
+    <ID>MaxLineLength:WebDavSyncScreen.kt$Icon(Icons.Default.Delete, contentDescription = "删除", modifier = Modifier.size(18.dp), tint = MaterialTheme.colorScheme.error.copy(alpha = 0.7f))</ID>
+    <ID>MaxLineLength:WebDavSyncScreen.kt$Icon(Icons.Default.Refresh, contentDescription = "刷新", modifier = Modifier.size(18.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)</ID>
+    <ID>MaxLineLength:WebDavSyncScreen.kt$Icon(Icons.Default.Restore, contentDescription = "恢复", modifier = Modifier.size(18.dp), tint = MaterialTheme.colorScheme.primary)</ID>
+    <ID>MaxLineLength:WebDavSyncScreen.kt$Icon(if (isSuccess) Icons.Default.Check else Icons.Default.CloudOff, contentDescription = null, modifier = Modifier.size(16.dp), tint = tint)</ID>
+    <ID>MaxLineLength:WebDavSyncScreen.kt$Text("上次同步：$timeStr ($direction)", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)</ID>
+    <ID>MaxLineLength:WebDavSyncScreen.kt$Text("云端备份", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.primary)</ID>
+    <ID>MaxLineLength:WebDavSyncScreen.kt$Text("增量", style = MaterialTheme.typography.labelSmall, color = SignalSky, fontSize = 10.sp, fontWeight = FontWeight.SemiBold)</ID>
+    <ID>MaxLineLength:WebDavSyncScreen.kt$Text("点击上方「上传」创建第一份备份", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.35f), fontSize = 12.sp)</ID>
+    <ID>MaxLineLength:WebDavSyncScreen.kt$Text("自建服务器证书不受信任时开启", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 11.sp)</ID>
+    <ID>MaxLineLength:WebDavSyncScreen.kt$Text(version.displayName, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold, maxLines = 1, overflow = TextOverflow.Ellipsis)</ID>
+    <ID>MaxLineLength:WebDavSyncScreen.kt$if</ID>
+    <ID>MaxLineLength:WebDavSyncScreen.kt$if (autoSyncOnLaunch) MaterialTheme.colorScheme.primary.copy(alpha = 0.12f) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)</ID>
+    <ID>MaxLineLength:WebDavSyncScreen.kt$item { SyncProgressBar((syncState as SyncState.Downloading).phase, (syncState as SyncState.Downloading).current, (syncState as SyncState.Downloading).total, (syncState as SyncState.Downloading).detail, SignalGreen) }</ID>
+    <ID>MaxLineLength:WebDavSyncScreen.kt$item { SyncProgressBar((syncState as SyncState.Uploading).phase, (syncState as SyncState.Uploading).current, (syncState as SyncState.Uploading).total, (syncState as SyncState.Uploading).detail, SignalSky) }</ID>
+    <ID>MaxLineLength:WebDavSyncViewModel.kt$WebDavSyncViewModel$is SyncResult.DownloadSuccess -&gt; SyncState.DownloadSuccess(result.fileName, result.downloadedImages, result.skippedImages)</ID>
+    <ID>MaxLineLength:WebDavSyncViewModel.kt$WebDavSyncViewModel$is SyncResult.PartialSuccess -&gt; SyncState.PartialSuccess(result.fileName, result.succeeded, result.failed, result.skipped)</ID>
+    <ID>TooGenericExceptionCaught:BackupViewModel.kt$BackupViewModel$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:WebDavSyncViewModel.kt$WebDavSyncViewModel$e: Exception</ID>
+    <ID>UnusedParameter:ProfileScreen.kt$navController: NavController</ID>
+  </CurrentIssues>
+</SmellBaseline>

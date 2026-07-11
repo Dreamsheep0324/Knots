@@ -9,6 +9,9 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -33,6 +36,7 @@ import com.tang.prm.domain.model.Contact
 import com.tang.prm.domain.model.CustomType
 import com.tang.prm.domain.model.IntimacyTier
 import com.tang.prm.ui.theme.*
+import com.tang.prm.ui.components.TabletSearchBar
 import com.tang.prm.ui.animation.primitives.staggeredAppear
 
 /**
@@ -201,48 +205,12 @@ private fun ContactsTabletTopBar(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            // 搜索框：固定宽度 360dp + 自定义紧凑高度（40dp）
-            Surface(
-                modifier = Modifier.width(360.dp),
-                shape = RoundedCornerShape(12.dp),
-                color = MaterialTheme.colorScheme.surfaceVariant,
-                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
-            ) {
-                Row(
-                    modifier = Modifier
-                        .height(40.dp)
-                        .padding(horizontal = 14.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(10.dp)
-                ) {
-                    Icon(
-                        Icons.Default.Search,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.size(18.dp)
-                    )
-                    BasicTextField(
-                        value = searchQuery,
-                        onValueChange = onSearchQueryChange,
-                        singleLine = true,
-                        textStyle = LocalTextStyle.current.copy(
-                            fontSize = 14.sp,
-                            color = MaterialTheme.colorScheme.onSurface
-                        ),
-                        modifier = Modifier.weight(1f),
-                        decorationBox = { innerTextField ->
-                            if (searchQuery.isEmpty()) {
-                                Text(
-                                    "搜索姓名、电话...",
-                                    fontSize = 14.sp,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
-                            innerTextField()
-                        }
-                    )
-                }
-            }
+            TabletSearchBar(
+                query = searchQuery,
+                onQueryChange = onSearchQueryChange,
+                placeholder = "搜索姓名、电话...",
+                modifier = Modifier.width(360.dp)
+            )
 
             // 添加按钮：40dp + 12dp 圆角 + Primary 背景
             Box(
@@ -251,11 +219,11 @@ private fun ContactsTabletTopBar(
                     .shadow(
                         elevation = 3.dp,
                         shape = RoundedCornerShape(12.dp),
-                        ambientColor = Primary.copy(alpha = 0.25f),
-                        spotColor = Primary.copy(alpha = 0.25f)
+                        ambientColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.25f),
+                        spotColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.25f)
                     )
                     .clip(RoundedCornerShape(12.dp))
-                    .background(Primary)
+                    .background(MaterialTheme.colorScheme.primary)
                     .clickable(onClick = onAddContact),
                 contentAlignment = Alignment.Center
             ) {
@@ -280,7 +248,8 @@ private fun TierSection(
     contacts: List<Contact>,
     onContactClick: (Contact) -> Unit
 ) {
-    val tierColor = intimacyTierColor(tier)
+    val tierColor = LocalIntimacyColors.current.forTier(tier)
+    val appearKey = remember { Any() }
 
     Column {
         // 分组标题：圆点 + 名称 + 人数徽章 + 分隔线
@@ -329,31 +298,28 @@ private fun TierSection(
             )
         }
 
-        // 卡片网格：6 列
-        Column(
-            modifier = Modifier.fillMaxWidth(),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+        // 卡片网格：6 列，LazyVerticalGrid 保留 lazy 渲染优势
+        val rowCount = (contacts.size + 5) / 6  // 向上取整
+        LazyVerticalGrid(
+            columns = GridCells.Fixed(6),
+            modifier = Modifier
+                .fillMaxWidth()
+                .heightIn(max = (rowCount * 172).dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+            userScrollEnabled = false
         ) {
-            contacts.chunked(6).forEachIndexed { rowIndex, rowContacts ->
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    rowContacts.forEachIndexed { colIndex, contact ->
-                        ContactTabletCard(
-                            contact = contact,
-                            tierColor = tierColor,
-                            tier = tier,
-                            onClick = { onContactClick(contact) },
-                            modifier = Modifier
-                                .weight(1f)
-                                .staggeredAppear(index = minOf(rowIndex * 6 + colIndex, 15))
-                        )
-                    }
-                    repeat(6 - rowContacts.size) {
-                        Spacer(modifier = Modifier.weight(1f))
-                    }
-                }
+            itemsIndexed(contacts, key = { _, it -> it.id }) { index, contact ->
+                ContactTabletCard(
+                    contact = contact,
+                    tierColor = tierColor,
+                    tier = tier,
+                    onClick = { onContactClick(contact) },
+                    modifier = Modifier.staggeredAppear(
+                        index = minOf(index, 15),
+                        triggerKey = appearKey
+                    )
+                )
             }
         }
     }
@@ -501,12 +467,3 @@ private fun ContactTabletCard(
 // ════════════════════════════════════════════════════════════════
 // 工具函数
 // ════════════════════════════════════════════════════════════════
-
-@Composable
-private fun intimacyTierColor(tier: IntimacyTier): Color = when (tier) {
-    IntimacyTier.NEW -> IntimacyNew
-    IntimacyTier.ACQUAINTANCE -> IntimacyAcquaintance
-    IntimacyTier.FRIEND -> IntimacyFriend
-    IntimacyTier.CLOSE -> IntimacyClose
-    IntimacyTier.FAMILY -> IntimacyFamily
-}

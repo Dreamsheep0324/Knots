@@ -1,0 +1,73 @@
+# detekt 配置 — 在默认规则基础上做项目特定调整
+# https://detekt.dev/docs/introduction/configurations
+
+complexity:
+  active: true
+  LongMethod:
+    active: true
+    threshold: 80
+  LongParameterList:
+    active: true
+    functionThreshold: 8
+    constructorThreshold: 12
+  ComplexCondition:
+    active: true
+    threshold: 5
+  CyclomaticComplexMethod:
+    active: true
+    threshold: 20
+  TooManyFunctions:
+    active: false  # ViewModel/Repository 常有大量方法
+  LargeClass:
+    active: true
+    threshold: 250
+
+style:
+  active: true
+  WildcardImport:
+    active: false  # Kotlin 项目广泛使用 wildcard import
+  ReturnCount:
+    active: false  # Early return 是合理模式
+  MagicNumber:
+    active: false  # 过于严格，Compose 中大量使用数字
+  MaxLineLength:
+    active: true
+    maxLineLength: 140
+  ForbiddenComment:
+    active: false  # 允许 TODO/FIXME
+  UtilityClassWithPublicConstructor:
+    active: false
+  UseDataClass:
+    active: false
+
+exceptions:
+  active: true
+  SwallowedException:
+    active: false  # 某些场景下忽略异常是合理的
+
+empty-blocks:
+  active: true
+  EmptyFunctionBlock:
+    active: false  # override 方法常为空
+
+naming:
+  active: true
+  FunctionNaming:
+    active: true
+    functionPattern: '([a-z][a-zA-Z0-9]*)|(`.*`)'
+  TopLevelPropertyNaming:
+    active: false
+
+potential-bugs:
+  active: true
+  UnsafeCallOnNullableType:
+    active: true
+  IteratorNotThrowingNoSuchElementException:
+    active: true
+
+performance:
+  active: true
+  ForEachOnRange:
+    active: true
+  SpreadOperator:
+    active: false  # vararg 场景合理使用

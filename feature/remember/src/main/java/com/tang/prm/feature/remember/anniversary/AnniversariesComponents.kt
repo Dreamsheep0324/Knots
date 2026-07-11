@@ -36,7 +36,6 @@ import com.tang.prm.ui.theme.AnniversaryBirthday
 import com.tang.prm.ui.theme.AnniversaryDate
 import com.tang.prm.ui.theme.AnniversaryHoliday
 import com.tang.prm.ui.theme.CardBorder
-import com.tang.prm.ui.theme.Primary
 import com.tang.prm.ui.theme.getAnniversaryIcon
 import com.tang.prm.ui.theme.getAnniversaryIconBackground
 import com.tang.prm.ui.theme.getAnniversaryIconTint
@@ -165,13 +164,13 @@ internal fun AnniversaryCard(
                     if (anniversary.isLunar) {
                         Surface(
                             shape = RoundedCornerShape(4.dp),
-                            color = Primary.copy(alpha = 0.1f)
+                            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
                         ) {
                             Text(
                                 text = LunarDateUtils.formatLunarDateShort(anniversary.date),
                                 modifier = Modifier.padding(horizontal = 4.dp, vertical = 1.dp),
                                 style = MaterialTheme.typography.labelSmall,
-                                color = Primary,
+                                color = MaterialTheme.colorScheme.primary,
                                 fontWeight = FontWeight.SemiBold
                             )
                         }
@@ -209,7 +208,7 @@ internal fun AnniversaryCard(
                         color = when {
                             daysInfo.daysUntil <= 7 -> AnniversaryBirthday
                             daysInfo.daysUntil <= 30 -> AnniversaryHoliday
-                            else -> Primary
+                            else -> MaterialTheme.colorScheme.primary
                         },
                         modifier = Modifier.width(80.dp)
                     ) {

@@ -1,0 +1,78 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues></ManuallySuppressedIssues>
+  <CurrentIssues>
+    <ID>CyclomaticComplexMethod:ChatDetailComponents.kt$internal fun parseDialogue(event: Event, contactName: String?): List&lt;DialogueLine&gt;</ID>
+    <ID>CyclomaticComplexMethod:ChatTabletScreen.kt$@Composable private fun CharacterPane( uiState: ChatDetailUiState, conversations: List&lt;ConversationUiModel&gt;, modifier: Modifier = Modifier )</ID>
+    <ID>ExplicitItLambdaParameter:ChatScreen.kt${ _, it -&gt; it.eventId }</ID>
+    <ID>FunctionNaming:AddChatScreen.kt$@Composable fun AddChatScreen( contactId: Long? = null, eventId: Long? = null, navController: NavController, viewModel: AddChatViewModel = hiltViewModel() )</ID>
+    <ID>FunctionNaming:ChatComponents.kt$@Composable internal fun ConversationItem( conversation: ConversationUiModel, showAvatar: Boolean, onClick: () -&gt; Unit, modifier: Modifier = Modifier )</ID>
+    <ID>FunctionNaming:ChatDetailComponents.kt$@Composable internal fun DialogueScriptCard( dialogues: List&lt;DialogueLine&gt;, contactAvatar: String?, accentColor: Color, modifier: Modifier = Modifier )</ID>
+    <ID>FunctionNaming:ChatDetailComponents.kt$@Composable internal fun MyDialogueLine(content: String, imageUri: String?)</ID>
+    <ID>FunctionNaming:ChatDetailComponents.kt$@Composable internal fun RemarksCard(remarks: String, accentColor: Color)</ID>
+    <ID>FunctionNaming:ChatDetailComponents.kt$@Composable internal fun ScriptHeader(event: Event, contact: Contact?, intimacyColor: Color)</ID>
+    <ID>FunctionNaming:ChatDetailComponents.kt$@Composable internal fun TheirDialogueLine( name: String, avatar: String?, content: String, imageUri: String?, accentColor: Color )</ID>
+    <ID>FunctionNaming:ChatDetailScreen.kt$@Composable fun ChatDetailContent( eventId: Long, onEdit: () -&gt; Unit, onDelete: () -&gt; Unit, modifier: Modifier = Modifier, viewModel: ChatDetailViewModel = hiltViewModel() )</ID>
+    <ID>FunctionNaming:ChatDetailScreen.kt$@Composable fun ChatDetailScreen( eventId: Long, navController: NavController, viewModel: ChatDetailViewModel = hiltViewModel() )</ID>
+    <ID>FunctionNaming:ChatScreen.kt$@Composable fun ChatScreen( navController: NavController, isTabletLayout: Boolean = false, viewModel: ChatViewModel = hiltViewModel() )</ID>
+    <ID>FunctionNaming:ChatScreen.kt$@Composable private fun ChatEmptyState()</ID>
+    <ID>FunctionNaming:ChatScreen.kt$@Composable private fun ChatFlatList( conversations: List&lt;ConversationUiModel&gt;, onConversationClick: (Long) -&gt; Unit )</ID>
+    <ID>FunctionNaming:ChatScreen.kt$@Composable private fun ChatGroupedList( grouped: Map&lt;String, List&lt;ConversationUiModel&gt;&gt;, onConversationClick: (Long) -&gt; Unit )</ID>
+    <ID>FunctionNaming:ChatTabletScreen.kt$@Composable fun ChatTabletScreen( navController: NavController, viewModel: ChatViewModel = hiltViewModel() )</ID>
+    <ID>FunctionNaming:ChatTabletScreen.kt$@Composable private fun ActionButton( icon: androidx.compose.ui.graphics.vector.ImageVector, contentDescription: String, onClick: () -&gt; Unit, tint: Color = MaterialTheme.colorScheme.onSurfaceVariant )</ID>
+    <ID>FunctionNaming:ChatTabletScreen.kt$@Composable private fun CharacterPane( uiState: ChatDetailUiState, conversations: List&lt;ConversationUiModel&gt;, modifier: Modifier = Modifier )</ID>
+    <ID>FunctionNaming:ChatTabletScreen.kt$@Composable private fun CharacterStatRow( label: String, value: String, unit: String, valueColor: Color = MaterialTheme.colorScheme.onSurface )</ID>
+    <ID>FunctionNaming:ChatTabletScreen.kt$@Composable private fun ContactInfoRow( icon: androidx.compose.ui.graphics.vector.ImageVector, label: String, value: String )</ID>
+    <ID>FunctionNaming:ChatTabletScreen.kt$@Composable private fun ConversationListItem( conversation: ConversationUiModel, isSelected: Boolean, onClick: () -&gt; Unit )</ID>
+    <ID>FunctionNaming:ChatTabletScreen.kt$@Composable private fun ConversationListPane( conversations: List&lt;ConversationUiModel&gt;, totalCount: Int, contactCount: Int, searchQuery: String, onQueryChange: (String) -&gt; Unit, selectedId: Long?, onConversationClick: (Long) -&gt; Unit, onAddClick: () -&gt; Unit, modifier: Modifier = Modifier )</ID>
+    <ID>FunctionNaming:ChatTabletScreen.kt$@Composable private fun MeLine(content: String, imageUri: String?)</ID>
+    <ID>FunctionNaming:ChatTabletScreen.kt$@Composable private fun MetaTag(icon: androidx.compose.ui.graphics.vector.ImageVector, text: String)</ID>
+    <ID>FunctionNaming:ChatTabletScreen.kt$@Composable private fun ScriptStagePane( uiState: ChatDetailUiState, onEdit: () -&gt; Unit, onToggleFavorite: () -&gt; Unit, onDelete: () -&gt; Unit, modifier: Modifier = Modifier )</ID>
+    <ID>FunctionNaming:ChatTabletScreen.kt$@Composable private fun SectionDivider(title: String)</ID>
+    <ID>FunctionNaming:ChatTabletScreen.kt$@Composable private fun ThemLine( speaker: String, avatar: String?, content: String, imageUri: String?, accentColor: Color )</ID>
+    <ID>FunctionNaming:ContactSelectionCard.kt$@Composable internal fun ContactSelectionCard( selectedContact: Contact?, onSelectClick: () -&gt; Unit, onChangeClick: () -&gt; Unit )</ID>
+    <ID>FunctionNaming:DialogueInputCard.kt$@Composable internal fun DialogueInputCard( dialogueLines: List&lt;DialogueLineInput&gt;, contactName: String, contactAvatar: String?, onAddMyLine: () -&gt; Unit, onAddTheirLine: () -&gt; Unit, onUpdateLine: (Long, String) -&gt; Unit, onRemoveLineImage: (Long, String?) -&gt; Unit, onRequestImage: (Long) -&gt; Unit, onToggleSpeaker: (Long) -&gt; Unit, onRemoveLine: (Long) -&gt; Unit, onMoveLine: (Long, Int) -&gt; Unit )</ID>
+    <ID>FunctionNaming:DialogueInputCard.kt$@Composable internal fun DialogueLineEditor( line: DialogueLineInput, contactName: String, contactAvatar: String?, isFirst: Boolean, isLast: Boolean, onUpdate: (String) -&gt; Unit, onRemoveImage: () -&gt; Unit, onRequestImage: () -&gt; Unit, onToggleSpeaker: () -&gt; Unit, onRemove: () -&gt; Unit, onMoveUp: () -&gt; Unit, onMoveDown: () -&gt; Unit )</ID>
+    <ID>FunctionNaming:DialogueInputCard.kt$@Composable internal fun EmptyDialogueHint(contactName: String)</ID>
+    <ID>FunctionNaming:RemarksCard.kt$@Composable internal fun RemarksCard( remarks: String, onRemarksChange: (String) -&gt; Unit )</ID>
+    <ID>FunctionNaming:SceneInfoCard.kt$@Composable internal fun SceneInfoCard( title: String, selectedDate: Long, onTitleChange: (String) -&gt; Unit, onDateClick: () -&gt; Unit, titleFocusRequester: FocusRequester? = null )</ID>
+    <ID>LongMethod:AddChatScreen.kt$@Composable fun AddChatScreen( contactId: Long? = null, eventId: Long? = null, navController: NavController, viewModel: AddChatViewModel = hiltViewModel() )</ID>
+    <ID>LongMethod:ChatComponents.kt$@Composable internal fun ConversationItem( conversation: ConversationUiModel, showAvatar: Boolean, onClick: () -&gt; Unit, modifier: Modifier = Modifier )</ID>
+    <ID>LongMethod:ChatDetailComponents.kt$@Composable internal fun ScriptHeader(event: Event, contact: Contact?, intimacyColor: Color)</ID>
+    <ID>LongMethod:ChatDetailScreen.kt$@Composable fun ChatDetailScreen( eventId: Long, navController: NavController, viewModel: ChatDetailViewModel = hiltViewModel() )</ID>
+    <ID>LongMethod:ChatScreen.kt$@Composable fun ChatScreen( navController: NavController, isTabletLayout: Boolean = false, viewModel: ChatViewModel = hiltViewModel() )</ID>
+    <ID>LongMethod:ChatTabletScreen.kt$@Composable fun ChatTabletScreen( navController: NavController, viewModel: ChatViewModel = hiltViewModel() )</ID>
+    <ID>LongMethod:ChatTabletScreen.kt$@Composable private fun CharacterPane( uiState: ChatDetailUiState, conversations: List&lt;ConversationUiModel&gt;, modifier: Modifier = Modifier )</ID>
+    <ID>LongMethod:ChatTabletScreen.kt$@Composable private fun ConversationListPane( conversations: List&lt;ConversationUiModel&gt;, totalCount: Int, contactCount: Int, searchQuery: String, onQueryChange: (String) -&gt; Unit, selectedId: Long?, onConversationClick: (Long) -&gt; Unit, onAddClick: () -&gt; Unit, modifier: Modifier = Modifier )</ID>
+    <ID>LongMethod:ChatTabletScreen.kt$@Composable private fun ScriptStagePane( uiState: ChatDetailUiState, onEdit: () -&gt; Unit, onToggleFavorite: () -&gt; Unit, onDelete: () -&gt; Unit, modifier: Modifier = Modifier )</ID>
+    <ID>LongMethod:DialogueInputCard.kt$@Composable internal fun DialogueLineEditor( line: DialogueLineInput, contactName: String, contactAvatar: String?, isFirst: Boolean, isLast: Boolean, onUpdate: (String) -&gt; Unit, onRemoveImage: () -&gt; Unit, onRequestImage: () -&gt; Unit, onToggleSpeaker: () -&gt; Unit, onRemove: () -&gt; Unit, onMoveUp: () -&gt; Unit, onMoveDown: () -&gt; Unit )</ID>
+    <ID>LongParameterList:ChatTabletScreen.kt$( conversations: List&lt;ConversationUiModel&gt;, totalCount: Int, contactCount: Int, searchQuery: String, onQueryChange: (String) -&gt; Unit, selectedId: Long?, onConversationClick: (Long) -&gt; Unit, onAddClick: () -&gt; Unit, modifier: Modifier = Modifier )</ID>
+    <ID>LongParameterList:DialogueInputCard.kt$( dialogueLines: List&lt;DialogueLineInput&gt;, contactName: String, contactAvatar: String?, onAddMyLine: () -&gt; Unit, onAddTheirLine: () -&gt; Unit, onUpdateLine: (Long, String) -&gt; Unit, onRemoveLineImage: (Long, String?) -&gt; Unit, onRequestImage: (Long) -&gt; Unit, onToggleSpeaker: (Long) -&gt; Unit, onRemoveLine: (Long) -&gt; Unit, onMoveLine: (Long, Int) -&gt; Unit )</ID>
+    <ID>LongParameterList:DialogueInputCard.kt$( line: DialogueLineInput, contactName: String, contactAvatar: String?, isFirst: Boolean, isLast: Boolean, onUpdate: (String) -&gt; Unit, onRemoveImage: () -&gt; Unit, onRequestImage: () -&gt; Unit, onToggleSpeaker: () -&gt; Unit, onRemove: () -&gt; Unit, onMoveUp: () -&gt; Unit, onMoveDown: () -&gt; Unit )</ID>
+    <ID>MatchingDeclarationName:ChatDetailComponents.kt$DialogueLine</ID>
+    <ID>MaxLineLength:ChatTabletScreen.kt$Icon(Icons.Default.Person, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(18.dp))</ID>
+    <ID>MaxLineLength:ContactSelectionCard.kt$Icon(Icons.Default.Person, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(16.dp))</ID>
+    <ID>MaxLineLength:ContactSelectionCard.kt$Icon(Icons.Default.PersonAdd, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))</ID>
+    <ID>MaxLineLength:ContactSelectionCard.kt$Text("对话人物", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)</ID>
+    <ID>MaxLineLength:ContactSelectionCard.kt$Text(selectedContact.name, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)</ID>
+    <ID>MaxLineLength:DialogueInputCard.kt$Icon(Icons.AutoMirrored.Filled.Chat, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f), modifier = Modifier.size(36.dp))</ID>
+    <ID>MaxLineLength:DialogueInputCard.kt$Icon(Icons.Default.Close, contentDescription = "删除", tint = DeleteRed.copy(alpha = AnimationTokens.Alpha.visible), modifier = Modifier.size(14.dp))</ID>
+    <ID>MaxLineLength:DialogueInputCard.kt$Icon(Icons.Default.Close, contentDescription = "删除图片", tint = Color.White, modifier = Modifier.size(12.dp))</ID>
+    <ID>MaxLineLength:DialogueInputCard.kt$Icon(Icons.Default.KeyboardArrowDown, contentDescription = "下移", tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = AnimationTokens.Alpha.half), modifier = Modifier.size(16.dp))</ID>
+    <ID>MaxLineLength:DialogueInputCard.kt$Icon(Icons.Default.KeyboardArrowUp, contentDescription = "上移", tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = AnimationTokens.Alpha.half), modifier = Modifier.size(16.dp))</ID>
+    <ID>MaxLineLength:DialogueInputCard.kt$Text("${dialogueLines.size}条", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)</ID>
+    <ID>MaxLineLength:DialogueInputCard.kt$Text("对话剧本", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)</ID>
+    <ID>MaxLineLength:DialogueInputCard.kt$Text("点击下方按钮添加对话", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f))</ID>
+    <ID>MaxLineLength:DialogueInputCard.kt$color = if (line.isMe) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface</ID>
+    <ID>MaxLineLength:DialogueInputCard.kt$color = if (line.isMe) MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = AnimationTokens.Alpha.half) else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = AnimationTokens.Alpha.half)</ID>
+    <ID>MaxLineLength:RemarksCard.kt$Text("备注", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)</ID>
+    <ID>MaxLineLength:SceneInfoCard.kt$Icon(Icons.Default.CalendarToday, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(18.dp))</ID>
+    <ID>MaxLineLength:SceneInfoCard.kt$Icon(Icons.Default.ChevronRight, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = AnimationTokens.Alpha.half), modifier = Modifier.size(20.dp))</ID>
+    <ID>MaxLineLength:SceneInfoCard.kt$Text("场景设定", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)</ID>
+    <ID>MaxLineLength:SceneInfoCard.kt$modifier = Modifier.fillMaxWidth().then(if (titleFocusRequester != null) Modifier.focusRequester(titleFocusRequester) else Modifier)</ID>
+    <ID>NewLineAtEndOfFile:ChatViewModel.kt$com.tang.prm.feature.chat.ChatViewModel.kt</ID>
+    <ID>UnusedParameter:AddChatScreen.kt$contactId: Long? = null</ID>
+    <ID>UnusedParameter:AddChatScreen.kt$eventId: Long? = null</ID>
+    <ID>UnusedParameter:DialogueInputCard.kt$contactName: String</ID>
+  </CurrentIssues>
+</SmellBaseline>

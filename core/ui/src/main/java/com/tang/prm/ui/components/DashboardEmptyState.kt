@@ -19,6 +19,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Immutable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -36,6 +37,7 @@ import com.tang.prm.ui.theme.SignalPurple
 /**
  * 仪表盘空状态数据项。
  */
+@Immutable
 data class DashboardMetric(
     val value: Int,
     val label: String,

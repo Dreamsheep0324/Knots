@@ -34,7 +34,6 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.tang.prm.ui.theme.Error
-import com.tang.prm.ui.theme.Primary
 
 @Composable
 fun DeleteConfirmDialog(
@@ -102,7 +101,7 @@ fun AppConfirmDialog(
                     modifier = Modifier
                         .size(48.dp)
                         .background(
-                            if (isDestructive) Error.copy(alpha = 0.1f) else Primary.copy(alpha = 0.1f),
+                            if (isDestructive) Error.copy(alpha = 0.1f) else MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
                             RoundedCornerShape(14.dp)
                         ),
                     contentAlignment = Alignment.Center
@@ -111,7 +110,7 @@ fun AppConfirmDialog(
                         if (isDestructive) Icons.Default.Warning else Icons.Default.Check,
                         contentDescription = null,
                         modifier = Modifier.size(26.dp),
-                        tint = if (isDestructive) Error else Primary
+                        tint = if (isDestructive) Error else MaterialTheme.colorScheme.primary
                     )
                 }
 
@@ -160,7 +159,7 @@ fun AppConfirmDialog(
                         modifier = Modifier.weight(1f),
                         shape = RoundedCornerShape(12.dp),
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = if (isDestructive) Error else Primary,
+                            containerColor = if (isDestructive) Error else MaterialTheme.colorScheme.primary,
                             contentColor = Color.White
                         )
                     ) {

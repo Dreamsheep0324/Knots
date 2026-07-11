@@ -1,6 +1,7 @@
 package com.tang.prm.data.local.entity
 
 import androidx.room.Entity
+import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
 
@@ -12,6 +13,14 @@ import androidx.room.PrimaryKey
         Index("groupId"),
         Index("relationship"),
         Index("name")
+    ],
+    foreignKeys = [
+        ForeignKey(
+            entity = ContactGroupEntity::class,
+            parentColumns = ["id"],
+            childColumns = ["groupId"],
+            onDelete = ForeignKey.SET_NULL
+        )
     ]
 )
 data class ContactEntity(
@@ -74,7 +83,22 @@ data class ContactTagEntity(
 
 @Entity(
     tableName = "contact_tag_cross_ref",
-    primaryKeys = ["contactId", "tagId"]
+    primaryKeys = ["contactId", "tagId"],
+    foreignKeys = [
+        ForeignKey(
+            entity = ContactEntity::class,
+            parentColumns = ["id"],
+            childColumns = ["contactId"],
+            onDelete = ForeignKey.CASCADE
+        ),
+        ForeignKey(
+            entity = ContactTagEntity::class,
+            parentColumns = ["id"],
+            childColumns = ["tagId"],
+            onDelete = ForeignKey.CASCADE
+        )
+    ],
+    indices = [Index("contactId"), Index("tagId")]
 )
 data class ContactTagCrossRef(
     val contactId: Long,

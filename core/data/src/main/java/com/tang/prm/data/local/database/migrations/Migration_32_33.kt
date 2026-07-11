@@ -2,6 +2,7 @@ package com.tang.prm.data.local.database.migrations
 
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
+import org.json.JSONArray
 
 val MIGRATION_32_33 = object : Migration(32, 33) {
     override fun migrate(db: SupportSQLiteDatabase) {
@@ -20,10 +21,7 @@ val MIGRATION_32_33 = object : Migration(32, 33) {
 
         // Migrate JSON data from contacts table
         // hobby, habit, diet, skill columns contain JSON arrays like ["篮球","足球"]
-        // We need to parse them and insert as rows
-        // Since we can't parse JSON in SQLite, we'll use a workaround:
-        // For each column, read the data in a cursor and insert rows
-
+        // 与 Migration_31_33 保持一致：优先使用 JSONArray 严格解析，异常时降级为 split
         val columns = mapOf("hobby" to "HOBBY", "habit" to "HABIT", "diet" to "DIET", "skill" to "SKILL")
 
         for ((column, category) in columns) {
@@ -33,13 +31,15 @@ val MIGRATION_32_33 = object : Migration(32, 33) {
                         val contactId = cursor.getLong(0)
                         val jsonStr = cursor.getString(1) ?: continue
 
-                        // Simple JSON array parsing: remove [ ] and split by ,
-                        val items = jsonStr
-                            .trim()
-                            .removeSurrounding("[", "]")
-                            .split(",")
-                            .map { it.trim().removeSurrounding("\"") }
-                            .filter { it.isNotBlank() }
+                        val items = try {
+                            val arr = JSONArray(jsonStr)
+                            (0 until arr.length()).map { arr.getString(it) }
+                        } catch (e: Exception) {
+                            jsonStr.trim().removeSurrounding("[", "]")
+                                .split(",")
+                                .map { it.trim().removeSurrounding("\"") }
+                                .filter { it.isNotBlank() }
+                        }
 
                         for (item in items) {
                             db.execSQL(

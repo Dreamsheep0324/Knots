@@ -1,0 +1,73 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues></ManuallySuppressedIssues>
+  <CurrentIssues>
+    <ID>FunctionNaming:AddGiftComponents.kt$@Composable internal fun ContactSelectionCard( selectedContact: Contact?, isSent: Boolean, onSelectClick: () -&gt; Unit )</ID>
+    <ID>FunctionNaming:AddGiftComponents.kt$@Composable internal fun DateSelectionCard(selectedDate: Long, onClick: () -&gt; Unit)</ID>
+    <ID>FunctionNaming:AddGiftComponents.kt$@Composable internal fun DescriptionFieldCard(description: String, onDescriptionChange: (String) -&gt; Unit)</ID>
+    <ID>FunctionNaming:AddGiftComponents.kt$@Composable internal fun DirectionButton( modifier: Modifier = Modifier, label: String, icon: ImageVector, color: Color, isSelected: Boolean, onClick: () -&gt; Unit )</ID>
+    <ID>FunctionNaming:AddGiftComponents.kt$@Composable internal fun DirectionToggleCard(isSent: Boolean, onToggle: (Boolean) -&gt; Unit)</ID>
+    <ID>FunctionNaming:AddGiftComponents.kt$@Composable internal fun GiftNameCard(giftName: String, onNameChange: (String) -&gt; Unit, focusRequester: FocusRequester? = null)</ID>
+    <ID>FunctionNaming:AddGiftComponents.kt$@Composable internal fun GiftTypeCard(selectedType: GiftType, onTypeSelect: (GiftType) -&gt; Unit)</ID>
+    <ID>FunctionNaming:AddGiftComponents.kt$@Composable internal fun OccasionFieldCard(occasion: String, onOccasionChange: (String) -&gt; Unit)</ID>
+    <ID>FunctionNaming:AddGiftComponents.kt$@Composable internal fun PhotoSelectionCard( photos: List&lt;String&gt;, onAddPhoto: () -&gt; Unit, onRemovePhoto: (Int) -&gt; Unit )</ID>
+    <ID>FunctionNaming:AddGiftScreen.kt$@OptIn(ExperimentalMaterial3Api::class) @Composable fun AddGiftScreen( navController: NavController, giftId: Long = 0L, viewModel: GiftsViewModel = hiltViewModel() )</ID>
+    <ID>FunctionNaming:GiftDetailComponents.kt$@Composable internal fun DetailInfoCard( gift: GiftRecord, giftTypeData: GiftType, dateFormat: (Long) -&gt; String )</ID>
+    <ID>FunctionNaming:GiftDetailComponents.kt$@Composable internal fun DetailReel( color: Color, rotation: Float, size: androidx.compose.ui.unit.Dp )</ID>
+    <ID>FunctionNaming:GiftDetailComponents.kt$@Composable internal fun DetailRow(label: String, value: String)</ID>
+    <ID>FunctionNaming:GiftDetailComponents.kt$@Composable internal fun MainInfoCard( gift: GiftRecord, giftTypeData: GiftType, reelRotation: Float )</ID>
+    <ID>FunctionNaming:GiftDetailComponents.kt$@Composable internal fun MemoCard(description: String)</ID>
+    <ID>FunctionNaming:GiftDetailComponents.kt$@Composable internal fun ModernDetailContent( gift: GiftRecord, giftTypeData: GiftType, modifier: Modifier = Modifier, onPhotoClick: (android.net.Uri) -&gt; Unit )</ID>
+    <ID>FunctionNaming:GiftDetailComponents.kt$@Composable internal fun PhotoViewerDialog( photoUri: android.net.Uri, onDismiss: () -&gt; Unit )</ID>
+    <ID>FunctionNaming:GiftDetailComponents.kt$@Composable internal fun PhotosCard( photos: List&lt;android.net.Uri&gt;, onPhotoClick: (android.net.Uri) -&gt; Unit )</ID>
+    <ID>FunctionNaming:GiftDetailScreen.kt$@Composable fun GiftDetailScreen( navController: NavController, giftId: Long, viewModel: GiftsViewModel = hiltViewModel() )</ID>
+    <ID>FunctionNaming:GiftsScreen.kt$@Composable fun GiftsScreen( navController: NavController, viewModel: GiftsViewModel = hiltViewModel() )</ID>
+    <ID>FunctionNaming:GiftsScreenComponents.kt$@Composable internal fun CassetteTapeRack( gifts: List&lt;GiftRecord&gt;, onTapeClick: (GiftRecord) -&gt; Unit )</ID>
+    <ID>FunctionNaming:GiftsScreenComponents.kt$@Composable internal fun GiftFilterDialog( contacts: List&lt;Contact&gt;, selectedContactId: Long?, onContactSelect: (Long?) -&gt; Unit, onDismiss: () -&gt; Unit )</ID>
+    <ID>FunctionNaming:GiftsScreenComponents.kt$@Composable internal fun RetroControlPanel( totalCount: Int, sentCount: Int, receivedCount: Int, typeBreakdown: Map&lt;String, Int&gt; )</ID>
+    <ID>FunctionNaming:GiftsScreenComponents.kt$@Composable internal fun RetroMeter( modifier: Modifier = Modifier, label: String, count: Int, total: Int, color: Color )</ID>
+    <ID>FunctionNaming:GiftsScreenComponents.kt$@Composable internal fun RetroSpectrum(typeBreakdown: Map&lt;String, Int&gt;)</ID>
+    <ID>FunctionNaming:GiftsScreenComponents.kt$@Composable internal fun TypeFilterStrip( gifts: List&lt;GiftRecord&gt;, selectedType: GiftType?, onTypeSelect: (GiftType?) -&gt; Unit )</ID>
+    <ID>FunctionNaming:GiftsTapeComponents.kt$@Composable internal fun CassetteTapeCard( gift: GiftRecord, index: Int, onClick: () -&gt; Unit )</ID>
+    <ID>FunctionNaming:GiftsTapeComponents.kt$@Composable private fun PlayerStyleReel( color: Color, rotation: Float, size: Dp )</ID>
+    <ID>FunctionNaming:GiftsTapeComponents.kt$@Composable private fun TapeLabelInfo( gift: GiftRecord, giftTypeData: GiftType, tapeId: String, dateFormat: (Long) -&gt; String )</ID>
+    <ID>FunctionNaming:GiftsTapeComponents.kt$@Composable private fun TapeWindowWithPlayerReel( gift: GiftRecord, giftTypeData: GiftType, reelRotation: Float )</ID>
+    <ID>LongMethod:AddGiftScreen.kt$@OptIn(ExperimentalMaterial3Api::class) @Composable fun AddGiftScreen( navController: NavController, giftId: Long = 0L, viewModel: GiftsViewModel = hiltViewModel() )</ID>
+    <ID>LongMethod:GiftDetailComponents.kt$@Composable internal fun MainInfoCard( gift: GiftRecord, giftTypeData: GiftType, reelRotation: Float )</ID>
+    <ID>LongMethod:GiftDetailComponents.kt$@Composable internal fun PhotoViewerDialog( photoUri: android.net.Uri, onDismiss: () -&gt; Unit )</ID>
+    <ID>LongMethod:GiftsScreen.kt$@Composable fun GiftsScreen( navController: NavController, viewModel: GiftsViewModel = hiltViewModel() )</ID>
+    <ID>LongMethod:GiftsTapeComponents.kt$@Composable private fun TapeLabelInfo( gift: GiftRecord, giftTypeData: GiftType, tapeId: String, dateFormat: (Long) -&gt; String )</ID>
+    <ID>MaxLineLength:AddGiftComponents.kt$Icon(Icons.Default.Add, contentDescription = "添加照片", tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(28.dp))</ID>
+    <ID>MaxLineLength:AddGiftComponents.kt$Icon(Icons.Default.AddPhotoAlternate, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(24.dp))</ID>
+    <ID>MaxLineLength:AddGiftComponents.kt$Icon(Icons.Default.CalendarToday, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(18.dp))</ID>
+    <ID>MaxLineLength:AddGiftComponents.kt$Icon(Icons.Default.ChevronRight, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = AnimationTokens.Alpha.half), modifier = Modifier.size(20.dp))</ID>
+    <ID>MaxLineLength:AddGiftComponents.kt$Icon(Icons.Default.PersonAdd, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(22.dp))</ID>
+    <ID>MaxLineLength:AddGiftComponents.kt$Icon(icon, contentDescription = null, tint = if (isSelected) color else MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(18.dp))</ID>
+    <ID>MaxLineLength:AddGiftComponents.kt$Text("选择人物", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Medium)</ID>
+    <ID>MaxLineLength:AddGiftComponents.kt$Text(label, color = if (isSelected) color else MaterialTheme.colorScheme.onSurfaceVariant, fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium, style = MaterialTheme.typography.bodyMedium)</ID>
+    <ID>MaxLineLength:AddGiftComponents.kt$border = if (isSelected) BorderStroke(1.5.dp, color.copy(alpha = AnimationTokens.Alpha.half)) else BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = AnimationTokens.Alpha.half))</ID>
+    <ID>MaxLineLength:AddGiftComponents.kt$border = if (isSelected) BorderStroke(1.5.dp, style.color.copy(alpha = AnimationTokens.Alpha.half)) else BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = AnimationTokens.Alpha.half))</ID>
+    <ID>MaxLineLength:AddGiftComponents.kt$color = if (isSelected) style.color.copy(alpha = 0.1f) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)</ID>
+    <ID>MaxLineLength:AddGiftComponents.kt$leadingIcon = { Icon(Icons.Default.Event, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(20.dp)) }</ID>
+    <ID>MaxLineLength:AddGiftComponents.kt$placeholder = { Text("写下关于这份礼物的描述...", color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = AnimationTokens.Alpha.half)) }</ID>
+    <ID>MaxLineLength:AddGiftComponents.kt$placeholder = { Text("如：机械键盘、护肤品", color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = AnimationTokens.Alpha.half)) }</ID>
+    <ID>MaxLineLength:AddGiftComponents.kt$placeholder = { Text("如：生日、纪念日", color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = AnimationTokens.Alpha.half)) }</ID>
+    <ID>MaxLineLength:GiftDetailComponents.kt$.</ID>
+    <ID>MaxLineLength:GiftsScreen.kt$Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "返回", tint = OnSurface, modifier = Modifier.size(22.dp))</ID>
+    <ID>MaxLineLength:GiftsScreenComponents.kt$Icon(Icons.Default.Storage, contentDescription = null, tint = if (isSelected) SignalElectric else TextGray, modifier = Modifier.size(12.dp))</ID>
+    <ID>MaxLineLength:GiftsScreenComponents.kt$Icon(Icons.Default.Storage, contentDescription = null, tint = if (selectedContactId == null) SignalElectric else TextGray, modifier = Modifier.size(20.dp))</ID>
+    <ID>MaxLineLength:GiftsScreenComponents.kt$Icon(type.toStyle().icon, contentDescription = null, tint = if (isSelected) typeColor else TextGray, modifier = Modifier.size(12.dp))</ID>
+    <ID>MaxLineLength:GiftsScreenComponents.kt$RetroMeter(modifier = Modifier.weight(1f), label = "A面 · 送出", count = sentCount, total = totalCount.coerceAtLeast(1), color = SignalAmber)</ID>
+    <ID>MaxLineLength:GiftsScreenComponents.kt$RetroMeter(modifier = Modifier.weight(1f), label = "B面 · 收到", count = receivedCount, total = totalCount.coerceAtLeast(1), color = SignalGreen)</ID>
+    <ID>MaxLineLength:GiftsScreenComponents.kt$Row</ID>
+    <ID>MaxLineLength:GiftsScreenComponents.kt$Text(String.format(Locale.US, "%02d", count), fontFamily = FontFamily.Monospace, fontSize = 13.sp, fontWeight = FontWeight.Bold, color = color)</ID>
+    <ID>MaxLineLength:GiftsScreenComponents.kt$Text(if (count &gt; 0) "$count" else "", fontFamily = FontFamily.Monospace, fontSize = 7.sp, color = style.color, fontWeight = FontWeight.Bold)</ID>
+    <ID>MaxLineLength:GiftsScreenComponents.kt$Text(text = contact.name, color = if (selectedContactId == contact.id) SignalElectric else MaterialTheme.colorScheme.onSurface)</ID>
+    <ID>MaxLineLength:GiftsScreenComponents.kt$Text(type.displayName.first().toString(), fontFamily = FontFamily.Monospace, fontSize = 7.sp, color = if (count &gt; 0) style.color else TextGray.copy(alpha = 0.3f))</ID>
+    <ID>MaxLineLength:GiftsScreenComponents.kt$border = if (isSelected) BorderStroke(1.dp, typeColor.copy(alpha = AnimationTokens.Alpha.half)) else BorderStroke(0.5.dp, CardBorder.copy(alpha = AnimationTokens.Alpha.half))</ID>
+    <ID>MaxLineLength:GiftsScreenComponents.kt$modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp).clip(RoundedCornerShape(8.dp)).clickable { onContactSelect(contact.id) }</ID>
+    <ID>MaxLineLength:GiftsScreenComponents.kt$val animatedProgress by animateFloatAsState(targetValue = progress, animationSpec = tween(AnimationTokens.Duration.dramatic), label = "meter")</ID>
+    <ID>MaxLineLength:GiftsTapeComponents.kt$.</ID>
+    <ID>TooGenericExceptionCaught:GiftsViewModel.kt$GiftsViewModel$e: Exception</ID>
+  </CurrentIssues>
+</SmellBaseline>

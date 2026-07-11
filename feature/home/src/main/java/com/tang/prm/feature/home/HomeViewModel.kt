@@ -11,7 +11,6 @@ import com.tang.prm.domain.usecase.HomeDataAggregationUseCase
 import com.tang.prm.domain.usecase.HomeStats
 import com.tang.prm.domain.usecase.HomeStatsUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -40,7 +39,8 @@ data class HomeUiState(
     val conversationCount: Int = 0,
     val subscriptionCount: Int = 0,
     val tierDistribution: Map<IntimacyTier, Int> = emptyMap(),
-    val isLoading: Boolean = true
+    val isLoading: Boolean = true,
+    val decorPhotoPath: String? = null
 )
 
 @HiltViewModel
@@ -58,7 +58,7 @@ class HomeViewModel @Inject constructor(
             emit(calculateGreeting())
             delay(30 * 60 * 1000L)
         }
-    }.flowOn(Dispatchers.Default)
+    }
 
     private fun calculateGreeting(): String {
         val hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
@@ -73,8 +73,9 @@ class HomeViewModel @Inject constructor(
         greetingFlow,
         settingsRepository.userName.distinctUntilChanged(),
         homeDataUseCase.getAggregateData().distinctUntilChanged(),
-        homeStatsUseCase.getStats().distinctUntilChanged()
-    ) { greeting, userName, data: HomeAggregateData, stats: HomeStats ->
+        homeStatsUseCase.getStats().distinctUntilChanged(),
+        settingsRepository.homeDecorPhotoPath.distinctUntilChanged()
+    ) { greeting, userName, data: HomeAggregateData, stats: HomeStats, decorPhotoPath: String? ->
         HomeUiState(
             greeting = greeting,
             userName = userName,
@@ -97,9 +98,10 @@ class HomeViewModel @Inject constructor(
             conversationCount = stats.conversationCount,
             subscriptionCount = stats.subscriptionCount,
             tierDistribution = stats.tierDistribution,
-            isLoading = false
+            isLoading = false,
+            decorPhotoPath = decorPhotoPath
         )
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(30_000), HomeUiState(isLoading = true))
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), HomeUiState(isLoading = true))
 
     fun toggleTodoCompletion(todoId: Long, isCompleted: Boolean) {
         viewModelScope.launch {
@@ -110,6 +112,12 @@ class HomeViewModel @Inject constructor(
     fun completeReminder(id: Long) {
         viewModelScope.launch {
             reminderRepository.markReminderCompleted(id)
+        }
+    }
+
+    fun setDecorPhotoPath(path: String?) {
+        viewModelScope.launch {
+            settingsRepository.setHomeDecorPhotoPath(path)
         }
     }
 }

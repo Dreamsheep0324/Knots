@@ -66,6 +66,7 @@ class HomeViewModelTest {
         every { homeDataUseCase.getAggregateData() } returns flowOf(emptyHomeData)
         every { homeStatsUseCase.getStats() } returns flowOf(HomeStats())
         every { settingsRepository.userName } returns flowOf("测试用户")
+        every { settingsRepository.homeDecorPhotoPath } returns flowOf(null)
 
         viewModel = HomeViewModel(
             homeDataUseCase,
@@ -95,10 +96,11 @@ class HomeViewModelTest {
         )
 
         freshViewModel.uiState.test {
-            // Skip initial loading state (isLoading=true, giftCount=0)
-            awaitItem()
-            // Wait for combined state
-            val state = awaitItem()
+            // UnconfinedTestDispatcher 下首个 item 可能是 initial 或 combined
+            var state = awaitItem()
+            if (state.isLoading) {
+                state = awaitItem()
+            }
             assertThat(state.giftCount).isEqualTo(5)
             assertThat(state.contactCount).isEqualTo(10)
             cancelAndIgnoreRemainingEvents()

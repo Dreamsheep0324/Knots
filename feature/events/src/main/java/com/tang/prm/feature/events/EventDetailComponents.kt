@@ -31,7 +31,6 @@ import com.tang.prm.domain.model.EventType
 import com.tang.prm.ui.animation.core.AnimationTokens
 import com.tang.prm.ui.theme.FavoriteGold
 import com.tang.prm.ui.theme.InsightPink
-import com.tang.prm.ui.theme.Primary
 import com.tang.prm.ui.theme.SignalAmber
 import com.tang.prm.ui.theme.SignalPurple
 import com.tang.prm.ui.theme.SignalSky
@@ -75,10 +74,10 @@ internal fun RemarkSection(remarks: String, onEdit: () -> Unit) {
 internal fun EventHeader(event: Event) {
     Row(verticalAlignment = Alignment.CenterVertically) {
         Box(
-            modifier = Modifier.size(40.dp).clip(CircleShape).background(Primary.copy(alpha = 0.1f)),
+            modifier = Modifier.size(40.dp).clip(CircleShape).background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)),
             contentAlignment = Alignment.Center
         ) {
-            Icon(Icons.Default.Person, contentDescription = null, tint = Primary, modifier = Modifier.size(20.dp))
+            Icon(Icons.Default.Person, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
         }
 
         Spacer(modifier = Modifier.width(12.dp))
@@ -95,9 +94,9 @@ internal fun EventHeader(event: Event) {
         }
 
         if (event.type != EventType.OTHER || event.customTypeName != null) {
-            Surface(color = Primary.copy(alpha = AnimationTokens.Alpha.faint), shape = RoundedCornerShape(12.dp)) {
+            Surface(color = MaterialTheme.colorScheme.primary.copy(alpha = AnimationTokens.Alpha.faint), shape = RoundedCornerShape(12.dp)) {
                 Box(modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)) {
-                    Text(text = event.customTypeName ?: event.type.displayName, style = MaterialTheme.typography.labelSmall, color = Primary, fontWeight = FontWeight.SemiBold)
+                    Text(text = event.customTypeName ?: event.type.displayName, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.SemiBold)
                 }
             }
         }
@@ -232,14 +231,14 @@ internal fun ParticipantAvatar(
 ) {
     Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.width(48.dp)) {
         Box(
-            modifier = Modifier.size(40.dp).clip(CircleShape).background(Primary.copy(alpha = AnimationTokens.Alpha.faint)).clickable(onClick = onClick),
+            modifier = Modifier.size(40.dp).clip(CircleShape).background(MaterialTheme.colorScheme.primary.copy(alpha = AnimationTokens.Alpha.faint)).clickable(onClick = onClick),
             contentAlignment = Alignment.Center
         ) {
             val avatarUrl = participant.avatar
             if (!avatarUrl.isNullOrBlank()) {
                 AsyncImage(model = avatarUrl, contentDescription = null, modifier = Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
             } else {
-                Text(text = participant.name.firstOrNull()?.toString() ?: "?", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold, color = Primary)
+                Text(text = participant.name.firstOrNull()?.toString() ?: "?", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
             }
         }
         Spacer(modifier = Modifier.height(3.dp))

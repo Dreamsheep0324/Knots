@@ -43,12 +43,10 @@ class SubscriptionsViewModel @Inject constructor(
                 subscriptionRepository.getAllSubscriptions(),
                 _selectedTab,
                 searchManager.state
-            ) { subs, tab, search ->
+            ) { subs, tab, search -> SubsSnapshot(subs, tab, search) }
+            .collect { (subs, tab, search) ->
                 val keyword = if (search.isActive && search.query.isNotBlank()) search.query else null
-                val filtered = subs.filterBy(
-                    status = tabToStatus(tab),
-                    keyword = keyword
-                )
+                val filtered = subs.filterBy(status = tabToStatus(tab), keyword = keyword)
                 val grouped = filtered
                     .filter { it.computedStatus() != SubscriptionStatus.EXPIRED || tab == 3 }
                     .groupBy { it.category ?: "未分类" }
@@ -58,9 +56,16 @@ class SubscriptionsViewModel @Inject constructor(
                     groupedByCategory = grouped,
                     selectedTab = tab
                 ))}
-            }.collect {}
+            }
         }
     }
+
+    /** combine 中间快照，纯数据，副作用在 collect 块中执行 */
+    private data class SubsSnapshot(
+        val subs: List<Subscription>,
+        val tab: Int,
+        val search: SearchState
+    )
 
     private fun observeStats() {
         viewModelScope.launch {

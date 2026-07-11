@@ -9,6 +9,13 @@
 -keepattributes RuntimeVisibleAnnotations
 -keepattributes EnclosingMethod
 
+# 保留 @Keep 注解标记的类/成员
+-keep,allowobfuscation @androidx.annotation.Keep class *
+-keep @androidx.annotation.Keep class * { *; }
+-keepclassmembers class * {
+    @androidx.annotation.Keep *;
+}
+
 # ---- Kotlin ----
 -dontwarn kotlin.**
 -keepclassmembers class kotlin.Metadata { *; }
@@ -51,6 +58,11 @@
 -keep class * implements com.google.gson.TypeAdapterFactory
 -keep class * implements com.google.gson.JsonSerializer
 -keep class * implements com.google.gson.JsonDeserializer
+# 保留使用 @SerializedName 的 DTO 类（Gson 反射字段名）
+-keep class com.tang.prm.data.remote.** { *; }
+-keepclassmembers class * {
+    @com.google.gson.annotations.SerializedName <fields>;
+}
 
 # ---- Coil ----
 -dontwarn coil.**
@@ -71,8 +83,15 @@
 -dontwarn kotlinx.coroutines.**
 
 # ---- Navigation Compose ----
--keep class com.tang.prm.ui.navigation.*Route { *; }
+# 保留所有路由对象（@Serializable object/data class），Navigation Compose
+# 类型安全 API 依赖 kotlinx.serialization 反射路由参数
+-keep class com.tang.prm.ui.navigation.** { *; }
 -keep class * extends androidx.navigation.NavController { <init>(...); }
+# 保留 kotlinx.serialization 生成的 $$serializer 供 Navigation 使用
+-keepclassmembers class com.tang.prm.ui.navigation.** {
+    *** Companion;
+    kotlinx.serialization.KSerializer serializer(...);
+}
 
 # ---- Compose ----
 -dontwarn androidx.compose.**

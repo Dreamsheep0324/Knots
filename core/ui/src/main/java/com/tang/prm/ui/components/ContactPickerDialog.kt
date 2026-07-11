@@ -17,7 +17,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.tang.prm.ui.theme.Primary
 import com.tang.prm.ui.animation.core.AnimationTokens
 import com.tang.prm.ui.theme.DialogDefaults
 
@@ -54,10 +53,10 @@ fun ContactPickerDialog(
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Box(
-                            modifier = Modifier.size(56.dp).background(Primary.copy(alpha = AnimationTokens.Alpha.faint), CircleShape),
+                            modifier = Modifier.size(56.dp).background(MaterialTheme.colorScheme.primary.copy(alpha = AnimationTokens.Alpha.faint), CircleShape),
                             contentAlignment = Alignment.Center
                         ) {
-                            Icon(Icons.Default.People, contentDescription = null, tint = Primary.copy(alpha = 0.4f), modifier = Modifier.size(28.dp))
+                            Icon(Icons.Default.People, contentDescription = null, tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.4f), modifier = Modifier.size(28.dp))
                         }
                         Spacer(modifier = Modifier.height(12.dp))
                         Text(emptyText, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -87,7 +86,7 @@ fun ContactPickerDialog(
                                 else Modifier.clickable { onContactSelected(contact) }
                             ),
                             shape = RoundedCornerShape(14.dp),
-                            color = if (isSelected) Primary.copy(alpha = 0.06f) else MaterialTheme.colorScheme.surfaceVariant
+                            color = if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.06f) else MaterialTheme.colorScheme.surfaceVariant
                         ) {
                             Row(
                                 modifier = Modifier.padding(horizontal = 14.dp, vertical = 12.dp),
@@ -102,7 +101,7 @@ fun ContactPickerDialog(
                                     }
                                 }
                                 if (isSelected) {
-                                    Icon(Icons.Default.Check, contentDescription = null, tint = Primary, modifier = Modifier.size(18.dp))
+                                    Icon(Icons.Default.Check, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(18.dp))
                                 }
                             }
                         }
@@ -111,7 +110,7 @@ fun ContactPickerDialog(
             }
         },
         confirmButton = {
-            TextButton(onClick = onDismiss) { Text(if (multiSelect) "完成" else "取消", color = Primary) }
+            TextButton(onClick = onDismiss) { Text(if (multiSelect) "完成" else "取消", color = MaterialTheme.colorScheme.primary) }
         }
     )
 }

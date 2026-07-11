@@ -58,7 +58,6 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.tang.prm.ui.theme.Error
-import com.tang.prm.ui.theme.Primary
 import com.tang.prm.ui.theme.Success
 import com.tang.prm.ui.components.AppConfirmDialog
 
@@ -67,11 +66,12 @@ fun BackupScreen(
     navController: NavController,
     viewModel: BackupViewModel = hiltViewModel()
 ) {
-    val state by viewModel.state.collectAsStateWithLifecycle()
-    val backupFiles by viewModel.backupFiles.collectAsStateWithLifecycle()
-    val autoBackupEnabled by viewModel.autoBackupEnabled.collectAsStateWithLifecycle()
-    val hasBackupDir by viewModel.hasBackupDir.collectAsStateWithLifecycle()
-    val backupDirName by viewModel.backupDirName.collectAsStateWithLifecycle()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val state = uiState.dialog.operationState
+    val backupFiles = uiState.data.backupFiles
+    val autoBackupEnabled = uiState.data.autoBackupEnabled
+    val hasBackupDir = uiState.data.hasBackupDir
+    val backupDirName = uiState.data.backupDirName
 
     var showRestoreConfirm by remember { mutableStateOf(false) }
     var showClearConfirm by remember { mutableStateOf(false) }
@@ -161,7 +161,7 @@ fun BackupScreen(
                     onClick = { dirLauncher.launch(null) },
                     modifier = Modifier.fillMaxWidth().height(52.dp),
                     shape = MaterialTheme.shapes.medium,
-                    colors = ButtonDefaults.outlinedButtonColors(contentColor = Primary)
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.primary)
                 ) {
                     Icon(Icons.Default.FolderOpen, null, modifier = Modifier.size(18.dp))
                     Spacer(Modifier.width(8.dp))
@@ -192,7 +192,7 @@ fun BackupScreen(
                         checked = autoBackupEnabled,
                         onCheckedChange = { viewModel.setAutoBackupEnabled(it) },
                         colors = SwitchDefaults.colors(
-                            checkedTrackColor = Primary,
+                            checkedTrackColor = MaterialTheme.colorScheme.primary,
                             checkedThumbColor = Color.White,
                             uncheckedTrackColor = MaterialTheme.colorScheme.outline,
                             uncheckedThumbColor = MaterialTheme.colorScheme.surfaceVariant,
@@ -207,7 +207,7 @@ fun BackupScreen(
                     onClick = { viewModel.createBackup() },
                     modifier = Modifier.fillMaxWidth().height(52.dp),
                     shape = MaterialTheme.shapes.medium,
-                    colors = ButtonDefaults.buttonColors(containerColor = Primary),
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
                     enabled = hasBackupDir && state !is BackupState.BackingUp
                 ) {
                     if (state is BackupState.BackingUp) {

@@ -1,9 +1,7 @@
 import java.util.Properties
 
 plugins {
-    alias(libs.plugins.android.application)
-    alias(libs.plugins.kotlin.android)
-    alias(libs.plugins.kotlin.compose)
+    id("tang.android.application")
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.hilt)
     alias(libs.plugins.ksp)
@@ -18,14 +16,11 @@ if (keystorePropertiesFile.exists()) {
 
 android {
     namespace = "com.tang.prm"
-    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.tang.prm"
-        minSdk = 26
-        targetSdk = 35
-        versionCode = 10400
-        versionName = "1.4.0"
+        versionCode = 10401
+        versionName = "1.4.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -44,6 +39,8 @@ android {
                 enableV1Signing = true
                 @Suppress("UnstableApiUsage")
                 enableV2Signing = true
+                @Suppress("UnstableApiUsage")
+                enableV3Signing = true
             }
         }
     }
@@ -58,19 +55,19 @@ android {
                 "proguard-rules.pro"
             )
         }
-    }
-
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
-    }
-
-    kotlinOptions {
-        jvmTarget = "17"
-    }
-
-    buildFeatures {
-        compose = true
+        // 内部测试构建：启用混淆但保留调试能力，可与正式版共存
+        create("staging") {
+            initWith(getByName("release"))
+            applicationIdSuffix = ".staging"
+            versionNameSuffix = "-staging"
+            isDebuggable = true
+            // Staging 使用与 release 相同的签名，便于在真实环境测试
+            signingConfig = signingConfigs.getByName("release")
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
+        }
     }
 
     packaging {

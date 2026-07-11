@@ -97,6 +97,11 @@ interface CircleDao {
         return id
     }
 
+    @Transaction
+    suspend fun updateCircleOrder(circles: List<CircleEntity>) {
+        circles.forEach { updateCircle(it) }
+    }
+
     @Query("DELETE FROM circle_member_cross_ref WHERE contactId = :contactId")
     suspend fun deleteMemberRefsByContact(contactId: Long)
 }

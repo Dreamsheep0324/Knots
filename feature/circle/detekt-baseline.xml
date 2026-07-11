@@ -1,0 +1,60 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues></ManuallySuppressedIssues>
+  <CurrentIssues>
+    <ID>CyclomaticComplexMethod:ContactListWaveform.kt$@Composable internal fun TerminalWaveformMonitor( color: Color, wavePhase: Float, waveformType: String = "sine" )</ID>
+    <ID>CyclomaticComplexMethod:ContactListWaveform.kt$internal fun computeWaveform(type: String, t: Float, phase: Float): Float</ID>
+    <ID>FunctionNaming:ContactListCardComponents.kt$@Composable internal fun TerminalCardHeader(contact: Contact, rarity: IntimacyTier, rarityColor: Color)</ID>
+    <ID>FunctionNaming:ContactListCardComponents.kt$@Composable internal fun TerminalCornerBrackets(color: Color)</ID>
+    <ID>FunctionNaming:ContactListCardComponents.kt$@Composable internal fun TerminalScanLineOverlay(scanLineOffset: Float)</ID>
+    <ID>FunctionNaming:ContactListComponents.kt$@Composable internal fun TerminalDivider(color: Color = Color.Unspecified)</ID>
+    <ID>FunctionNaming:ContactListComponents.kt$@Composable internal fun TerminalGridBackground()</ID>
+    <ID>FunctionNaming:ContactListComponents.kt$@Composable internal fun TerminalLoading()</ID>
+    <ID>FunctionNaming:ContactListComponents.kt$@Composable internal fun TerminalPrompt()</ID>
+    <ID>FunctionNaming:ContactListComponents.kt$@Composable internal fun TerminalSearchBar(query: String, onQueryChange: (String) -&gt; Unit)</ID>
+    <ID>FunctionNaming:ContactListDialogs.kt$@Composable internal fun TerminalAddMemberDialog( availableContacts: List&lt;Contact&gt;, onDismiss: () -&gt; Unit, onAdd: (Long) -&gt; Unit )</ID>
+    <ID>FunctionNaming:ContactListDialogs.kt$@Composable internal fun TerminalCreateDialog( onDismiss: () -&gt; Unit, onCreate: (String, String?, String, String) -&gt; Unit )</ID>
+    <ID>FunctionNaming:ContactListDialogs.kt$@Composable internal fun TerminalDeleteDialog( onDismiss: () -&gt; Unit, onConfirm: () -&gt; Unit )</ID>
+    <ID>FunctionNaming:ContactListDialogs.kt$@Composable internal fun TerminalEditDialog( circle: Circle, onDismiss: () -&gt; Unit, onSave: (String, String?, String, String) -&gt; Unit )</ID>
+    <ID>FunctionNaming:ContactListMiniCard.kt$@Composable internal fun MiniCardCornerBrackets(color: Color)</ID>
+    <ID>FunctionNaming:ContactListMiniCard.kt$@Composable private fun NodeLinkIndicator( currentIndex: Int, totalCount: Int, activeColor: Color )</ID>
+    <ID>FunctionNaming:ContactListMiniCard.kt$@Composable private fun TerminalMiniCard( contact: Contact, onClick: () -&gt; Unit, modifier: Modifier = Modifier, nodeIndex: Int = 0, totalNodes: Int = 1 )</ID>
+    <ID>FunctionNaming:ContactListMiniCard.kt$@Composable private fun TerminalPageIndicator( currentIndex: Int, totalCount: Int, indicatorColor: Color = SignalPurple )</ID>
+    <ID>FunctionNaming:ContactListMiniCard.kt$@Composable private fun TerminalTapeTrack( currentIndex: Int, totalCount: Int, label: String, trackColor: Color = SignalPurple )</ID>
+    <ID>FunctionNaming:ContactListMiniCard.kt$@OptIn(ExperimentalFoundationApi::class) @Composable internal fun TerminalMiniCardRow( members: List&lt;Contact&gt;, circleColor: Color, onSelectMember: (Long) -&gt; Unit )</ID>
+    <ID>FunctionNaming:ContactListScreen.kt$@Composable fun ContactListScreen( navController: NavController, viewModel: ContactListViewModel = hiltViewModel() )</ID>
+    <ID>FunctionNaming:ContactListStats.kt$@Composable internal fun TerminalStatsPanel( circles: List&lt;HologramCircle&gt;, contacts: List&lt;Contact&gt; )</ID>
+    <ID>FunctionNaming:ContactListStats.kt$@Composable private fun StatsPanelCornerBrackets(color: Color)</ID>
+    <ID>FunctionNaming:ContactListStats.kt$@Composable private fun TerminalStatCard( index: String, label: String, value: String, accentColor: Color, modifier: Modifier = Modifier )</ID>
+    <ID>FunctionNaming:ContactListWaveform.kt$@Composable internal fun TerminalSystemParam( label: String, value: String, color: Color, modifier: Modifier = Modifier )</ID>
+    <ID>FunctionNaming:ContactListWaveform.kt$@Composable internal fun TerminalWaveformMonitor( color: Color, wavePhase: Float, waveformType: String = "sine" )</ID>
+    <ID>FunctionNaming:FullscreenCardOverlay.kt$@Composable internal fun FullscreenCardOverlay( contact: Contact, waveformType: String, isFlipped: Boolean, onFlip: () -&gt; Unit, onClose: () -&gt; Unit, onRemove: () -&gt; Unit, onContactClick: () -&gt; Unit )</ID>
+    <ID>FunctionNaming:TerminalCardBack.kt$@Composable internal fun TerminalCardBackV2( contact: Contact, rarity: IntimacyTier, onContactClick: () -&gt; Unit, onRemove: () -&gt; Unit, shadowElevation: Float = 12f )</ID>
+    <ID>FunctionNaming:TerminalCardFront.kt$@Composable internal fun TerminalCardFrontV2( contact: Contact, rarity: IntimacyTier, waveformType: String = "sine", onFlip: () -&gt; Unit, shadowElevation: Float = 12f )</ID>
+    <ID>FunctionNaming:TerminalDossier.kt$@Composable internal fun TerminalActionButton(label: String, onClick: () -&gt; Unit, accentColor: Color = SignalPurple)</ID>
+    <ID>FunctionNaming:TerminalDossier.kt$@Composable internal fun TerminalDossier( hologramCircle: HologramCircle, isExpanded: Boolean, selectedMemberId: Long?, flippedCardId: Long?, onExpand: () -&gt; Unit, onSelectMember: (Long?) -&gt; Unit, onFlipCard: (Long) -&gt; Unit, onAddMember: () -&gt; Unit, onEditCircle: () -&gt; Unit, onDeleteCircle: () -&gt; Unit, onRemoveMember: (Long) -&gt; Unit, onContactClick: (Long) -&gt; Unit )</ID>
+    <ID>FunctionNaming:TerminalDossier.kt$@Composable private fun TerminalActionBar( circleColor: Color, onAddMember: () -&gt; Unit, onEditCircle: () -&gt; Unit, onDeleteCircle: () -&gt; Unit )</ID>
+    <ID>FunctionNaming:TerminalDossier.kt$@Suppress("UNUSED_PARAMETER") @Composable private fun TerminalExpandedContent( members: List&lt;Contact&gt;, circleColor: Color, selectedMemberId: Long?, flippedCardId: Long?, onSelectMember: (Long?) -&gt; Unit, onFlipCard: (Long) -&gt; Unit, onAddMember: () -&gt; Unit, onEditCircle: () -&gt; Unit, onDeleteCircle: () -&gt; Unit, onRemoveMember: (Long) -&gt; Unit, onContactClick: (Long) -&gt; Unit )</ID>
+    <ID>LongMethod:ContactListDialogs.kt$@Composable internal fun TerminalAddMemberDialog( availableContacts: List&lt;Contact&gt;, onDismiss: () -&gt; Unit, onAdd: (Long) -&gt; Unit )</ID>
+    <ID>LongMethod:ContactListDialogs.kt$@Composable internal fun TerminalCreateDialog( onDismiss: () -&gt; Unit, onCreate: (String, String?, String, String) -&gt; Unit )</ID>
+    <ID>LongMethod:ContactListDialogs.kt$@Composable internal fun TerminalEditDialog( circle: Circle, onDismiss: () -&gt; Unit, onSave: (String, String?, String, String) -&gt; Unit )</ID>
+    <ID>LongMethod:ContactListMiniCard.kt$@Composable private fun TerminalMiniCard( contact: Contact, onClick: () -&gt; Unit, modifier: Modifier = Modifier, nodeIndex: Int = 0, totalNodes: Int = 1 )</ID>
+    <ID>LongMethod:ContactListScreen.kt$@Composable fun ContactListScreen( navController: NavController, viewModel: ContactListViewModel = hiltViewModel() )</ID>
+    <ID>LongMethod:ContactListStats.kt$@Composable internal fun TerminalStatsPanel( circles: List&lt;HologramCircle&gt;, contacts: List&lt;Contact&gt; )</ID>
+    <ID>LongMethod:ContactListWaveform.kt$@Composable internal fun TerminalWaveformMonitor( color: Color, wavePhase: Float, waveformType: String = "sine" )</ID>
+    <ID>LongMethod:TerminalCardBack.kt$@Composable internal fun TerminalCardBackV2( contact: Contact, rarity: IntimacyTier, onContactClick: () -&gt; Unit, onRemove: () -&gt; Unit, shadowElevation: Float = 12f )</ID>
+    <ID>LongMethod:TerminalCardFront.kt$@Composable internal fun TerminalCardFrontV2( contact: Contact, rarity: IntimacyTier, waveformType: String = "sine", onFlip: () -&gt; Unit, shadowElevation: Float = 12f )</ID>
+    <ID>LongMethod:TerminalDossier.kt$@Composable internal fun TerminalDossier( hologramCircle: HologramCircle, isExpanded: Boolean, selectedMemberId: Long?, flippedCardId: Long?, onExpand: () -&gt; Unit, onSelectMember: (Long?) -&gt; Unit, onFlipCard: (Long) -&gt; Unit, onAddMember: () -&gt; Unit, onEditCircle: () -&gt; Unit, onDeleteCircle: () -&gt; Unit, onRemoveMember: (Long) -&gt; Unit, onContactClick: (Long) -&gt; Unit )</ID>
+    <ID>LongParameterList:TerminalDossier.kt$( hologramCircle: HologramCircle, isExpanded: Boolean, selectedMemberId: Long?, flippedCardId: Long?, onExpand: () -&gt; Unit, onSelectMember: (Long?) -&gt; Unit, onFlipCard: (Long) -&gt; Unit, onAddMember: () -&gt; Unit, onEditCircle: () -&gt; Unit, onDeleteCircle: () -&gt; Unit, onRemoveMember: (Long) -&gt; Unit, onContactClick: (Long) -&gt; Unit )</ID>
+    <ID>LongParameterList:TerminalDossier.kt$( members: List&lt;Contact&gt;, circleColor: Color, selectedMemberId: Long?, flippedCardId: Long?, onSelectMember: (Long?) -&gt; Unit, onFlipCard: (Long) -&gt; Unit, onAddMember: () -&gt; Unit, onEditCircle: () -&gt; Unit, onDeleteCircle: () -&gt; Unit, onRemoveMember: (Long) -&gt; Unit, onContactClick: (Long) -&gt; Unit )</ID>
+    <ID>MaxLineLength:ContactListComponents.kt$typeConverter = androidx.compose.animation.core.TwoWayConverter({ androidx.compose.animation.core.AnimationVector1D(it.toFloat()) }, { it.value.toInt() })</ID>
+    <ID>MaxLineLength:ContactListDialogs.kt$Text("[+]", fontFamily = FontFamily.Monospace, fontSize = 14.sp, color = SignalPurple, fontWeight = FontWeight.Bold)</ID>
+    <ID>MaxLineLength:ContactListDialogs.kt$color = if (isSelected) MaterialTheme.colorScheme.onSurface.copy(alpha = AnimationTokens.Alpha.faint) else MaterialTheme.colorScheme.surface</ID>
+    <ID>MaxLineLength:ContactListDialogs.kt$var selectedWaveformIndex by remember { mutableStateOf(CircleConstants.WaveformTypes.indexOfFirst { it.first == circle.waveform }.coerceAtLeast(0)) }</ID>
+    <ID>MaxLineLength:TerminalCardFront.kt$color = if (index &lt; starCount) rarityColor else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)</ID>
+    <ID>UnusedPrivateProperty:TerminalCardFront.kt$val _pulseAlpha by rememberBreathingPulse( minAlpha = 0.2f, maxAlpha = 0.6f, cycleDuration = AnimationTokens.Cycle.normal )</ID>
+    <ID>UnusedPrivateProperty:TerminalCardFront.kt$val _shimmerOffset by rememberShimmerPhase( cycleDuration = 2500 )</ID>
+    <ID>VariableNaming:TerminalCardFront.kt$val _pulseAlpha by rememberBreathingPulse( minAlpha = 0.2f, maxAlpha = 0.6f, cycleDuration = AnimationTokens.Cycle.normal )</ID>
+    <ID>VariableNaming:TerminalCardFront.kt$val _shimmerOffset by rememberShimmerPhase( cycleDuration = 2500 )</ID>
+  </CurrentIssues>
+</SmellBaseline>

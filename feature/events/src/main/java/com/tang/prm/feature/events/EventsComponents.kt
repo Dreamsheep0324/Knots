@@ -1,4 +1,4 @@
-﻿package com.tang.prm.feature.events
+package com.tang.prm.feature.events
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -46,7 +46,6 @@ import com.tang.prm.ui.animation.core.AnimationTokens
 import com.tang.prm.ui.components.AppCard
 import com.tang.prm.ui.theme.Dimens
 import com.tang.prm.ui.theme.EventLightIndigo
-import com.tang.prm.ui.theme.Primary
 import com.tang.prm.ui.theme.SignalAmber
 import com.tang.prm.ui.theme.SignalPurple
 import com.tang.prm.ui.theme.SignalSky
@@ -195,7 +194,7 @@ internal fun EventsTimelineView(
 
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.width(24.dp)) {
-                        Box(modifier = Modifier.size(10.dp).background(Primary, CircleShape))
+                        Box(modifier = Modifier.size(10.dp).background(MaterialTheme.colorScheme.primary, CircleShape))
                         if (!isLast) {
                             Box(modifier = Modifier.width(2.dp).height(72.dp).background(MaterialTheme.colorScheme.outline))
                         }

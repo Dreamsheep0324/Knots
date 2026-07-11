@@ -27,7 +27,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.tang.prm.domain.model.CustomType
-import com.tang.prm.ui.theme.Primary
 import com.tang.prm.ui.theme.TextGray
 import com.tang.prm.ui.theme.DialogDefaults
 import com.tang.prm.ui.theme.getGenericIcon
@@ -89,8 +88,8 @@ fun TagSelector(
                 availableItems.forEach { item ->
                     val isSelected = selectedItems.contains(item.name)
                     val itemColor = item.color?.let {
-                        it.toComposeColor(Primary)
-                    } ?: Primary
+                        it.toComposeColor(MaterialTheme.colorScheme.primary)
+                    } ?: MaterialTheme.colorScheme.primary
                     val resolvedIcon = iconResolver?.invoke(item.name)
                     FilterChip(
                         selected = isSelected,
@@ -143,12 +142,12 @@ fun TagSelector(
                         onClick = { internalShowAddDialog = true },
                         label = { Text("新增", fontWeight = FontWeight.Medium) },
                         leadingIcon = {
-                            Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(14.dp), tint = Primary)
+                            Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(14.dp), tint = MaterialTheme.colorScheme.primary)
                         },
                         colors = FilterChipDefaults.filterChipColors(
                             containerColor = DialogDefaults.containerColor,
-                            labelColor = Primary,
-                            iconColor = Primary
+                            labelColor = MaterialTheme.colorScheme.primary,
+                            iconColor = MaterialTheme.colorScheme.primary
                         ),
                         border = FilterChipDefaults.filterChipBorder(
                             borderColor = MaterialTheme.colorScheme.outline.copy(alpha = AnimationTokens.Alpha.half),
@@ -234,7 +233,7 @@ fun AddTypeDialog(
                     label = { Text("标签名称") }, singleLine = true,
                     shape = RoundedCornerShape(12.dp), modifier = Modifier.fillMaxWidth(),
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = Primary, unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = AnimationTokens.Alpha.half),
+                        focusedBorderColor = MaterialTheme.colorScheme.primary, unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = AnimationTokens.Alpha.half),
                         focusedContainerColor = DialogDefaults.containerColor, unfocusedContainerColor = DialogDefaults.containerColor
                     )
                 )
@@ -243,8 +242,8 @@ fun AddTypeDialog(
                     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         Text("预览", style = MaterialTheme.typography.labelMedium, color = TextGray)
                         val previewColor = selectedColor?.let { colorHex ->
-                            colorHex.toComposeColor(Primary)
-                        } ?: Primary
+                            colorHex.toComposeColor(MaterialTheme.colorScheme.primary)
+                        } ?: MaterialTheme.colorScheme.primary
                         Surface(shape = RoundedCornerShape(8.dp), color = previewColor.copy(alpha = AnimationTokens.Alpha.subtle)) {
                             Row(
                                 modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
@@ -268,7 +267,7 @@ fun AddTypeDialog(
                 Spacer(modifier = Modifier.height(10.dp))
                 GridRow(items = colorOptions, columns = 6) { colorHex ->
                     val isSelected = selectedColor == colorHex
-                    val color = colorHex.toComposeColor(Primary)
+                    val color = colorHex.toComposeColor(MaterialTheme.colorScheme.primary)
                     Box(
                         modifier = Modifier.size(36.dp).background(color, CircleShape)
                             .then(if (isSelected) Modifier.border(2.dp, Color.White, CircleShape).border(3.dp, color, CircleShape) else Modifier)
@@ -290,12 +289,12 @@ fun AddTypeDialog(
                             Surface(
                                 modifier = Modifier.size(40.dp),
                                 shape = RoundedCornerShape(10.dp),
-                                color = if (isSelected) Primary.copy(alpha = AnimationTokens.Alpha.subtle) else DialogDefaults.containerColor,
-                                border = if (isSelected) BorderStroke(2.dp, Primary.copy(alpha = 0.4f)) else BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = AnimationTokens.Alpha.half))
+                                color = if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = AnimationTokens.Alpha.subtle) else DialogDefaults.containerColor,
+                                border = if (isSelected) BorderStroke(2.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.4f)) else BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = AnimationTokens.Alpha.half))
                             ) {
                                 Box(modifier = Modifier.fillMaxSize().clickable { selectedIcon = if (selectedIcon == iconName) null else iconName },
                                     contentAlignment = Alignment.Center) {
-                                    Icon(imageVector = icon, contentDescription = null, tint = if (isSelected) Primary else TextGray, modifier = Modifier.size(20.dp))
+                                    Icon(imageVector = icon, contentDescription = null, tint = if (isSelected) MaterialTheme.colorScheme.primary else TextGray, modifier = Modifier.size(20.dp))
                                 }
                             }
                         }
@@ -310,7 +309,7 @@ fun AddTypeDialog(
                         onClick = { if (name.isNotBlank()) onConfirm(name, selectedColor, selectedIcon) },
                         enabled = name.isNotBlank(),
                         shape = RoundedCornerShape(12.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = Primary, disabledContainerColor = Primary.copy(alpha = 0.4f))
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary, disabledContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.4f))
                     ) { Text("添加", fontWeight = FontWeight.SemiBold) }
                 }
             }

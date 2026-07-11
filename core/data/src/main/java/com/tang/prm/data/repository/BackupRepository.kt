@@ -62,6 +62,10 @@ class BackupRepository @Inject constructor(
         context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
     }
 
+    private val contactDao by lazy { database.contactDao() }
+    private val giftDao by lazy { database.giftDao() }
+    private val eventDao by lazy { database.eventDao() }
+
     // ===== SAF 备份目录管理 =====
 
     override fun getBackupDirUri(): String? {
@@ -217,7 +221,6 @@ class BackupRepository @Inject constructor(
                 context.contentResolver.openInputStream(docUri)?.use { inputStream ->
                     extractFromStream(inputStream, extractDirs)
                 } ?: return@withContext RestoreResult.Error("无法打开备份文件")
-                restartApp()
                 RestoreResult.Success
             } catch (e: Exception) {
                 // 回滚数据库文件
@@ -225,12 +228,12 @@ class BackupRepository @Inject constructor(
                     try { backupSnapshot.copyTo(dbFile, overwrite = true) } catch (_: Exception) {}
                     try { backupSnapshot.delete() } catch (_: Exception) {}
                 }
-                // 必须重启：数据库已关闭，当前进程无法继续使用
-                restartApp()
                 RestoreResult.Error("恢复失败：${e.message}")
             }
         }
+        // 先通知 UI 结果，再重启进程（数据库已关闭，必须重启）
         emit(result)
+        restartApp()
     }
 
     override suspend fun computeDataFingerprint(): String = withContext(Dispatchers.IO) {
@@ -353,7 +356,6 @@ class BackupRepository @Inject constructor(
                         }
                     }
                 } ?: return@withContext RestoreResult.Error("无法打开备份文件")
-                restartApp()
                 RestoreResult.Success
             } catch (e: Exception) {
                 // 回滚数据库文件
@@ -361,12 +363,12 @@ class BackupRepository @Inject constructor(
                     try { backupSnapshot.copyTo(dbFile, overwrite = true) } catch (_: Exception) {}
                     try { backupSnapshot.delete() } catch (_: Exception) {}
                 }
-                // 必须重启：数据库已关闭，当前进程无法继续使用
-                restartApp()
                 RestoreResult.Error("恢复失败：${e.message}")
             }
         }
+        // 先通知 UI 结果，再重启进程（数据库已关闭，必须重启）
         emit(result)
+        restartApp()
     }
 
     override fun deleteLocalImageFile(dir: String, fileName: String): Boolean {
@@ -413,32 +415,22 @@ class BackupRepository @Inject constructor(
     }
 
     /** 统一查询数据库中引用的图片文件名，消除 getReferencedImageFileNames / getReferencedImageFilesSync 重复 */
-    private fun queryReferencedImageFileNames(): Set<String> {
+    private suspend fun queryReferencedImageFileNames(): Set<String> {
         val referencedNames = mutableSetOf<String>()
-        val db = database.openHelper.readableDatabase
 
-        db.query("SELECT avatar FROM contacts WHERE avatar IS NOT NULL AND avatar != ''").use { cursor ->
-            val col = cursor.getColumnIndex("avatar")
-            while (cursor.moveToNext()) {
-                extractImageFileName(cursor.getString(col))?.let { referencedNames.add(it) }
+        contactDao.getReferencedAvatarPaths().forEach { path ->
+            extractImageFileName(path)?.let { referencedNames.add(it) }
+        }
+
+        giftDao.getReferencedPhotoPaths().forEach { json ->
+            parsePhotoPaths(json).forEach { path ->
+                extractImageFileName(path)?.let { referencedNames.add(it) }
             }
         }
 
-        db.query("SELECT photos FROM gifts").use { cursor ->
-            val col = cursor.getColumnIndex("photos")
-            while (cursor.moveToNext()) {
-                parsePhotoPaths(cursor.getString(col)).forEach { path ->
-                    extractImageFileName(path)?.let { referencedNames.add(it) }
-                }
-            }
-        }
-
-        db.query("SELECT photos FROM events").use { cursor ->
-            val col = cursor.getColumnIndex("photos")
-            while (cursor.moveToNext()) {
-                parsePhotoPaths(cursor.getString(col)).forEach { path ->
-                    extractImageFileName(path)?.let { referencedNames.add(it) }
-                }
+        eventDao.getReferencedPhotoPaths().forEach { json ->
+            parsePhotoPaths(json).forEach { path ->
+                extractImageFileName(path)?.let { referencedNames.add(it) }
             }
         }
 
@@ -482,7 +474,6 @@ class BackupRepository @Inject constructor(
                 context.contentResolver.openInputStream(parsedUri)?.use { inputStream ->
                     extractFromStream(inputStream, extractDirs)
                 } ?: return@withContext RestoreResult.Error("无法打开备份文件")
-                restartApp()
                 RestoreResult.Success
             } catch (e: Exception) {
                 // 回滚数据库文件
@@ -490,12 +481,12 @@ class BackupRepository @Inject constructor(
                     try { backupSnapshot.copyTo(dbFile, overwrite = true) } catch (_: Exception) {}
                     try { backupSnapshot.delete() } catch (_: Exception) {}
                 }
-                // 必须重启：数据库已关闭，当前进程无法继续使用
-                restartApp()
                 RestoreResult.Error("恢复失败：${e.message}")
             }
         }
+        // 先通知 UI 结果，再重启进程（数据库已关闭，必须重启）
         emit(result)
+        restartApp()
     }
 
     // ===== 核心备份逻辑 =====

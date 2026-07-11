@@ -5,6 +5,7 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -17,6 +18,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -33,6 +35,7 @@ import com.tang.prm.ui.animation.core.rememberPausableInfiniteFloatLoop
 import com.tang.prm.ui.animation.primitives.rememberScanLineOffset
 import com.tang.prm.ui.animation.primitives.rememberShimmerPhase
 
+@Immutable
 data class HolographicConfig(
     val enableFlip: Boolean = true,
     val enableScanLine: Boolean = true,
@@ -256,32 +259,52 @@ private fun HolographicCardContent(
     }
 }
 
-@Suppress("UNUSED_PARAMETER")
 @Composable
 private fun HolographicScanLineOverlay(
     offset: Float,
     color: Color
 ) {
-    Box(
+    Canvas(
         modifier = Modifier
             .fillMaxSize()
             .graphicsLayer {
                 alpha = 0.3f + offset * 0.4f
             }
-    )
+    ) {
+        val y = size.height * offset
+        val lineThickness = 2.dp.toPx()
+        val glowHeight = 20.dp.toPx()
+        drawRect(
+            color = color.copy(alpha = 0.15f),
+            topLeft = androidx.compose.ui.geometry.Offset(0f, y - glowHeight / 2),
+            size = androidx.compose.ui.geometry.Size(size.width, glowHeight)
+        )
+        drawRect(
+            color = color,
+            topLeft = androidx.compose.ui.geometry.Offset(0f, y - lineThickness / 2),
+            size = androidx.compose.ui.geometry.Size(size.width, lineThickness)
+        )
+    }
 }
 
-@Suppress("UNUSED_PARAMETER")
 @Composable
 private fun HolographicShimmerOverlay(
     offset: Float,
     color: Color
 ) {
-    Box(
+    Canvas(
         modifier = Modifier
             .fillMaxSize()
             .graphicsLayer {
                 alpha = if (offset in 0f..1f) offset * 0.15f else 0f
             }
-    )
+    ) {
+        val x = size.width * offset
+        val bandWidth = 60.dp.toPx()
+        drawRect(
+            color = color.copy(alpha = 0.08f),
+            topLeft = androidx.compose.ui.geometry.Offset(x - bandWidth / 2, 0f),
+            size = androidx.compose.ui.geometry.Size(bandWidth, size.height)
+        )
+    }
 }

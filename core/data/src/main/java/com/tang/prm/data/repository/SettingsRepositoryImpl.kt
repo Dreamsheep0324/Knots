@@ -34,6 +34,7 @@ class SettingsRepositoryImpl @Inject constructor(
         val KEY_BACKUP_IMAGE_QUALITY = stringPreferencesKey("backup_image_quality")
         val KEY_AUTO_BACKUP_ENABLED = booleanPreferencesKey("auto_backup_enabled")
         val KEY_TABLET_MODE_ENABLED = booleanPreferencesKey("tablet_mode_enabled")
+        val KEY_HOME_DECOR_PHOTO_PATH = stringPreferencesKey("home_decor_photo_path")
 
         private const val ENC_KEY_API_KEY = "ai_api_key"
         private const val ENC_KEY_BASE_URL = "ai_base_url"
@@ -75,7 +76,7 @@ class SettingsRepositoryImpl @Inject constructor(
 
     override suspend fun setAiApiKey(key: String) {
         withContext(Dispatchers.IO) {
-            encryptedPrefs.edit().putString(ENC_KEY_API_KEY, key).commit()
+            encryptedPrefs.edit().putString(ENC_KEY_API_KEY, key).apply()
         }
     }
 
@@ -83,7 +84,7 @@ class SettingsRepositoryImpl @Inject constructor(
 
     override suspend fun setAiBaseUrl(url: String) {
         withContext(Dispatchers.IO) {
-            encryptedPrefs.edit().putString(ENC_KEY_BASE_URL, url).commit()
+            encryptedPrefs.edit().putString(ENC_KEY_BASE_URL, url).apply()
         }
     }
 
@@ -91,7 +92,7 @@ class SettingsRepositoryImpl @Inject constructor(
 
     override suspend fun setAiModel(model: String) {
         withContext(Dispatchers.IO) {
-            encryptedPrefs.edit().putString(ENC_KEY_MODEL, model).commit()
+            encryptedPrefs.edit().putString(ENC_KEY_MODEL, model).apply()
         }
     }
 
@@ -143,6 +144,17 @@ class SettingsRepositoryImpl @Inject constructor(
     override suspend fun setTabletModeEnabled(enabled: Boolean) {
         dataStore.edit { prefs ->
             prefs[KEY_TABLET_MODE_ENABLED] = enabled
+        }
+    }
+
+    override val homeDecorPhotoPath: Flow<String?> = dataStore.data.map { prefs ->
+        prefs[KEY_HOME_DECOR_PHOTO_PATH]
+    }
+
+    override suspend fun setHomeDecorPhotoPath(path: String?) {
+        dataStore.edit { prefs ->
+            if (path == null) prefs.remove(KEY_HOME_DECOR_PHOTO_PATH)
+            else prefs[KEY_HOME_DECOR_PHOTO_PATH] = path
         }
     }
 

@@ -11,27 +11,57 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import android.util.Log
 import javax.inject.Inject
+
+data class WebDavDataState(
+    val config: WebDavConfig = WebDavConfig(),
+    val cloudVersions: List<CloudBackupVersion> = emptyList()
+)
+data class WebDavDialogState(
+    val connectionState: ConnectionState = ConnectionState.Idle,
+    val syncState: SyncState = SyncState.Idle,
+    val cleanResult: CleanResult? = null
+)
+data class WebDavUiState(
+    val data: WebDavDataState = WebDavDataState(),
+    val dialog: WebDavDialogState = WebDavDialogState()
+)
 
 @HiltViewModel
 class WebDavSyncViewModel @Inject constructor(
     private val webDavSyncUseCase: WebDavSyncUseCase
 ) : ViewModel() {
 
-    val config: StateFlow<WebDavConfig> = webDavSyncUseCase.getConfig()
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), WebDavConfig())
-
     private val _cloudVersions = MutableStateFlow<List<CloudBackupVersion>>(emptyList())
-    val cloudVersions: StateFlow<List<CloudBackupVersion>> = _cloudVersions.asStateFlow()
 
     private val _syncState = MutableStateFlow<SyncState>(SyncState.Idle)
-    val syncState: StateFlow<SyncState> = _syncState.asStateFlow()
 
     private val _connectionState = MutableStateFlow<ConnectionState>(ConnectionState.Idle)
-    val connectionState: StateFlow<ConnectionState> = _connectionState.asStateFlow()
+
+    private val _cleanResult = MutableStateFlow<CleanResult?>(null)
+
+    val uiState: StateFlow<WebDavUiState> = combine(
+        webDavSyncUseCase.getConfig(),
+        _cloudVersions,
+        combine(_syncState, _connectionState, _cleanResult) { sync, conn, clean ->
+            Triple(sync, conn, clean)
+        }
+    ) { config, cloudVersions, dialogTriple ->
+        val (syncState, connectionState, cleanResult) = dialogTriple
+        WebDavUiState(
+            data = WebDavDataState(config = config, cloudVersions = cloudVersions),
+            dialog = WebDavDialogState(
+                connectionState = connectionState,
+                syncState = syncState,
+                cleanResult = cleanResult
+            )
+        )
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), WebDavUiState())
 
     fun updateConfig(config: WebDavConfig) {
         viewModelScope.launch {
@@ -42,10 +72,15 @@ class WebDavSyncViewModel @Inject constructor(
     fun testConnection() {
         viewModelScope.launch {
             _connectionState.value = ConnectionState.Testing
-            val result = webDavSyncUseCase.testConnection()
-            _connectionState.value = when (result) {
-                is ConnectionTestResult.Success -> ConnectionState.Success
-                is ConnectionTestResult.Error -> ConnectionState.Error(result.message)
+            try {
+                val result = webDavSyncUseCase.testConnection()
+                _connectionState.value = when (result) {
+                    is ConnectionTestResult.Success -> ConnectionState.Success
+                    is ConnectionTestResult.Error -> ConnectionState.Error(result.message)
+                }
+            } catch (e: Exception) {
+                Log.e("WebDavSyncVM", "连接测试失败", e)
+                _connectionState.value = ConnectionState.Error("连接失败：${e.message}")
             }
         }
     }
@@ -53,18 +88,23 @@ class WebDavSyncViewModel @Inject constructor(
     fun uploadBackup() {
         viewModelScope.launch {
             _syncState.value = SyncState.Uploading("准备中", 0, 0, "准备上传...")
-            webDavSyncUseCase.uploadBackup().collect { result ->
-                _syncState.value = when (result) {
-                    is SyncResult.UploadProgress -> SyncState.Uploading(result.phase, result.current, result.total, result.detail)
-                    is SyncResult.UploadSuccess -> {
-                        refreshCloudVersions()
-                        SyncState.UploadSuccess(result.fileName, result.uploadedImages, result.skippedImages)
+            try {
+                webDavSyncUseCase.uploadBackup().collect { result ->
+                    _syncState.value = when (result) {
+                        is SyncResult.UploadProgress -> SyncState.Uploading(result.phase, result.current, result.total, result.detail)
+                        is SyncResult.UploadSuccess -> {
+                            refreshCloudVersions()
+                            SyncState.UploadSuccess(result.fileName, result.uploadedImages, result.skippedImages)
+                        }
+                        is SyncResult.DownloadProgress -> SyncState.Idle
+                        is SyncResult.DownloadSuccess -> SyncState.Idle
+                        is SyncResult.PartialSuccess -> SyncState.Idle
+                        is SyncResult.Error -> SyncState.Error(result.message)
                     }
-                    is SyncResult.DownloadProgress -> SyncState.Idle
-                    is SyncResult.DownloadSuccess -> SyncState.Idle
-                    is SyncResult.PartialSuccess -> SyncState.Idle
-                    is SyncResult.Error -> SyncState.Error(result.message)
                 }
+            } catch (e: Exception) {
+                Log.e("WebDavSyncVM", "上传失败", e)
+                _syncState.value = SyncState.Error("上传失败：${e.message}")
             }
         }
     }
@@ -72,15 +112,20 @@ class WebDavSyncViewModel @Inject constructor(
     fun downloadBackup(fileName: String) {
         viewModelScope.launch {
             _syncState.value = SyncState.Downloading("准备中", 0, 0, "准备下载...")
-            webDavSyncUseCase.downloadBackup(fileName).collect { result ->
-                _syncState.value = when (result) {
-                    is SyncResult.UploadProgress -> SyncState.Idle
-                    is SyncResult.DownloadProgress -> SyncState.Downloading(result.phase, result.current, result.total, result.detail)
-                    is SyncResult.DownloadSuccess -> SyncState.DownloadSuccess(result.fileName, result.downloadedImages, result.skippedImages)
-                    is SyncResult.PartialSuccess -> SyncState.PartialSuccess(result.fileName, result.succeeded, result.failed, result.skipped)
-                    is SyncResult.UploadSuccess -> SyncState.Idle
-                    is SyncResult.Error -> SyncState.Error(result.message)
+            try {
+                webDavSyncUseCase.downloadBackup(fileName).collect { result ->
+                    _syncState.value = when (result) {
+                        is SyncResult.UploadProgress -> SyncState.Idle
+                        is SyncResult.DownloadProgress -> SyncState.Downloading(result.phase, result.current, result.total, result.detail)
+                        is SyncResult.DownloadSuccess -> SyncState.DownloadSuccess(result.fileName, result.downloadedImages, result.skippedImages)
+                        is SyncResult.PartialSuccess -> SyncState.PartialSuccess(result.fileName, result.succeeded, result.failed, result.skipped)
+                        is SyncResult.UploadSuccess -> SyncState.Idle
+                        is SyncResult.Error -> SyncState.Error(result.message)
+                    }
                 }
+            } catch (e: Exception) {
+                Log.e("WebDavSyncVM", "下载失败", e)
+                _syncState.value = SyncState.Error("下载失败：${e.message}")
             }
         }
     }
@@ -109,9 +154,6 @@ class WebDavSyncViewModel @Inject constructor(
         _connectionState.value = ConnectionState.Idle
     }
 
-    private val _cleanResult = MutableStateFlow<CleanResult?>(null)
-    val cleanResult: StateFlow<CleanResult?> = _cleanResult.asStateFlow()
-
     fun cleanOrphanedImages() {
         viewModelScope.launch {
             _cleanResult.value = CleanResult.Cleaning
@@ -126,21 +168,18 @@ class WebDavSyncViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            val savedConfig = webDavSyncUseCase.getConfig()
-            savedConfig.collect { config ->
-                if (config.serverUrl.isNotBlank() && config.username.isNotBlank()) {
-                    _connectionState.value = ConnectionState.Testing
-                    val result = webDavSyncUseCase.testConnection()
-                    _connectionState.value = when (result) {
-                        is ConnectionTestResult.Success -> ConnectionState.Success
-                        is ConnectionTestResult.Error -> ConnectionState.Error(result.message)
-                    }
-                    if (result is ConnectionTestResult.Success) {
-                        val versions = webDavSyncUseCase.listRemoteBackups()
-                        _cloudVersions.value = versions
-                    }
+            // 只取首个配置做一次连接测试，不持续监听配置变化
+            val savedConfig = webDavSyncUseCase.getConfig().first()
+            if (savedConfig.serverUrl.isNotBlank() && savedConfig.username.isNotBlank()) {
+                _connectionState.value = ConnectionState.Testing
+                val result = webDavSyncUseCase.testConnection()
+                _connectionState.value = when (result) {
+                    is ConnectionTestResult.Success -> ConnectionState.Success
+                    is ConnectionTestResult.Error -> ConnectionState.Error(result.message)
                 }
-                return@collect
+                if (result is ConnectionTestResult.Success) {
+                    _cloudVersions.value = webDavSyncUseCase.listRemoteBackups()
+                }
             }
         }
     }

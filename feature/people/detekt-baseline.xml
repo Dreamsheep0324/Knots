@@ -1,0 +1,170 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues></ManuallySuppressedIssues>
+  <CurrentIssues>
+    <ID>CyclomaticComplexMethod:ContactDetailComponents.kt$@Composable internal fun ContactThoughtDetailDialog( thought: Thought, contactName: String?, contactAvatar: String?, isFavorite: Boolean, onDismiss: () -&gt; Unit, onToggleFavorite: () -&gt; Unit, onToggleTodo: () -&gt; Unit, onDelete: () -&gt; Unit )</ID>
+    <ID>CyclomaticComplexMethod:ContactDetailProfile.kt$@Composable internal fun ProfileContent(contact: Contact, uiState: ContactDetailUiState)</ID>
+    <ID>CyclomaticComplexMethod:ContactDetailTabletScreen.kt$@Composable private fun GalleryBody( contact: Contact, tierColor: Color, events: List&lt;Event&gt;, conversations: List&lt;Event&gt;, anniversaries: List&lt;com.tang.prm.domain.model.Anniversary&gt;, gifts: List&lt;com.tang.prm.domain.model.Gift&gt;, thoughts: List&lt;com.tang.prm.domain.model.Thought&gt;, eventTypes: List&lt;CustomType&gt;, onEventClick: (Long) -&gt; Unit, onAnniversaryClick: (Long) -&gt; Unit, onGiftClick: (Long) -&gt; Unit, onThoughtClick: (Long) -&gt; Unit, onConversationClick: (Long) -&gt; Unit )</ID>
+    <ID>ExplicitItLambdaParameter:ContactsComponents.kt${ _, it -&gt; it.id }</ID>
+    <ID>ExplicitItLambdaParameter:ContactsTabletScreen.kt${ _, it -&gt; it.id }</ID>
+    <ID>FunctionNaming:AddContactComponents.kt$@Composable internal fun DatePickerField(label: String, value: String?, onValueChange: (String?) -&gt; Unit, onClick: () -&gt; Unit)</ID>
+    <ID>FunctionNaming:AddContactComponents.kt$@Composable internal fun FormField(label: String, value: String, onValueChange: (String) -&gt; Unit, placeholder: String = "", maxLines: Int = 1, required: Boolean = false, focusRequester: FocusRequester? = null)</ID>
+    <ID>FunctionNaming:AddContactComponents.kt$@Composable internal fun FormSection(title: String, action: (@Composable () -&gt; Unit)? = null, content: @Composable ColumnScope.() -&gt; Unit)</ID>
+    <ID>FunctionNaming:AddContactComponents.kt$@Composable internal fun IntimacyLevelCard(level: IntimacyLevel, isSelected: Boolean, onClick: () -&gt; Unit, modifier: Modifier = Modifier)</ID>
+    <ID>FunctionNaming:AddContactComponents.kt$@Composable internal fun IntimacySlider(value: Int, onValueChange: (Int) -&gt; Unit)</ID>
+    <ID>FunctionNaming:AddContactComponents.kt$@Composable internal fun NotesField(value: String, onValueChange: (String) -&gt; Unit)</ID>
+    <ID>FunctionNaming:AddContactComponents.kt$@Composable internal fun ProfileHeader(avatar: String?, onAvatarClick: () -&gt; Unit)</ID>
+    <ID>FunctionNaming:AddContactScreen.kt$@OptIn(ExperimentalMaterial3Api::class) @Composable @Suppress("UNUSED_PARAMETER") fun AddContactScreen( contactId: Long = 0L, navController: androidx.navigation.NavController, onPickAvatar: (() -&gt; Unit)? = null, viewModel: AddContactViewModel = hiltViewModel() )</ID>
+    <ID>FunctionNaming:ContactCardBack.kt$@Composable internal fun ContactCardBack( contact: Contact, rarity: IntimacyTier, onContactClick: () -&gt; Unit, onClose: () -&gt; Unit, shadowElevation: Float = 12f )</ID>
+    <ID>FunctionNaming:ContactCardFront.kt$@Composable internal fun ContactCardFront( contact: Contact, rarity: IntimacyTier, onFlip: () -&gt; Unit, shadowElevation: Float = 12f )</ID>
+    <ID>FunctionNaming:ContactCardOverlay.kt$@Composable internal fun ContactCardOverlay( contact: Contact, isFlipped: Boolean, onFlip: () -&gt; Unit, onClose: () -&gt; Unit, onContactClick: () -&gt; Unit )</ID>
+    <ID>FunctionNaming:ContactDetailCards.kt$@Composable internal fun AnniversariesContent(anniversaries: List&lt;Anniversary&gt;, onAnniversaryClick: (Long) -&gt; Unit)</ID>
+    <ID>FunctionNaming:ContactDetailCards.kt$@Composable internal fun ChatContent(conversations: List&lt;Event&gt;, onConversationClick: (Long) -&gt; Unit)</ID>
+    <ID>FunctionNaming:ContactDetailCards.kt$@Composable internal fun EventsContent(events: List&lt;Event&gt;, eventTypes: List&lt;CustomType&gt;, onEventClick: (Long) -&gt; Unit)</ID>
+    <ID>FunctionNaming:ContactDetailCards.kt$@Composable internal fun GiftsContent(gifts: List&lt;Gift&gt;, onGiftClick: (Long) -&gt; Unit)</ID>
+    <ID>FunctionNaming:ContactDetailCards.kt$@Composable internal fun ThoughtsContent(thoughts: List&lt;Thought&gt;, onThoughtClick: (Long) -&gt; Unit)</ID>
+    <ID>FunctionNaming:ContactDetailCards.kt$@Composable private fun AnniversaryCard(anniversary: Anniversary, onClick: () -&gt; Unit)</ID>
+    <ID>FunctionNaming:ContactDetailCards.kt$@Composable private fun ChatCard(conversation: Event, onClick: () -&gt; Unit)</ID>
+    <ID>FunctionNaming:ContactDetailCards.kt$@Composable private fun ContentCard(onClick: () -&gt; Unit, icon: ImageVector, iconColor: Color, content: @Composable ColumnScope.() -&gt; Unit)</ID>
+    <ID>FunctionNaming:ContactDetailCards.kt$@Composable private fun EventCard(event: Event, eventTypes: List&lt;CustomType&gt;, onClick: () -&gt; Unit)</ID>
+    <ID>FunctionNaming:ContactDetailCards.kt$@Composable private fun GiftCard(gift: Gift, onClick: () -&gt; Unit)</ID>
+    <ID>FunctionNaming:ContactDetailCards.kt$@Composable private fun ThoughtCard(thought: Thought, onClick: () -&gt; Unit)</ID>
+    <ID>FunctionNaming:ContactDetailCards.kt$@Suppress("UNUSED_PARAMETER") @Composable private fun ContentSection(emptyIcon: ImageVector, emptyText: String, content: @Composable ColumnScope.() -&gt; Unit)</ID>
+    <ID>FunctionNaming:ContactDetailComponents.kt$@Composable internal fun ContactThoughtDetailDialog( thought: Thought, contactName: String?, contactAvatar: String?, isFavorite: Boolean, onDismiss: () -&gt; Unit, onToggleFavorite: () -&gt; Unit, onToggleTodo: () -&gt; Unit, onDelete: () -&gt; Unit )</ID>
+    <ID>FunctionNaming:ContactDetailComponents.kt$@Composable internal fun TabSection(selectedTab: Int, onTabSelected: (Int) -&gt; Unit, tabs: List&lt;String&gt;)</ID>
+    <ID>FunctionNaming:ContactDetailHeader.kt$@Composable internal fun ProfileHeader( contact: Contact, relationshipTypes: List&lt;CustomType&gt; = emptyList(), onBack: () -&gt; Unit, onEdit: () -&gt; Unit, onDelete: () -&gt; Unit, isTablet: Boolean = false )</ID>
+    <ID>FunctionNaming:ContactDetailHeader.kt$@Composable private fun DaysKnownBadge(knowingDate: Long, color: Color)</ID>
+    <ID>FunctionNaming:ContactDetailHeader.kt$@Composable private fun HeaderTagChip(text: String, color: Color, icon: ImageVector? = null)</ID>
+    <ID>FunctionNaming:ContactDetailHeader.kt$@Composable private fun IntimacyBadge(score: Int, color: Color, level: IntimacyLevelInfo)</ID>
+    <ID>FunctionNaming:ContactDetailHeader.kt$@Composable private fun ZodiacTagChip(zodiac: Zodiac)</ID>
+    <ID>FunctionNaming:ContactDetailProfile.kt$@Composable internal fun ProfileContent(contact: Contact, uiState: ContactDetailUiState)</ID>
+    <ID>FunctionNaming:ContactDetailProfile.kt$@Composable private fun FeatureTagSection(label: String, tags: List&lt;String&gt;, color: Color)</ID>
+    <ID>FunctionNaming:ContactDetailProfile.kt$@Composable private fun FeatureTagSectionWithColors(label: String, tagsWithColors: List&lt;Pair&lt;String, String?&gt;&gt;, defaultColor: Color)</ID>
+    <ID>FunctionNaming:ContactDetailScreen.kt$@Composable fun ContactDetailScreen( contactId: Long, navController: NavController, viewModel: ContactDetailViewModel = hiltViewModel() )</ID>
+    <ID>FunctionNaming:ContactDetailTabletScreen.kt$@Composable fun ContactDetailTabletScreen( contactId: Long, navController: NavController, viewModel: ContactDetailViewModel = hiltViewModel() )</ID>
+    <ID>FunctionNaming:ContactDetailTabletScreen.kt$@Composable private fun GalleryAnniversaryCard( anniversary: com.tang.prm.domain.model.Anniversary, onClick: () -&gt; Unit )</ID>
+    <ID>FunctionNaming:ContactDetailTabletScreen.kt$@Composable private fun GalleryBody( contact: Contact, tierColor: Color, events: List&lt;Event&gt;, conversations: List&lt;Event&gt;, anniversaries: List&lt;com.tang.prm.domain.model.Anniversary&gt;, gifts: List&lt;com.tang.prm.domain.model.Gift&gt;, thoughts: List&lt;com.tang.prm.domain.model.Thought&gt;, eventTypes: List&lt;CustomType&gt;, onEventClick: (Long) -&gt; Unit, onAnniversaryClick: (Long) -&gt; Unit, onGiftClick: (Long) -&gt; Unit, onThoughtClick: (Long) -&gt; Unit, onConversationClick: (Long) -&gt; Unit )</ID>
+    <ID>FunctionNaming:ContactDetailTabletScreen.kt$@Composable private fun GalleryConversationCard( conversation: Event, onClick: () -&gt; Unit )</ID>
+    <ID>FunctionNaming:ContactDetailTabletScreen.kt$@Composable private fun GalleryEmptyHint(text: String)</ID>
+    <ID>FunctionNaming:ContactDetailTabletScreen.kt$@Composable private fun GalleryEventCard( event: Event, eventTypes: List&lt;CustomType&gt;, onClick: () -&gt; Unit, modifier: Modifier = Modifier )</ID>
+    <ID>FunctionNaming:ContactDetailTabletScreen.kt$@Composable private fun GalleryGiftCard( gift: com.tang.prm.domain.model.Gift, onClick: () -&gt; Unit )</ID>
+    <ID>FunctionNaming:ContactDetailTabletScreen.kt$@Composable private fun GalleryHero( contact: Contact, tier: IntimacyTier, tierColor: Color, relationshipTypes: List&lt;CustomType&gt; )</ID>
+    <ID>FunctionNaming:ContactDetailTabletScreen.kt$@Composable private fun GalleryHeroInfo( contact: Contact, tier: IntimacyTier, tierColor: Color, relationshipTypes: List&lt;CustomType&gt;, modifier: Modifier = Modifier )</ID>
+    <ID>FunctionNaming:ContactDetailTabletScreen.kt$@Composable private fun GalleryHeroMetaItem(label: String, value: String)</ID>
+    <ID>FunctionNaming:ContactDetailTabletScreen.kt$@Composable private fun GalleryInfoCard(title: String, content: @Composable ColumnScope.() -&gt; Unit)</ID>
+    <ID>FunctionNaming:ContactDetailTabletScreen.kt$@Composable private fun GalleryInfoRow(key: String, value: String?, maxLines: Int = 1)</ID>
+    <ID>FunctionNaming:ContactDetailTabletScreen.kt$@Composable private fun GalleryIntimacyCard( score: Int, tier: IntimacyTier, tierColor: Color )</ID>
+    <ID>FunctionNaming:ContactDetailTabletScreen.kt$@Composable private fun GalleryNoteCard(date: String, content: String, onClick: () -&gt; Unit)</ID>
+    <ID>FunctionNaming:ContactDetailTabletScreen.kt$@Composable private fun GalleryPortraitFrame(contact: Contact, tierColor: Color)</ID>
+    <ID>FunctionNaming:ContactDetailTabletScreen.kt$@Composable private fun GallerySectionTitle(title: String, accentColor: Color)</ID>
+    <ID>FunctionNaming:ContactDetailTabletScreen.kt$@Composable private fun GalleryTopBar( onBack: () -&gt; Unit, onEdit: () -&gt; Unit, onDelete: () -&gt; Unit )</ID>
+    <ID>FunctionNaming:ContactsCardView.kt$@Composable internal fun ContactsCardView( contacts: List&lt;Contact&gt;, onCardSelect: (Long) -&gt; Unit, modifier: Modifier = Modifier )</ID>
+    <ID>FunctionNaming:ContactsCardView.kt$@Composable private fun ContactMiniCard( contact: Contact, onClick: () -&gt; Unit )</ID>
+    <ID>FunctionNaming:ContactsComponents.kt$@Composable internal fun ContactGridCard( contact: Contact, onClick: () -&gt; Unit, modifier: Modifier = Modifier )</ID>
+    <ID>FunctionNaming:ContactsComponents.kt$@Composable internal fun ContactListCard( contact: Contact, onClick: () -&gt; Unit, isReorderMode: Boolean = false, elevation: Dp = 3.dp, modifier: Modifier = Modifier )</ID>
+    <ID>FunctionNaming:ContactsComponents.kt$@Composable internal fun ContactsContent( contacts: List&lt;Contact&gt;, viewMode: Int, isReorderMode: Boolean, onContactClick: (Contact) -&gt; Unit, onCardSelect: (Long) -&gt; Unit = {}, onToggleReorder: () -&gt; Unit = {}, onMoveContact: (Int, Int) -&gt; Unit = { _, _ -&gt; }, modifier: Modifier = Modifier )</ID>
+    <ID>FunctionNaming:ContactsComponents.kt$@Composable internal fun ContactsGrid( contacts: List&lt;Contact&gt;, onContactClick: (Contact) -&gt; Unit, modifier: Modifier = Modifier )</ID>
+    <ID>FunctionNaming:ContactsComponents.kt$@Composable internal fun ContactsList( contacts: List&lt;Contact&gt;, onContactClick: (Contact) -&gt; Unit, isReorderMode: Boolean, onToggleReorder: () -&gt; Unit, onMoveContact: (Int, Int) -&gt; Unit, modifier: Modifier = Modifier )</ID>
+    <ID>FunctionNaming:ContactsComponents.kt$@Composable internal fun FilterChipItem( label: String, isSelected: Boolean, onClick: () -&gt; Unit )</ID>
+    <ID>FunctionNaming:ContactsComponents.kt$@Composable internal fun RelationshipFilterChips( relationships: List&lt;com.tang.prm.domain.model.CustomType&gt;, selectedRelationship: String?, onRelationshipSelected: (String?) -&gt; Unit )</ID>
+    <ID>FunctionNaming:ContactsScreen.kt$@Composable fun ContactsScreen( navController: NavController, onOverlayVisibleChange: (Boolean) -&gt; Unit = {}, isTabletLayout: Boolean = false, viewModel: ContactsViewModel = hiltViewModel() )</ID>
+    <ID>FunctionNaming:ContactsTabletScreen.kt$@Composable fun ContactsTabletScreen( onAddContact: () -&gt; Unit, onContactClick: (Long) -&gt; Unit, viewModel: ContactsViewModel = hiltViewModel() )</ID>
+    <ID>FunctionNaming:ContactsTabletScreen.kt$@Composable private fun ContactTabletCard( contact: Contact, tierColor: Color, tier: IntimacyTier, onClick: () -&gt; Unit, modifier: Modifier = Modifier )</ID>
+    <ID>FunctionNaming:ContactsTabletScreen.kt$@Composable private fun ContactsListPane( contacts: List&lt;Contact&gt;, relationships: List&lt;CustomType&gt;, searchQuery: String, onSearchQueryChange: (String) -&gt; Unit, onAddContact: () -&gt; Unit, onContactClick: (Contact) -&gt; Unit, modifier: Modifier = Modifier )</ID>
+    <ID>FunctionNaming:ContactsTabletScreen.kt$@Composable private fun ContactsTabletTopBar( contacts: List&lt;Contact&gt;, relationships: List&lt;CustomType&gt;, searchQuery: String, onSearchQueryChange: (String) -&gt; Unit, onAddContact: () -&gt; Unit )</ID>
+    <ID>FunctionNaming:ContactsTabletScreen.kt$@Composable private fun TierSection( tier: IntimacyTier, contacts: List&lt;Contact&gt;, onContactClick: (Contact) -&gt; Unit )</ID>
+    <ID>LongMethod:AddContactScreen.kt$@OptIn(ExperimentalMaterial3Api::class) @Composable @Suppress("UNUSED_PARAMETER") fun AddContactScreen( contactId: Long = 0L, navController: androidx.navigation.NavController, onPickAvatar: (() -&gt; Unit)? = null, viewModel: AddContactViewModel = hiltViewModel() )</ID>
+    <ID>LongMethod:ContactCardBack.kt$@Composable internal fun ContactCardBack( contact: Contact, rarity: IntimacyTier, onContactClick: () -&gt; Unit, onClose: () -&gt; Unit, shadowElevation: Float = 12f )</ID>
+    <ID>LongMethod:ContactCardFront.kt$@Composable internal fun ContactCardFront( contact: Contact, rarity: IntimacyTier, onFlip: () -&gt; Unit, shadowElevation: Float = 12f )</ID>
+    <ID>LongMethod:ContactDetailComponents.kt$@Composable internal fun ContactThoughtDetailDialog( thought: Thought, contactName: String?, contactAvatar: String?, isFavorite: Boolean, onDismiss: () -&gt; Unit, onToggleFavorite: () -&gt; Unit, onToggleTodo: () -&gt; Unit, onDelete: () -&gt; Unit )</ID>
+    <ID>LongMethod:ContactDetailHeader.kt$@Composable internal fun ProfileHeader( contact: Contact, relationshipTypes: List&lt;CustomType&gt; = emptyList(), onBack: () -&gt; Unit, onEdit: () -&gt; Unit, onDelete: () -&gt; Unit, isTablet: Boolean = false )</ID>
+    <ID>LongMethod:ContactDetailProfile.kt$@Composable internal fun ProfileContent(contact: Contact, uiState: ContactDetailUiState)</ID>
+    <ID>LongMethod:ContactDetailScreen.kt$@Composable fun ContactDetailScreen( contactId: Long, navController: NavController, viewModel: ContactDetailViewModel = hiltViewModel() )</ID>
+    <ID>LongMethod:ContactDetailTabletScreen.kt$@Composable fun ContactDetailTabletScreen( contactId: Long, navController: NavController, viewModel: ContactDetailViewModel = hiltViewModel() )</ID>
+    <ID>LongMethod:ContactDetailTabletScreen.kt$@Composable private fun GalleryAnniversaryCard( anniversary: com.tang.prm.domain.model.Anniversary, onClick: () -&gt; Unit )</ID>
+    <ID>LongMethod:ContactDetailTabletScreen.kt$@Composable private fun GalleryBody( contact: Contact, tierColor: Color, events: List&lt;Event&gt;, conversations: List&lt;Event&gt;, anniversaries: List&lt;com.tang.prm.domain.model.Anniversary&gt;, gifts: List&lt;com.tang.prm.domain.model.Gift&gt;, thoughts: List&lt;com.tang.prm.domain.model.Thought&gt;, eventTypes: List&lt;CustomType&gt;, onEventClick: (Long) -&gt; Unit, onAnniversaryClick: (Long) -&gt; Unit, onGiftClick: (Long) -&gt; Unit, onThoughtClick: (Long) -&gt; Unit, onConversationClick: (Long) -&gt; Unit )</ID>
+    <ID>LongMethod:ContactDetailTabletScreen.kt$@Composable private fun GalleryGiftCard( gift: com.tang.prm.domain.model.Gift, onClick: () -&gt; Unit )</ID>
+    <ID>LongMethod:ContactDetailTabletScreen.kt$@Composable private fun GalleryHeroInfo( contact: Contact, tier: IntimacyTier, tierColor: Color, relationshipTypes: List&lt;CustomType&gt;, modifier: Modifier = Modifier )</ID>
+    <ID>LongMethod:ContactsCardView.kt$@Composable private fun ContactMiniCard( contact: Contact, onClick: () -&gt; Unit )</ID>
+    <ID>LongMethod:ContactsComponents.kt$@Composable internal fun ContactListCard( contact: Contact, onClick: () -&gt; Unit, isReorderMode: Boolean = false, elevation: Dp = 3.dp, modifier: Modifier = Modifier )</ID>
+    <ID>LongMethod:ContactsComponents.kt$@Composable internal fun ContactsList( contacts: List&lt;Contact&gt;, onContactClick: (Contact) -&gt; Unit, isReorderMode: Boolean, onToggleReorder: () -&gt; Unit, onMoveContact: (Int, Int) -&gt; Unit, modifier: Modifier = Modifier )</ID>
+    <ID>LongMethod:ContactsScreen.kt$@Composable fun ContactsScreen( navController: NavController, onOverlayVisibleChange: (Boolean) -&gt; Unit = {}, isTabletLayout: Boolean = false, viewModel: ContactsViewModel = hiltViewModel() )</ID>
+    <ID>LongMethod:ContactsTabletScreen.kt$@Composable private fun ContactTabletCard( contact: Contact, tierColor: Color, tier: IntimacyTier, onClick: () -&gt; Unit, modifier: Modifier = Modifier )</ID>
+    <ID>LongParameterList:ContactDetailComponents.kt$( thought: Thought, contactName: String?, contactAvatar: String?, isFavorite: Boolean, onDismiss: () -&gt; Unit, onToggleFavorite: () -&gt; Unit, onToggleTodo: () -&gt; Unit, onDelete: () -&gt; Unit )</ID>
+    <ID>LongParameterList:ContactDetailTabletScreen.kt$( contact: Contact, tierColor: Color, events: List&lt;Event&gt;, conversations: List&lt;Event&gt;, anniversaries: List&lt;com.tang.prm.domain.model.Anniversary&gt;, gifts: List&lt;com.tang.prm.domain.model.Gift&gt;, thoughts: List&lt;com.tang.prm.domain.model.Thought&gt;, eventTypes: List&lt;CustomType&gt;, onEventClick: (Long) -&gt; Unit, onAnniversaryClick: (Long) -&gt; Unit, onGiftClick: (Long) -&gt; Unit, onThoughtClick: (Long) -&gt; Unit, onConversationClick: (Long) -&gt; Unit )</ID>
+    <ID>LongParameterList:ContactsComponents.kt$( contacts: List&lt;Contact&gt;, viewMode: Int, isReorderMode: Boolean, onContactClick: (Contact) -&gt; Unit, onCardSelect: (Long) -&gt; Unit = {}, onToggleReorder: () -&gt; Unit = {}, onMoveContact: (Int, Int) -&gt; Unit = { _, _ -&gt; }, modifier: Modifier = Modifier )</ID>
+    <ID>MaxLineLength:AddContactComponents.kt$AsyncImage(model = avatar, contentDescription = "头像", modifier = Modifier.size(100.dp).clip(CircleShape), contentScale = ContentScale.Crop)</ID>
+    <ID>MaxLineLength:AddContactComponents.kt$Box</ID>
+    <ID>MaxLineLength:AddContactComponents.kt$Column</ID>
+    <ID>MaxLineLength:AddContactComponents.kt$Icon(Icons.Default.AddAPhoto, contentDescription = "添加头像", tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(32.dp))</ID>
+    <ID>MaxLineLength:AddContactComponents.kt$IntimacyLevelCard(level = level, isSelected = selectedLevelIndex == index, onClick = { selectedLevelIndex = index; onValueChange(level.range.first + (level.range.last - level.range.first) / 2) }, modifier = Modifier.weight(1f))</ID>
+    <ID>MaxLineLength:AddContactComponents.kt$Row</ID>
+    <ID>MaxLineLength:AddContactComponents.kt$Slider(value = value.toFloat(), onValueChange = { newValue -&gt; onValueChange(newValue.toInt()); selectedLevelIndex = IntimacyLevels.indexOfFirst { newValue.toInt() in it.range }.coerceIn(0, IntimacyLevels.size - 1) }, valueRange = 0f..100f, colors = SliderDefaults.colors(thumbColor = currentLevel.color, activeTrackColor = currentLevel.color, inactiveTrackColor = currentLevel.color.copy(alpha = 0.15f)))</ID>
+    <ID>MaxLineLength:AddContactComponents.kt$Text(currentLevel.name, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold, color = currentLevel.color)</ID>
+    <ID>MaxLineLength:AddContactComponents.kt$Text(label, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, fontWeight = FontWeight.Medium)</ID>
+    <ID>MaxLineLength:AddContactComponents.kt$Text(level.name, style = MaterialTheme.typography.labelMedium, fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium, color = if (isSelected) Color.White else level.color)</ID>
+    <ID>MaxLineLength:AddContactComponents.kt$Text(title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)</ID>
+    <ID>MaxLineLength:AddContactComponents.kt$if (required) { Spacer(modifier = Modifier.width(2.dp)); Text("*", color = Error, fontSize = MaterialTheme.typography.bodyMedium.fontSize) }</ID>
+    <ID>MaxLineLength:AddContactComponents.kt$internal</ID>
+    <ID>MaxLineLength:AddContactComponents.kt$modifier = Modifier.size(100.dp).clip(CircleShape).background(MaterialTheme.colorScheme.surfaceVariant, CircleShape).clickable(onClick = onAvatarClick)</ID>
+    <ID>MaxLineLength:AddContactComponents.kt$placeholder = { Text("写下你对这个人的了解...", color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = AnimationTokens.Alpha.half)) }</ID>
+    <ID>MaxLineLength:AddContactComponents.kt$placeholder = { Text(placeholder, color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = AnimationTokens.Alpha.half)) }</ID>
+    <ID>MaxLineLength:AddContactComponents.kt$trailingIcon = { Icon(Icons.Default.CalendarToday, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant) }</ID>
+    <ID>MaxLineLength:AddContactComponents.kt$val headerGradient = Brush.verticalGradient(colors = listOf(MaterialTheme.colorScheme.primary.copy(alpha = 0.06f), MaterialTheme.colorScheme.surface))</ID>
+    <ID>MaxLineLength:AddContactComponents.kt$value = value</ID>
+    <ID>MaxLineLength:AddContactScreen.kt$FormField("姓名", uiState.name, viewModel::updateName, placeholder = "请输入姓名", required = true, focusRequester = nameFocusRequester)</ID>
+    <ID>MaxLineLength:AddContactScreen.kt$TagSelector(mode = TagSelectorMode.MULTI, title = "习惯", availableItems = uiState.habitOptions, selectedItems = uiState.habits, onSelectionChange = { viewModel.updateHabits(it) }, onAddItem = { name, color, _ -&gt; viewModel.addCustomType(CustomCategories.HABIT, name, color) }, onDeleteItem = { viewModel.deleteCustomType(it) })</ID>
+    <ID>MaxLineLength:AddContactScreen.kt$TagSelector(mode = TagSelectorMode.MULTI, title = "技能", availableItems = uiState.skillOptions, selectedItems = uiState.skills, onSelectionChange = { viewModel.updateSkills(it) }, onAddItem = { name, color, _ -&gt; viewModel.addCustomType(CustomCategories.SKILL, name, color) }, onDeleteItem = { viewModel.deleteCustomType(it) })</ID>
+    <ID>MaxLineLength:AddContactScreen.kt$TagSelector(mode = TagSelectorMode.MULTI, title = "爱好", availableItems = uiState.hobbyOptions, selectedItems = uiState.hobbies, onSelectionChange = { viewModel.updateHobbies(it) }, onAddItem = { name, color, _ -&gt; viewModel.addCustomType(CustomCategories.HOBBY, name, color) }, onDeleteItem = { viewModel.deleteCustomType(it) })</ID>
+    <ID>MaxLineLength:AddContactScreen.kt$TagSelector(mode = TagSelectorMode.MULTI, title = "饮食", availableItems = uiState.dietOptions, selectedItems = uiState.diets, onSelectionChange = { viewModel.updateDiets(it) }, onAddItem = { name, color, _ -&gt; viewModel.addCustomType(CustomCategories.DIET, name, color) }, onDeleteItem = { viewModel.deleteCustomType(it) })</ID>
+    <ID>MaxLineLength:AddContactScreen.kt$TextButton</ID>
+    <ID>MaxLineLength:AddContactViewModel.kt$AddContactViewModel$fun updateIsLunarBirthday(value: Boolean)</ID>
+    <ID>MaxLineLength:ContactCardFront.kt$Text(label, fontFamily = FontFamily.Monospace, fontSize = 8.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)</ID>
+    <ID>MaxLineLength:ContactCardFront.kt$Text(value, fontFamily = FontFamily.Monospace, fontSize = 12.sp, color = rarityColor, fontWeight = FontWeight.Bold)</ID>
+    <ID>MaxLineLength:ContactCardFront.kt$color = if (index &lt; starCount) rarityColor else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)</ID>
+    <ID>MaxLineLength:ContactDetailCards.kt$Column</ID>
+    <ID>MaxLineLength:ContactDetailCards.kt$Icon(Icons.Default.LocationOn, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(10.dp))</ID>
+    <ID>MaxLineLength:ContactDetailCards.kt$Icon(Icons.Default.Repeat, contentDescription = "每年", tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(10.dp))</ID>
+    <ID>MaxLineLength:ContactDetailCards.kt$Row</ID>
+    <ID>MaxLineLength:ContactDetailCards.kt$Text(text = DateUtils.formatDate(anniversary.date), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)</ID>
+    <ID>MaxLineLength:ContactDetailCards.kt$Text(text = DateUtils.formatDate(event.time), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)</ID>
+    <ID>MaxLineLength:ContactDetailCards.kt$Text(text = DateUtils.formatDate(thought.createdAt), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)</ID>
+    <ID>MaxLineLength:ContactDetailCards.kt$Text(text = DateUtils.formatRelativeTime(conversation.time), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)</ID>
+    <ID>MaxLineLength:ContactDetailCards.kt$Text(text = anniversary.name, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.SemiBold, maxLines = 1, overflow = TextOverflow.Ellipsis, color = MaterialTheme.colorScheme.onSurface)</ID>
+    <ID>MaxLineLength:ContactDetailCards.kt$Text(text = anniversary.type.displayName, style = MaterialTheme.typography.labelSmall, color = accentColor, fontWeight = FontWeight.Medium, modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp), fontSize = 10.sp)</ID>
+    <ID>MaxLineLength:ContactDetailCards.kt$Text(text = conversation.title, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.SemiBold, maxLines = 1, overflow = TextOverflow.Ellipsis, color = MaterialTheme.colorScheme.onSurface)</ID>
+    <ID>MaxLineLength:ContactDetailCards.kt$Text(text = event.title, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.SemiBold, maxLines = 1, overflow = TextOverflow.Ellipsis, color = MaterialTheme.colorScheme.onSurface)</ID>
+    <ID>MaxLineLength:ContactDetailCards.kt$Text(text = gift.giftName, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.SemiBold, maxLines = 1, overflow = TextOverflow.Ellipsis, color = MaterialTheme.colorScheme.onSurface)</ID>
+    <ID>MaxLineLength:ContactDetailCards.kt$Text(text = if (gift.isSent) "送出" else "收到", style = MaterialTheme.typography.labelSmall, color = directionColor, fontWeight = FontWeight.Medium, fontSize = 10.sp)</ID>
+    <ID>MaxLineLength:ContactDetailCards.kt$Text(text = it, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis, fontSize = 10.sp)</ID>
+    <ID>MaxLineLength:ContactDetailCards.kt$Text(text = it, style = MaterialTheme.typography.labelSmall, color = SignalPurple, fontWeight = FontWeight.Medium, modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp), fontSize = 10.sp)</ID>
+    <ID>MaxLineLength:ContactDetailCards.kt$Text(text = thought.content, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Medium, maxLines = 2, overflow = TextOverflow.Ellipsis, color = MaterialTheme.colorScheme.onSurface, lineHeight = 20.sp)</ID>
+    <ID>MaxLineLength:ContactDetailCards.kt$Text(text = typeLabel, style = MaterialTheme.typography.labelSmall, color = accentColor, fontWeight = FontWeight.Medium, modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp), fontSize = 10.sp)</ID>
+    <ID>MaxLineLength:ContactDetailCards.kt$gift.amount?.let { Text(text = "¥${String.format(Locale.US, "%.0f", it)}", style = MaterialTheme.typography.labelSmall, color = SignalAmber, fontWeight = FontWeight.Medium, fontSize = 10.sp) }</ID>
+    <ID>MaxLineLength:ContactDetailCards.kt$gift.date.let { Text(text = DateUtils.formatDate(it), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant) }</ID>
+    <ID>MaxLineLength:ContactDetailCards.kt$val customType = if (event.type != EventType.OTHER) eventTypes.find { it.key == event.type.name } ?: eventTypes.find { it.name == event.type.name } else event.customTypeName?.let { ctn -&gt; eventTypes.find { it.name == ctn } }</ID>
+    <ID>MaxLineLength:ContactDetailHeader.kt$Text(text = "$score", style = MaterialTheme.typography.labelSmall, color = color, fontWeight = FontWeight.Bold, fontSize = 11.sp)</ID>
+    <ID>MaxLineLength:ContactDetailProfile.kt$DetailInfoRow(icon = Icons.Default.Cake, label = "生日", value = DateUtils.formatYearMonthDayChineseFull(it), iconColor = AnniversaryBirthday, valueColor = AnniversaryBirthday)</ID>
+    <ID>MaxLineLength:ContactDetailProfile.kt$DetailInfoRow(icon = Icons.Default.CalendarToday, label = "相识日期", value = DateUtils.formatYearMonthDayChineseFull(it), iconColor = SignalSky, valueColor = SignalSky)</ID>
+    <ID>MaxLineLength:ContactDetailProfile.kt$FeatureTagSectionWithColors("习惯", parseListField(it).map { tag -&gt; tag to uiState.data.habitOptions.find { o -&gt; o.name == tag }?.color }, Color(0xFF3B82F6))</ID>
+    <ID>MaxLineLength:ContactDetailProfile.kt$FeatureTagSectionWithColors("技能", parseListField(it).map { tag -&gt; tag to uiState.data.skillOptions.find { o -&gt; o.name == tag }?.color }, Color(0xFF8B5CF6))</ID>
+    <ID>MaxLineLength:ContactDetailProfile.kt$FeatureTagSectionWithColors("爱好", parseListField(it).map { tag -&gt; tag to uiState.data.hobbyOptions.find { o -&gt; o.name == tag }?.color }, Color(0xFFF43F5E))</ID>
+    <ID>MaxLineLength:ContactDetailProfile.kt$FeatureTagSectionWithColors("饮食偏好", parseListField(it).map { tag -&gt; tag to uiState.data.dietOptions.find { o -&gt; o.name == tag }?.color }, Color(0xFFF97316))</ID>
+    <ID>MaxLineLength:ContactDetailProfile.kt$Text(text = label, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, fontWeight = FontWeight.SemiBold)</ID>
+    <ID>MaxLineLength:ContactDetailProfile.kt$Text(text = tag, modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp), style = MaterialTheme.typography.bodySmall, color = color, fontWeight = FontWeight.SemiBold)</ID>
+    <ID>MaxLineLength:ContactDetailProfile.kt$internal fun hasFamilyInfo(contact: Contact): Boolean</ID>
+    <ID>MaxLineLength:ContactDetailProfile.kt$return contact.hobby?.isNotBlank() == true || contact.habit?.isNotBlank() == true || contact.diet?.isNotBlank() == true || contact.skill?.isNotBlank() == true || contact.mbti?.isNotBlank() == true</ID>
+    <ID>MaxLineLength:ContactDetailScreen.kt$1 -&gt; EventsContent(events = uiState.data.events, eventTypes = uiState.data.eventTypes, onEventClick = { id -&gt; navController.navigate(EventDetailRoute(id)) })</ID>
+    <ID>MaxLineLength:ContactDetailScreen.kt$2 -&gt; AnniversariesContent(anniversaries = uiState.data.anniversaries, onAnniversaryClick = { id -&gt; navController.navigate(AnniversaryDetailRoute(id)) })</ID>
+    <ID>MaxLineLength:ContactDetailScreen.kt$5 -&gt; ChatContent(conversations = uiState.data.conversations, onConversationClick = { id -&gt; navController.navigate(ChatDetailRoute(id)) })</ID>
+    <ID>MaxLineLength:ContactDetailScreen.kt$tabs = listOf(AppStrings.ContactDetail.PROFILE, AppStrings.ContactDetail.EVENTS, AppStrings.ContactDetail.ANNIVERSARY, AppStrings.ContactDetail.GIFTS, AppStrings.ContactDetail.THOUGHTS, AppStrings.ContactDetail.CHATS)</ID>
+    <ID>MaxLineLength:ContactFormHelper.kt$ContactFormHelper$anniversaryRepository.getAnniversariesByContact(contactId).first().filter { it.type == AnniversaryType.BIRTHDAY }</ID>
+    <ID>MaxLineLength:ContactFormHelper.kt$ContactFormHelper$suspend</ID>
+    <ID>MaxLineLength:PeopleNavGraph.kt$AddContactScreen(contactId = route.contactId, navController = navController, onPickAvatar = { avatarPicker.launch() }, viewModel = viewModel)</ID>
+    <ID>TooGenericExceptionCaught:ContactDetailProfile.kt$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:ContactDetailTabletScreen.kt$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:ContactFormHelper.kt$ContactFormHelper$e: Exception</ID>
+    <ID>UnusedParameter:ContactDetailTabletScreen.kt$accentColor: Color</ID>
+    <ID>UnusedPrivateProperty:ContactDetailTabletScreen.kt$val typeLabel = event.customTypeName ?: getEventTypeLabel(event.type)</ID>
+  </CurrentIssues>
+</SmellBaseline>

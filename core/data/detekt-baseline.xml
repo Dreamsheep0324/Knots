@@ -1,0 +1,103 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues></ManuallySuppressedIssues>
+  <CurrentIssues>
+    <ID>CyclomaticComplexMethod:AiRepositoryImpl.kt$AiRepositoryImpl$override fun streamChat(systemPrompt: String, userPrompt: String): Flow&lt;String&gt;</ID>
+    <ID>CyclomaticComplexMethod:WebDavClient.kt$WebDavClient$private fun parsePropfindResponse(xml: String, remotePath: String): List&lt;CloudBackupVersion&gt;</ID>
+    <ID>CyclomaticComplexMethod:WebDavRepositoryImpl.kt$WebDavRepositoryImpl$override suspend fun uploadBackup(): Flow&lt;SyncResult&gt;</ID>
+    <ID>LargeClass:BackupRepository.kt$BackupRepository : BackupRepositoryInterface</ID>
+    <ID>LargeClass:WebDavClient.kt$WebDavClient</ID>
+    <ID>LargeClass:WebDavRepositoryImpl.kt$WebDavRepositoryImpl : WebDavRepository</ID>
+    <ID>LongMethod:MigrationShortcuts.kt$&lt;no name provided&gt;$override fun migrate(db: SupportSQLiteDatabase)</ID>
+    <ID>LongMethod:Migration_1_32.kt$&lt;no name provided&gt;$override fun migrate(db: SupportSQLiteDatabase)</ID>
+    <ID>LongMethod:Migration_39_40.kt$&lt;no name provided&gt;$override fun migrate(db: SupportSQLiteDatabase)</ID>
+    <ID>LongMethod:WebDavRepositoryImpl.kt$WebDavRepositoryImpl$override suspend fun downloadBackup(fileName: String): Flow&lt;SyncResult&gt;</ID>
+    <ID>LongMethod:WebDavRepositoryImpl.kt$WebDavRepositoryImpl$override suspend fun uploadBackup(): Flow&lt;SyncResult&gt;</ID>
+    <ID>LoopWithTooManyJumpStatements:AiRepositoryImpl.kt$AiRepositoryImpl$while</ID>
+    <ID>MaxLineLength:CircleDao.kt$CircleDao$@Query("SELECT DISTINCT c.* FROM circles c INNER JOIN circle_member_cross_ref cm ON c.id = cm.circleId WHERE cm.contactId = :contactId ORDER BY c.sortOrder ASC")</ID>
+    <ID>MaxLineLength:ContactDao.kt$ContactDao$/** Callers MUST escape the [value] parameter with [com.tang.prm.util.escapeSqlWildcards] before passing it, otherwise `%`, `_`, `\` will be treated as SQL wildcards. */</ID>
+    <ID>MaxLineLength:ContactDao.kt$ContactDao$@Query("SELECT * FROM contacts WHERE (:keyword IS NULL OR name LIKE '%' || :keyword || '%' ESCAPE '\\' OR nickname LIKE '%' || :keyword || '%' ESCAPE '\\' OR phone LIKE '%' || :keyword || '%' ESCAPE '\\') AND (:groupId IS NULL OR groupId = :groupId) AND (:relationship IS NULL OR relationship = :relationship) ORDER BY intimacyScore DESC")</ID>
+    <ID>MaxLineLength:ContactDao.kt$ContactDao$@Query("SELECT * FROM contacts WHERE name LIKE '%' || :keyword || '%' ESCAPE '\\' OR nickname LIKE '%' || :keyword || '%' ESCAPE '\\' OR phone LIKE '%' || :keyword || '%' ESCAPE '\\'")</ID>
+    <ID>MaxLineLength:ContactDao.kt$ContactDao$@Query("SELECT id, hobby, habit, diet, skill FROM contacts WHERE hobby LIKE '%' || :value || '%' ESCAPE '\\' OR habit LIKE '%' || :value || '%' ESCAPE '\\' OR diet LIKE '%' || :value || '%' ESCAPE '\\' OR skill LIKE '%' || :value || '%' ESCAPE '\\'")</ID>
+    <ID>MaxLineLength:ContactDao.kt$ContactDao$@Query("SELECT id, name, avatar, nickname, phone, relationship, groupId, intimacyScore, lastInteractionTime, updatedAt FROM contacts ORDER BY updatedAt DESC")</ID>
+    <ID>MaxLineLength:ContactRepositoryImpl.kt$ContactRepositoryImpl$return contactDao.getFilteredContacts(escapedKeyword, groupId, relationship).withAttributes(contactAttributeDao.getAttributesForAllContacts())</ID>
+    <ID>MaxLineLength:EventDao.kt$EventDao$@Query("SELECT * FROM events WHERE type != 'CONVERSATION' AND (:keyword IS NULL OR title LIKE '%' || :keyword || '%' ESCAPE '\\' OR description LIKE '%' || :keyword || '%' ESCAPE '\\' OR location LIKE '%' || :keyword || '%' ESCAPE '\\') ORDER BY time DESC")</ID>
+    <ID>MaxLineLength:EventDao.kt$EventDao$@Query("SELECT * FROM events WHERE type = :type AND (:keyword IS NULL OR title LIKE '%' || :keyword || '%' ESCAPE '\\' OR description LIKE '%' || :keyword || '%' ESCAPE '\\' OR location LIKE '%' || :keyword || '%' ESCAPE '\\') ORDER BY time DESC")</ID>
+    <ID>MaxLineLength:EventDao.kt$EventDao$@Query("SELECT e.* FROM events e INNER JOIN event_participants ep ON e.id = ep.eventId WHERE ep.contactId = :contactId ORDER BY e.time DESC")</ID>
+    <ID>MaxLineLength:MigrationShortcuts.kt$&lt;no name provided&gt;$"SELECT id, title, start_time, end_time, location, description, is_all_day, remind_time, is_repeat, repeat_rule, color, created_at, updated_at FROM events"</ID>
+    <ID>MaxLineLength:MigrationShortcuts.kt$&lt;no name provided&gt;$db</ID>
+    <ID>MaxLineLength:MigrationShortcuts.kt$&lt;no name provided&gt;$db.execSQL("CREATE TABLE event_participants_new (eventId INTEGER NOT NULL, contactId INTEGER NOT NULL, PRIMARY KEY(eventId, contactId), FOREIGN KEY(eventId) REFERENCES events(id) ON DELETE CASCADE, FOREIGN KEY(contactId) REFERENCES contacts(id) ON DELETE CASCADE)")</ID>
+    <ID>MaxLineLength:MigrationShortcuts.kt$&lt;no name provided&gt;$db.execSQL("UPDATE thoughts SET type = CASE WHEN contactId IS NOT NULL THEN 'friend' WHEN isPrivate = 1 THEN 'private' ELSE 'murmur' END")</ID>
+    <ID>MaxLineLength:Migration_1_32.kt$&lt;no name provided&gt;$"SELECT id, title, start_time, end_time, location, description, is_all_day, remind_time, is_repeat, repeat_rule, color, created_at, updated_at FROM events"</ID>
+    <ID>MaxLineLength:Migration_1_32.kt$&lt;no name provided&gt;$db</ID>
+    <ID>MaxLineLength:Migration_1_32.kt$&lt;no name provided&gt;$db.execSQL("CREATE TABLE IF NOT EXISTS `anniversaries_tmp` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `contactId` INTEGER, `name` TEXT NOT NULL, `type` TEXT NOT NULL, `date` INTEGER NOT NULL, `isLunar` INTEGER NOT NULL, `isRepeat` INTEGER NOT NULL, `reminderDays` INTEGER NOT NULL, `remarks` TEXT, `icon` TEXT, `createdAt` INTEGER NOT NULL, `updatedAt` INTEGER NOT NULL, FOREIGN KEY(`contactId`) REFERENCES `contacts`(`id`) ON DELETE CASCADE)")</ID>
+    <ID>MaxLineLength:Migration_1_32.kt$&lt;no name provided&gt;$db.execSQL("CREATE TABLE circles_new (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, name TEXT NOT NULL, description TEXT, color TEXT NOT NULL DEFAULT '#6366F1', icon TEXT NOT NULL DEFAULT 'people', waveform TEXT NOT NULL DEFAULT 'sine', parentCircleId INTEGER, intimacyThreshold INTEGER NOT NULL DEFAULT 0, sortOrder INTEGER NOT NULL DEFAULT 0, createdAt INTEGER NOT NULL, updatedAt INTEGER NOT NULL)")</ID>
+    <ID>MaxLineLength:Migration_1_32.kt$&lt;no name provided&gt;$db.execSQL("CREATE TABLE event_participants_new (eventId INTEGER NOT NULL, contactId INTEGER NOT NULL, PRIMARY KEY(eventId, contactId), FOREIGN KEY(eventId) REFERENCES events(id) ON DELETE CASCADE, FOREIGN KEY(contactId) REFERENCES contacts(id) ON DELETE CASCADE)")</ID>
+    <ID>MaxLineLength:Migration_1_32.kt$&lt;no name provided&gt;$db.execSQL("CREATE TABLE favorites_new (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, sourceType TEXT NOT NULL, sourceId INTEGER NOT NULL, title TEXT NOT NULL, description TEXT, createdAt INTEGER NOT NULL)")</ID>
+    <ID>MaxLineLength:Migration_1_32.kt$&lt;no name provided&gt;$db.execSQL("INSERT INTO circles_new SELECT id, name, description, color, icon, waveform, parentCircleId, intimacyThreshold, sortOrder, createdAt, updatedAt FROM circles")</ID>
+    <ID>MaxLineLength:Migration_1_32.kt$&lt;no name provided&gt;$db.execSQL("INSERT OR IGNORE INTO circle_member_cross_ref (circleId, contactId) VALUES (?, ?)", arrayOf(circleId, contactId))</ID>
+    <ID>MaxLineLength:Migration_1_32.kt$&lt;no name provided&gt;$db.execSQL("UPDATE thoughts SET type = CASE WHEN contactId IS NOT NULL THEN 'friend' WHEN isPrivate = 1 THEN 'private' ELSE 'murmur' END")</ID>
+    <ID>MaxLineLength:Migration_24_31.kt$&lt;no name provided&gt;$db.execSQL("CREATE TABLE IF NOT EXISTS `anniversaries_tmp` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `contactId` INTEGER, `name` TEXT NOT NULL, `type` TEXT NOT NULL, `date` INTEGER NOT NULL, `isLunar` INTEGER NOT NULL, `isRepeat` INTEGER NOT NULL, `reminderDays` INTEGER NOT NULL, `remarks` TEXT, `icon` TEXT, `createdAt` INTEGER NOT NULL, `updatedAt` INTEGER NOT NULL, FOREIGN KEY(`contactId`) REFERENCES `contacts`(`id`) ON DELETE CASCADE)")</ID>
+    <ID>MaxLineLength:Migration_24_31.kt$&lt;no name provided&gt;$db.execSQL("CREATE TABLE circles_new (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, name TEXT NOT NULL, description TEXT, color TEXT NOT NULL DEFAULT '#6366F1', icon TEXT NOT NULL DEFAULT 'people', waveform TEXT NOT NULL DEFAULT 'sine', parentCircleId INTEGER, intimacyThreshold INTEGER NOT NULL DEFAULT 0, sortOrder INTEGER NOT NULL DEFAULT 0, createdAt INTEGER NOT NULL, updatedAt INTEGER NOT NULL)")</ID>
+    <ID>MaxLineLength:Migration_24_31.kt$&lt;no name provided&gt;$db.execSQL("CREATE TABLE favorites_new (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, sourceType TEXT NOT NULL, sourceId INTEGER NOT NULL, title TEXT NOT NULL, description TEXT, createdAt INTEGER NOT NULL)")</ID>
+    <ID>MaxLineLength:Migration_24_31.kt$&lt;no name provided&gt;$db.execSQL("INSERT INTO circles_new SELECT id, name, description, color, icon, waveform, parentCircleId, intimacyThreshold, sortOrder, createdAt, updatedAt FROM circles")</ID>
+    <ID>MaxLineLength:Migration_24_31.kt$&lt;no name provided&gt;$db.execSQL("INSERT OR IGNORE INTO circle_member_cross_ref (circleId, contactId) VALUES (?, ?)", arrayOf(circleId, contactId))</ID>
+    <ID>MaxLineLength:Migration_28_31.kt$&lt;no name provided&gt;$db.execSQL("CREATE TABLE IF NOT EXISTS `anniversaries_tmp` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `contactId` INTEGER, `name` TEXT NOT NULL, `type` TEXT NOT NULL, `date` INTEGER NOT NULL, `isLunar` INTEGER NOT NULL, `isRepeat` INTEGER NOT NULL, `reminderDays` INTEGER NOT NULL, `remarks` TEXT, `icon` TEXT, `createdAt` INTEGER NOT NULL, `updatedAt` INTEGER NOT NULL, FOREIGN KEY(`contactId`) REFERENCES `contacts`(`id`) ON DELETE CASCADE)")</ID>
+    <ID>MaxLineLength:Migration_31_33.kt$&lt;no name provided&gt;$db.execSQL("CREATE INDEX IF NOT EXISTS index_contact_attributes_contactId_category_value ON contact_attributes(contactId, category, value)")</ID>
+    <ID>MaxLineLength:Migration_32_33.kt$&lt;no name provided&gt;$db.execSQL("CREATE INDEX IF NOT EXISTS index_contact_attributes_contactId_category_value ON contact_attributes(contactId, category, value)")</ID>
+    <ID>MaxLineLength:Migration_39_40.kt$&lt;no name provided&gt;$"INSERT INTO `circles_new` (`id`, `name`, `description`, `color`, `icon`, `waveform`, `parentCircleId`, `intimacyThreshold`, `sortOrder`, `createdAt`, `updatedAt`) SELECT `id`, `name`, `description`, `color`, `icon`, `waveform`, `parentCircleId`, `intimacyThreshold`, `sortOrder`, `createdAt`, `updatedAt` FROM `circles`"</ID>
+    <ID>MaxLineLength:Migration_39_40.kt$&lt;no name provided&gt;$"INSERT INTO `contacts_new` (`id`, `name`, `avatar`, `nickname`, `gender`, `birthday`, `isLunarBirthday`, `isLeapMonthBirthday`, `knowingDate`, `phone`, `email`, `city`, `address`, `education`, `company`, `jobTitle`, `industry`, `hobby`, `habit`, `diet`, `skill`, `mbti`, `spouseName`, `childrenCount`, `childrenNames`, `introducer`, `relationshipLevel`, `relationship`, `groupId`, `intimacyScore`, `lastInteractionTime`, `customFields`, `notes`, `createdAt`, `updatedAt`) SELECT `id`, `name`, `avatar`, `nickname`, `gender`, `birthday`, `isLunarBirthday`, `isLeapMonthBirthday`, `knowingDate`, `phone`, `email`, `city`, `address`, `education`, `company`, `jobTitle`, `industry`, `hobby`, `habit`, `diet`, `skill`, `mbti`, `spouseName`, `childrenCount`, `childrenNames`, `introducer`, `relationshipLevel`, `relationship`, `groupId`, `intimacyScore`, `lastInteractionTime`, `customFields`, `notes`, `createdAt`, `updatedAt` FROM `contacts`"</ID>
+    <ID>MaxLineLength:Migration_39_40.kt$&lt;no name provided&gt;$"INSERT INTO `reminders_new` (`id`, `contactId`, `eventId`, `anniversaryId`, `type`, `title`, `content`, `time`, `isCompleted`, `isIgnored`, `repeatInterval`, `createdAt`) SELECT `id`, `contactId`, `eventId`, `anniversaryId`, `type`, `title`, `content`, `time`, `isCompleted`, `isIgnored`, `repeatInterval`, `createdAt` FROM `reminders`"</ID>
+    <ID>MaxLineLength:Migration_39_40.kt$&lt;no name provided&gt;$"INSERT INTO `todo_items_new` (`id`, `contactId`, `eventId`, `title`, `isCompleted`, `priority`, `dueDate`, `createdAt`) SELECT `id`, `contactId`, `eventId`, `title`, `isCompleted`, `priority`, `dueDate`, `createdAt` FROM `todo_items`"</ID>
+    <ID>MaxLineLength:SubscriptionDao.kt$SubscriptionDao$@Query("SELECT * FROM subscriptions WHERE (:keyword IS NULL OR name LIKE '%' || :keyword || '%' ESCAPE '\\') ORDER BY nextBillingDate ASC")</ID>
+    <ID>MaxLineLength:WebDavClient.kt$WebDavClient$trySend(SyncResult.DownloadProgress("下载中", 0, 0, "${formatFileSize(downloaded)}/${if (totalBytes &gt; 0) formatFileSize(totalBytes) else "?"}"))</ID>
+    <ID>NestedBlockDepth:BackupRepository.kt$BackupRepository$private fun extractFromStream(inputStream: java.io.InputStream, dirs: ExtractDirs)</ID>
+    <ID>NestedBlockDepth:BackupRepository.kt$BackupRepository$private fun findDocumentUriByName(treeUri: Uri, fileName: String): Uri?</ID>
+    <ID>NestedBlockDepth:Migration_1_32.kt$&lt;no name provided&gt;$override fun migrate(db: SupportSQLiteDatabase)</ID>
+    <ID>NestedBlockDepth:Migration_24_31.kt$&lt;no name provided&gt;$override fun migrate(db: SupportSQLiteDatabase)</ID>
+    <ID>NestedBlockDepth:Migration_31_33.kt$&lt;no name provided&gt;$override fun migrate(db: SupportSQLiteDatabase)</ID>
+    <ID>NestedBlockDepth:Migration_32_33.kt$&lt;no name provided&gt;$override fun migrate(db: SupportSQLiteDatabase)</ID>
+    <ID>NestedBlockDepth:WebDavClient.kt$WebDavClient$private fun parseFileSizeFromPropfind(xml: String, targetFileName: String): Long</ID>
+    <ID>NestedBlockDepth:WebDavClient.kt$WebDavClient$private fun parsePropfindResponse(xml: String, remotePath: String): List&lt;CloudBackupVersion&gt;</ID>
+    <ID>TooGenericExceptionCaught:AiRepositoryImpl.kt$AiRepositoryImpl$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:BackupRepository.kt$BackupRepository$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:ContactMapper.kt$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:DatabaseModule.kt$DatabaseModule$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:ListStringConverter.kt$ListStringConverter$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:Migration_31_33.kt$&lt;no name provided&gt;$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:Migration_32_33.kt$&lt;no name provided&gt;$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:RetryInterceptor.kt$RetryInterceptor$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:SafeCall.kt$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:UpdateRepositoryImpl.kt$UpdateRepositoryImpl$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:WebDavClient.kt$WebDavClient$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:WebDavRepositoryImpl.kt$WebDavRepositoryImpl$e: Exception</ID>
+    <ID>TooGenericExceptionThrown:RetryInterceptorTest.kt$RetryInterceptorTest.NonRetryableExceptionTest.&lt;no name provided&gt;$throw RuntimeException("unexpected")</ID>
+    <ID>TooGenericExceptionThrown:WebDavClient.kt$WebDavClient$throw Exception("上传图片失败 (${response.code})")</ID>
+    <ID>TooGenericExceptionThrown:WebDavClient.kt$WebDavClient$throw Exception("上传数据库失败 (${response.code})")</ID>
+    <ID>TooGenericExceptionThrown:WebDavClient.kt$WebDavClient$throw Exception("上传清单失败 (${response.code})")</ID>
+    <ID>TooGenericExceptionThrown:WebDavClient.kt$WebDavClient$throw Exception("下载图片失败 (${response.code})")</ID>
+    <ID>TooGenericExceptionThrown:WebDavClient.kt$WebDavClient$throw Exception("下载图片失败：响应体为空")</ID>
+    <ID>TooGenericExceptionThrown:WebDavClient.kt$WebDavClient$throw Exception("下载失败：响应体为空")</ID>
+    <ID>TooGenericExceptionThrown:WebDavClient.kt$WebDavClient$throw Exception("下载数据库失败 (${response.code})")</ID>
+    <ID>TooGenericExceptionThrown:WebDavClient.kt$WebDavClient$throw Exception("下载数据库失败：响应体为空")</ID>
+    <ID>TooGenericExceptionThrown:WebDavClient.kt$WebDavClient$throw Exception("列出文件失败 (${response.code})")</ID>
+    <ID>TooGenericExceptionThrown:WebDavClient.kt$WebDavClient$throw Exception("创建远程目录失败 (${response.code})")</ID>
+    <ID>TooGenericExceptionThrown:WebDavClient.kt$WebDavClient$throw Exception("无法连接到服务器，请检查地址")</ID>
+    <ID>TooGenericExceptionThrown:WebDavClient.kt$WebDavClient$throw Exception("网络连接失败：${e.message}")</ID>
+    <ID>TooGenericExceptionThrown:WebDavClient.kt$WebDavClient$throw Exception("连接超时，请检查网络")</ID>
+    <ID>UnusedParameter:BackupRepository.kt$BackupRepository$imageQuality: BackupImageQuality</ID>
+    <ID>UnusedPrivateMember:WebDavClient.kt$WebDavClient$private fun categorizeException(e: Exception): Exception</ID>
+    <ID>UnusedPrivateMember:WebDavRepositoryImpl.kt$WebDavRepositoryImpl$private fun readPassword(): String</ID>
+    <ID>UnusedPrivateProperty:ContactRepositoryImpl.kt$ContactRepositoryImpl$private val anniversaryDao: AnniversaryDao</ID>
+    <ID>UnusedPrivateProperty:ContactRepositoryImpl.kt$ContactRepositoryImpl$private val circleDao: CircleDao</ID>
+    <ID>UnusedPrivateProperty:ContactRepositoryImpl.kt$ContactRepositoryImpl$private val thoughtDao: ThoughtDao</ID>
+    <ID>UnusedPrivateProperty:WebDavClient.kt$WebDavClient$val isManifest = fileName == "manifest.json"</ID>
+    <ID>UnusedPrivateProperty:WebDavClient.kt$WebDavClient$val isSubDir = fileName in setOf("db", "images", "gift_photos")</ID>
+    <ID>UnusedPrivateProperty:WebDavClient.kt$WebDavClient$val remotePathNormalized = remotePath.trim('/')</ID>
+    <ID>UnusedPrivateProperty:WebDavClient.kt$WebDavClient$val startTime = System.currentTimeMillis()</ID>
+    <ID>UseCheckOrError:BackupRepository.kt$BackupRepository$throw IllegalStateException("无法写入备份文件")</ID>
+    <ID>UseCheckOrError:BackupRepository.kt$BackupRepository$throw IllegalStateException("无法创建备份文件")</ID>
+    <ID>UseCheckOrError:BackupRepository.kt$BackupRepository$throw IllegalStateException("无法打开输出流")</ID>
+    <ID>UseCheckOrError:BackupRepository.kt$BackupRepository$throw IllegalStateException("未设置备份目录")</ID>
+  </CurrentIssues>
+</SmellBaseline>

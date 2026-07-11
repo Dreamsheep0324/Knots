@@ -13,7 +13,10 @@ import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
@@ -32,10 +35,12 @@ class ContactListViewModelTest {
     private lateinit var useCase: ContactListManageUseCase
 
     private lateinit var viewModel: ContactListViewModel
+    private val testDispatcher = UnconfinedTestDispatcher()
+    private val testScope = TestScope(testDispatcher)
 
     @BeforeEach
     fun setUp() {
-        Dispatchers.setMain(UnconfinedTestDispatcher())
+        Dispatchers.setMain(testDispatcher)
 
         val circle = Circle(id = 1L, name = "朋友", description = null, color = "#FF0000", waveform = "sine")
         val contact = Contact(id = 10L, name = "Alice", intimacyScore = 80)
@@ -50,10 +55,13 @@ class ContactListViewModelTest {
         }
 
         viewModel = ContactListViewModel(useCase)
+        // 启动后台收集器以激活 WhileSubscribed(5000)
+        testScope.launch { viewModel.uiState.collect { } }
     }
 
     @AfterEach
     fun tearDown() {
+        testScope.cancel()
         Dispatchers.resetMain()
     }
 

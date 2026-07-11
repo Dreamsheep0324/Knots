@@ -1,4 +1,4 @@
-﻿package com.tang.prm.feature.chat
+package com.tang.prm.feature.chat
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -7,7 +7,6 @@ import com.tang.prm.domain.model.EventType
 import com.tang.prm.domain.repository.EventRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.launch
 import com.tang.prm.domain.util.DateUtils
 import javax.inject.Inject
 
@@ -21,9 +20,16 @@ data class ConversationUiModel(
     val lastMessageTime: String
 )
 
-data class ChatUiState(
+data class ChatDataState(
     val conversations: List<ConversationUiModel> = emptyList(),
     val isLoading: Boolean = false
+)
+data class ChatDialogState(
+    val showDeleteConfirm: Long? = null
+)
+data class ChatUiState(
+    val data: ChatDataState = ChatDataState(),
+    val dialog: ChatDialogState = ChatDialogState()
 )
 
 @HiltViewModel
@@ -31,33 +37,31 @@ class ChatViewModel @Inject constructor(
     private val eventRepository: EventRepository
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow(ChatUiState())
-    val uiState: StateFlow<ChatUiState> = _uiState.asStateFlow()
+    private val _dialogState = MutableStateFlow(ChatDialogState())
 
-    init {
-        loadConversations()
-    }
+    val uiState: StateFlow<ChatUiState> = combine(
+        eventRepository.getEventsByType(EventType.CONVERSATION.name)
+            .map { events ->
+                val conversations = events.sortedByDescending { it.createdAt }.map { event ->
+                    val primaryContact = event.participants.firstOrNull()
+                    ConversationUiModel(
+                        eventId = event.id,
+                        contactId = primaryContact?.id,
+                        contactName = primaryContact?.name ?: event.title,
+                        avatar = primaryContact?.avatar,
+                        title = event.title,
+                        lastMessage = event.conversationSummary ?: event.title,
+                        lastMessageTime = DateUtils.formatShortDate(event.createdAt)
+                    )
+                }
+                ChatDataState(conversations = conversations, isLoading = false)
+            },
+        _dialogState
+    ) { data, dialog ->
+        ChatUiState(data = data, dialog = dialog)
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), ChatUiState())
 
-    private fun loadConversations() {
-        viewModelScope.launch {
-            eventRepository.getEventsByType(EventType.CONVERSATION.name).collect { events ->
-                val conversations = events
-                    .sortedByDescending { it.createdAt }
-                    .map { event ->
-                        val primaryContact = event.participants.firstOrNull()
-                        ConversationUiModel(
-                            eventId = event.id,
-                            contactId = primaryContact?.id,
-                            contactName = primaryContact?.name ?: event.title,
-                            avatar = primaryContact?.avatar,
-                            title = event.title,
-                            lastMessage = event.conversationSummary ?: event.title,
-                            lastMessageTime = DateUtils.formatShortDate(event.createdAt)
-                        )
-                    }
-
-                _uiState.update { it.copy(conversations = conversations, isLoading = false) }
-            }
-        }
+    fun showDeleteConfirm(id: Long?) {
+        _dialogState.value = ChatDialogState(showDeleteConfirm = id)
     }
 }

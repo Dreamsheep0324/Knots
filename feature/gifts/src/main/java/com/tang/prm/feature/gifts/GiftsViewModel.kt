@@ -1,4 +1,4 @@
-﻿package com.tang.prm.feature.gifts
+package com.tang.prm.feature.gifts
 
 import android.net.Uri
 import androidx.lifecycle.ViewModel
@@ -58,76 +58,63 @@ class GiftsViewModel @Inject constructor(
     private val favoriteToggleUseCase: FavoriteToggleUseCase
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow(GiftsUiState())
-    val uiState: StateFlow<GiftsUiState> = _uiState.asStateFlow()
+    private val _filterType = MutableStateFlow("all")
+    private val _selectedContactId = MutableStateFlow<Long?>(null)
+    private val _dialogState = MutableStateFlow(GiftsDialogState())
 
-    init {
-        loadContactsAndGifts()
-        loadFavorites()
-    }
-
-    private fun loadFavorites() {
-        viewModelScope.launch {
-            favoriteToggleUseCase.getFavoriteIds("GIFT").collect { ids ->
-                _uiState.update { it.copy(data = it.data.copy(favoriteGiftIds = ids)) }
+    val uiState: StateFlow<GiftsUiState> = combine(
+        combine(
+            contactRepository.getAllContacts(),
+            giftRepository.getAllGifts(),
+            favoriteToggleUseCase.getFavoriteIds("GIFT"),
+            _filterType,
+            _selectedContactId
+        ) { contacts, giftList, favoriteIds, filterType, selectedContactId ->
+            val contactMap = contacts.associateBy { it.id }
+            val gifts = giftList.map { gift ->
+                GiftRecord(
+                    gift = gift,
+                    contactName = contactMap[gift.contactId]?.name ?: "未知人物",
+                    contactAvatar = contactMap[gift.contactId]?.avatar
+                )
             }
-        }
-    }
-
-    private fun loadContactsAndGifts() {
-        viewModelScope.launch {
-            _uiState.update { it.copy(data = it.data.copy(isLoading = true)) }
-
-            combine(
-                contactRepository.getAllContacts(),
-                giftRepository.getAllGifts()
-            ) { contacts, giftList ->
-                val contactMap = contacts.associateBy { it.id }
-                val gifts = giftList.map { gift ->
-                    GiftRecord(
-                        gift = gift,
-                        contactName = contactMap[gift.contactId]?.name ?: "未知人物",
-                        contactAvatar = contactMap[gift.contactId]?.avatar
-                    )
-                }
-                gifts to contacts
-            }.collect { (gifts, contacts) ->
-                _uiState.update { state ->
-                    state.copy(
-                        data = state.data.copy(
-                            gifts = gifts,
-                            availableContacts = contacts,
-                            isLoading = false
-                        )
-                    )
-                }
-            }
-        }
-    }
+            GiftsDataState(
+                gifts = gifts,
+                filterType = filterType,
+                selectedContactId = selectedContactId,
+                availableContacts = contacts,
+                isLoading = false,
+                favoriteGiftIds = favoriteIds
+            )
+        },
+        _dialogState
+    ) { data, dialog ->
+        GiftsUiState(data = data, dialog = dialog)
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), GiftsUiState())
 
     fun updateFilterType(type: String) {
-        _uiState.update { it.copy(data = it.data.copy(filterType = type)) }
+        _filterType.value = type
     }
 
     fun filterByContact(contactId: Long?) {
-        _uiState.update { it.copy(data = it.data.copy(selectedContactId = contactId)) }
+        _selectedContactId.value = contactId
     }
 
     fun clearContactFilter() {
-        _uiState.update { it.copy(data = it.data.copy(selectedContactId = null)) }
+        _selectedContactId.value = null
     }
 
     fun addGift(gift: GiftRecord) {
         viewModelScope.launch {
             val (id, failedCount) = giftRepository.saveGiftWithPhotos(gift.gift, gift.photos.map { it.toString() })
             if (failedCount > 0) {
-                _uiState.update { it.copy(dialog = it.dialog.copy(photoSaveErrorCount = failedCount)) }
+                _dialogState.value = _dialogState.value.copy(photoSaveErrorCount = failedCount)
             }
         }
     }
 
     fun clearPhotoSaveError() {
-        _uiState.update { it.copy(dialog = it.dialog.copy(photoSaveErrorCount = 0)) }
+        _dialogState.value = _dialogState.value.copy(photoSaveErrorCount = 0)
     }
 
     fun deleteGift(giftId: Long) {
@@ -145,9 +132,6 @@ class GiftsViewModel @Inject constructor(
     fun getGiftFlow(giftId: Long): Flow<Gift?> = giftRepository.getGiftById(giftId)
 
     fun toggleFavorite(giftId: Long, giftName: String, contactName: String) {
-        val wasFavorite = _uiState.value.data.favoriteGiftIds.contains(giftId)
-        val newSet = if (wasFavorite) _uiState.value.data.favoriteGiftIds - giftId else _uiState.value.data.favoriteGiftIds + giftId
-        _uiState.update { it.copy(data = it.data.copy(favoriteGiftIds = newSet)) }
         viewModelScope.launch {
             try {
                 favoriteToggleUseCase(
@@ -157,7 +141,7 @@ class GiftsViewModel @Inject constructor(
                     description = "来自" + contactName + "的礼物"
                 )
             } catch (e: Exception) {
-                _uiState.update { it.copy(data = it.data.copy(favoriteGiftIds = _uiState.value.data.favoriteGiftIds.let { if (wasFavorite) it + giftId else it - giftId })) }
+                // Error handling - favoriteIds will auto-correct from the flow
             }
         }
     }

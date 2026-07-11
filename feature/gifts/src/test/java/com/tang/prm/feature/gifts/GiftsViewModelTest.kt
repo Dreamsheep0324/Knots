@@ -15,9 +15,12 @@ import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
@@ -116,15 +119,23 @@ class GiftsViewModelTest {
     inner class FilterTest {
 
         @Test
-        fun updateFilterType_updatesState() {
+        fun updateFilterType_updatesState() = runTest {
+            val job = launch { viewModel.uiState.collect { } }
+            advanceUntilIdle()
             viewModel.updateFilterType("sent")
+            advanceUntilIdle()
             assertThat(viewModel.uiState.value.data.filterType).isEqualTo("sent")
+            job.cancel()
         }
 
         @Test
-        fun filterByContact_setsSelectedContactId() {
+        fun filterByContact_setsSelectedContactId() = runTest {
+            val job = launch { viewModel.uiState.collect { } }
+            advanceUntilIdle()
             viewModel.filterByContact(42L)
+            advanceUntilIdle()
             assertThat(viewModel.uiState.value.data.selectedContactId).isEqualTo(42L)
+            job.cancel()
         }
 
         @Test
@@ -141,8 +152,21 @@ class GiftsViewModelTest {
 
         @Test
         fun toggleFavorite_addsToFavoriteSet() = runTest {
+            val favoriteIds = MutableStateFlow(emptySet<Long>())
+            every { favoriteToggleUseCase.getFavoriteIds("GIFT") } returns favoriteIds
+            coEvery { favoriteToggleUseCase(any(), any(), any(), any()) } answers {
+                val sourceId = secondArg<Long>()
+                favoriteIds.value = favoriteIds.value + sourceId
+                true
+            }
+            // 重新创建 viewModel 以使用新的 favoriteIds flow
+            viewModel = GiftsViewModel(giftRepository, contactRepository, favoriteToggleUseCase)
+            val job = launch { viewModel.uiState.collect { } }
+            advanceUntilIdle()
             viewModel.toggleFavorite(10L, "巧克力", "Alice")
+            advanceUntilIdle()
             assertThat(viewModel.uiState.value.data.favoriteGiftIds).contains(10L)
+            job.cancel()
         }
 
         @Test
@@ -189,14 +213,17 @@ class GiftsViewModelTest {
 
         @Test
         fun addGift_withPhotoErrors_setsDialogErrorCount() = runTest {
+            val job = launch { viewModel.uiState.collect { } }
+            advanceUntilIdle()
             val giftRecord = GiftRecord(
                 gift = gift, contactName = "Alice", contactAvatar = null
             )
             coEvery { giftRepository.saveGiftWithPhotos(any(), any()) } returns Pair(1L, 2)
             viewModel.addGift(giftRecord)
-            // Wait for coroutine
-            kotlinx.coroutines.delay(100)
+            // 等待协程完成
+            advanceUntilIdle()
             assertThat(viewModel.uiState.value.dialog.photoSaveErrorCount).isEqualTo(2)
+            job.cancel()
         }
 
         @Test

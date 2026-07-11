@@ -60,7 +60,6 @@ import com.tang.prm.domain.model.ThoughtType
 import com.tang.prm.ui.animation.core.AnimationTokens
 import com.tang.prm.ui.theme.Dimens
 import com.tang.prm.ui.theme.DialogDefaults
-import com.tang.prm.ui.theme.Primary
 import com.tang.prm.ui.theme.SceneOrange
 import com.tang.prm.ui.theme.SignalAmber
 import com.tang.prm.ui.theme.SignalCoral
@@ -326,7 +325,7 @@ internal fun TabSection(selectedTab: Int, onTabSelected: (Int) -> Unit, tabs: Li
             itemsIndexed(tabs, key = { _, title -> title }) { index, title ->
                 val isSelected = selectedTab == index
                 val tabIcon = TabIcons.getOrNull(index)
-                val selectedColor = TabColors.getOrElse(index) { Primary }
+                val selectedColor = TabColors.getOrElse(index) { MaterialTheme.colorScheme.primary }
 
                 Surface(
                     onClick = { onTabSelected(index) },

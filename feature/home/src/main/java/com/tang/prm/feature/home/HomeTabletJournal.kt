@@ -2,10 +2,8 @@ package com.tang.prm.feature.home
 
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
+import com.tang.prm.ui.animation.core.rememberPausableInfiniteFloatLoop
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -28,6 +26,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CardGiftcard
+import androidx.compose.material.icons.filled.Chat
 import androidx.compose.material.icons.filled.Event
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.People
@@ -39,8 +38,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -66,6 +65,7 @@ import coil.request.ImageRequest
 import com.tang.prm.domain.model.Anniversary
 import com.tang.prm.domain.model.Event
 import com.tang.prm.domain.model.IntimacyTier
+import com.tang.prm.ui.animation.primitives.staggeredAppear
 import com.tang.prm.ui.components.AppCard
 import com.tang.prm.ui.components.photo.PhotoPickerConfig
 import com.tang.prm.ui.components.photo.rememberPhotoPickerLauncher
@@ -88,8 +88,11 @@ internal fun JournalTabletHome(
     channels: List<ChannelDef>,
     signalStrengths: Map<Any, Int>,
     onChannelClick: (Any) -> Unit,
+    onDecorPhotoPathChange: (String?) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    // 每次进入界面生成新的触发键，让 staggeredAppear 重新播放
+    val appearKey = remember { Any() }
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -100,12 +103,13 @@ internal fun JournalTabletHome(
         JournalDateBanner(
             greeting = uiState.greeting,
             pendingTodoCount = uiState.pendingTodos.size,
-            upcomingAnniversaryCount = uiState.upcomingAnniversaries.size
+            upcomingAnniversaryCount = uiState.upcomingAnniversaries.size,
+            modifier = Modifier.staggeredAppear(index = 0, triggerKey = appearKey)
         )
 
         // 2. 中间区域：时间线 + 右栏（关系概览 + 装饰卡片）
         Row(
-            modifier = Modifier.fillMaxWidth().height(IntrinsicSize.Min),
+            modifier = Modifier.fillMaxWidth().height(IntrinsicSize.Min).staggeredAppear(index = 1, triggerKey = appearKey),
             horizontalArrangement = Arrangement.spacedBy(14.dp)
         ) {
             JournalTimelineCard(
@@ -127,7 +131,7 @@ internal fun JournalTabletHome(
 
         // 3. 底部区域：快捷入口 + 数据一览 + 装饰组件（三列对齐，填满剩余高度）
         Row(
-            modifier = Modifier.fillMaxWidth().weight(1f),
+            modifier = Modifier.fillMaxWidth().weight(1f).staggeredAppear(index = 2, triggerKey = appearKey),
             horizontalArrangement = Arrangement.spacedBy(14.dp)
         ) {
             JournalQuickAccess(
@@ -144,6 +148,8 @@ internal fun JournalTabletHome(
                 modifier = Modifier.weight(0.34f).fillMaxHeight()
             )
             JournalPhotoCard(
+                photoPath = uiState.decorPhotoPath,
+                onPhotoPathChange = onDecorPhotoPathChange,
                 modifier = Modifier.weight(0.33f).fillMaxHeight()
             )
         }
@@ -590,6 +596,7 @@ private fun JournalQuickAccess(
 
 // ── 数据一览 — 简洁列表式 ──────────────────────────────────────────
 
+@Immutable
 private data class StatItem(
     val label: String,
     val count: Int,
@@ -612,7 +619,7 @@ private fun JournalStatsOverview(
             StatItem("事件", eventCount, SignalGreen, Icons.Default.Event),
             StatItem("礼物", giftCount, SignalCoral, Icons.Default.CardGiftcard),
             StatItem("纪念日", anniversaryCount, SignalPurple, Icons.Default.Favorite),
-            StatItem("对话", conversationCount, SignalAmber, Icons.Default.People)
+            StatItem("对话", conversationCount, SignalAmber, Icons.Default.Chat)
         )
     }
 
@@ -730,32 +737,25 @@ private fun JournalStatsOverview(
 private fun JournalDecorCard(
     modifier: Modifier = Modifier
 ) {
-    val infiniteTransition = rememberInfiniteTransition(label = "aurora")
-    val phase1 by infiniteTransition.animateFloat(
-        initialValue = 0f,
+    val phase1 by rememberPausableInfiniteFloatLoop(
         targetValue = 1f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(8000, easing = LinearEasing),
-            repeatMode = RepeatMode.Restart
-        ),
+        durationMillis = 8000,
+        easing = LinearEasing,
+        repeatMode = RepeatMode.Restart,
         label = "auroraPhase1"
     )
-    val phase2 by infiniteTransition.animateFloat(
-        initialValue = 0f,
+    val phase2 by rememberPausableInfiniteFloatLoop(
         targetValue = 1f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(12000, easing = LinearEasing),
-            repeatMode = RepeatMode.Restart
-        ),
+        durationMillis = 12000,
+        easing = LinearEasing,
+        repeatMode = RepeatMode.Restart,
         label = "auroraPhase2"
     )
-    val phase3 by infiniteTransition.animateFloat(
-        initialValue = 0f,
+    val phase3 by rememberPausableInfiniteFloatLoop(
         targetValue = 1f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(6000, easing = LinearEasing),
-            repeatMode = RepeatMode.Restart
-        ),
+        durationMillis = 6000,
+        easing = LinearEasing,
+        repeatMode = RepeatMode.Restart,
         label = "auroraPhase3"
     )
 
@@ -839,24 +839,20 @@ private fun JournalDecorCard(
 
 // ── 照片展示卡片 — 拍立得风格 ──────────────────────────────────────
 
-private const val PREFS_NAME = "home_decor"
-private const val KEY_PHOTO_PATH = "photo_path"
-
 @Composable
 private fun JournalPhotoCard(
+    photoPath: String?,
+    onPhotoPathChange: (String?) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
-    val prefs = remember { context.getSharedPreferences(PREFS_NAME, 0) }
-    var photoPath by remember { mutableStateOf(prefs.getString(KEY_PHOTO_PATH, null)) }
 
     val launcher = rememberPhotoPickerLauncher(
         config = PhotoPickerConfig(maxCount = 1, prefix = "home_photo")
     ) { result ->
         val path = result.localPaths.firstOrNull()
         if (path != null) {
-            prefs.edit().putString(KEY_PHOTO_PATH, path).apply()
-            photoPath = path
+            onPhotoPathChange(path)
         }
     }
 
@@ -868,7 +864,8 @@ private fun JournalPhotoCard(
                 .clip(RoundedCornerShape(16.dp)),
             contentAlignment = Alignment.Center
         ) {
-            if (photoPath != null) {
+            val currentPath = photoPath
+            if (currentPath != null) {
                 // 拍立得风格 — 照片居中，白色边框，底部留白更宽
                 Column(
                     modifier = Modifier
@@ -888,7 +885,7 @@ private fun JournalPhotoCard(
                     ) {
                         AsyncImage(
                             model = ImageRequest.Builder(context)
-                                .data(File(photoPath!!))
+                                .data(File(currentPath))
                                 .crossfade(true)
                                 .build(),
                             contentDescription = null,

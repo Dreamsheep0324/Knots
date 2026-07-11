@@ -9,10 +9,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.LocalContext
-import com.tang.prm.ui.util.ImageCacheManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.io.File
+import java.io.FileOutputStream
+import java.util.UUID
 
 data class PhotoPickerConfig(
     val maxCount: Int = 1,
@@ -73,16 +75,28 @@ fun rememberPhotoPickerLauncher(
     }
 }
 
+private const val IMAGES_DIR = "app_images"
+
 private suspend fun processUris(
     context: Context,
     uris: List<Uri>,
     prefix: String
 ): PhotoPickerResult = withContext(Dispatchers.IO) {
+    val dir = File(context.filesDir, IMAGES_DIR)
+    if (!dir.exists()) dir.mkdirs()
     var failedCount = 0
     val localPaths = uris.mapNotNull { uri ->
-        val localPath = ImageCacheManager.copyToInternalStorage(context, uri, prefix)
-        if (localPath == null) failedCount++
-        localPath
+        try {
+            val fileName = "${prefix}_${UUID.randomUUID()}.jpg"
+            val file = File(dir, fileName)
+            context.contentResolver.openInputStream(uri)?.use { stream ->
+                FileOutputStream(file).use { out -> stream.copyTo(out) }
+            } ?: run { failedCount++; return@mapNotNull null }
+            file.absolutePath
+        } catch (_: Exception) {
+            failedCount++
+            null
+        }
     }
     PhotoPickerResult(localPaths = localPaths, failedCount = failedCount)
 }

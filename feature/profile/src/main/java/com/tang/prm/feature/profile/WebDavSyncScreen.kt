@@ -90,7 +90,6 @@ import com.tang.prm.ui.components.AppConfirmDialog
 import com.tang.prm.ui.theme.AnniversaryHoliday
 import com.tang.prm.ui.theme.Dimens
 import com.tang.prm.ui.theme.Error
-import com.tang.prm.ui.theme.Primary
 import com.tang.prm.ui.theme.SignalGreen
 import com.tang.prm.ui.theme.SignalSky
 
@@ -99,11 +98,12 @@ fun WebDavSyncScreen(
     onBack: () -> Unit,
     viewModel: WebDavSyncViewModel = hiltViewModel()
 ) {
-    val config by viewModel.config.collectAsStateWithLifecycle()
-    val cloudVersions by viewModel.cloudVersions.collectAsStateWithLifecycle()
-    val syncState by viewModel.syncState.collectAsStateWithLifecycle()
-    val connectionState by viewModel.connectionState.collectAsStateWithLifecycle()
-    val cleanResult by viewModel.cleanResult.collectAsStateWithLifecycle()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val config = uiState.data.config
+    val cloudVersions = uiState.data.cloudVersions
+    val syncState = uiState.dialog.syncState
+    val connectionState = uiState.dialog.connectionState
+    val cleanResult = uiState.dialog.cleanResult
 
     var serverUrl by remember(config.serverUrl) { mutableStateOf(config.serverUrl) }
     var username by remember(config.username) { mutableStateOf(config.username) }
@@ -280,8 +280,8 @@ private fun ConnectionHeroSection(state: ConnectionState, config: WebDavConfig) 
             listOf(SignalGreen.copy(alpha = 0.15f), SignalGreen.copy(alpha = 0.05f))
         )
         is ConnectionState.Testing -> Tuple4(
-            Icons.Default.CloudSync, "正在连接...", Primary,
-            listOf(Primary.copy(alpha = 0.12f), Primary.copy(alpha = 0.03f))
+            Icons.Default.CloudSync, "正在连接...", MaterialTheme.colorScheme.primary,
+            listOf(MaterialTheme.colorScheme.primary.copy(alpha = 0.12f), MaterialTheme.colorScheme.primary.copy(alpha = 0.03f))
         )
         is ConnectionState.Error -> Tuple4(
             Icons.Default.CloudOff, "连接失败", Error,
@@ -379,7 +379,7 @@ private fun WebDavConfigPanel(
                 "服务器配置",
                 style = MaterialTheme.typography.titleSmall,
                 fontWeight = FontWeight.SemiBold,
-                color = Primary,
+                color = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.weight(1f)
             )
             if (!expanded && serverUrl.isNotBlank()) {
@@ -429,7 +429,7 @@ private fun WebDavConfigPanel(
                         checked = trustAllCertificates,
                         onCheckedChange = onTrustAllCertificatesChange,
                         colors = SwitchDefaults.colors(
-                            checkedTrackColor = Primary,
+                            checkedTrackColor = MaterialTheme.colorScheme.primary,
                             checkedThumbColor = Color.White,
                             uncheckedTrackColor = MaterialTheme.colorScheme.surfaceVariant,
                             uncheckedThumbColor = MaterialTheme.colorScheme.onSurfaceVariant
@@ -445,8 +445,8 @@ private fun WebDavConfigPanel(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = if (isConnected) SignalGreen else Primary,
-                        disabledContainerColor = Primary.copy(alpha = 0.35f)
+                        containerColor = if (isConnected) SignalGreen else MaterialTheme.colorScheme.primary,
+                        disabledContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.35f)
                     )
                 ) {
                     if (isTesting) {
@@ -599,19 +599,19 @@ private fun CleanOrphanedImagesButton(
                     .size(40.dp)
                     .background(
                         if (cleanCount != null && cleanCount > 0) SignalGreen.copy(alpha = 0.12f)
-                        else Primary.copy(alpha = 0.12f),
+                        else MaterialTheme.colorScheme.primary.copy(alpha = 0.12f),
                         RoundedCornerShape(10.dp)
                     ),
                 contentAlignment = Alignment.Center
             ) {
                 if (isCleaning) {
-                    CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.5.dp, color = Primary)
+                    CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.5.dp, color = MaterialTheme.colorScheme.primary)
                 } else {
                     Icon(
                         Icons.Default.CleaningServices,
                         contentDescription = null,
                         modifier = Modifier.size(22.dp),
-                        tint = if (cleanCount != null && cleanCount > 0) SignalGreen else Primary
+                        tint = if (cleanCount != null && cleanCount > 0) SignalGreen else MaterialTheme.colorScheme.primary
                     )
                 }
             }
@@ -662,7 +662,7 @@ private fun AutoSyncToggle(
                 modifier = Modifier
                     .size(40.dp)
                     .background(
-                        if (autoSyncOnLaunch) Primary.copy(alpha = 0.12f) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                        if (autoSyncOnLaunch) MaterialTheme.colorScheme.primary.copy(alpha = 0.12f) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
                         RoundedCornerShape(10.dp)
                     ),
                 contentAlignment = Alignment.Center
@@ -671,7 +671,7 @@ private fun AutoSyncToggle(
                     Icons.Default.CloudSync,
                     contentDescription = null,
                     modifier = Modifier.size(22.dp),
-                    tint = if (autoSyncOnLaunch) Primary else MaterialTheme.colorScheme.onSurfaceVariant
+                    tint = if (autoSyncOnLaunch) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
             Spacer(modifier = Modifier.width(14.dp))
@@ -687,7 +687,7 @@ private fun AutoSyncToggle(
                 checked = autoSyncOnLaunch,
                 onCheckedChange = onToggle,
                 colors = SwitchDefaults.colors(
-                    checkedTrackColor = Primary,
+                    checkedTrackColor = MaterialTheme.colorScheme.primary,
                     checkedThumbColor = Color.White,
                     uncheckedTrackColor = MaterialTheme.colorScheme.surfaceVariant,
                     uncheckedThumbColor = MaterialTheme.colorScheme.onSurfaceVariant
@@ -730,7 +730,7 @@ private fun CloudBackupHeader(onRefresh: () -> Unit) {
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text("云端备份", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold, color = Primary)
+        Text("云端备份", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.primary)
         IconButton(onClick = onRefresh, modifier = Modifier.size(32.dp)) {
             Icon(Icons.Default.Refresh, contentDescription = "刷新", modifier = Modifier.size(18.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
         }
@@ -795,7 +795,7 @@ private fun CloudBackupItem(
         }
         Row(horizontalArrangement = Arrangement.spacedBy(0.dp)) {
             IconButton(onClick = onRestore, enabled = !isRestoring, modifier = Modifier.size(36.dp)) {
-                Icon(Icons.Default.Restore, contentDescription = "恢复", modifier = Modifier.size(18.dp), tint = Primary)
+                Icon(Icons.Default.Restore, contentDescription = "恢复", modifier = Modifier.size(18.dp), tint = MaterialTheme.colorScheme.primary)
             }
             IconButton(onClick = onDelete, enabled = !isRestoring, modifier = Modifier.size(36.dp)) {
                 Icon(Icons.Default.Delete, contentDescription = "删除", modifier = Modifier.size(18.dp), tint = MaterialTheme.colorScheme.error.copy(alpha = 0.7f))
@@ -842,7 +842,7 @@ private fun CompactConfigField(
         shape = RoundedCornerShape(10.dp),
         colors = OutlinedTextFieldDefaults.colors(
             unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.4f),
-            focusedBorderColor = Primary,
+            focusedBorderColor = MaterialTheme.colorScheme.primary,
             unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
             focusedContainerColor = Color.Transparent
         )

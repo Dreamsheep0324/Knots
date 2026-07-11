@@ -109,7 +109,7 @@ fun ContactDetailTabletScreen(
             contentAlignment = Alignment.Center
         ) {
             if (uiState.data.isLoading) {
-                CircularProgressIndicator(color = Primary, strokeWidth = 3.dp)
+                CircularProgressIndicator(color = MaterialTheme.colorScheme.primary, strokeWidth = 3.dp)
             }
         }
         return

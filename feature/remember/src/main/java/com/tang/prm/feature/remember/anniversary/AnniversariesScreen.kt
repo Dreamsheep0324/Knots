@@ -42,12 +42,10 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.tang.prm.domain.model.AppStrings
-import com.tang.prm.ui.animation.primitives.staggeredAppear
 import com.tang.prm.ui.components.SearchBar
 import com.tang.prm.ui.navigation.AddAnniversaryRoute
 import com.tang.prm.ui.navigation.AnniversaryDetailRoute
 import com.tang.prm.ui.theme.Dimens
-import com.tang.prm.ui.theme.Primary
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -81,13 +79,13 @@ fun AnniversariesScreen(
                     Box(
                         modifier = Modifier
                             .size(44.dp)
-                            .background(Primary.copy(alpha = 0.1f), CircleShape),
+                            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f), CircleShape),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
                             Icons.Default.Add,
                             contentDescription = "新建纪念日",
-                            tint = Primary,
+                            tint = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.size(24.dp)
                         )
                     }
@@ -118,7 +116,7 @@ fun AnniversariesScreen(
                 Surface(
                     onClick = { viewModel.onTabSelected(index) },
                     shape = RoundedCornerShape(20.dp),
-                    color = if (isSelected) Primary else MaterialTheme.colorScheme.surfaceVariant
+                    color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant
                 ) {
                     Text(
                         text = title,
@@ -141,13 +139,13 @@ fun AnniversariesScreen(
                     Box(
                         modifier = Modifier
                             .size(120.dp)
-                            .background(Primary.copy(alpha = 0.1f), CircleShape),
+                            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f), CircleShape),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
                             Icons.Default.Cake,
                             contentDescription = null,
-                            tint = Primary,
+                            tint = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.size(60.dp)
                         )
                     }
@@ -167,7 +165,7 @@ fun AnniversariesScreen(
                     Spacer(modifier = Modifier.height(24.dp))
                     Button(
                         onClick = { navController.navigate(AddAnniversaryRoute()) },
-                        colors = ButtonDefaults.buttonColors(containerColor = Primary)
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                     ) {
                         Icon(Icons.Default.Add, contentDescription = null)
                         Spacer(modifier = Modifier.width(8.dp))
@@ -186,8 +184,7 @@ fun AnniversariesScreen(
                         anniversary = anniversary,
                         onClick = {
                             navController.navigate(AnniversaryDetailRoute(anniversary.id))
-                        },
-                        modifier = Modifier.staggeredAppear(index = minOf(index, 15))
+                        }
                     )
                 }
                 item { Spacer(modifier = Modifier.height(100.dp).navigationBarsPadding()) }

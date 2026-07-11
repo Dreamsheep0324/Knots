@@ -84,4 +84,8 @@ abstract class RepositoryModule {
     @Binds
     @Singleton
     abstract fun bindWebDavRepository(impl: WebDavRepositoryImpl): WebDavRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindUpdateRepository(impl: UpdateRepositoryImpl): UpdateRepository
 }

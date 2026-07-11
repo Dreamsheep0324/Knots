@@ -30,8 +30,11 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         setContent {
+            // tabletModeEnabled 使用 null 作为 initialValue，避免 DataStore 尚未加载完成时
+            // 以 false 渲染手机 UI，待真实值 true 加载后又切换到平板 UI，造成视觉闪烁
             val themeMode by settingsRepository.themeMode.collectAsStateWithLifecycle(initialValue = ThemeMode.SYSTEM)
-            val tabletModeEnabled by settingsRepository.tabletModeEnabled.collectAsStateWithLifecycle(initialValue = false)
+            val tabletModeEnabled by settingsRepository.tabletModeEnabled.collectAsStateWithLifecycle(initialValue = null)
+
             val darkTheme = when (themeMode) {
                 ThemeMode.LIGHT -> false
                 ThemeMode.DARK -> true
@@ -44,7 +47,11 @@ class MainActivity : ComponentActivity() {
                         modifier = Modifier.fillMaxSize(),
                         color = MaterialTheme.colorScheme.background
                     ) {
-                        TangNavHost(tabletModeEnabled = tabletModeEnabled)
+                        // tabletModeEnabled 尚未加载完成时显示空白背景，避免错误的手机 UI 一闪而过
+                        val enabled = tabletModeEnabled
+                        if (enabled != null) {
+                            TangNavHost(tabletModeEnabled = enabled)
+                        }
                     }
                 }
             }

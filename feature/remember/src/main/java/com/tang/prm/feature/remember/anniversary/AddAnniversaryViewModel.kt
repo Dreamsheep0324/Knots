@@ -44,17 +44,15 @@ class AddAnniversaryViewModel @Inject constructor(
 
     private fun loadContacts() {
         viewModelScope.launch {
-            contactRepository.getAllContacts().collect { contacts ->
-                _uiState.update { it.copy(contacts = contacts) }
-            }
+            val contacts = contactRepository.getAllContacts().first()
+            _uiState.update { it.copy(contacts = contacts) }
         }
     }
 
     private fun loadAnniversaryTypes() {
         viewModelScope.launch {
-            customTypeRepository.getTypesByCategory(CustomCategories.ANNIVERSARY_TYPE).collect { types ->
-                _uiState.update { it.copy(anniversaryTypes = types) }
-            }
+            val types = customTypeRepository.getTypesByCategory(CustomCategories.ANNIVERSARY_TYPE).first()
+            _uiState.update { it.copy(anniversaryTypes = types) }
         }
     }
 

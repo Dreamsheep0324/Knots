@@ -62,7 +62,6 @@ import com.tang.prm.domain.model.Contact
 import com.tang.prm.domain.model.CustomType
 import com.tang.prm.ui.animation.core.AnimationTokens
 import com.tang.prm.ui.theme.InsightPink
-import com.tang.prm.ui.theme.Primary
 import com.tang.prm.ui.theme.SignalAmber
 import com.tang.prm.ui.theme.SignalPurple
 import com.tang.prm.ui.theme.getEmotionColor
@@ -251,7 +250,7 @@ internal fun LinedPaperField(value: String, onValueChange: (String) -> Unit, pla
             placeholder = { Text(placeholder, color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f), fontStyle = FontStyle.Italic) },
             textStyle = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.onSurface, lineHeight = 26.sp),
             minLines = minLines,
-            colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = Color.Transparent, unfocusedBorderColor = Color.Transparent, cursorColor = Primary))
+            colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = Color.Transparent, unfocusedBorderColor = Color.Transparent, cursorColor = MaterialTheme.colorScheme.primary))
     }
 }
 
@@ -264,8 +263,8 @@ internal fun PolaroidContact(contact: Contact, onRemove: () -> Unit) {
                 if (contact.avatar != null) {
                     AsyncImage(model = contact.avatar, contentDescription = null, modifier = Modifier.size(50.dp).clip(RoundedCornerShape(4.dp)), contentScale = ContentScale.Crop)
                 } else {
-                    Box(modifier = Modifier.size(50.dp).clip(RoundedCornerShape(4.dp)).background(Primary.copy(alpha = AnimationTokens.Alpha.faint)), contentAlignment = Alignment.Center) {
-                        Text(contact.name.firstOrNull()?.toString() ?: "?", style = MaterialTheme.typography.titleSmall, color = Primary, fontWeight = FontWeight.Bold)
+                    Box(modifier = Modifier.size(50.dp).clip(RoundedCornerShape(4.dp)).background(MaterialTheme.colorScheme.primary.copy(alpha = AnimationTokens.Alpha.faint)), contentAlignment = Alignment.Center) {
+                        Text(contact.name.firstOrNull()?.toString() ?: "?", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
                     }
                 }
                 IconButton(onClick = onRemove, modifier = Modifier.align(Alignment.TopEnd).size(16.dp).background(Color.Black.copy(alpha = 0.35f), CircleShape)) {

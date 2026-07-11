@@ -19,10 +19,17 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-data class ChatDetailUiState(
+data class ChatDetailDataState(
     val event: Event? = null,
     val isLoading: Boolean = true,
     val isFavorite: Boolean = false
+)
+data class ChatDetailDialogState(
+    val showDeleteConfirm: Boolean = false
+)
+data class ChatDetailUiState(
+    val data: ChatDetailDataState = ChatDetailDataState(),
+    val dialog: ChatDetailDialogState = ChatDetailDialogState()
 )
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -34,32 +41,46 @@ class ChatDetailViewModel @Inject constructor(
 ) : ViewModel() {
 
     private val _eventIdFlow = MutableStateFlow(savedStateHandle["eventId"] ?: 0L)
+    private val _dialogState = MutableStateFlow(ChatDetailDialogState())
 
     val uiState: StateFlow<ChatDetailUiState> = _eventIdFlow.flatMapLatest { eventId ->
         if (eventId == 0L) {
-            flowOf(ChatDetailUiState())
+            flowOf(ChatDetailDataState())
         } else {
             combine(
                 eventRepository.getEventById(eventId),
                 favoriteToggleUseCase.isFavorite(SourceTypes.DIALOG, eventId)
             ) { event, isFavorite ->
-                ChatDetailUiState(
+                ChatDetailDataState(
                     event = event,
                     isLoading = false,
                     isFavorite = isFavorite
                 )
             }
         }
+    }.combine(_dialogState) { data, dialog ->
+        ChatDetailUiState(data = data, dialog = dialog)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), ChatDetailUiState())
 
     /** 平板双栏模式：选中项变化时调用，触发详情刷新。 */
     fun setEventId(id: Long) {
-        _eventIdFlow.value = id
+        if (_eventIdFlow.value != id) {
+            _dialogState.value = ChatDetailDialogState()
+            _eventIdFlow.value = id
+        }
+    }
+
+    fun showDeleteConfirm() {
+        _dialogState.value = ChatDetailDialogState(showDeleteConfirm = true)
+    }
+
+    fun hideDeleteConfirm() {
+        _dialogState.value = _dialogState.value.copy(showDeleteConfirm = false)
     }
 
     fun toggleFavorite() {
         viewModelScope.launch {
-            val event = uiState.value.event ?: return@launch
+            val event = uiState.value.data.event ?: return@launch
             val contactName = event.participants?.firstOrNull()?.name ?: "对话"
             favoriteToggleUseCase(
                 type = SourceTypes.DIALOG,
@@ -72,7 +93,7 @@ class ChatDetailViewModel @Inject constructor(
 
     fun deleteEvent() {
         viewModelScope.launch {
-            uiState.value.event?.let { event ->
+            uiState.value.data.event?.let { event ->
                 eventRepository.deleteEvent(event.id)
             }
         }

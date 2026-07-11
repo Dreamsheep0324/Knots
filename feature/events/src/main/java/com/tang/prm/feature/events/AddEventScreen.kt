@@ -48,7 +48,6 @@ import com.tang.prm.ui.components.TagSelector
 import com.tang.prm.ui.components.TagSelectorMode
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.tang.prm.ui.theme.InsightPink
-import com.tang.prm.ui.theme.Primary
 import com.tang.prm.ui.theme.SignalAmber
 import com.tang.prm.ui.theme.SignalGreen
 import com.tang.prm.ui.theme.SignalPurple
@@ -178,10 +177,10 @@ private fun EventHeaderCard(
                 placeholder = { Text("记录今天的故事...", color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f), fontSize = 16.sp, fontWeight = FontWeight.Bold) },
                 textStyle = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface),
                 singleLine = true,
-                colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = Color.Transparent, unfocusedBorderColor = Color.Transparent, cursorColor = Primary))
+                colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = Color.Transparent, unfocusedBorderColor = Color.Transparent, cursorColor = MaterialTheme.colorScheme.primary))
             Spacer(modifier = Modifier.height(6.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(Icons.Default.CalendarToday, contentDescription = null, tint = Primary, modifier = Modifier.size(13.dp))
+                Icon(Icons.Default.CalendarToday, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(13.dp))
                 Spacer(modifier = Modifier.width(5.dp))
                 Text(DateUtils.formatMonthDayWeekday(uiState.time),
                     style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -225,7 +224,7 @@ private fun EventFormSections(
                 showIconPicker = true)
         }
 
-        SectionCard(title = "时间和地点", icon = Icons.Default.CalendarToday, iconTint = Primary) {
+        SectionCard(title = "时间和地点", icon = Icons.Default.CalendarToday, iconTint = MaterialTheme.colorScheme.primary) {
             Row(modifier = Modifier.fillMaxWidth().clickable { onShowDatePicker(true) }.padding(vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
                 Icon(Icons.Default.Schedule, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(16.dp))
                 Spacer(modifier = Modifier.width(8.dp))
@@ -241,7 +240,7 @@ private fun EventFormSections(
                 OutlinedTextField(value = uiState.location, onValueChange = viewModel::updateLocation, modifier = Modifier.weight(1f),
                     placeholder = { Text("添加地点...", color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)) },
                     textStyle = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.onSurface), singleLine = true,
-                    colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = Color.Transparent, unfocusedBorderColor = Color.Transparent, cursorColor = Primary))
+                    colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = Color.Transparent, unfocusedBorderColor = Color.Transparent, cursorColor = MaterialTheme.colorScheme.primary))
             }
         }
 
@@ -269,7 +268,7 @@ private fun EventFormSections(
             }
         }
 
-        SectionCard(title = "文字描述", icon = Icons.Default.Edit, iconTint = Primary) {
+        SectionCard(title = "文字描述", icon = Icons.Default.Edit, iconTint = MaterialTheme.colorScheme.primary) {
             LinedPaperField(value = uiState.description, onValueChange = viewModel::updateDescription, placeholder = "描述这次事件...", minLines = 4)
         }
 

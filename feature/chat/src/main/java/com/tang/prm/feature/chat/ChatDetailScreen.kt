@@ -21,7 +21,6 @@ import com.tang.prm.ui.components.DeleteConfirmDialog
 import com.tang.prm.ui.navigation.EditChatRoute
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.tang.prm.ui.theme.FavoriteGold
-import com.tang.prm.ui.theme.Primary
 
 /**
  * 平板双栏模式：对话详情内容（无 Scaffold/TopBar）。
@@ -37,24 +36,23 @@ fun ChatDetailContent(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    val contact = uiState.event?.participants?.firstOrNull()
-    val intimacyColor = contact?.let { getIntimacyColor(it.intimacyScore) } ?: Primary
-    var showDeleteDialog by remember { mutableStateOf(false) }
+    val contact = uiState.data.event?.participants?.firstOrNull()
+    val intimacyColor = contact?.let { getIntimacyColor(it.intimacyScore) } ?: MaterialTheme.colorScheme.primary
 
     LaunchedEffect(eventId) {
         viewModel.setEventId(eventId)
     }
 
-    if (showDeleteDialog) {
+    if (uiState.dialog.showDeleteConfirm) {
         DeleteConfirmDialog(
             title = "删除对话",
             message = "确定要删除这条对话记录吗？此操作不可撤销。",
-            onConfirm = { viewModel.deleteEvent(); onDelete() },
-            onDismiss = { showDeleteDialog = false }
+            onConfirm = { viewModel.deleteEvent(); viewModel.hideDeleteConfirm(); onDelete() },
+            onDismiss = { viewModel.hideDeleteConfirm() }
         )
     }
 
-    uiState.event?.let { event ->
+    uiState.data.event?.let { event ->
         val dialogues = parseDialogue(event, contact?.name)
 
         Column(
@@ -73,12 +71,12 @@ fun ChatDetailContent(
                 }
                 IconButton(onClick = { viewModel.toggleFavorite() }) {
                     Icon(
-                        if (uiState.isFavorite) Icons.Default.Bookmark else Icons.Default.BookmarkBorder,
+                        if (uiState.data.isFavorite) Icons.Default.Bookmark else Icons.Default.BookmarkBorder,
                         contentDescription = "收藏",
-                        tint = if (uiState.isFavorite) FavoriteGold else MaterialTheme.colorScheme.onSurfaceVariant
+                        tint = if (uiState.data.isFavorite) FavoriteGold else MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
-                IconButton(onClick = { showDeleteDialog = true }) {
+                IconButton(onClick = { viewModel.showDeleteConfirm() }) {
                     Icon(Icons.Default.Delete, contentDescription = "删除", tint = MaterialTheme.colorScheme.error)
                 }
             }
@@ -99,9 +97,9 @@ fun ChatDetailContent(
             }
         }
     } ?: run {
-        if (uiState.isLoading) {
+        if (uiState.data.isLoading) {
             Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator(color = Primary, strokeWidth = 3.dp)
+                CircularProgressIndicator(color = MaterialTheme.colorScheme.primary, strokeWidth = 3.dp)
             }
         }
     }
@@ -115,16 +113,15 @@ fun ChatDetailScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    val contact = uiState.event?.participants?.firstOrNull()
-    val intimacyColor = contact?.let { getIntimacyColor(it.intimacyScore) } ?: Primary
-    var showDeleteDialog by remember { mutableStateOf(false) }
+    val contact = uiState.data.event?.participants?.firstOrNull()
+    val intimacyColor = contact?.let { getIntimacyColor(it.intimacyScore) } ?: MaterialTheme.colorScheme.primary
 
-    if (showDeleteDialog) {
+    if (uiState.dialog.showDeleteConfirm) {
         DeleteConfirmDialog(
             title = "删除对话",
             message = "确定要删除这条对话记录吗？此操作不可撤销。",
-            onConfirm = { viewModel.deleteEvent(); navController.popBackStack() },
-            onDismiss = { showDeleteDialog = false }
+            onConfirm = { viewModel.deleteEvent(); viewModel.hideDeleteConfirm(); navController.popBackStack() },
+            onDismiss = { viewModel.hideDeleteConfirm() }
         )
     }
 
@@ -150,12 +147,12 @@ fun ChatDetailScreen(
                     }
                     IconButton(onClick = { viewModel.toggleFavorite() }) {
                         Icon(
-                            if (uiState.isFavorite) Icons.Default.Bookmark else Icons.Default.BookmarkBorder,
+                            if (uiState.data.isFavorite) Icons.Default.Bookmark else Icons.Default.BookmarkBorder,
                             contentDescription = "收藏",
-                            tint = if (uiState.isFavorite) FavoriteGold else MaterialTheme.colorScheme.onSurface
+                            tint = if (uiState.data.isFavorite) FavoriteGold else MaterialTheme.colorScheme.onSurface
                         )
                     }
-                    IconButton(onClick = { showDeleteDialog = true }) {
+                    IconButton(onClick = { viewModel.showDeleteConfirm() }) {
                         Icon(Icons.Default.Delete, contentDescription = "删除", tint = MaterialTheme.colorScheme.onSurface)
                     }
                 },
@@ -164,7 +161,7 @@ fun ChatDetailScreen(
         },
         containerColor = MaterialTheme.colorScheme.surface
     ) { padding ->
-        uiState.event?.let { event ->
+        uiState.data.event?.let { event ->
             val dialogues = parseDialogue(event, contact?.name)
 
             Column(
@@ -191,9 +188,9 @@ fun ChatDetailScreen(
                 }
             }
         } ?: run {
-            if (uiState.isLoading) {
+            if (uiState.data.isLoading) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator(color = Primary, strokeWidth = 3.dp)
+                    CircularProgressIndicator(color = MaterialTheme.colorScheme.primary, strokeWidth = 3.dp)
                 }
             }
         }

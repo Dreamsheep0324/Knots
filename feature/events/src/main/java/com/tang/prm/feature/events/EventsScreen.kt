@@ -30,11 +30,12 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.tang.prm.ui.animation.core.AnimationTokens
 import com.tang.prm.ui.animation.primitives.staggeredAppear
 import com.tang.prm.ui.components.SearchBar
+import com.tang.prm.ui.components.SegmentedOption
+import com.tang.prm.ui.components.SegmentedToggleButton
 import com.tang.prm.ui.common.SearchState
 import com.tang.prm.ui.navigation.AddEventRoute
 import com.tang.prm.ui.navigation.EventDetailRoute
 import com.tang.prm.ui.theme.Dimens
-import com.tang.prm.ui.theme.Primary
 import com.tang.prm.ui.theme.SignalGreen
 import com.tang.prm.ui.theme.SignalPurple
 import com.tang.prm.ui.theme.toComposeColor
@@ -48,9 +49,9 @@ fun EventsScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val searchState by viewModel.searchState.collectAsStateWithLifecycle()
-    val viewModes = listOf(
-        "list" to "列表",
-        "timeline" to "时间线"
+    val viewModeOptions = listOf(
+        SegmentedOption("list", Icons.AutoMirrored.Filled.ViewList, "列表"),
+        SegmentedOption("timeline", Icons.Default.Timeline, "时间线")
     )
 
     Column(
@@ -67,43 +68,23 @@ fun EventsScreen(
             },
             actions = {
                 if (!isTabletLayout) {
-                    Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                        viewModes.forEach { (key, label) ->
-                            val selected = uiState.data.viewMode == key
-                            Box(
-                                modifier = Modifier
-                                    .size(36.dp)
-                                    .background(
-                                        if (selected) Primary else MaterialTheme.colorScheme.surfaceVariant,
-                                        RoundedCornerShape(8.dp)
-                                    )
-                                    .clickable { viewModel.onViewModeChange(key) },
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Icon(
-                                    when (key) {
-                                        "list" -> Icons.AutoMirrored.Filled.ViewList
-                                        else -> Icons.Default.Timeline
-                                    },
-                                    contentDescription = label,
-                                    tint = if (selected) Color.White else MaterialTheme.colorScheme.onSurfaceVariant,
-                                    modifier = Modifier.size(20.dp)
-                                )
-                            }
-                        }
-                    }
+                    SegmentedToggleButton(
+                        options = viewModeOptions,
+                        selectedKey = uiState.data.viewMode,
+                        onSelectionChange = viewModel::onViewModeChange
+                    )
                 }
                 IconButton(onClick = { navController.navigate(AddEventRoute()) }) {
                     Box(
                         modifier = Modifier
                             .size(40.dp)
-                            .background(Primary.copy(alpha = 0.1f), CircleShape),
+                            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f), CircleShape),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
                             Icons.Default.Add,
                             contentDescription = "新建事件",
-                            tint = Primary,
+                            tint = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.size(22.dp)
                         )
                     }
@@ -143,7 +124,7 @@ fun EventsScreen(
                     Surface(
                         onClick = { viewModel.selectType(null) },
                         shape = RoundedCornerShape(20.dp),
-                        color = if (isAllSelected) Primary else MaterialTheme.colorScheme.surfaceVariant
+                        color = if (isAllSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant
                     ) {
                         Text(
                             text = AppStrings.Tabs.ALL,
@@ -159,7 +140,7 @@ fun EventsScreen(
                     Surface(
                         onClick = { viewModel.selectType(eventType.name) },
                         shape = RoundedCornerShape(20.dp),
-                        color = if (isSelected) Primary else MaterialTheme.colorScheme.surfaceVariant
+                        color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant
                     ) {
                         Text(
                             text = eventType.name,
@@ -178,13 +159,13 @@ fun EventsScreen(
                         Box(
                             modifier = Modifier
                                 .size(100.dp)
-                                .background(Primary.copy(alpha = AnimationTokens.Alpha.faint), CircleShape),
+                                .background(MaterialTheme.colorScheme.primary.copy(alpha = AnimationTokens.Alpha.faint), CircleShape),
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
                                 Icons.Default.Event,
                                 contentDescription = null,
-                                tint = Primary,
+                                tint = MaterialTheme.colorScheme.primary,
                                 modifier = Modifier.size(48.dp)
                             )
                         }
@@ -204,7 +185,7 @@ fun EventsScreen(
                         Spacer(modifier = Modifier.height(20.dp))
                         Button(
                             onClick = { navController.navigate(AddEventRoute()) },
-                            colors = ButtonDefaults.buttonColors(containerColor = Primary),
+                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
                             shape = RoundedCornerShape(12.dp)
                         ) {
                             Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(18.dp))
@@ -225,8 +206,7 @@ fun EventsScreen(
                                 EventCard(
                                     event = event,
                                     eventTypes = uiState.data.eventTypes,
-                                    onClick = { navController.navigate(EventDetailRoute(event.id)) },
-                                    modifier = Modifier.staggeredAppear(index = minOf(index, 15))
+                                    onClick = { navController.navigate(EventDetailRoute(event.id)) }
                                 )
                             }
                             item { Spacer(modifier = Modifier.height(100.dp).navigationBarsPadding()) }
@@ -260,6 +240,8 @@ private fun TabletCalendarEventsContent(
     onDateSelected: (Long) -> Unit,
     onEventClick: (com.tang.prm.domain.model.Event) -> Unit
 ) {
+    // 每次进入界面生成新的触发键，让 staggeredAppear 重新播放
+    val appearKey = remember { Any() }
     Row(modifier = Modifier.fillMaxSize()) {
         // ── 左面板：日历 + 统计 + 当日事件 ──
         Column(
@@ -268,6 +250,7 @@ private fun TabletCalendarEventsContent(
                 .fillMaxHeight()
                 .background(MaterialTheme.colorScheme.surface)
                 .verticalScroll(rememberScrollState())
+                .staggeredAppear(index = 0, triggerKey = appearKey)
         ) {
             CalendarHeader(
                 monthOffset = uiState.data.calendarMonthOffset,
@@ -302,6 +285,7 @@ private fun TabletCalendarEventsContent(
                 .weight(1f)
                 .fillMaxHeight()
                 .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.3f))
+                .staggeredAppear(index = 1, triggerKey = appearKey)
         ) {
             SearchBar(
                 query = searchState.query,

@@ -1,6 +1,7 @@
 package com.tang.prm.ui.theme
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Immutable
 import com.tang.prm.domain.model.EventType
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -8,6 +9,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Chat
 import androidx.compose.material.icons.filled.*
 
+@Immutable
 data class EventTypeStyle(
     val accentColor: Color,
     val lightColor: Color,

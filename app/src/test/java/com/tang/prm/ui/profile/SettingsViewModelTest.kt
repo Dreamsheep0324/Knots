@@ -8,6 +8,7 @@ import com.tang.prm.domain.repository.SettingsRepository
 import com.tang.prm.feature.profile.SettingsViewModel
 import com.tang.prm.feature.profile.TestConnectionState
 import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
@@ -15,6 +16,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
@@ -72,30 +74,22 @@ class SettingsViewModelTest {
     @Test
     fun setThemeModeCallsRepository() = runTest {
         viewModel.setThemeMode(ThemeMode.DARK)
-        coEvery { settingsRepository.setThemeMode(ThemeMode.DARK) }
+        coVerify { settingsRepository.setThemeMode(ThemeMode.DARK) }
     }
 
     @Test
-    fun testConnectionSuccess() {
+    fun testConnectionSuccess() = runTest {
         val vm = SettingsViewModel(settingsRepository, FakeAiRepository(Result.success("OK")))
         vm.testConnection()
-        // testConnection() runs on Dispatchers.IO, poll until state changes
-        val deadline = System.currentTimeMillis() + 3000
-        while (vm.testState.value !is TestConnectionState.Success && System.currentTimeMillis() < deadline) {
-            Thread.sleep(50)
-        }
+        advanceUntilIdle()
         assertThat(vm.testState.value).isInstanceOf(TestConnectionState.Success::class.java)
     }
 
     @Test
-    fun testConnectionError() {
+    fun testConnectionError() = runTest {
         val vm = SettingsViewModel(settingsRepository, FakeAiRepository(Result.failure(Exception("fail"))))
         vm.testConnection()
-        // testConnection() runs on Dispatchers.IO, poll until state changes
-        val deadline = System.currentTimeMillis() + 3000
-        while (vm.testState.value !is TestConnectionState.Error && System.currentTimeMillis() < deadline) {
-            Thread.sleep(50)
-        }
+        advanceUntilIdle()
         assertThat(vm.testState.value).isInstanceOf(TestConnectionState.Error::class.java)
     }
 

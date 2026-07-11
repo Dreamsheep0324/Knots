@@ -7,7 +7,7 @@ import com.tang.prm.domain.model.*
 import com.tang.prm.domain.usecase.ContactDetailAggregationUseCase
 import com.tang.prm.domain.usecase.FavoriteToggleUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Job
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
@@ -44,6 +44,7 @@ sealed class ContactDetailEvent {
     object ContactDeleted : ContactDetailEvent()
 }
 
+@OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class ContactDetailViewModel @Inject constructor(
     private val aggregationUseCase: ContactDetailAggregationUseCase,
@@ -51,36 +52,14 @@ class ContactDetailViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
-    private var contactId: Long = savedStateHandle.get<Long>("contactId") ?: 0L
-    private var loadJob: Job? = null
+    private val _contactId = MutableStateFlow(savedStateHandle.get<Long>("contactId") ?: 0L)
+    private val _dialogState = MutableStateFlow(ContactDetailDialogState())
 
-    private val _uiState = MutableStateFlow(ContactDetailUiState())
-    val uiState: StateFlow<ContactDetailUiState> = _uiState.asStateFlow()
-
-    private val _events = Channel<ContactDetailEvent>()
-    val events = _events.receiveAsFlow()
-
-    init {
-        loadContactDetail()
-    }
-
-    /** 平板双栏模式：选中项变化时调用，触发详情刷新。 */
-    fun setContactId(id: Long) {
-        if (contactId != id) {
-            contactId = id
-            _uiState.update { ContactDetailUiState(data = ContactDetailDataState(isLoading = true)) }
-            loadContactDetail()
-        }
-    }
-
-    private fun loadContactDetail() {
-        loadJob?.cancel()
-        loadJob = viewModelScope.launch {
-            _uiState.update { it.copy(data = it.data.copy(isLoading = true)) }
-
-            aggregationUseCase.getContactDetail(contactId).collect { data ->
-                _uiState.update { it.copy(
-                    data = it.data.copy(
+    val uiState: StateFlow<ContactDetailUiState> = combine(
+        _contactId.flatMapLatest { id ->
+            aggregationUseCase.getContactDetail(id)
+                .map { data ->
+                    ContactDetailDataState(
                         contact = data.contact,
                         events = data.events,
                         anniversaries = data.anniversaries,
@@ -88,34 +67,52 @@ class ContactDetailViewModel @Inject constructor(
                         gifts = data.gifts,
                         thoughts = data.thoughts,
                         favoriteIds = data.favoriteIds,
+                        isLoading = data.isLoading,
                         hobbyOptions = data.hobbyOptions,
                         habitOptions = data.habitOptions,
                         dietOptions = data.dietOptions,
                         skillOptions = data.skillOptions,
                         eventTypes = data.eventTypes,
-                        relationshipTypes = data.relationshipTypes,
-                        isLoading = data.isLoading
+                        relationshipTypes = data.relationshipTypes
                     )
-                )}
-            }
+                }
+                .onStart { emit(ContactDetailDataState(isLoading = true)) }
+        },
+        _dialogState
+    ) { data, dialog ->
+        ContactDetailUiState(data = data, dialog = dialog)
+    }.stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(5000),
+        ContactDetailUiState(data = ContactDetailDataState(isLoading = true))
+    )
+
+    private val _events = Channel<ContactDetailEvent>(Channel.BUFFERED)
+    val events = _events.receiveAsFlow()
+
+    /** 平板双栏模式：选中项变化时调用，触发详情刷新。 */
+    fun setContactId(id: Long) {
+        if (_contactId.value != id) {
+            _dialogState.value = ContactDetailDialogState()
+            _contactId.value = id
         }
     }
 
     fun onTabSelected(tabIndex: Int) {
-        _uiState.update { it.copy(dialog = it.dialog.copy(selectedTab = tabIndex)) }
+        _dialogState.update { it.copy(selectedTab = tabIndex) }
     }
 
     fun showDeleteDialog() {
-        _uiState.update { it.copy(dialog = it.dialog.copy(showDeleteDialog = true)) }
+        _dialogState.update { it.copy(showDeleteDialog = true) }
     }
 
     fun hideDeleteDialog() {
-        _uiState.update { it.copy(dialog = it.dialog.copy(showDeleteDialog = false)) }
+        _dialogState.update { it.copy(showDeleteDialog = false) }
     }
 
     fun deleteContact() {
         viewModelScope.launch {
-            aggregationUseCase.deleteContact(contactId)
+            aggregationUseCase.deleteContact(_contactId.value)
             _events.send(ContactDetailEvent.ContactDeleted)
         }
     }

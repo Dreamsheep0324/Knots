@@ -14,7 +14,9 @@ import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
@@ -62,23 +64,23 @@ class WebDavSyncViewModelTest {
 
         @Test
         fun syncState_isIdle() {
-            assertThat(viewModel.syncState.value).isInstanceOf(SyncState.Idle::class.java)
+            assertThat(viewModel.uiState.value.dialog.syncState).isInstanceOf(SyncState.Idle::class.java)
         }
 
         @Test
         fun connectionState_isIdle_whenConfigEmpty() {
             // 空配置不触发自动测试连接
-            assertThat(viewModel.connectionState.value).isInstanceOf(ConnectionState.Idle::class.java)
+            assertThat(viewModel.uiState.value.dialog.connectionState).isInstanceOf(ConnectionState.Idle::class.java)
         }
 
         @Test
         fun cloudVersions_isEmptyInitially() {
-            assertThat(viewModel.cloudVersions.value).isEmpty()
+            assertThat(viewModel.uiState.value.data.cloudVersions).isEmpty()
         }
 
         @Test
         fun cleanResult_isNullInitially() {
-            assertThat(viewModel.cleanResult.value).isNull()
+            assertThat(viewModel.uiState.value.dialog.cleanResult).isNull()
         }
     }
 
@@ -88,25 +90,31 @@ class WebDavSyncViewModelTest {
 
         @Test
         fun success_setsConnectionStateToSuccess() = runTest {
+            backgroundScope.launch { viewModel.uiState.collect { } }
             coEvery { webDavSyncUseCase.testConnection() } returns ConnectionTestResult.Success
             viewModel.testConnection()
-            assertThat(viewModel.connectionState.value).isInstanceOf(ConnectionState.Success::class.java)
+            advanceUntilIdle()
+            assertThat(viewModel.uiState.value.dialog.connectionState).isInstanceOf(ConnectionState.Success::class.java)
         }
 
         @Test
         fun error_setsConnectionStateToError() = runTest {
+            backgroundScope.launch { viewModel.uiState.collect { } }
             coEvery { webDavSyncUseCase.testConnection() } returns ConnectionTestResult.Error("网络错误")
             viewModel.testConnection()
-            assertThat(viewModel.connectionState.value).isInstanceOf(ConnectionState.Error::class.java)
-            assertThat((viewModel.connectionState.value as ConnectionState.Error).message).isEqualTo("网络错误")
+            advanceUntilIdle()
+            assertThat(viewModel.uiState.value.dialog.connectionState).isInstanceOf(ConnectionState.Error::class.java)
+            assertThat((viewModel.uiState.value.dialog.connectionState as ConnectionState.Error).message).isEqualTo("网络错误")
         }
 
         @Test
         fun setsTestingStateBeforeResult() = runTest {
+            backgroundScope.launch { viewModel.uiState.collect { } }
             coEvery { webDavSyncUseCase.testConnection() } returns ConnectionTestResult.Success
             viewModel.testConnection()
+            advanceUntilIdle()
             // After completion, should be Success (Testing is transient)
-            assertThat(viewModel.connectionState.value).isInstanceOf(ConnectionState.Success::class.java)
+            assertThat(viewModel.uiState.value.dialog.connectionState).isInstanceOf(ConnectionState.Success::class.java)
         }
     }
 
@@ -115,9 +123,10 @@ class WebDavSyncViewModelTest {
     inner class ResetConnectionTest {
 
         @Test
-        fun resetsToIdle() {
+        fun resetsToIdle() = runTest {
+            backgroundScope.launch { viewModel.uiState.collect { } }
             viewModel.resetConnectionState()
-            assertThat(viewModel.connectionState.value).isInstanceOf(ConnectionState.Idle::class.java)
+            assertThat(viewModel.uiState.value.dialog.connectionState).isInstanceOf(ConnectionState.Idle::class.java)
         }
     }
 
@@ -127,6 +136,7 @@ class WebDavSyncViewModelTest {
 
         @Test
         fun success_setsUploadSuccessState() = runTest {
+            backgroundScope.launch { viewModel.uiState.collect { } }
             val results = listOf<SyncResult>(
                 SyncResult.UploadProgress("上传中", 5, 10, "正在上传"),
                 SyncResult.UploadSuccess("backup.zip", 5, 2)
@@ -136,9 +146,9 @@ class WebDavSyncViewModelTest {
 
             viewModel.uploadBackup()
 
-            // Wait for flow collection
-            kotlinx.coroutines.delay(200)
-            val state = viewModel.syncState.value
+            // 等待 flow collection 完成
+            advanceUntilIdle()
+            val state = viewModel.uiState.value.dialog.syncState
             assertThat(state).isInstanceOf(SyncState.UploadSuccess::class.java)
             val success = state as SyncState.UploadSuccess
             assertThat(success.fileName).isEqualTo("backup.zip")
@@ -148,11 +158,12 @@ class WebDavSyncViewModelTest {
 
         @Test
         fun error_setsErrorState() = runTest {
+            backgroundScope.launch { viewModel.uiState.collect { } }
             coEvery { webDavSyncUseCase.uploadBackup() } returns flowOf(SyncResult.Error("上传失败"))
             viewModel.uploadBackup()
 
-            kotlinx.coroutines.delay(200)
-            val state = viewModel.syncState.value
+            advanceUntilIdle()
+            val state = viewModel.uiState.value.dialog.syncState
             assertThat(state).isInstanceOf(SyncState.Error::class.java)
             assertThat((state as SyncState.Error).message).isEqualTo("上传失败")
         }
@@ -164,6 +175,7 @@ class WebDavSyncViewModelTest {
 
         @Test
         fun success_setsDownloadSuccessState() = runTest {
+            backgroundScope.launch { viewModel.uiState.collect { } }
             val results = listOf<SyncResult>(
                 SyncResult.DownloadProgress("下载中", 3, 5, "正在下载"),
                 SyncResult.DownloadSuccess("backup.zip", 3, 1)
@@ -172,8 +184,8 @@ class WebDavSyncViewModelTest {
 
             viewModel.downloadBackup("backup.zip")
 
-            kotlinx.coroutines.delay(200)
-            val state = viewModel.syncState.value
+            advanceUntilIdle()
+            val state = viewModel.uiState.value.dialog.syncState
             assertThat(state).isInstanceOf(SyncState.DownloadSuccess::class.java)
             val success = state as SyncState.DownloadSuccess
             assertThat(success.fileName).isEqualTo("backup.zip")
@@ -182,6 +194,7 @@ class WebDavSyncViewModelTest {
 
         @Test
         fun partialSuccess_setsPartialSuccessState() = runTest {
+            backgroundScope.launch { viewModel.uiState.collect { } }
             val results = listOf<SyncResult>(
                 SyncResult.PartialSuccess("backup.zip", 3, 1, 1)
             )
@@ -189,8 +202,8 @@ class WebDavSyncViewModelTest {
 
             viewModel.downloadBackup("backup.zip")
 
-            kotlinx.coroutines.delay(200)
-            val state = viewModel.syncState.value
+            advanceUntilIdle()
+            val state = viewModel.uiState.value.dialog.syncState
             assertThat(state).isInstanceOf(SyncState.PartialSuccess::class.java)
             val partial = state as SyncState.PartialSuccess
             assertThat(partial.succeeded).isEqualTo(3)
@@ -204,6 +217,7 @@ class WebDavSyncViewModelTest {
 
         @Test
         fun success_removesFromCloudVersions() = runTest {
+            backgroundScope.launch { viewModel.uiState.collect { } }
             val versions = listOf(
                 CloudBackupVersion(fileName = "backup1.zip", fileSize = 1024, lastModified = "2024-01-01", displayName = "备份1"),
                 CloudBackupVersion(fileName = "backup2.zip", fileSize = 2048, lastModified = "2024-01-02", displayName = "备份2")
@@ -211,31 +225,32 @@ class WebDavSyncViewModelTest {
             coEvery { webDavSyncUseCase.listRemoteBackups() } returns versions
             viewModel.refreshCloudVersions()
 
-            kotlinx.coroutines.delay(100)
+            advanceUntilIdle()
 
             coEvery { webDavSyncUseCase.deleteRemoteBackup("backup1.zip") } returns true
             viewModel.deleteRemoteBackup("backup1.zip")
 
-            kotlinx.coroutines.delay(100)
-            assertThat(viewModel.cloudVersions.value).hasSize(1)
-            assertThat(viewModel.cloudVersions.value[0].fileName).isEqualTo("backup2.zip")
+            advanceUntilIdle()
+            assertThat(viewModel.uiState.value.data.cloudVersions).hasSize(1)
+            assertThat(viewModel.uiState.value.data.cloudVersions[0].fileName).isEqualTo("backup2.zip")
         }
 
         @Test
         fun failure_keepsCloudVersionsUnchanged() = runTest {
+            backgroundScope.launch { viewModel.uiState.collect { } }
             val versions = listOf(
                 CloudBackupVersion(fileName = "backup1.zip", fileSize = 1024, lastModified = "2024-01-01", displayName = "备份1")
             )
             coEvery { webDavSyncUseCase.listRemoteBackups() } returns versions
             viewModel.refreshCloudVersions()
 
-            kotlinx.coroutines.delay(100)
+            advanceUntilIdle()
 
             coEvery { webDavSyncUseCase.deleteRemoteBackup("backup1.zip") } returns false
             viewModel.deleteRemoteBackup("backup1.zip")
 
-            kotlinx.coroutines.delay(100)
-            assertThat(viewModel.cloudVersions.value).hasSize(1)
+            advanceUntilIdle()
+            assertThat(viewModel.uiState.value.data.cloudVersions).hasSize(1)
         }
     }
 
@@ -245,15 +260,16 @@ class WebDavSyncViewModelTest {
 
         @Test
         fun loadsVersionsFromUseCase() = runTest {
+            backgroundScope.launch { viewModel.uiState.collect { } }
             val versions = listOf(
                 CloudBackupVersion(fileName = "backup.zip", fileSize = 1024, lastModified = "2024-01-01", displayName = "备份")
             )
             coEvery { webDavSyncUseCase.listRemoteBackups() } returns versions
             viewModel.refreshCloudVersions()
 
-            kotlinx.coroutines.delay(100)
-            assertThat(viewModel.cloudVersions.value).hasSize(1)
-            assertThat(viewModel.cloudVersions.value[0].fileName).isEqualTo("backup.zip")
+            advanceUntilIdle()
+            assertThat(viewModel.uiState.value.data.cloudVersions).hasSize(1)
+            assertThat(viewModel.uiState.value.data.cloudVersions[0].fileName).isEqualTo("backup.zip")
         }
     }
 
@@ -262,9 +278,10 @@ class WebDavSyncViewModelTest {
     inner class ResetSyncStateTest {
 
         @Test
-        fun resetsToIdle() {
+        fun resetsToIdle() = runTest {
+            backgroundScope.launch { viewModel.uiState.collect { } }
             viewModel.resetSyncState()
-            assertThat(viewModel.syncState.value).isInstanceOf(SyncState.Idle::class.java)
+            assertThat(viewModel.uiState.value.dialog.syncState).isInstanceOf(SyncState.Idle::class.java)
         }
     }
 
@@ -274,19 +291,21 @@ class WebDavSyncViewModelTest {
 
         @Test
         fun setsCleaningThenDone() = runTest {
+            backgroundScope.launch { viewModel.uiState.collect { } }
             coEvery { webDavSyncUseCase.cleanOrphanedImages() } returns 5
             viewModel.cleanOrphanedImages()
 
-            kotlinx.coroutines.delay(100)
-            val result = viewModel.cleanResult.value
+            advanceUntilIdle()
+            val result = viewModel.uiState.value.dialog.cleanResult
             assertThat(result).isInstanceOf(CleanResult.Done::class.java)
             assertThat((result as CleanResult.Done).count).isEqualTo(5)
         }
 
         @Test
-        fun resetCleanResult_setsNull() {
+        fun resetCleanResult_setsNull() = runTest {
+            backgroundScope.launch { viewModel.uiState.collect { } }
             viewModel.resetCleanResult()
-            assertThat(viewModel.cleanResult.value).isNull()
+            assertThat(viewModel.uiState.value.dialog.cleanResult).isNull()
         }
     }
 

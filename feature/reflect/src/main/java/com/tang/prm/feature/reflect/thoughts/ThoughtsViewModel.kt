@@ -134,7 +134,7 @@ class ThoughtsViewModel @Inject constructor(
             ),
             gamification = listState.gamification
         )
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(30_000), ThoughtsUiState())
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), ThoughtsUiState())
 
     fun thoughtExp(thought: Thought): Int = thoughtListUseCase.thoughtExp(thought)
 

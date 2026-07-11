@@ -72,4 +72,8 @@ interface EventDao {
 
     @Query("SELECT COALESCE(SUM(photos_count), 0) FROM events")
     fun getPhotoCount(): Flow<Int>
+
+    /** 仅查询非空 photos 字段，用于清理孤儿图片时避免全表扫描 */
+    @Query("SELECT photos FROM events WHERE photos IS NOT NULL AND photos != '' AND photos != '[]'")
+    suspend fun getReferencedPhotoPaths(): List<String>
 }

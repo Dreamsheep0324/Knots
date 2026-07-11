@@ -90,11 +90,14 @@ class ContactRepositoryImpl @Inject constructor(
     }
 
     override suspend fun deleteContact(id: Long) {
-        // 先在事务内收集待删除文件路径 + 删除数据库记录
+        // 先在事务内收集待删除文件路径 + 级联删除关联数据 + 删除联系人
         val photosToDelete = database.withTransaction {
             val photos = mutableListOf<String>()
             giftDao.getGiftsByContactIdOnce(id).forEach { photos.addAll(it.photos) }
             contactDao.getContactByIdOnce(id)?.avatar?.let { photos.add(it) }
+            // 级联清理关联数据，避免孤儿记录
+            todoDao.deleteTodosByContact(id)
+            reminderDao.deleteRemindersByContact(id)
             contactDao.deleteContactById(id)
             photos
         }

@@ -33,7 +33,6 @@ import com.tang.prm.domain.model.SubscriptionStatus
 import com.tang.prm.domain.model.computedStatus
 import com.tang.prm.domain.model.monthlyEquivalent
 import com.tang.prm.ui.components.AppCard
-import com.tang.prm.ui.theme.Primary
 import com.tang.prm.ui.theme.SemanticAmberBg
 import com.tang.prm.ui.theme.SignalAmber
 import com.tang.prm.ui.theme.SemanticCoralBg
@@ -74,7 +73,7 @@ fun StatsSummaryCard(
                 Text(
                     "查看统计 ›",
                     style = MaterialTheme.typography.labelMedium,
-                    color = Primary,
+                    color = MaterialTheme.colorScheme.primary,
                     fontWeight = FontWeight.SemiBold,
                     modifier = Modifier.clickable(onClick = onViewStats)
                 )
@@ -149,7 +148,7 @@ fun FilterTabs(
             Surface(
                 onClick = { onTabSelected(index) },
                 shape = RoundedCornerShape(20.dp),
-                color = if (isSelected) Primary else MaterialTheme.colorScheme.surfaceVariant
+                color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant
             ) {
                 Text(
                     text = title,
@@ -241,14 +240,14 @@ fun SubscriptionRowItem(
             modifier = Modifier
                 .size(36.dp)
                 .clip(CircleShape)
-                .background(Primary.copy(alpha = 0.1f)),
+                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)),
             contentAlignment = Alignment.Center
         ) {
             Text(
                 text = subscription.name.take(1),
                 style = MaterialTheme.typography.titleSmall,
                 fontWeight = FontWeight.Bold,
-                color = Primary
+                color = MaterialTheme.colorScheme.primary
             )
         }
 
@@ -345,10 +344,11 @@ private fun formatPrice(subscription: Subscription): String {
     return "$symbol${subscription.price}/$cycleLabel"
 }
 
-private val categoryColors = listOf(
-    SignalGreen, SignalAmber, SignalCoral, Primary,
-    Color(0xFF6366F1), Color(0xFFEC4899), Color(0xFF8B5CF6), Color(0xFF14B8A6)
-)
+private val categoryColors: List<Color>
+    @Composable get() = listOf(
+        SignalGreen, SignalAmber, SignalCoral, MaterialTheme.colorScheme.primary,
+        Color(0xFF6366F1), Color(0xFFEC4899), Color(0xFF8B5CF6), Color(0xFF14B8A6)
+    )
 
 @Composable
 private fun getCategoryColor(category: String?): Color {

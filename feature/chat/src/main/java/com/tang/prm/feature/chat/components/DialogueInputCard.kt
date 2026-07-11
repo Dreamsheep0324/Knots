@@ -33,7 +33,6 @@ import com.tang.prm.ui.components.ContactAvatar
 import com.tang.prm.ui.animation.core.AnimationTokens
 import com.tang.prm.ui.theme.Dimens
 import com.tang.prm.ui.theme.DeleteRed
-import com.tang.prm.ui.theme.Primary
 
 @Composable
 internal fun DialogueInputCard(
@@ -161,7 +160,7 @@ internal fun DialogueLineEditor(
     } else {
         MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
     }
-    val accentColor = if (line.isMe) MyBubbleColor else Primary
+    val accentColor = if (line.isMe) MyBubbleColor else MaterialTheme.colorScheme.primary
     val speakerLabel = if (line.isMe) "我" else contactName
 
     Column {

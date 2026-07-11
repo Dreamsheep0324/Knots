@@ -76,7 +76,7 @@ internal fun FilterChipItem(
     Surface(
         onClick = onClick,
         shape = RoundedCornerShape(20.dp),
-        color = if (isSelected) Primary else MaterialTheme.colorScheme.surfaceVariant
+        color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant
     ) {
         Text(
             text = label,
@@ -119,6 +119,7 @@ internal fun ContactsGrid(
     onContactClick: (Contact) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val appearKey = remember { Any() }
     LazyVerticalGrid(
         columns = GridCells.Fixed(3),
         modifier = modifier.navigationBarsPadding(),
@@ -130,7 +131,7 @@ internal fun ContactsGrid(
             ContactGridCard(
                 contact = contact,
                 onClick = { onContactClick(contact) },
-                modifier = Modifier.staggeredAppear(index = minOf(index, 15))
+                modifier = Modifier.staggeredAppear(index = minOf(index, 15), triggerKey = appearKey)
             )
         }
     }
@@ -171,18 +172,18 @@ internal fun ContactsList(
                             Icon(
                                 Icons.Default.SwapVert,
                                 contentDescription = null,
-                                tint = Primary,
+                                tint = MaterialTheme.colorScheme.primary,
                                 modifier = Modifier.size(18.dp)
                             )
                             Text(
                                 "拖拽调整顺序",
                                 fontSize = 13.sp,
-                                color = Primary,
+                                color = MaterialTheme.colorScheme.primary,
                                 fontWeight = FontWeight.Medium
                             )
                         }
                         TextButton(onClick = onToggleReorder) {
-                            Text("完成", color = Primary, fontWeight = FontWeight.Bold)
+                            Text("完成", color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
                         }
                     }
                 }
@@ -257,8 +258,7 @@ internal fun ContactsList(
                         contact = contact,
                         onClick = { onContactClick(contact) },
                         isReorderMode = isReorderMode,
-                        elevation = elevation,
-                        modifier = Modifier.staggeredAppear(index = minOf(index, 15))
+                        elevation = elevation
                     )
                 }
             }

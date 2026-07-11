@@ -46,7 +46,6 @@ import androidx.compose.ui.unit.sp
 import com.tang.prm.engine.divination.model.LiuyaoData
 import com.tang.prm.ui.components.AppDatePicker
 
-import com.tang.prm.ui.theme.Primary
 import com.tang.prm.ui.theme.SignalGreen
 import com.tang.prm.domain.util.DateUtils
 
@@ -149,7 +148,7 @@ fun AiDeepSection(
                                     singleLine = true,
                                     shape = RoundedCornerShape(8.dp),
                                     colors = OutlinedTextFieldDefaults.colors(
-                                        focusedBorderColor = Primary.copy(alpha = 0.5f),
+                                        focusedBorderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f),
                                         unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f),
                                         focusedContainerColor = Color.Transparent,
                                         unfocusedContainerColor = Color.Transparent
@@ -166,7 +165,7 @@ fun AiDeepSection(
                                                 Text(
                                                     option,
                                                     fontFamily = FontFamily.Monospace,
-                                                    color = if (gender == option) Primary else MaterialTheme.colorScheme.onSurface
+                                                    color = if (gender == option) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
                                                 )
                                             },
                                             onClick = {
@@ -234,7 +233,7 @@ fun AiDeepSection(
                             minLines = 2,
                             shape = RoundedCornerShape(8.dp),
                             colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = Primary.copy(alpha = 0.5f),
+                                focusedBorderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f),
                                 unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f),
                                 focusedContainerColor = Color.Transparent,
                                 unfocusedContainerColor = Color.Transparent
@@ -263,10 +262,10 @@ fun AiDeepSection(
                             shape = RoundedCornerShape(8.dp),
                             enabled = question.isNotBlank(),
                             colors = ButtonDefaults.outlinedButtonColors(
-                                containerColor = if (question.isNotBlank()) Primary.copy(alpha = 0.08f) else MaterialTheme.colorScheme.surfaceVariant,
-                                contentColor = Primary
+                                containerColor = if (question.isNotBlank()) MaterialTheme.colorScheme.primary.copy(alpha = 0.08f) else MaterialTheme.colorScheme.surfaceVariant,
+                                contentColor = MaterialTheme.colorScheme.primary
                             ),
-                            border = BorderStroke(1.dp, Primary.copy(alpha = if (question.isNotBlank()) 0.6f else 0.2f))
+                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = if (question.isNotBlank()) 0.6f else 0.2f))
                         ) {
                             Text(
                                 text = "✦ 开始解读",
@@ -365,10 +364,10 @@ fun AiDeepSection(
                             modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(8.dp),
                             colors = ButtonDefaults.outlinedButtonColors(
-                                containerColor = Primary.copy(alpha = 0.08f),
-                                contentColor = Primary
+                                containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.08f),
+                                contentColor = MaterialTheme.colorScheme.primary
                             ),
-                            border = BorderStroke(1.dp, Primary.copy(alpha = 0.5f))
+                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.5f))
                         ) {
                             Text(
                                 text = "重新提问",

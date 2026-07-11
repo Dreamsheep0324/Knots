@@ -32,4 +32,8 @@ interface SettingsRepository {
 
     val tabletModeEnabled: Flow<Boolean>
     suspend fun setTabletModeEnabled(enabled: Boolean)
+
+    /** 首页日记装饰卡片照片路径 */
+    val homeDecorPhotoPath: Flow<String?>
+    suspend fun setHomeDecorPhotoPath(path: String?)
 }

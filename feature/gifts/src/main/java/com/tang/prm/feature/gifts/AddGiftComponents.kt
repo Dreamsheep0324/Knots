@@ -1,4 +1,4 @@
-﻿package com.tang.prm.feature.gifts
+package com.tang.prm.feature.gifts
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -59,7 +59,7 @@ internal fun ContactSelectionCard(
 ) {
     AppCard(modifier = Modifier.fillMaxWidth()) {
         Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp)) {
-            FormSectionLabel(icon = Icons.Default.Person, label = "关联人物", color = Primary)
+            FormSectionLabel(icon = Icons.Default.Person, label = "关联人物", color = MaterialTheme.colorScheme.primary)
             Spacer(modifier = Modifier.height(12.dp))
             Surface(
                 modifier = Modifier
@@ -94,14 +94,14 @@ internal fun ContactSelectionCard(
                         Box(
                             modifier = Modifier
                                 .size(44.dp)
-                                .background(Primary.copy(alpha = AnimationTokens.Alpha.faint), CircleShape),
+                                .background(MaterialTheme.colorScheme.primary.copy(alpha = AnimationTokens.Alpha.faint), CircleShape),
                             contentAlignment = Alignment.Center
                         ) {
-                            Icon(Icons.Default.PersonAdd, contentDescription = null, tint = Primary, modifier = Modifier.size(22.dp))
+                            Icon(Icons.Default.PersonAdd, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(22.dp))
                         }
                         Spacer(modifier = Modifier.width(12.dp))
                         Column {
-                            Text("选择人物", style = MaterialTheme.typography.titleMedium, color = Primary, fontWeight = FontWeight.Medium)
+                            Text("选择人物", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Medium)
                             Text("点击选择关联对象", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
                     }
@@ -182,7 +182,7 @@ internal fun GiftNameCard(giftName: String, onNameChange: (String) -> Unit, focu
                 singleLine = true,
                 shape = RoundedCornerShape(12.dp),
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = Primary.copy(alpha = AnimationTokens.Alpha.visible),
+                    focusedBorderColor = MaterialTheme.colorScheme.primary.copy(alpha = AnimationTokens.Alpha.visible),
                     unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = AnimationTokens.Alpha.half),
                     focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
                     unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
@@ -237,7 +237,7 @@ internal fun GiftTypeCard(selectedType: GiftType, onTypeSelect: (GiftType) -> Un
 internal fun DateSelectionCard(selectedDate: Long, onClick: () -> Unit) {
     AppCard(modifier = Modifier.fillMaxWidth()) {
         Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp)) {
-            FormSectionLabel(icon = Icons.Default.CalendarToday, label = "日期", color = Primary)
+            FormSectionLabel(icon = Icons.Default.CalendarToday, label = "日期", color = MaterialTheme.colorScheme.primary)
             Spacer(modifier = Modifier.height(12.dp))
             Surface(
                 modifier = Modifier
@@ -255,10 +255,10 @@ internal fun DateSelectionCard(selectedDate: Long, onClick: () -> Unit) {
                     Box(
                         modifier = Modifier
                             .size(36.dp)
-                            .background(Primary.copy(alpha = AnimationTokens.Alpha.faint), CircleShape),
+                            .background(MaterialTheme.colorScheme.primary.copy(alpha = AnimationTokens.Alpha.faint), CircleShape),
                         contentAlignment = Alignment.Center
                     ) {
-                        Icon(Icons.Default.CalendarToday, contentDescription = null, tint = Primary, modifier = Modifier.size(18.dp))
+                        Icon(Icons.Default.CalendarToday, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(18.dp))
                     }
                     Spacer(modifier = Modifier.width(12.dp))
                     Column(modifier = Modifier.weight(1f)) {
@@ -292,7 +292,7 @@ internal fun OccasionFieldCard(occasion: String, onOccasionChange: (String) -> U
                 shape = RoundedCornerShape(12.dp),
                 leadingIcon = { Icon(Icons.Default.Event, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(20.dp)) },
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = Primary.copy(alpha = AnimationTokens.Alpha.visible),
+                    focusedBorderColor = MaterialTheme.colorScheme.primary.copy(alpha = AnimationTokens.Alpha.visible),
                     unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = AnimationTokens.Alpha.half),
                     focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
                     unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
@@ -316,7 +316,7 @@ internal fun DescriptionFieldCard(description: String, onDescriptionChange: (Str
                 maxLines = 4,
                 shape = RoundedCornerShape(12.dp),
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = Primary.copy(alpha = AnimationTokens.Alpha.visible),
+                    focusedBorderColor = MaterialTheme.colorScheme.primary.copy(alpha = AnimationTokens.Alpha.visible),
                     unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = AnimationTokens.Alpha.half),
                     focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
                     unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
@@ -377,7 +377,7 @@ internal fun PhotoSelectionCard(
                             border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = AnimationTokens.Alpha.half))
                         ) {
                             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                                Icon(Icons.Default.Add, contentDescription = "添加照片", tint = Primary, modifier = Modifier.size(28.dp))
+                                Icon(Icons.Default.Add, contentDescription = "添加照片", tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(28.dp))
                             }
                         }
                     }
@@ -398,9 +398,9 @@ internal fun PhotoSelectionCard(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.Center
                     ) {
-                        Icon(Icons.Default.AddPhotoAlternate, contentDescription = null, tint = Primary, modifier = Modifier.size(24.dp))
+                        Icon(Icons.Default.AddPhotoAlternate, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(24.dp))
                         Spacer(modifier = Modifier.width(10.dp))
-                        Text("添加礼物照片", style = MaterialTheme.typography.bodyMedium, color = Primary)
+                        Text("添加礼物照片", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.primary)
                     }
                 }
             }

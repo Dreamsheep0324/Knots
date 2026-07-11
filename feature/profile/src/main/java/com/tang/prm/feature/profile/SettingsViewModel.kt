@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.tang.prm.domain.repository.AiRepository
 import com.tang.prm.domain.repository.SettingsRepository
 import com.tang.prm.domain.model.ThemeMode
+import com.tang.prm.domain.util.EncryptionStatus
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -27,6 +28,13 @@ class SettingsViewModel @Inject constructor(
     private val settingsRepository: SettingsRepository,
     private val aiRepository: AiRepository
 ) : ViewModel() {
+
+    /**
+     * 加密存储是否处于降级模式（EncryptedSharedPreferences 初始化失败时回退到明文）。
+     * UI 应在为 true 时提示用户敏感数据未加密。
+     */
+    val encryptionDegraded: StateFlow<Boolean> =
+        MutableStateFlow(EncryptionStatus.isDegraded).asStateFlow()
 
     val themeMode: StateFlow<ThemeMode> = settingsRepository.themeMode
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), ThemeMode.SYSTEM)
@@ -71,7 +79,7 @@ class SettingsViewModel @Inject constructor(
     val testState: StateFlow<TestConnectionState> = _testState.asStateFlow()
 
     fun testConnection() {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch {
             _testState.value = TestConnectionState.Testing
             val result = aiRepository.testConnection()
             _testState.value = result.fold(

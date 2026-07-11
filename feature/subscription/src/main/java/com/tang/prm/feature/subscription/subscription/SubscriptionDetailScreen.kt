@@ -62,7 +62,6 @@ import com.tang.prm.ui.animation.core.AnimationTokens
 import com.tang.prm.ui.components.AppCard
 import com.tang.prm.ui.components.DeleteConfirmDialog
 import com.tang.prm.ui.navigation.EditSubscriptionRoute
-import com.tang.prm.ui.theme.Primary
 import com.tang.prm.ui.theme.SignalAmber
 import com.tang.prm.ui.theme.SignalGreen
 import com.tang.prm.ui.theme.SignalPurple
@@ -151,7 +150,7 @@ fun SubscriptionDetailScreen(
             }
         } else if (uiState.data.isLoading) {
             Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator(color = Primary)
+                CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
             }
         }
     }
@@ -179,10 +178,10 @@ private fun SubscriptionHeroCard(sub: Subscription) {
                         modifier = Modifier
                             .size(48.dp)
                             .clip(CircleShape)
-                            .background(Primary.copy(alpha = AnimationTokens.Alpha.faint)),
+                            .background(MaterialTheme.colorScheme.primary.copy(alpha = AnimationTokens.Alpha.faint)),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(sub.name.take(1), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = Primary)
+                        Text(sub.name.take(1), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
                     }
                     Spacer(modifier = Modifier.width(12.dp))
                     Column {
@@ -198,9 +197,9 @@ private fun SubscriptionHeroCard(sub: Subscription) {
             }
             Spacer(modifier = Modifier.height(20.dp))
             Row(verticalAlignment = Alignment.Bottom, modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
-                Text(formatCurrencySymbol(sub.currency), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = Primary, modifier = Modifier.padding(bottom = 6.dp))
+                Text(formatCurrencySymbol(sub.currency), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(bottom = 6.dp))
                 Spacer(modifier = Modifier.width(4.dp))
-                Text(formatPriceValue(sub.price), style = MaterialTheme.typography.displaySmall, fontWeight = FontWeight.Bold, color = Primary, fontFamily = FontFamily.Monospace)
+                Text(formatPriceValue(sub.price), style = MaterialTheme.typography.displaySmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary, fontFamily = FontFamily.Monospace)
                 Spacer(modifier = Modifier.width(6.dp))
                 Text("/ ${sub.cycle.displayName}", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(bottom = 6.dp))
             }
@@ -251,7 +250,7 @@ private fun BillingProgressCard(sub: Subscription) {
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
                 ProgressStatItem("已订阅", "${daysSinceStart}天", SignalSky)
                 Box(modifier = Modifier.width(1.dp).height(32.dp).background(MaterialTheme.colorScheme.outline.copy(alpha = 0.15f)).align(Alignment.CenterVertically))
-                ProgressStatItem("进度", "${(progress * 100).toInt()}%", Primary)
+                ProgressStatItem("进度", "${(progress * 100).toInt()}%", MaterialTheme.colorScheme.primary)
                 Box(modifier = Modifier.width(1.dp).height(32.dp).background(MaterialTheme.colorScheme.outline.copy(alpha = 0.15f)).align(Alignment.CenterVertically))
                 ProgressStatItem("剩余", "${daysUntilBilling}天", if (daysUntilBilling <= 7) SignalAmber else SignalGreen)
             }
@@ -362,8 +361,8 @@ private fun SubscriptionCycleInfoCard(sub: Subscription) {
     AppCard(modifier = Modifier.fillMaxWidth()) {
         Column(modifier = Modifier.padding(horizontal = 20.dp, vertical = 18.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Box(modifier = Modifier.size(32.dp).clip(CircleShape).background(Primary.copy(alpha = AnimationTokens.Alpha.faint)), contentAlignment = Alignment.Center) {
-                    Icon(Icons.Default.Repeat, contentDescription = null, tint = Primary, modifier = Modifier.size(16.dp))
+                Box(modifier = Modifier.size(32.dp).clip(CircleShape).background(MaterialTheme.colorScheme.primary.copy(alpha = AnimationTokens.Alpha.faint)), contentAlignment = Alignment.Center) {
+                    Icon(Icons.Default.Repeat, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(16.dp))
                 }
                 Spacer(modifier = Modifier.width(10.dp))
                 Text("周期信息", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)

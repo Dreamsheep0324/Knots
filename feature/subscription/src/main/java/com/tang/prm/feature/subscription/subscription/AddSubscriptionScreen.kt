@@ -63,7 +63,6 @@ import com.tang.prm.ui.components.FormSectionLabel
 import com.tang.prm.ui.components.FormScreenScaffold
 import com.tang.prm.ui.components.TagSelector
 import com.tang.prm.ui.components.TagSelectorMode
-import com.tang.prm.ui.theme.Primary
 import com.tang.prm.ui.theme.SignalSky
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
@@ -180,7 +179,7 @@ fun AddSubscriptionScreen(
                                 },
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold,
-                                color = Primary,
+                                color = MaterialTheme.colorScheme.primary,
                                 modifier = Modifier.padding(start = 12.dp)
                             )
                         },
@@ -227,7 +226,7 @@ fun AddSubscriptionScreen(
                             Spacer(modifier = Modifier.height(2.dp))
                             Text(formatTimestamp(uiState.startDate), style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Medium)
                         }
-                        Text("选择", color = Primary, style = MaterialTheme.typography.labelMedium)
+                        Text("选择", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelMedium)
                     }
                     Spacer(modifier = Modifier.height(8.dp))
                     // 下次扣费 - 自动计算，只读展示
@@ -290,7 +289,7 @@ private fun SubscriptionFormSection(
 
 @Composable
 private fun textFieldColors() = OutlinedTextFieldDefaults.colors(
-    focusedBorderColor = Primary.copy(alpha = AnimationTokens.Alpha.visible),
+    focusedBorderColor = MaterialTheme.colorScheme.primary.copy(alpha = AnimationTokens.Alpha.visible),
     unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = AnimationTokens.Alpha.half),
     focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
     unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)

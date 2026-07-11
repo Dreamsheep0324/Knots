@@ -38,7 +38,6 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.tang.prm.ui.theme.Primary
 import com.tang.prm.ui.theme.SceneOrange
 import com.tang.prm.ui.theme.Success
 
@@ -86,7 +85,7 @@ internal fun ApiKeySection(
             Text(
                 "API密钥",
                 style = MaterialTheme.typography.titleSmall,
-                color = Primary,
+                color = MaterialTheme.colorScheme.primary,
                 fontWeight = FontWeight.Medium
             )
 
@@ -117,7 +116,7 @@ internal fun ApiKeySection(
                 ) {
                     Text(
                         "保存",
-                        color = Primary,
+                        color = MaterialTheme.colorScheme.primary,
                         fontWeight = FontWeight.Bold,
                         fontSize = 13.sp,
                         modifier = Modifier
@@ -151,7 +150,7 @@ internal fun BaseUrlSection(
             Text(
                 "API地址",
                 style = MaterialTheme.typography.titleSmall,
-                color = Primary,
+                color = MaterialTheme.colorScheme.primary,
                 fontWeight = FontWeight.Medium
             )
 
@@ -171,7 +170,7 @@ internal fun BaseUrlSection(
                 ) {
                     Text(
                         "保存",
-                        color = Primary,
+                        color = MaterialTheme.colorScheme.primary,
                         fontWeight = FontWeight.Bold,
                         fontSize = 13.sp,
                         modifier = Modifier
@@ -203,7 +202,7 @@ internal fun ModelSelectionSection(
             Text(
                 "模型选择",
                 style = MaterialTheme.typography.titleSmall,
-                color = Primary,
+                color = MaterialTheme.colorScheme.primary,
                 fontWeight = FontWeight.Medium
             )
 
@@ -214,7 +213,7 @@ internal fun ModelSelectionSection(
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(12.dp))
                         .background(
-                            if (selected) Primary.copy(alpha = 0.06f) else Color.Transparent
+                            if (selected) MaterialTheme.colorScheme.primary.copy(alpha = 0.06f) else Color.Transparent
                         )
                         .clickable { onModelSelected(model.id) }
                         .padding(horizontal = 12.dp, vertical = 10.dp),
@@ -224,7 +223,7 @@ internal fun ModelSelectionSection(
                         modifier = Modifier
                             .size(22.dp)
                             .background(
-                                if (selected) Primary else MaterialTheme.colorScheme.outline.copy(alpha = 0.3f),
+                                if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline.copy(alpha = 0.3f),
                                 CircleShape
                             ),
                         contentAlignment = Alignment.Center
@@ -297,12 +296,12 @@ internal fun TestConnectionSection(
         shape = RoundedCornerShape(12.dp),
         enabled = testState !is TestConnectionState.Testing && apiKey.isNotBlank(),
         colors = ButtonDefaults.outlinedButtonColors(
-            containerColor = Primary.copy(alpha = 0.06f),
-            contentColor = Primary,
+            containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.06f),
+            contentColor = MaterialTheme.colorScheme.primary,
             disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
             disabledContentColor = MaterialTheme.colorScheme.onSurfaceVariant
         ),
-        border = BorderStroke(1.dp, Primary.copy(alpha = if (testState !is TestConnectionState.Testing && apiKey.isNotBlank()) 0.5f else 0.2f))
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = if (testState !is TestConnectionState.Testing && apiKey.isNotBlank()) 0.5f else 0.2f))
     ) {
         Text(
             text = when (testState) {

@@ -13,6 +13,7 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -27,7 +28,6 @@ import com.tang.prm.domain.model.Event
 import com.tang.prm.ui.components.AppCard
 import com.tang.prm.ui.components.ContactAvatar
 import com.tang.prm.ui.theme.Dimens
-import com.tang.prm.ui.theme.Primary
 import com.tang.prm.ui.theme.SceneOrange
 import com.tang.prm.domain.util.DateUtils
 
@@ -98,7 +98,8 @@ internal fun parseDialogue(event: Event, contactName: String?): List<DialogueLin
 internal fun getIntimacyColor(score: Int): Color =
     Color(com.tang.prm.domain.model.IntimacyTier.of(score).colorValue)
 
-internal val MyBubbleColor = Primary
+internal val MyBubbleColor: Color
+    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.primary
 internal val MyBubbleBg: Color
     @Composable get() = if (androidx.compose.foundation.isSystemInDarkTheme()) Color(0xFF1A3A4A) else Color(0xFFE3F2FD)
 

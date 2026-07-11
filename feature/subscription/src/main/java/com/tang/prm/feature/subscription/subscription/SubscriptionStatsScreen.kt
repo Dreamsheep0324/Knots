@@ -53,7 +53,6 @@ import com.tang.prm.domain.model.Subscription
 import com.tang.prm.domain.model.SubscriptionCycle
 import com.tang.prm.ui.animation.core.AnimationTokens
 import com.tang.prm.ui.components.AppCard
-import com.tang.prm.ui.theme.Primary
 import com.tang.prm.ui.theme.SignalAmber
 import com.tang.prm.ui.theme.SignalGreen
 import com.tang.prm.ui.theme.SignalPurple
@@ -100,7 +99,7 @@ fun SubscriptionStatsScreen(
     ) { padding ->
         if (uiState.isLoading) {
             Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator(color = Primary)
+                CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
             }
         } else {
             LazyColumn(
@@ -131,7 +130,7 @@ private fun YearlyProjectionCard(state: SubscriptionStatsUiState) {
                 Text("年度预估", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
             }
             Spacer(modifier = Modifier.height(16.dp))
-            Text("¥${formatPrice(state.yearlyProjection)}", style = MaterialTheme.typography.displaySmall, fontWeight = FontWeight.Bold, color = Primary, fontFamily = FontFamily.Monospace)
+            Text("¥${formatPrice(state.yearlyProjection)}", style = MaterialTheme.typography.displaySmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary, fontFamily = FontFamily.Monospace)
             Spacer(modifier = Modifier.height(6.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(24.dp)) {
                 ProjectionSubItem("月均", "¥${formatPrice(state.monthlyAverage)}")
@@ -153,7 +152,7 @@ private fun ProjectionSubItem(label: String, value: String) {
 @Composable
 private fun KeyMetricsGrid(state: SubscriptionStatsUiState) {
     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-        MetricCard(Modifier.weight(1f), Icons.Default.Payments, "月度支出", "¥${formatPrice(state.monthlyTotal)}", Primary)
+        MetricCard(Modifier.weight(1f), Icons.Default.Payments, "月度支出", "¥${formatPrice(state.monthlyTotal)}", MaterialTheme.colorScheme.primary)
         MetricCard(Modifier.weight(1f), Icons.Default.Today, "日均支出", "¥${formatPrice(state.dailyAverage)}", SignalSky)
     }
     Spacer(modifier = Modifier.height(4.dp))
@@ -193,8 +192,8 @@ private fun CategoryBreakdownCard(state: SubscriptionStatsUiState) {
     AppCard(modifier = Modifier.fillMaxWidth()) {
         Column(modifier = Modifier.padding(horizontal = 20.dp, vertical = 18.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Box(modifier = Modifier.size(28.dp).clip(CircleShape).background(Primary.copy(alpha = AnimationTokens.Alpha.faint)), contentAlignment = Alignment.Center) {
-                    Box(modifier = Modifier.size(10.dp).clip(CircleShape).background(Primary))
+                Box(modifier = Modifier.size(28.dp).clip(CircleShape).background(MaterialTheme.colorScheme.primary.copy(alpha = AnimationTokens.Alpha.faint)), contentAlignment = Alignment.Center) {
+                    Box(modifier = Modifier.size(10.dp).clip(CircleShape).background(MaterialTheme.colorScheme.primary))
                 }
                 Spacer(modifier = Modifier.width(8.dp))
                 Text("分类占比", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
@@ -254,7 +253,7 @@ private fun CategoryBreakdownCard(state: SubscriptionStatsUiState) {
 
                         // 中心文字
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text("¥${formatPrice(totalAmount)}", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = Primary, fontFamily = FontFamily.Monospace)
+                            Text("¥${formatPrice(totalAmount)}", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary, fontFamily = FontFamily.Monospace)
                             Text("年度总计", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
                     }
@@ -331,7 +330,7 @@ private fun BillingCalendarCard(state: SubscriptionStatsUiState) {
         val billingCal = Calendar.getInstance().apply { timeInMillis = sub.nextBillingDate }
         if (billingCal.get(Calendar.YEAR) == currentYear && billingCal.get(Calendar.MONTH) == currentMonth) {
             val day = billingCal.get(Calendar.DAY_OF_MONTH)
-            val color = categoryColorMap[sub.category ?: "未分类"] ?: Primary
+            val color = categoryColorMap[sub.category ?: "未分类"] ?: MaterialTheme.colorScheme.primary
             billingDays.getOrPut(day) { mutableListOf() }.add(sub.name to color)
         }
         // 对于月度订阅，也标记startDate同一天
@@ -339,7 +338,7 @@ private fun BillingCalendarCard(state: SubscriptionStatsUiState) {
             val startCal = Calendar.getInstance().apply { timeInMillis = sub.startDate }
             val startDay = startCal.get(Calendar.DAY_OF_MONTH)
             if (startDay != billingDays.keys.firstOrNull()) {
-                val color = categoryColorMap[sub.category ?: "未分类"] ?: Primary
+                val color = categoryColorMap[sub.category ?: "未分类"] ?: MaterialTheme.colorScheme.primary
                 if (billingDays[startDay]?.any { it.first == sub.name } != true) {
                     billingDays.getOrPut(startDay) { mutableListOf() }.add(sub.name to color)
                 }
@@ -404,8 +403,8 @@ private fun BillingCalendarCard(state: SubscriptionStatsUiState) {
                                             .clip(CircleShape)
                                             .background(
                                                 when {
-                                                    isToday && hasBilling -> Primary
-                                                    isToday -> Primary.copy(alpha = AnimationTokens.Alpha.faint)
+                                                    isToday && hasBilling -> MaterialTheme.colorScheme.primary
+                                                    isToday -> MaterialTheme.colorScheme.primary.copy(alpha = AnimationTokens.Alpha.faint)
                                                     hasBilling -> SignalAmber.copy(alpha = AnimationTokens.Alpha.faint)
                                                     else -> Color.Transparent
                                                 }
@@ -418,7 +417,7 @@ private fun BillingCalendarCard(state: SubscriptionStatsUiState) {
                                             fontWeight = if (isToday || hasBilling) FontWeight.Bold else FontWeight.Normal,
                                             color = when {
                                                 isToday && hasBilling -> Color.White
-                                                isToday -> Primary
+                                                isToday -> MaterialTheme.colorScheme.primary
                                                 hasBilling -> SignalAmber
                                                 else -> MaterialTheme.colorScheme.onSurfaceVariant
                                             }
@@ -451,7 +450,7 @@ private fun BillingCalendarCard(state: SubscriptionStatsUiState) {
             if (billingDays.isNotEmpty()) {
                 Spacer(modifier = Modifier.height(12.dp))
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
-                    Box(modifier = Modifier.size(8.dp).clip(CircleShape).background(Primary))
+                    Box(modifier = Modifier.size(8.dp).clip(CircleShape).background(MaterialTheme.colorScheme.primary))
                     Spacer(modifier = Modifier.width(4.dp))
                     Text("今天", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     Spacer(modifier = Modifier.width(16.dp))

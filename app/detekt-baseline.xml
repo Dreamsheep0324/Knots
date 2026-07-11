@@ -1,0 +1,11 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues></ManuallySuppressedIssues>
+  <CurrentIssues>
+    <ID>FunctionNaming:TangNavHost.kt$@Composable fun TangNavHost( tabletModeEnabled: Boolean = false, navController: NavHostController = rememberNavController(), updateViewModel: UpdateViewModel = hiltViewModel() )</ID>
+    <ID>LongMethod:TangNavHost.kt$@Composable fun TangNavHost( tabletModeEnabled: Boolean = false, navController: NavHostController = rememberNavController(), updateViewModel: UpdateViewModel = hiltViewModel() )</ID>
+    <ID>TooGenericExceptionCaught:ReminderReceiver.kt$BootReceiver$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:ReminderReceiver.kt$ReminderReceiver$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:TangApplication.kt$TangApplication$e: Exception</ID>
+  </CurrentIssues>
+</SmellBaseline>

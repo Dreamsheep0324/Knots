@@ -22,6 +22,7 @@ import com.tang.prm.data.local.database.migrations.MIGRATION_35_36
 import com.tang.prm.data.local.database.migrations.MIGRATION_36_37
 import com.tang.prm.data.local.database.migrations.MIGRATION_37_38
 import com.tang.prm.data.local.database.migrations.MIGRATION_38_39
+import com.tang.prm.data.local.database.migrations.MIGRATION_39_40
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -44,7 +45,17 @@ object DatabaseModule {
             TangDatabase::class.java,
             "tang_database"
         )
-            .addMigrations(MIGRATION_1_32, MIGRATION_24_31, MIGRATION_28_31, MIGRATION_31_33, MIGRATION_32_33, MIGRATION_33_34, MIGRATION_34_35, MIGRATION_35_36, MIGRATION_36_37, MIGRATION_37_38, MIGRATION_38_39)
+            // 迁移策略说明：
+            // v1-v23 已无用户，由 MIGRATION_1_32 一次性聚合
+            // v25-v27 为 schema 重设计过程中的内部开发版本，未发布到生产，无需独立迁移路径
+            // v24 用户通过 MIGRATION_24_31 升级，v28 用户通过 MIGRATION_28_31 升级
+            .addMigrations(
+                MIGRATION_1_32, MIGRATION_24_31, MIGRATION_28_31,
+                MIGRATION_31_33, MIGRATION_32_33,
+                MIGRATION_33_34, MIGRATION_34_35, MIGRATION_35_36,
+                MIGRATION_36_37, MIGRATION_37_38, MIGRATION_38_39,
+                MIGRATION_39_40
+            )
             .build()
     }
 
@@ -113,6 +124,7 @@ object DatabaseModule {
             )
         } catch (e: Exception) {
             Log.e("DatabaseModule", "EncryptedSharedPreferences unavailable! Sensitive data will NOT be encrypted.", e)
+            com.tang.prm.domain.util.EncryptionStatus.markDegraded()
             context.getSharedPreferences("secret_settings_fallback", Context.MODE_PRIVATE).edit()
                 .putBoolean("encryption_degraded", true).apply()
             context.getSharedPreferences("secret_settings_fallback", Context.MODE_PRIVATE)
@@ -136,6 +148,7 @@ object DatabaseModule {
             )
         } catch (e: Exception) {
             Log.e("DatabaseModule", "EncryptedSharedPreferences unavailable! Sensitive data will NOT be encrypted.", e)
+            com.tang.prm.domain.util.EncryptionStatus.markDegraded()
             context.getSharedPreferences("webdav_secret_fallback", Context.MODE_PRIVATE).edit()
                 .putBoolean("encryption_degraded", true).apply()
             context.getSharedPreferences("webdav_secret_fallback", Context.MODE_PRIVATE)

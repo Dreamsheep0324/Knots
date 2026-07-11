@@ -11,14 +11,4 @@ plugins {
     alias(libs.plugins.baselineprofile) apply false
 }
 
-// detekt 全局配置 — 所有子模块自动应用
-subprojects {
-    apply(plugin = "io.gitlab.arturbosch.detekt")
-
-    configure<io.gitlab.arturbosch.detekt.extensions.DetektExtension> {
-        buildUponDefaultConfig = true
-        parallel = true
-        // 首次引入：不阻断构建，只报告问题
-        ignoreFailures = true
-    }
-}
+// detekt 全局配置已迁移至 convention plugin（tang.android.library / tang.android.feature / tang.android.application）

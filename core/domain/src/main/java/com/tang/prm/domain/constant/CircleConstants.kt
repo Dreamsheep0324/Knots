@@ -1,4 +1,4 @@
-package com.tang.prm.feature.home
+package com.tang.prm.domain.constant
 
 object CircleConstants {
     val PresetColors = listOf(

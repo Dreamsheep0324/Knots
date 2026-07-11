@@ -65,7 +65,22 @@ data class EventParticipantCrossRef(
     indices = [
         Index("contactId"),
         Index("isCompleted"),
-        Index("dueDate")
+        Index("dueDate"),
+        Index("eventId")
+    ],
+    foreignKeys = [
+        ForeignKey(
+            entity = ContactEntity::class,
+            parentColumns = ["id"],
+            childColumns = ["contactId"],
+            onDelete = ForeignKey.CASCADE
+        ),
+        ForeignKey(
+            entity = EventEntity::class,
+            parentColumns = ["id"],
+            childColumns = ["eventId"],
+            onDelete = ForeignKey.CASCADE
+        )
     ]
 )
 data class TodoItemEntity(
@@ -85,7 +100,29 @@ data class TodoItemEntity(
     indices = [
         Index("contactId"),
         Index("time"),
-        Index("isCompleted")
+        Index("isCompleted"),
+        Index("eventId"),
+        Index("anniversaryId")
+    ],
+    foreignKeys = [
+        ForeignKey(
+            entity = ContactEntity::class,
+            parentColumns = ["id"],
+            childColumns = ["contactId"],
+            onDelete = ForeignKey.CASCADE
+        ),
+        ForeignKey(
+            entity = EventEntity::class,
+            parentColumns = ["id"],
+            childColumns = ["eventId"],
+            onDelete = ForeignKey.CASCADE
+        ),
+        ForeignKey(
+            entity = AnniversaryEntity::class,
+            parentColumns = ["id"],
+            childColumns = ["anniversaryId"],
+            onDelete = ForeignKey.CASCADE
+        )
     ]
 )
 data class ReminderEntity(

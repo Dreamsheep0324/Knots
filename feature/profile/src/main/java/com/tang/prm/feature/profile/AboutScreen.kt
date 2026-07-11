@@ -54,16 +54,18 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.tang.prm.domain.model.UpdateResult
 import com.tang.prm.feature.profile.R
 import com.tang.prm.ui.theme.InsightPink
-import com.tang.prm.ui.theme.Primary
 import com.tang.prm.ui.theme.Success
 import kotlinx.coroutines.launch
 
 @Composable
 fun AboutScreen(
-    navController: NavController
+    navController: NavController,
+    updateViewModel: UpdateViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
     val uriHandler = LocalUriHandler.current
@@ -120,7 +122,7 @@ fun AboutScreen(
             AboutCard {
                 AboutItem(
                     icon = Icons.Default.Info,
-                    iconTint = Primary,
+                    iconTint = MaterialTheme.colorScheme.primary,
                     title = "应用说明",
                     content = "结绳是一款朋友关系管理软件，帮助你记录和管理与身边每一个人的故事、互动和情感，让每一段关系都被用心对待。"
                 )
@@ -150,22 +152,25 @@ fun AboutScreen(
                 onCheckUpdate = {
                     if (isCheckingUpdate) return@UpdateCheckCard
                     isCheckingUpdate = true
-                    scope.launch {
-                        val result = checkForUpdate(versionName)
+                    updateViewModel.checkForUpdate(versionName) { result ->
                         isCheckingUpdate = false
                         when (result) {
                             is UpdateResult.HasUpdate -> {
                                 try {
                                     uriHandler.openUri(result.releaseUrl)
                                 } catch (_: Exception) {
-                                    snackbarHostState.showSnackbar("无法打开浏览器，请手动前往 GitHub 查看")
+                                    scope.launch {
+                                        snackbarHostState.showSnackbar("无法打开浏览器，请手动前往 GitHub 查看")
+                                    }
                                 }
                             }
                             is UpdateResult.NoUpdate -> {
-                                snackbarHostState.showSnackbar("已是最新版本")
+                                scope.launch { snackbarHostState.showSnackbar("已是最新版本") }
                             }
                             is UpdateResult.Error -> {
-                                snackbarHostState.showSnackbar("检查更新失败：${result.message}")
+                                scope.launch {
+                                    snackbarHostState.showSnackbar("检查更新失败：${result.message}")
+                                }
                             }
                         }
                     }
@@ -192,7 +197,7 @@ private fun AppInfoHeader(versionName: String, versionCode: Int) {
         modifier = Modifier
             .size(80.dp)
             .clip(RoundedCornerShape(20.dp))
-            .background(Primary.copy(alpha = 0.1f)),
+            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)),
         contentAlignment = Alignment.Center
     ) {
         Icon(
@@ -219,7 +224,7 @@ private fun AppInfoHeader(versionName: String, versionCode: Int) {
     Text(
         "用心记录每一段关系",
         fontSize = 14.sp,
-        color = Primary,
+        color = MaterialTheme.colorScheme.primary,
         fontWeight = FontWeight.Medium
     )
 }

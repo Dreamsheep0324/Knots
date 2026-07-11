@@ -69,12 +69,16 @@ class EventRepositoryImpl @Inject constructor(
         eventDao.insertEvent(event.toEntity())
 
     override suspend fun updateEvent(event: Event) {
-        // 先收集被移除的照片路径，更新数据库成功后再删除文件
-        val oldEntity = eventDao.getEventByIdOnce(event.id)
-        val removedPhotos = oldEntity?.let { old ->
-            (old.photos.toSet() - event.photos.toSet()).takeIf { it.isNotEmpty() }
+        // 读+写放在同一事务中，避免竞态导致照片文件误删/漏删
+        val removedPhotos = database.withTransaction {
+            val oldEntity = eventDao.getEventByIdOnce(event.id)
+            val removed = oldEntity?.let { old ->
+                (old.photos.toSet() - event.photos.toSet()).takeIf { it.isNotEmpty() }
+            }
+            eventDao.updateEvent(event.toEntity())
+            removed
         }
-        eventDao.updateEvent(event.toEntity())
+        // 事务外删除文件（文件 I/O 不阻塞数据库事务）
         removedPhotos?.let { deletePhotoFiles(it.toList()) }
     }
 

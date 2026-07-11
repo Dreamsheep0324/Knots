@@ -42,6 +42,28 @@ data class ContactsUiState(
     val dialog: ContactsDialogState = ContactsDialogState()
 )
 
+private data class FilterParams(
+    val query: String,
+    val groupId: Long?,
+    val relationship: String?,
+    val intimacy: String?
+)
+
+private data class SelectionState(
+    val groupId: Long?,
+    val relationship: String?,
+    val intimacy: String?,
+    val viewMode: Int,
+    val isReorderMode: Boolean
+)
+
+private data class DataBundle(
+    val contacts: List<Contact>,
+    val groups: List<ContactGroup>,
+    val relationships: List<CustomType>
+)
+
+@OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class ContactsViewModel @Inject constructor(
     private val contactRepository: ContactRepository,
@@ -53,56 +75,79 @@ class ContactsViewModel @Inject constructor(
         private const val DEBOUNCE_MS = 300L
     }
 
-    private val _uiState = MutableStateFlow(ContactsUiState())
-    val uiState: StateFlow<ContactsUiState> = _uiState.asStateFlow()
-
     private val searchManager = SearchStateManager()
     val searchState: StateFlow<SearchState> = searchManager.state
 
     private val _selectedGroupId = MutableStateFlow<Long?>(null)
     private val _selectedRelationship = MutableStateFlow<String?>(null)
     private val _selectedIntimacy = MutableStateFlow<String?>(null)
+    private val _viewMode = MutableStateFlow(0)
+    private val _isReorderMode = MutableStateFlow(false)
+    private val _dialogState = MutableStateFlow(ContactsDialogState())
+    private val _manualOrder = MutableStateFlow<List<Long>?>(null)
 
-    init {
-        loadContacts()
-        loadGroups()
-        loadRelationships()
+    private val filterState = combine(
+        searchManager.state
+            .map { it.query }
+            .debounce { query -> if (query.isBlank()) 0L else DEBOUNCE_MS },
+        _selectedGroupId,
+        _selectedRelationship,
+        _selectedIntimacy
+    ) { query, groupId, relationship, intimacy ->
+        FilterParams(query, groupId, relationship, intimacy)
     }
 
-    @OptIn(ExperimentalCoroutinesApi::class)
-    private fun loadContacts() {
-        viewModelScope.launch {
-            combine(
-                searchManager.state
-                    .map { it.query }
-                    .debounce { query -> if (query.isBlank()) 0L else DEBOUNCE_MS },
-                _selectedGroupId,
-                _selectedRelationship,
-                _selectedIntimacy
-            ) { query, groupId, relationship, intimacy ->
-                FilterParams(query, groupId, relationship, intimacy)
-            }.flatMapLatest { params ->
-                val keyword = params.query.ifBlank { null }
-                contactRepository.getContactListItems().map { contacts ->
-                    contacts.filterBy(keyword, params.groupId, params.relationship, params.intimacy)
-                }
-            }.collect { filteredContacts ->
-                val sorted = if (_uiState.value.data.isReorderMode) {
-                    filteredContacts
-                } else {
-                    filteredContacts.sortedByDescending { it.intimacyScore }
-                }
-                _uiState.update { it.copy(data = it.data.copy(contacts = sorted, isLoading = false)) }
-            }
+    private val filteredContacts = filterState.flatMapLatest { params ->
+        val keyword = params.query.ifBlank { null }
+        contactRepository.getContactListItems().map { contacts ->
+            contacts.filterBy(keyword, params.groupId, params.relationship, params.intimacy)
         }
     }
 
-    private data class FilterParams(
-        val query: String,
-        val groupId: Long?,
-        val relationship: String?,
-        val intimacy: String?
-    )
+    val uiState: StateFlow<ContactsUiState> = combine(
+        combine(
+            filteredContacts,
+            groupRepository.getAllGroups(),
+            customTypeRepository.getTypesByCategory(CustomCategories.RELATIONSHIP)
+        ) { contacts, groups, relationships ->
+            DataBundle(contacts, groups, relationships)
+        },
+        combine(
+            _selectedGroupId,
+            _selectedRelationship,
+            _selectedIntimacy,
+            _viewMode,
+            _isReorderMode
+        ) { groupId, relationship, intimacy, viewMode, isReorderMode ->
+            SelectionState(groupId, relationship, intimacy, viewMode, isReorderMode)
+        },
+        _dialogState,
+        _manualOrder
+    ) { dataBundle, selection, dialog, manualOrder ->
+        val sorted = if (selection.isReorderMode && manualOrder != null) {
+            val orderMap = manualOrder.withIndex().associate { it.value to it.index }
+            dataBundle.contacts.sortedBy { orderMap[it.id] ?: Int.MAX_VALUE }
+        } else if (selection.isReorderMode) {
+            dataBundle.contacts
+        } else {
+            dataBundle.contacts.sortedByDescending { it.intimacyScore }
+        }
+
+        ContactsUiState(
+            data = ContactsDataState(
+                contacts = sorted,
+                groups = dataBundle.groups,
+                relationships = dataBundle.relationships,
+                selectedGroupId = selection.groupId,
+                selectedRelationship = selection.relationship,
+                selectedIntimacy = selection.intimacy,
+                viewMode = selection.viewMode,
+                isReorderMode = selection.isReorderMode,
+                isLoading = false
+            ),
+            dialog = dialog
+        )
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), ContactsUiState())
 
     fun getIntimacyStats(contacts: List<Contact>): List<IntimacyStats> {
         return IntimacyLevels.map { level ->
@@ -115,66 +160,53 @@ class ContactsViewModel @Inject constructor(
         return contacts.groupBy { IntimacyTier.of(it.intimacyScore).label }
     }
 
-    private fun loadGroups() {
-        viewModelScope.launch {
-            groupRepository.getAllGroups().collect { groups ->
-                _uiState.update { it.copy(data = it.data.copy(groups = groups)) }
-            }
-        }
-    }
-
-    private fun loadRelationships() {
-        viewModelScope.launch {
-            customTypeRepository.getTypesByCategory(CustomCategories.RELATIONSHIP).collect { types ->
-                _uiState.update { it.copy(data = it.data.copy(relationships = types)) }
-            }
-        }
-    }
-
     fun onSearchQueryChange(query: String) = searchManager.onQueryChange(query)
 
     fun onGroupSelected(groupId: Long?) {
         _selectedGroupId.value = groupId
-        _uiState.update { it.copy(data = it.data.copy(selectedGroupId = groupId)) }
     }
 
     fun onRelationshipSelected(relationship: String?) {
         _selectedRelationship.value = relationship
-        _uiState.update { it.copy(data = it.data.copy(selectedRelationship = relationship)) }
     }
 
     fun onIntimacySelected(intimacy: String?) {
         _selectedIntimacy.value = intimacy
-        _uiState.update { it.copy(data = it.data.copy(selectedIntimacy = intimacy)) }
     }
 
     fun onViewModeChange(mode: Int) {
-        _uiState.update { it.copy(data = it.data.copy(viewMode = mode, isReorderMode = false), dialog = ContactsDialogState()) }
+        _viewMode.value = mode
+        _isReorderMode.value = false
+        _manualOrder.value = null
+        _dialogState.value = ContactsDialogState()
     }
 
     fun toggleReorderMode() {
-        val newMode = !_uiState.value.data.isReorderMode
-        _uiState.update { it.copy(data = it.data.copy(isReorderMode = newMode)) }
+        val newMode = !_isReorderMode.value
+        _isReorderMode.value = newMode
+        if (!newMode) {
+            _manualOrder.value = null
+        }
     }
 
     fun moveContact(fromIndex: Int, toIndex: Int) {
-        val current = _uiState.value.data.contacts.toMutableList()
+        val current = uiState.value.data.contacts
         if (fromIndex in current.indices && toIndex in current.indices && fromIndex != toIndex) {
-            val item = current.removeAt(fromIndex)
-            current.add(toIndex, item)
-            _uiState.update { it.copy(data = it.data.copy(contacts = current)) }
+            val reordered = current.toMutableList()
+            val item = reordered.removeAt(fromIndex)
+            reordered.add(toIndex, item)
+            _manualOrder.value = reordered.map { it.id }
         }
     }
 
     fun selectCard(contactId: Long?) {
-        _uiState.update { it.copy(dialog = it.dialog.copy(selectedCardId = contactId, flippedCardId = null)) }
+        _dialogState.value = _dialogState.value.copy(selectedCardId = contactId, flippedCardId = null)
     }
 
     fun toggleCardFlip(contactId: Long) {
-        _uiState.update { state ->
-            val newFlippedId = if (state.dialog.flippedCardId == contactId) null else contactId
-            state.copy(dialog = state.dialog.copy(flippedCardId = newFlippedId))
-        }
+        val current = _dialogState.value
+        val newFlippedId = if (current.flippedCardId == contactId) null else contactId
+        _dialogState.value = current.copy(flippedCardId = newFlippedId)
     }
 
     fun deleteContact(id: Long) {

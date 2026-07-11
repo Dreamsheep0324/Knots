@@ -82,6 +82,7 @@ fun TangTheme(
         MaterialTheme(
             colorScheme = colorScheme,
             typography = Typography,
+            shapes = TangShapes,
             content = content
         )
     }

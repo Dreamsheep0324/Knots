@@ -13,7 +13,6 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
-import com.tang.prm.ui.theme.Primary
 
 @Composable
 fun ContactAvatar(
@@ -36,7 +35,7 @@ fun ContactAvatar(
             modifier = modifier
                 .size(size.dp)
                 .clip(CircleShape)
-                .background(Primary),
+                .background(MaterialTheme.colorScheme.primary),
             contentAlignment = Alignment.Center
         ) {
             Text(

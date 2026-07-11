@@ -30,7 +30,6 @@ import com.tang.prm.ui.navigation.EventDetailRoute
 import com.tang.prm.ui.navigation.AnniversaryDetailRoute
 import com.tang.prm.ui.navigation.GiftDetailRoute
 import com.tang.prm.ui.navigation.ChatDetailRoute
-import com.tang.prm.ui.theme.Primary
 
 @Composable
 fun ContactDetailScreen(
@@ -96,7 +95,7 @@ fun ContactDetailScreen(
         } ?: run {
             if (uiState.data.isLoading) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator(color = Primary, strokeWidth = 3.dp)
+                    CircularProgressIndicator(color = MaterialTheme.colorScheme.primary, strokeWidth = 3.dp)
                 }
             }
         }

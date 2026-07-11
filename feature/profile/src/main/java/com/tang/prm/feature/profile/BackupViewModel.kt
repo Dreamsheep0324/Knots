@@ -10,10 +10,14 @@ import com.tang.prm.domain.model.ClearDataResult
 import com.tang.prm.domain.model.RestoreResult
 import com.tang.prm.domain.repository.SettingsRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import android.util.Log
 import javax.inject.Inject
 
 sealed class BackupState {
@@ -30,6 +34,20 @@ sealed class BackupState {
     data class DeletingBackup(val fileName: String) : BackupState()
 }
 
+data class BackupDataState(
+    val backupFiles: List<BackupFileInfo> = emptyList(),
+    val hasBackupDir: Boolean = false,
+    val backupDirName: String = "",
+    val autoBackupEnabled: Boolean = false
+)
+data class BackupDialogState(
+    val operationState: BackupState = BackupState.Idle
+)
+data class BackupUiState(
+    val data: BackupDataState = BackupDataState(),
+    val dialog: BackupDialogState = BackupDialogState()
+)
+
 @HiltViewModel
 class BackupViewModel @Inject constructor(
     private val backupRestoreUseCase: BackupRestoreUseCase,
@@ -37,26 +55,38 @@ class BackupViewModel @Inject constructor(
 ) : ViewModel() {
 
     private val _state = MutableStateFlow<BackupState>(BackupState.Idle)
-    val state: StateFlow<BackupState> = _state.asStateFlow()
 
     private val _backupFiles = MutableStateFlow<List<BackupFileInfo>>(emptyList())
-    val backupFiles: StateFlow<List<BackupFileInfo>> = _backupFiles.asStateFlow()
 
     private val _hasBackupDir = MutableStateFlow(false)
-    val hasBackupDir: StateFlow<Boolean> = _hasBackupDir.asStateFlow()
 
     private val _backupDirName = MutableStateFlow("")
-    val backupDirName: StateFlow<String> = _backupDirName.asStateFlow()
 
-    // 自动备份
     private val _autoBackupEnabled = MutableStateFlow(false)
-    val autoBackupEnabled: StateFlow<Boolean> = _autoBackupEnabled.asStateFlow()
+
+    val uiState: StateFlow<BackupUiState> = combine(
+        _backupFiles,
+        _hasBackupDir,
+        _backupDirName,
+        _autoBackupEnabled
+    ) { backupFiles, hasBackupDir, backupDirName, autoBackupEnabled ->
+        BackupDataState(
+            backupFiles = backupFiles,
+            hasBackupDir = hasBackupDir,
+            backupDirName = backupDirName,
+            autoBackupEnabled = autoBackupEnabled
+        )
+    }.combine(_state) { data, operationState ->
+        BackupUiState(data = data, dialog = BackupDialogState(operationState = operationState))
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), BackupUiState())
 
     private var lastDataFingerprint: String = ""
 
     init {
-        _hasBackupDir.value = backupRestoreUseCase.hasBackupDir()
-        _backupDirName.value = backupRestoreUseCase.getBackupDirName()
+        viewModelScope.launch(Dispatchers.IO) {
+            _hasBackupDir.value = backupRestoreUseCase.hasBackupDir()
+            _backupDirName.value = backupRestoreUseCase.getBackupDirName()
+        }
         viewModelScope.launch {
             settingsRepository.getAutoBackupEnabled().collect { _autoBackupEnabled.value = it }
         }
@@ -66,7 +96,9 @@ class BackupViewModel @Inject constructor(
     fun setBackupDir(uri: android.net.Uri) {
         backupRestoreUseCase.setBackupDirUri(uri.toString())
         _hasBackupDir.value = true
-        _backupDirName.value = backupRestoreUseCase.getBackupDirName()
+        viewModelScope.launch(Dispatchers.IO) {
+            _backupDirName.value = backupRestoreUseCase.getBackupDirName()
+        }
         viewModelScope.launch { loadBackupFiles() }
     }
 
@@ -156,7 +188,10 @@ class BackupViewModel @Inject constructor(
                 try {
                     backupRestoreUseCase.backupToDir(BackupImageQuality.ORIGINAL)
                     loadBackupFiles()
-                } catch (_: Exception) {}
+                } catch (e: Exception) {
+                    Log.e("BackupViewModel", "自动备份失败", e)
+                    _state.value = BackupState.BackupError("自动备份失败：${e.message}")
+                }
             }
         }
     }

@@ -63,7 +63,6 @@ import com.tang.prm.ui.theme.IntimacyClose
 import com.tang.prm.ui.theme.IntimacyFamily
 import com.tang.prm.ui.theme.IntimacyFriend
 import com.tang.prm.ui.theme.IntimacyNew
-import com.tang.prm.ui.theme.Primary
 import com.tang.prm.ui.theme.SceneOrange
 
 internal val SectionIconSize = 36.dp
@@ -101,7 +100,7 @@ internal fun ProfileHeader(avatar: String?, onAvatarClick: () -> Unit) {
     AppCard(
         modifier = Modifier.fillMaxWidth()
     ) {
-        val headerGradient = Brush.verticalGradient(colors = listOf(Primary.copy(alpha = 0.06f), MaterialTheme.colorScheme.surface))
+        val headerGradient = Brush.verticalGradient(colors = listOf(MaterialTheme.colorScheme.primary.copy(alpha = 0.06f), MaterialTheme.colorScheme.surface))
         Column(
             modifier = Modifier.fillMaxWidth()
                 .background(headerGradient)
@@ -125,7 +124,7 @@ internal fun ProfileHeader(avatar: String?, onAvatarClick: () -> Unit) {
             Spacer(modifier = Modifier.height(8.dp))
             Box(
                 modifier = Modifier.width(32.dp).height(3.dp)
-                    .background(Primary.copy(alpha = 0.3f), RoundedCornerShape(2.dp))
+                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.3f), RoundedCornerShape(2.dp))
             )
         }
     }
@@ -168,7 +167,7 @@ internal fun FormField(label: String, value: String, onValueChange: (String) -> 
             placeholder = { Text(placeholder, color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = AnimationTokens.Alpha.half)) },
             singleLine = maxLines == 1, maxLines = maxLines, shape = RoundedCornerShape(12.dp),
             colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = Primary.copy(alpha = AnimationTokens.Alpha.visible),
+                focusedBorderColor = MaterialTheme.colorScheme.primary.copy(alpha = AnimationTokens.Alpha.visible),
                 unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = AnimationTokens.Alpha.half),
                 focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
                 unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
@@ -184,7 +183,7 @@ internal fun NotesField(value: String, onValueChange: (String) -> Unit) {
         placeholder = { Text("写下你对这个人的了解...", color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = AnimationTokens.Alpha.half)) },
         maxLines = 6, shape = RoundedCornerShape(12.dp),
         colors = OutlinedTextFieldDefaults.colors(
-            focusedBorderColor = Primary.copy(alpha = AnimationTokens.Alpha.visible),
+            focusedBorderColor = MaterialTheme.colorScheme.primary.copy(alpha = AnimationTokens.Alpha.visible),
             unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = AnimationTokens.Alpha.half),
             focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
             unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)

@@ -22,7 +22,6 @@ import androidx.compose.ui.unit.dp
 import com.tang.prm.ui.components.AppCard
 import com.tang.prm.ui.animation.core.AnimationTokens
 import com.tang.prm.ui.theme.Dimens
-import com.tang.prm.ui.theme.Primary
 import com.tang.prm.ui.theme.SceneOrange
 import com.tang.prm.domain.util.DateUtils
 
@@ -58,7 +57,7 @@ internal fun SceneInfoCard(
                 shape = RoundedCornerShape(12.dp),
                 colors = OutlinedTextFieldDefaults.colors(
                     unfocusedBorderColor = MaterialTheme.colorScheme.surfaceVariant,
-                    focusedBorderColor = Primary.copy(alpha = 0.3f)
+                    focusedBorderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)
                 )
             )
 
@@ -79,10 +78,10 @@ internal fun SceneInfoCard(
                     Box(
                         modifier = Modifier
                             .size(36.dp)
-                            .background(Primary.copy(alpha = 0.1f), CircleShape),
+                            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f), CircleShape),
                         contentAlignment = Alignment.Center
                     ) {
-                        Icon(Icons.Default.CalendarToday, contentDescription = null, tint = Primary, modifier = Modifier.size(18.dp))
+                        Icon(Icons.Default.CalendarToday, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(18.dp))
                     }
                     Spacer(modifier = Modifier.width(12.dp))
                     Column {

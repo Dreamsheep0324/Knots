@@ -1,4 +1,4 @@
-﻿package com.tang.prm.feature.chat.components
+package com.tang.prm.feature.chat.components
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -21,7 +21,6 @@ import com.tang.prm.ui.components.AppCard
 import com.tang.prm.ui.components.ContactAvatar
 import com.tang.prm.ui.animation.core.AnimationTokens
 import com.tang.prm.ui.theme.Dimens
-import com.tang.prm.ui.theme.Primary
 
 @Composable
 internal fun ContactSelectionCard(
@@ -34,9 +33,9 @@ internal fun ContactSelectionCard(
     ) {
         Column(modifier = Modifier.padding(Dimens.paddingCard)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Box(modifier = Modifier.width(3.dp).height(16.dp).background(Primary, RoundedCornerShape(2.dp)))
+                Box(modifier = Modifier.width(3.dp).height(16.dp).background(MaterialTheme.colorScheme.primary, RoundedCornerShape(2.dp)))
                 Spacer(modifier = Modifier.width(8.dp))
-                Icon(Icons.Default.Person, contentDescription = null, tint = Primary, modifier = Modifier.size(16.dp))
+                Icon(Icons.Default.Person, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(16.dp))
                 Spacer(modifier = Modifier.width(6.dp))
                 Text("对话人物", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
             }
@@ -57,7 +56,7 @@ internal fun ContactSelectionCard(
                         }
                     }
                     TextButton(onClick = onChangeClick) {
-                        Text("更换", color = Primary, fontSize = 13.sp)
+                        Text("更换", color = MaterialTheme.colorScheme.primary, fontSize = 13.sp)
                     }
                 }
             } else {
@@ -76,10 +75,10 @@ internal fun ContactSelectionCard(
                         Box(
                             modifier = Modifier
                                 .size(40.dp)
-                                .background(Primary.copy(alpha = 0.1f), CircleShape),
+                                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f), CircleShape),
                             contentAlignment = Alignment.Center
                         ) {
-                            Icon(Icons.Default.PersonAdd, contentDescription = null, tint = Primary, modifier = Modifier.size(20.dp))
+                            Icon(Icons.Default.PersonAdd, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
                         }
                         Spacer(modifier = Modifier.width(12.dp))
                         Text("选择人物", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)

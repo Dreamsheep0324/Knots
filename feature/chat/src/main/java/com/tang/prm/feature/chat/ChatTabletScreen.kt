@@ -2,6 +2,14 @@
 
 package com.tang.prm.feature.chat
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -72,7 +80,6 @@ import com.tang.prm.ui.components.DeleteConfirmDialog
 import com.tang.prm.ui.navigation.AddChatRoute
 import com.tang.prm.ui.navigation.EditChatRoute
 import com.tang.prm.ui.theme.FavoriteGold
-import com.tang.prm.ui.theme.Primary
 
 // ═══════════════════════════════════════════════════════════════
 // 平板对话主界面 — 方案A 剧本剧场 Script Theatre
@@ -92,14 +99,14 @@ fun ChatTabletScreen(
     var searchQuery by remember { mutableStateOf("") }
     var selectedId by remember { mutableStateOf<Long?>(null) }
 
-    val filteredConversations = remember(uiState.conversations, searchQuery) {
+    val filteredConversations = remember(uiState.data.conversations, searchQuery) {
         if (searchQuery.isNotBlank()) {
-            uiState.conversations.filter {
+            uiState.data.conversations.filter {
                 it.contactName.contains(searchQuery, ignoreCase = true) ||
                 it.lastMessage.contains(searchQuery, ignoreCase = true)
             }
         } else {
-            uiState.conversations
+            uiState.data.conversations
         }
     }
 
@@ -111,8 +118,8 @@ fun ChatTabletScreen(
         // ── 左栏：对话列表 ──
         ConversationListPane(
             conversations = filteredConversations,
-            totalCount = uiState.conversations.size,
-            contactCount = uiState.conversations.map { it.contactName }.distinct().size,
+            totalCount = uiState.data.conversations.size,
+            contactCount = uiState.data.conversations.map { it.contactName }.distinct().size,
             searchQuery = searchQuery,
             onQueryChange = { searchQuery = it },
             selectedId = selectedId,
@@ -122,74 +129,97 @@ fun ChatTabletScreen(
         )
 
         // ── 中央 + 右栏 ──
+        // 使用 AnimatedContent 复用 NavHost 级别动效（fadeIn + scaleIn(0.96f)），
+        // 让对话列表→详情的切换与人物界面跳转保持一致的视觉过渡
         val currentId = selectedId
-        if (currentId != null) {
-            val detailViewModel: ChatDetailViewModel = hiltViewModel()
-            val detailState by detailViewModel.uiState.collectAsStateWithLifecycle()
-            LaunchedEffect(currentId) { detailViewModel.setEventId(currentId) }
+        AnimatedContent(
+            targetState = currentId,
+            transitionSpec = {
+                // 复用 navTransitions 的详情页动效参数
+                (fadeIn(tween(450, delayMillis = 50, easing = FastOutSlowInEasing)) +
+                    scaleIn(
+                        animationSpec = tween(450, delayMillis = 50, easing = FastOutSlowInEasing),
+                        initialScale = 0.96f
+                    )) togetherWith
+                    (fadeOut(tween(200)) +
+                        scaleOut(
+                            animationSpec = tween(200),
+                            targetScale = 0.96f
+                        ))
+            },
+            modifier = Modifier.weight(1f).fillMaxHeight(),
+            label = "chatDetailSwitch"
+        ) { id ->
+            if (id != null) {
+                val detailViewModel: ChatDetailViewModel = hiltViewModel(key = "chatDetail_$id")
+                val detailState by detailViewModel.uiState.collectAsStateWithLifecycle()
+                LaunchedEffect(id) { detailViewModel.setEventId(id) }
 
-            var showDeleteDialog by remember { mutableStateOf(false) }
-            if (showDeleteDialog) {
-                DeleteConfirmDialog(
-                    title = "删除对话",
-                    message = "确定要删除这条对话记录吗？此操作不可撤销。",
-                    onConfirm = {
-                        detailViewModel.deleteEvent()
-                        selectedId = null
-                        showDeleteDialog = false
-                    },
-                    onDismiss = { showDeleteDialog = false }
-                )
-            }
+                var showDeleteDialog by remember { mutableStateOf(false) }
+                if (showDeleteDialog) {
+                    DeleteConfirmDialog(
+                        title = "删除对话",
+                        message = "确定要删除这条对话记录吗？此操作不可撤销。",
+                        onConfirm = {
+                            detailViewModel.deleteEvent()
+                            selectedId = null
+                            showDeleteDialog = false
+                        },
+                        onDismiss = { showDeleteDialog = false }
+                    )
+                }
 
-            // 中央：剧本舞台
-            ScriptStagePane(
-                uiState = detailState,
-                onEdit = { navController.navigate(EditChatRoute(currentId)) },
-                onToggleFavorite = { detailViewModel.toggleFavorite() },
-                onDelete = { showDeleteDialog = true },
-                modifier = Modifier.weight(1f).fillMaxHeight()
-            )
+                Row(modifier = Modifier.fillMaxSize()) {
+                    // 中央：剧本舞台
+                    ScriptStagePane(
+                        uiState = detailState,
+                        onEdit = { navController.navigate(EditChatRoute(id)) },
+                        onToggleFavorite = { detailViewModel.toggleFavorite() },
+                        onDelete = { showDeleteDialog = true },
+                        modifier = Modifier.weight(1f).fillMaxHeight()
+                    )
 
-            // 右栏：角色信息
-            CharacterPane(
-                uiState = detailState,
-                conversations = uiState.conversations,
-                modifier = Modifier.width(400.dp).fillMaxHeight()
-            )
-        } else {
-            // 空状态
-            Box(
-                modifier = Modifier.weight(1f).fillMaxHeight(),
-                contentAlignment = Alignment.Center
-            ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Box(
-                        modifier = Modifier
-                            .size(120.dp)
-                            .background(MaterialTheme.colorScheme.surfaceVariant, CircleShape),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            Icons.AutoMirrored.Filled.Chat,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.size(60.dp)
+                    // 右栏：角色信息
+                    CharacterPane(
+                        uiState = detailState,
+                        conversations = uiState.data.conversations,
+                        modifier = Modifier.width(400.dp).fillMaxHeight()
+                    )
+                }
+            } else {
+                // 空状态
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Box(
+                            modifier = Modifier
+                                .size(120.dp)
+                                .background(MaterialTheme.colorScheme.surfaceVariant, CircleShape),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                Icons.AutoMirrored.Filled.Chat,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.size(60.dp)
+                            )
+                        }
+                        Spacer(Modifier.height(24.dp))
+                        Text(
+                            "选择对话查看剧本",
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Spacer(Modifier.height(8.dp))
+                        Text(
+                            "从左侧列表选择一段对话",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
-                    Spacer(Modifier.height(24.dp))
-                    Text(
-                        "选择对话查看剧本",
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                    Spacer(Modifier.height(8.dp))
-                    Text(
-                        "从左侧列表选择一段对话",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
                 }
             }
         }
@@ -241,7 +271,7 @@ private fun ConversationListPane(
                 Box(
                     modifier = Modifier
                         .size(44.dp)
-                        .background(Primary, RoundedCornerShape(12.dp))
+                        .background(MaterialTheme.colorScheme.primary, RoundedCornerShape(12.dp))
                         .clickable(onClick = onAddClick),
                     contentAlignment = Alignment.Center
                 ) {
@@ -323,7 +353,7 @@ private fun ConversationListItem(
     isSelected: Boolean,
     onClick: () -> Unit
 ) {
-    val bgColor = if (isSelected) Primary.copy(alpha = 0.1f) else Color.Transparent
+    val bgColor = if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.1f) else Color.Transparent
 
     Row(
         modifier = Modifier
@@ -418,7 +448,7 @@ private fun ScriptStagePane(
         modifier = modifier,
         color = MaterialTheme.colorScheme.background
     ) {
-        val event = uiState.event
+        val event = uiState.data.event
         if (event != null) {
             val contact = event.participants?.firstOrNull()
             val intimacyColor = contact?.let { getIntimacyColor(it.intimacyScore) } ?: MaterialTheme.colorScheme.onSurfaceVariant
@@ -481,10 +511,10 @@ private fun ScriptStagePane(
                             onClick = onEdit
                         )
                         ActionButton(
-                            icon = if (uiState.isFavorite) Icons.Default.Bookmark else Icons.Default.BookmarkBorder,
+                            icon = if (uiState.data.isFavorite) Icons.Default.Bookmark else Icons.Default.BookmarkBorder,
                             contentDescription = "收藏",
                             onClick = onToggleFavorite,
-                            tint = if (uiState.isFavorite) FavoriteGold else MaterialTheme.colorScheme.onSurfaceVariant
+                            tint = if (uiState.data.isFavorite) FavoriteGold else MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         ActionButton(
                             icon = Icons.Default.Delete,
@@ -564,7 +594,7 @@ private fun ScriptStagePane(
                     }
                 }
             }
-        } else if (uiState.isLoading) {
+        } else if (uiState.data.isLoading) {
             Box(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
@@ -739,7 +769,7 @@ private fun CharacterPane(
         modifier = modifier,
         color = Color.White
     ) {
-        val event = uiState.event
+        val event = uiState.data.event
         val contact = event?.participants?.firstOrNull()
         val intimacyColor = contact?.let { getIntimacyColor(it.intimacyScore) } ?: MaterialTheme.colorScheme.onSurfaceVariant
         val intimacyTier = contact?.let { IntimacyTier.of(it.intimacyScore) }
@@ -866,7 +896,9 @@ private fun CharacterPane(
             SectionDivider("CONVERSATION STATS · 对话统计")
 
             // ── 统计项 ──
-            val contactConversations = conversations.filter { it.contactName == contact.name }
+            val contactConversations = remember(conversations, contact.name) {
+                conversations.filter { it.contactName == contact.name }
+            }
             CharacterStatRow(
                 label = "对话总数",
                 value = "${contactConversations.size}",
@@ -884,8 +916,8 @@ private fun CharacterPane(
             )
             CharacterStatRow(
                 label = "收藏状态",
-                value = if (uiState.isFavorite) "已收藏" else "未收藏",
-                valueColor = if (uiState.isFavorite) FavoriteGold else MaterialTheme.colorScheme.onSurfaceVariant,
+                value = if (uiState.data.isFavorite) "已收藏" else "未收藏",
+                valueColor = if (uiState.data.isFavorite) FavoriteGold else MaterialTheme.colorScheme.onSurfaceVariant,
                 unit = ""
             )
 
@@ -921,7 +953,7 @@ private fun SectionDivider(title: String) {
         Box(
             modifier = Modifier
                 .size(width = 3.dp, height = 12.dp)
-                .background(Primary)
+                .background(MaterialTheme.colorScheme.primary)
         )
         Text(
             text = title,

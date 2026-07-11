@@ -79,7 +79,7 @@ class AddContactViewModel @Inject constructor(
 
     private fun loadReferenceData() {
         viewModelScope.launch {
-            combine(
+            val data = combine(
                 groupRepository.getAllGroups(),
                 combine(
                     customTypeRepository.getTypesByCategory(CustomCategories.RELATIONSHIP),

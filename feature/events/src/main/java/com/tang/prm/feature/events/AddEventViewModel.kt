@@ -41,24 +41,23 @@ class AddEventViewModel @Inject constructor(
 
     private fun loadReferenceData() {
         viewModelScope.launch {
-            combine(
+            val data = combine(
                 contactRepository.getAllContacts(),
                 customTypeRepository.getTypesByCategory(CustomCategories.EVENT_TYPE),
                 customTypeRepository.getTypesByCategory(CustomCategories.EMOTION),
                 customTypeRepository.getTypesByCategory(CustomCategories.WEATHER)
             ) { contacts, eventTypes, emotions, weathers ->
                 RefData(contacts, eventTypes, emotions, weathers)
-            }.collect { data ->
-                if (data.emotions.isEmpty()) seedDefaultEmotions()
-                if (data.weathers.isEmpty()) seedDefaultWeathers()
-                _uiState.update {
-                    it.copy(
-                        availableContacts = data.contacts,
-                        eventTypes = data.eventTypes,
-                        emotions = data.emotions,
-                        weathers = data.weathers
-                    )
-                }
+            }.first()
+            if (data.emotions.isEmpty()) seedDefaultEmotions()
+            if (data.weathers.isEmpty()) seedDefaultWeathers()
+            _uiState.update {
+                it.copy(
+                    availableContacts = data.contacts,
+                    eventTypes = data.eventTypes,
+                    emotions = data.emotions,
+                    weathers = data.weathers
+                )
             }
         }
     }

@@ -31,7 +31,6 @@ import com.tang.prm.ui.components.ContactPickerDialog
 import com.tang.prm.ui.components.FormScreenScaffold
 import com.tang.prm.ui.components.photo.PhotoPickerConfig
 import com.tang.prm.ui.components.photo.rememberPhotoPickerLauncher
-import com.tang.prm.ui.theme.Primary
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -104,7 +103,7 @@ fun AddGiftScreen(
             onDismiss = { showDatePicker = false },
             onDateSelected = { selectedDate = it },
             initialDate = selectedDate,
-            confirmColor = Primary,
+            confirmColor = MaterialTheme.colorScheme.primary,
             dismissColor = MaterialTheme.colorScheme.onSurfaceVariant
         )
     }

@@ -52,7 +52,6 @@ import com.tang.prm.ui.animation.core.AnimationTokens
 import com.tang.prm.ui.components.AppCard
 import com.tang.prm.ui.theme.DialogDefaults
 import com.tang.prm.ui.theme.OnPrimary
-import com.tang.prm.ui.theme.Primary
 import com.tang.prm.ui.theme.TextGray
 import com.tang.prm.ui.theme.commonAnniversaryIcons
 import com.tang.prm.ui.theme.getAnniversaryIcon
@@ -360,7 +359,7 @@ internal fun AnniversaryDateSection(
                     onCheckedChange = onLunarChange,
                     colors = SwitchDefaults.colors(
                         checkedThumbColor = OnPrimary,
-                        checkedTrackColor = Primary,
+                        checkedTrackColor = MaterialTheme.colorScheme.primary,
                         uncheckedThumbColor = MaterialTheme.colorScheme.onSurface,
                         uncheckedTrackColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f),
                         uncheckedBorderColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
@@ -380,7 +379,7 @@ internal fun AnniversaryDateSection(
                         onCheckedChange = onLeapMonthChange,
                         colors = SwitchDefaults.colors(
                             checkedThumbColor = OnPrimary,
-                            checkedTrackColor = Primary,
+                            checkedTrackColor = MaterialTheme.colorScheme.primary,
                             uncheckedThumbColor = MaterialTheme.colorScheme.onSurface,
                             uncheckedTrackColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f),
                             uncheckedBorderColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
@@ -400,7 +399,7 @@ internal fun AnniversaryDateSection(
                     onCheckedChange = onRepeatChange,
                     colors = SwitchDefaults.colors(
                         checkedThumbColor = OnPrimary,
-                        checkedTrackColor = Primary,
+                        checkedTrackColor = MaterialTheme.colorScheme.primary,
                         uncheckedThumbColor = MaterialTheme.colorScheme.onSurface,
                         uncheckedTrackColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f),
                         uncheckedBorderColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)

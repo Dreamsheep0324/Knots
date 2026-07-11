@@ -32,8 +32,6 @@ import com.tang.prm.ui.navigation.AddChatRoute
 import com.tang.prm.ui.navigation.ChatDetailRoute
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.tang.prm.ui.animation.core.AnimationTokens
-import com.tang.prm.ui.animation.primitives.staggeredAppear
-import com.tang.prm.ui.theme.Primary
 import com.tang.prm.ui.theme.TextGray
 
 @Composable
@@ -64,7 +62,7 @@ fun ChatScreen(
                         modifier = Modifier
                             .size(36.dp)
                             .background(
-                                if (!isGrouped) Primary else MaterialTheme.colorScheme.surfaceVariant,
+                                if (!isGrouped) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
                                 RoundedCornerShape(8.dp)
                             )
                             .clickable { isGrouped = false },
@@ -81,7 +79,7 @@ fun ChatScreen(
                         modifier = Modifier
                             .size(36.dp)
                             .background(
-                                if (isGrouped) Primary else MaterialTheme.colorScheme.surfaceVariant,
+                                if (isGrouped) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
                                 RoundedCornerShape(8.dp)
                             )
                             .clickable { isGrouped = true },
@@ -99,13 +97,13 @@ fun ChatScreen(
                     Box(
                         modifier = Modifier
                             .size(44.dp)
-                            .background(Primary.copy(alpha = 0.1f), CircleShape),
+                            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f), CircleShape),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
                             Icons.Default.Add,
                             contentDescription = "新建对话",
-                            tint = Primary,
+                            tint = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.size(24.dp)
                         )
                     }
@@ -125,18 +123,18 @@ fun ChatScreen(
 
         Spacer(modifier = Modifier.height(6.dp))
 
-        val filteredConversations = remember(uiState.conversations, searchQuery) {
+        val filteredConversations = remember(uiState.data.conversations, searchQuery) {
             if (searchQuery.isNotBlank()) {
-                uiState.conversations.filter {
+                uiState.data.conversations.filter {
                     it.contactName.contains(searchQuery, ignoreCase = true) ||
                     it.lastMessage.contains(searchQuery, ignoreCase = true)
                 }
             } else {
-                uiState.conversations
+                uiState.data.conversations
             }
         }
 
-        if (filteredConversations.isEmpty() && !uiState.isLoading) {
+        if (filteredConversations.isEmpty() && !uiState.data.isLoading) {
             ChatEmptyState()
         } else if (isGrouped) {
             ChatGroupedList(
@@ -162,13 +160,13 @@ private fun ChatEmptyState() {
             Box(
                 modifier = Modifier
                     .size(120.dp)
-                    .background(Primary.copy(alpha = 0.1f), CircleShape),
+                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f), CircleShape),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     Icons.AutoMirrored.Filled.Chat,
                     contentDescription = null,
-                    tint = Primary,
+                    tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(60.dp)
                 )
             }
@@ -220,12 +218,12 @@ private fun ChatGroupedList(
                     )
                     Surface(
                         shape = RoundedCornerShape(4.dp),
-                        color = Primary.copy(alpha = AnimationTokens.Alpha.faint)
+                        color = MaterialTheme.colorScheme.primary.copy(alpha = AnimationTokens.Alpha.faint)
                     ) {
                         Text(
                             text = "${conversations.size}条",
                             style = MaterialTheme.typography.labelSmall,
-                            color = Primary,
+                            color = MaterialTheme.colorScheme.primary,
                             fontWeight = FontWeight.SemiBold,
                             modifier = Modifier.padding(horizontal = 6.dp, vertical = 1.dp),
                             fontSize = 10.sp
@@ -237,8 +235,7 @@ private fun ChatGroupedList(
                 ConversationItem(
                     conversation = conversation,
                     showAvatar = false,
-                    onClick = { onConversationClick(conversation.eventId) },
-                    modifier = Modifier.staggeredAppear(index = minOf(index, 15))
+                    onClick = { onConversationClick(conversation.eventId) }
                 )
             }
         }
@@ -257,11 +254,10 @@ private fun ChatFlatList(
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         itemsIndexed(conversations, key = { _, it -> it.eventId }) { index, conversation ->
-            ConversationItem(
-                conversation = conversation,
-                showAvatar = true,
-                onClick = { onConversationClick(conversation.eventId) },
-                modifier = Modifier.staggeredAppear(index = minOf(index, 15))
+                ConversationItem(
+                    conversation = conversation,
+                    showAvatar = true,
+                    onClick = { onConversationClick(conversation.eventId) }
             )
         }
         item { Spacer(modifier = Modifier.height(100.dp).navigationBarsPadding()) }

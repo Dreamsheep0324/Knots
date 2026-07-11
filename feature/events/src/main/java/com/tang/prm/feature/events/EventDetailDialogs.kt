@@ -22,7 +22,6 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.tang.prm.ui.theme.DialogDefaults
 import com.tang.prm.ui.theme.InsightPink
-import com.tang.prm.ui.theme.Primary
 
 @Composable
 internal fun RemarkInputDialog(
@@ -51,7 +50,7 @@ internal fun RemarkInputDialog(
                 textStyle = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.onSurface, lineHeight = 22.sp),
                 shape = RoundedCornerShape(12.dp),
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = Primary,
+                    focusedBorderColor = MaterialTheme.colorScheme.primary,
                     unfocusedBorderColor = MaterialTheme.colorScheme.outline,
                     focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
                     unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant
@@ -60,7 +59,7 @@ internal fun RemarkInputDialog(
         },
         confirmButton = {
             TextButton(onClick = { onConfirm(text) }) {
-                Text("保存", color = Primary, fontWeight = FontWeight.Bold)
+                Text("保存", color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
             }
         },
         dismissButton = {

@@ -21,6 +21,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.tang.prm.ui.components.EmptyState
 import com.tang.prm.ui.components.SearchBar
+import com.tang.prm.ui.components.SegmentedOption
+import com.tang.prm.ui.components.SegmentedToggleButton
 import com.tang.prm.ui.common.SearchState
 import com.tang.prm.feature.people.contacts.overlay.ContactCardOverlay
 import com.tang.prm.ui.navigation.AddContactRoute
@@ -70,46 +72,27 @@ fun ContactsScreen(
                         Text("人物", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.headlineSmall)
                     },
                     actions = {
-                        Row(
-                            horizontalArrangement = Arrangement.spacedBy(4.dp)
-                        ) {
-                            listOf(
-                                Triple(Icons.Default.Apps, "网格", 0),
-                                Triple(Icons.AutoMirrored.Filled.List, "列表", 1),
-                                Triple(Icons.Default.Style, "卡牌", 2)
-                            ).forEach { (icon, _, mode) ->
-                                val selected = uiState.data.viewMode == mode
-                                Box(
-                                    modifier = Modifier
-                                        .size(36.dp)
-                                        .background(
-                                            if (selected) Primary else MaterialTheme.colorScheme.surfaceVariant,
-                                            RoundedCornerShape(8.dp)
-                                        )
-                                        .clickable { viewModel.onViewModeChange(mode) },
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Icon(
-                                        icon,
-                                        contentDescription = null,
-                                        tint = if (selected) Color.White else MaterialTheme.colorScheme.onSurfaceVariant,
-                                        modifier = Modifier.size(20.dp)
-                                    )
-                                }
-                            }
-                        }
+                        SegmentedToggleButton(
+                            options = listOf(
+                                SegmentedOption(0, Icons.Default.Apps, "网格"),
+                                SegmentedOption(1, Icons.AutoMirrored.Filled.List, "列表"),
+                                SegmentedOption(2, Icons.Default.Style, "卡牌")
+                            ),
+                            selectedKey = uiState.data.viewMode,
+                            onSelectionChange = viewModel::onViewModeChange
+                        )
 
                         IconButton(onClick = { navController.navigate(AddContactRoute) }) {
                             Box(
                                 modifier = Modifier
                                     .size(44.dp)
-                                    .background(Primary.copy(alpha = 0.1f), CircleShape),
+                                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f), CircleShape),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Icon(
                                     Icons.Default.Add,
                                     contentDescription = "新建人物",
-                                    tint = Primary,
+                                    tint = MaterialTheme.colorScheme.primary,
                                     modifier = Modifier.size(24.dp)
                                 )
                             }

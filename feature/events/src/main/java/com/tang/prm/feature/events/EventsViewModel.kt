@@ -151,7 +151,7 @@ class EventsViewModel @Inject constructor(
             ),
             dialog = ui.dialog
         )
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(30_000), EventsUiState())
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), EventsUiState())
 
     fun selectType(type: String?) {
         _selectedType.value = type

@@ -28,7 +28,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.tang.prm.domain.model.BackupFileInfo
-import com.tang.prm.ui.theme.Primary
 import java.text.SimpleDateFormat
 import java.util.Locale
 
@@ -37,7 +36,7 @@ internal fun BackupSectionLabel(title: String) {
     Text(
         title,
         style = MaterialTheme.typography.titleSmall,
-        color = Primary,
+        color = MaterialTheme.colorScheme.primary,
         fontWeight = FontWeight.Medium,
         modifier = Modifier.padding(vertical = 8.dp)
     )

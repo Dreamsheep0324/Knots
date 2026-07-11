@@ -32,7 +32,6 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
-import com.tang.prm.ui.theme.Primary
 
 /**
  * 统一的图片展示槽位
@@ -239,46 +238,52 @@ private fun ThumbnailAddSlot(label: String, onClick: () -> Unit) {
 private fun PolaroidPhotoSlot(photoUri: String, onRemove: (() -> Unit)?, onClick: (() -> Unit)?) {
     val rotation = remember { (-3f..3f).let { (it.start + (it.endInclusive - it.start) * kotlin.random.Random.nextFloat()) } }
 
-    Column(
+    Box(
         modifier = Modifier
             .width(80.dp)
-            .clip(RoundedCornerShape(4.dp))
-            .background(MaterialTheme.colorScheme.surface)
-            .rotate(rotation)
-            .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier),
-        horizontalAlignment = Alignment.CenterHorizontally
+            .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier)
     ) {
-        AsyncImage(
-            model = photoUri,
-            contentDescription = "照片",
+        Column(
             modifier = Modifier
-                .size(72.dp)
-                .padding(4.dp)
-                .clip(RoundedCornerShape(2.dp)),
-            contentScale = ContentScale.Crop
-        )
-        Box(
-            modifier = Modifier
-                .width(32.dp)
-                .height(3.dp)
-                .background(
-                    Primary.copy(alpha = 0.3f),
-                    RoundedCornerShape(1.dp)
-                )
-        )
-    }
-
-    if (onRemove != null) {
-        IconButton(
-            onClick = onRemove,
-            modifier = Modifier.size(20.dp)
+                .clip(RoundedCornerShape(4.dp))
+                .background(MaterialTheme.colorScheme.surface)
+                .rotate(rotation),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Icon(
-                Icons.Default.Close,
-                contentDescription = "删除",
-                modifier = Modifier.size(14.dp),
-                tint = MaterialTheme.colorScheme.onSurface
+            AsyncImage(
+                model = photoUri,
+                contentDescription = "照片",
+                modifier = Modifier
+                    .size(72.dp)
+                    .padding(4.dp)
+                    .clip(RoundedCornerShape(2.dp)),
+                contentScale = ContentScale.Crop
             )
+            Box(
+                modifier = Modifier
+                    .width(32.dp)
+                    .height(3.dp)
+                    .background(
+                        MaterialTheme.colorScheme.primary.copy(alpha = 0.3f),
+                        RoundedCornerShape(1.dp)
+                    )
+            )
+        }
+
+        if (onRemove != null) {
+            IconButton(
+                onClick = onRemove,
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .size(20.dp)
+            ) {
+                Icon(
+                    Icons.Default.Close,
+                    contentDescription = "删除",
+                    modifier = Modifier.size(14.dp),
+                    tint = MaterialTheme.colorScheme.onSurface
+                )
+            }
         }
     }
 }

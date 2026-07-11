@@ -37,14 +37,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.tang.prm.domain.model.ThemeMode
 import com.tang.prm.ui.theme.Dimens
-import com.tang.prm.ui.theme.Primary
 
 @Composable
 internal fun SectionLabel(title: String) {
     Text(
         title,
         style = MaterialTheme.typography.titleSmall,
-        color = Primary,
+        color = MaterialTheme.colorScheme.primary,
         fontWeight = FontWeight.Medium,
         modifier = Modifier.padding(vertical = 8.dp)
     )
@@ -139,13 +138,13 @@ internal fun ThemeEntryItem(
         Box(
             modifier = Modifier
                 .size(40.dp)
-                .background(Primary.copy(alpha = 0.1f), RoundedCornerShape(10.dp)),
+                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f), RoundedCornerShape(10.dp)),
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 Icons.Default.Palette,
                 contentDescription = null,
-                tint = Primary,
+                tint = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.size(22.dp)
             )
         }
@@ -209,7 +208,7 @@ internal fun ThemeModeOption(
             modifier = Modifier
                 .size(40.dp)
                 .background(
-                    if (selected) Primary.copy(alpha = 0.1f) else MaterialTheme.colorScheme.surfaceVariant,
+                    if (selected) MaterialTheme.colorScheme.primary.copy(alpha = 0.1f) else MaterialTheme.colorScheme.surfaceVariant,
                     RoundedCornerShape(10.dp)
                 ),
             contentAlignment = Alignment.Center
@@ -217,7 +216,7 @@ internal fun ThemeModeOption(
             Icon(
                 icon,
                 contentDescription = null,
-                tint = if (selected) Primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                tint = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.size(22.dp)
             )
         }
@@ -243,7 +242,7 @@ internal fun ThemeModeOption(
             Box(
                 modifier = Modifier
                     .size(22.dp)
-                    .background(Primary, CircleShape),
+                    .background(MaterialTheme.colorScheme.primary, CircleShape),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(

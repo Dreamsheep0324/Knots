@@ -31,7 +31,7 @@ import com.tang.prm.domain.model.Contact
 import com.tang.prm.ui.components.ContactAvatar
 import com.tang.prm.ui.components.ContactRelationshipBadge
 import com.tang.prm.feature.circle.card.TerminalActionButton
-import com.tang.prm.feature.home.CircleConstants
+import com.tang.prm.domain.constant.CircleConstants
 import com.tang.prm.ui.theme.*
 import com.tang.prm.ui.animation.core.AnimationTokens
 import com.tang.prm.ui.theme.Dimens

@@ -1,5 +1,7 @@
 package com.tang.prm.ui.components
 
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -29,6 +31,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -36,6 +39,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -127,7 +131,11 @@ fun GlassNavItem(
     selected: Boolean,
     onClick: () -> Unit
 ) {
-    val dotSize = if (selected) 5.dp else 0.dp
+    val dotAlpha by animateFloatAsState(
+        targetValue = if (selected) 1f else 0f,
+        animationSpec = tween(200),
+        label = "nav_dot_alpha"
+    )
     val primaryColor = MaterialTheme.colorScheme.primary
 
     Column(
@@ -151,17 +159,14 @@ fun GlassNavItem(
 
         Spacer(modifier = Modifier.height(4.dp))
 
-        Box(modifier = Modifier.size(dotSize)) {
-            Canvas(modifier = Modifier.fillMaxSize()) {
+        // 固定占位高度，仅用 alpha 控制圆点显隐，避免选中/未选中状态高度变化导致布局抖动
+        Box(modifier = Modifier.size(5.dp)) {
+            Canvas(modifier = Modifier.fillMaxSize().graphicsLayer { alpha = dotAlpha }) {
                 drawCircle(
                     color = primaryColor,
                     radius = size.minDimension / 2
                 )
             }
-        }
-
-        if (!selected) {
-            Spacer(modifier = Modifier.height(5.dp))
         }
     }
 }

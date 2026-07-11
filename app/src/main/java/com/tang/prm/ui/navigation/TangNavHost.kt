@@ -1,13 +1,16 @@
 package com.tang.prm.ui.navigation
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandHorizontally
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
+import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -33,13 +36,14 @@ import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.tang.prm.feature.profile.UpdateResult
-import com.tang.prm.feature.profile.checkForUpdate
+import com.tang.prm.domain.model.UpdateResult
+import com.tang.prm.feature.profile.UpdateViewModel
 import com.tang.prm.feature.chat.navigation.chatGraph
 import com.tang.prm.feature.circle.navigation.circleGraph
 import com.tang.prm.feature.divination.navigation.divinationGraph
@@ -59,7 +63,8 @@ import com.tang.prm.ui.theme.DialogDefaults
 @Composable
 fun TangNavHost(
     tabletModeEnabled: Boolean = false,
-    navController: NavHostController = rememberNavController()
+    navController: NavHostController = rememberNavController(),
+    updateViewModel: UpdateViewModel = hiltViewModel()
 ) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
@@ -85,9 +90,10 @@ fun TangNavHost(
             packageInfo.versionName ?: "1.0.0"
         }.getOrDefault("1.0.0")
 
-        when (val result = checkForUpdate(currentVersion)) {
-            is UpdateResult.HasUpdate -> updateInfo = result
-            else -> {}
+        updateViewModel.checkForUpdate(currentVersion) { result ->
+            if (result is UpdateResult.HasUpdate) {
+                updateInfo = result
+            }
         }
     }
 
@@ -149,7 +155,16 @@ fun TangNavHost(
 
     if (isTabletLayout) {
         Row(modifier = Modifier.fillMaxSize()) {
-            if (showBottomBar && !overlayVisible) {
+            // 侧边栏使用水平展开/收起动画，避免详情页时瞬间消失的割裂感
+            AnimatedVisibility(
+                visible = showBottomBar && !overlayVisible,
+                enter = expandHorizontally(
+                    animationSpec = tween(durationMillis = 280, easing = FastOutSlowInEasing)
+                ) + fadeIn(tween(220)),
+                exit = shrinkHorizontally(
+                    animationSpec = tween(durationMillis = 280, easing = FastOutSlowInEasing)
+                ) + fadeOut(tween(180))
+            ) {
                 GlassSideBar(
                     items = bottomNavItems,
                     currentDestination = currentDestination,

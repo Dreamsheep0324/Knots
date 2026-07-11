@@ -45,7 +45,6 @@ import com.tang.prm.ui.navigation.AddSubscriptionRoute
 import com.tang.prm.ui.navigation.SubscriptionDetailRoute
 import com.tang.prm.ui.navigation.SubscriptionStatsRoute
 import com.tang.prm.ui.theme.Dimens
-import com.tang.prm.ui.theme.Primary
 import com.tang.prm.ui.theme.SignalSky
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -140,13 +139,13 @@ fun SubscriptionsScreen(
                         Box(
                             modifier = Modifier
                                 .size(80.dp)
-                                .background(Primary.copy(alpha = 0.1f), CircleShape),
+                                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f), CircleShape),
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
                                 Icons.Default.Add,
                                 contentDescription = null,
-                                tint = Primary,
+                                tint = MaterialTheme.colorScheme.primary,
                                 modifier = Modifier.size(40.dp)
                             )
                         }
