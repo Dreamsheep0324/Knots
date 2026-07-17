@@ -9,7 +9,7 @@
     <ID>FunctionNaming:AddAnniversaryComponents.kt$@Composable internal fun AnniversaryRemarksSection( remarks: String, onRemarksChange: (String) -&gt; Unit )</ID>
     <ID>FunctionNaming:AddAnniversaryComponents.kt$@Composable internal fun AnniversaryTypeSection( selectedType: AnniversaryType, onTypeSelected: (AnniversaryType) -&gt; Unit )</ID>
     <ID>FunctionNaming:AddAnniversaryComponents.kt$@Composable internal fun IconPickerDialog( selectedIcon: String, onIconSelected: (String) -&gt; Unit, onDismiss: () -&gt; Unit )</ID>
-    <ID>FunctionNaming:AddAnniversaryScreen.kt$@Composable fun AddAnniversaryScreen( contactId: Long? = null, anniversaryId: Long? = null, navController: NavController, viewModel: AddAnniversaryViewModel = hiltViewModel() )</ID>
+    <ID>FunctionNaming:AddAnniversaryScreen.kt$@Composable fun AddAnniversaryScreen( contactId: Long? = null, navController: NavController, viewModel: AddAnniversaryViewModel = hiltViewModel() )</ID>
     <ID>FunctionNaming:AnniversariesComponents.kt$@Composable internal fun AnniversaryCard( anniversary: Anniversary, onClick: () -&gt; Unit, modifier: Modifier = Modifier )</ID>
     <ID>FunctionNaming:AnniversariesScreen.kt$@OptIn(ExperimentalMaterial3Api::class) @Composable fun AnniversariesScreen( navController: NavController, isTabletLayout: Boolean = false, viewModel: AnniversariesViewModel = hiltViewModel() )</ID>
     <ID>FunctionNaming:AnniversaryDetailComponents.kt$@Composable internal fun AnniversaryHeader(anniversary: Anniversary)</ID>
@@ -32,7 +32,7 @@
     <ID>FunctionNaming:AnniversaryTabletScreen.kt$@Composable private fun UpcomingHeroCard( anniversary: Anniversary, typeColor: Color )</ID>
     <ID>FunctionNaming:AnniversaryTabletScreen.kt$@Composable private fun YearTimelineSection( anniversaries: List&lt;Anniversary&gt;, modifier: Modifier = Modifier )</ID>
     <ID>LongMethod:AddAnniversaryComponents.kt$@Composable internal fun AnniversaryDateSection( dateText: String, isLunar: Boolean, isLeapMonth: Boolean, isRepeat: Boolean, onDateClick: () -&gt; Unit, onLunarChange: (Boolean) -&gt; Unit, onLeapMonthChange: (Boolean) -&gt; Unit, onRepeatChange: (Boolean) -&gt; Unit )</ID>
-    <ID>LongMethod:AddAnniversaryScreen.kt$@Composable fun AddAnniversaryScreen( contactId: Long? = null, anniversaryId: Long? = null, navController: NavController, viewModel: AddAnniversaryViewModel = hiltViewModel() )</ID>
+    <ID>LongMethod:AddAnniversaryScreen.kt$@Composable fun AddAnniversaryScreen( contactId: Long? = null, navController: NavController, viewModel: AddAnniversaryViewModel = hiltViewModel() )</ID>
     <ID>LongMethod:AnniversariesComponents.kt$@Composable internal fun AnniversaryCard( anniversary: Anniversary, onClick: () -&gt; Unit, modifier: Modifier = Modifier )</ID>
     <ID>LongMethod:AnniversariesScreen.kt$@OptIn(ExperimentalMaterial3Api::class) @Composable fun AnniversariesScreen( navController: NavController, isTabletLayout: Boolean = false, viewModel: AnniversariesViewModel = hiltViewModel() )</ID>
     <ID>LongMethod:AnniversaryDetailComponents.kt$@Composable internal fun AnniversaryHeader(anniversary: Anniversary)</ID>
@@ -47,8 +47,5 @@
     <ID>MaxLineLength:AddAnniversaryViewModel.kt$AddAnniversaryViewModel$fun updateIsLunar(value: Boolean)</ID>
     <ID>MaxLineLength:AnniversaryDetailComponents.kt$color = if (daysInfo.isPast) MaterialTheme.colorScheme.outline.copy(alpha = 0.15f) else MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)</ID>
     <ID>MaxLineLength:AnniversaryTabletScreen.kt$color = if (isCurrent) MaterialTheme.colorScheme.primary else if (hasEvents) accentColor.copy(alpha = 0.3f) else MaterialTheme.colorScheme.outline.copy(alpha = 0.4f)</ID>
-    <ID>UnusedParameter:AddAnniversaryScreen.kt$anniversaryId: Long? = null</ID>
-    <ID>UnusedPrivateProperty:AnniversariesViewModel.kt$AnniversariesViewModel$private val contactRepository: ContactRepository</ID>
-    <ID>UnusedPrivateProperty:AnniversaryTabletScreen.kt$val monthAbbr = remember(date) { date.month.getDisplayName(java.time.format.TextStyle.SHORT, java.util.Locale.ENGLISH).uppercase() }</ID>
   </CurrentIssues>
 </SmellBaseline>

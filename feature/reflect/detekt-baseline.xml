@@ -54,7 +54,6 @@
     <ID>FunctionNaming:ThoughtFeedCard.kt$@Composable internal fun ThoughtFeedCard( thought: Thought, contactName: String?, contactAvatar: String?, isFavorite: Boolean, exp: Int, onToggleTodo: () -&gt; Unit, onEdit: () -&gt; Unit, onDelete: () -&gt; Unit, onToggleFavorite: () -&gt; Unit, onCardClick: () -&gt; Unit = {} )</ID>
     <ID>FunctionNaming:ThoughtLevelBanner.kt$@Composable internal fun ThoughtLevelBanner(uiState: ThoughtsUiState)</ID>
     <ID>FunctionNaming:ThoughtsScreen.kt$@Composable fun ThoughtsScreen( onBack: () -&gt; Unit, viewModel: ThoughtsViewModel = hiltViewModel() )</ID>
-    <ID>FunctionNaming:ThoughtsScreen.kt$@Composable private fun SectionHeader( icon: ImageVector, iconColor: Color, title: String, action: String?, onActionClick: (() -&gt; Unit)?, modifier: Modifier = Modifier )</ID>
     <ID>LongMethod:FavoritesScreen.kt$@OptIn(ExperimentalFoundationApi::class) @Composable fun FavoritesScreen( navController: NavController, viewModel: FavoritesViewModel = hiltViewModel() )</ID>
     <ID>LongMethod:FavoritesTermDetail.kt$@Composable internal fun TermDetailPanel( favorite: Favorite?, modifier: Modifier = Modifier, onClick: () -&gt; Unit )</ID>
     <ID>LongMethod:FootprintsHeroCard.kt$@Composable internal fun HeroCard(footprint: FootprintItem, eventTypes: List&lt;com.tang.prm.domain.model.CustomType&gt; = emptyList(), onClick: () -&gt; Unit = {})</ID>
@@ -106,6 +105,5 @@
     <ID>TooGenericExceptionCaught:PhotoAlbumViewModel.kt$PhotoAlbumViewModel$e: Exception</ID>
     <ID>UnusedParameter:TabListContent.kt$uiState: FavoritesUiState</ID>
     <ID>UnusedParameter:TabListContent.kt$viewModel: FavoritesViewModel</ID>
-    <ID>UnusedPrivateProperty:PhotoAlbumScreen.kt$private val AlbumAccent = SignalPurple</ID>
   </CurrentIssues>
 </SmellBaseline>

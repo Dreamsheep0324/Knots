@@ -51,7 +51,6 @@
     <ID>FunctionNaming:MeihuaResultComponents.kt$@Composable internal fun MeihuaHexagramInfoSection(data: MeihuaData)</ID>
     <ID>FunctionNaming:MeihuaResultComponents.kt$@Composable internal fun MeihuaInfoRow(label: String, value: String)</ID>
     <ID>FunctionNaming:MeihuaResultComponents.kt$@Composable internal fun MeihuaInfoTag(text: String, color: Color)</ID>
-    <ID>FunctionNaming:MeihuaResultComponents.kt$@Composable internal fun MeihuaSectionHeader(title: String)</ID>
     <ID>FunctionNaming:MeihuaResultComponents.kt$@Composable internal fun StepIndicator(currentStep: Int, totalSteps: Int = 3)</ID>
     <ID>FunctionNaming:MeihuaResultScreen.kt$@Composable fun MeihuaResultScreen( navController: NavController, viewModel: DivinationViewModel = hiltViewModel( viewModelStoreOwner = navController.getBackStackEntry(DivinationRoute) ), aiViewModel: AiViewModel = hiltViewModel() )</ID>
     <ID>FunctionNaming:MeihuaResultTables.kt$@Composable internal fun RelationMap(data: MeihuaData)</ID>
@@ -64,7 +63,6 @@
     <ID>FunctionNaming:RecordDetailScreen.kt$@Composable fun RecordDetailScreen( record: DivinationRecord, onBack: () -&gt; Unit, onDelete: () -&gt; Unit )</ID>
     <ID>FunctionNaming:SharedComponents.kt$@Composable internal fun InfoRow(label: String, value: String)</ID>
     <ID>FunctionNaming:SharedComponents.kt$@Composable internal fun InfoTag(text: String, color: Color)</ID>
-    <ID>FunctionNaming:SharedComponents.kt$@Composable internal fun RecordSectionHeader(title: String)</ID>
     <ID>FunctionNaming:SharedComponents.kt$@Composable internal fun RelationTag(relation: String)</ID>
     <ID>FunctionNaming:SharedComponents.kt$@Composable internal fun RowScope.TableCell( text: String, weight: Float, color: Color )</ID>
     <ID>FunctionNaming:SharedComponents.kt$@Composable internal fun RowScope.TableHeaderCell(text: String, weight: Float)</ID>

@@ -16,11 +16,9 @@
     <ID>FunctionNaming:AiConfigComponents.kt$@Composable internal fun TestConnectionSection( testState: TestConnectionState, apiKey: String, onTest: () -&gt; Unit )</ID>
     <ID>FunctionNaming:AiConfigScreen.kt$@Composable fun AiConfigScreen( navController: NavController, viewModel: SettingsViewModel = hiltViewModel() )</ID>
     <ID>FunctionNaming:BackupComponents.kt$@Composable internal fun BackupFileItem( fileInfo: BackupFileInfo, isDeleting: Boolean, onRestore: () -&gt; Unit, onDelete: () -&gt; Unit )</ID>
-    <ID>FunctionNaming:BackupComponents.kt$@Composable internal fun BackupSectionLabel(title: String)</ID>
     <ID>FunctionNaming:BackupComponents.kt$@Composable internal fun ErrorTip(message: String?)</ID>
     <ID>FunctionNaming:BackupComponents.kt$@Composable internal fun SuccessTip(message: String)</ID>
     <ID>FunctionNaming:BackupScreen.kt$@Composable fun BackupScreen( navController: NavController, viewModel: BackupViewModel = hiltViewModel() )</ID>
-    <ID>FunctionNaming:SettingsComponents.kt$@Composable internal fun SectionLabel(title: String)</ID>
     <ID>FunctionNaming:SettingsComponents.kt$@Composable internal fun SettingsCard(content: @Composable () -&gt; Unit)</ID>
     <ID>FunctionNaming:SettingsComponents.kt$@Composable internal fun SettingsEntryItem( icon: ImageVector, iconTint: Color, title: String, subtitle: String, onClick: () -&gt; Unit )</ID>
     <ID>FunctionNaming:SettingsComponents.kt$@Composable internal fun SettingsToggleItem( icon: ImageVector, iconTint: Color, title: String, subtitle: String, checked: Boolean, onCheckedChange: (Boolean) -&gt; Unit )</ID>
@@ -36,7 +34,7 @@
     <ID>FunctionNaming:WebDavSyncScreen.kt$@Composable private fun CloudBackupHeader(onRefresh: () -&gt; Unit)</ID>
     <ID>FunctionNaming:WebDavSyncScreen.kt$@Composable private fun CloudBackupItem( version: CloudBackupVersion, onRestore: () -&gt; Unit, onDelete: () -&gt; Unit, isRestoring: Boolean )</ID>
     <ID>FunctionNaming:WebDavSyncScreen.kt$@Composable private fun CloudEmptyState()</ID>
-    <ID>FunctionNaming:WebDavSyncScreen.kt$@Composable private fun CompactConfigField( value: String, onValueChange: (String) -&gt; Unit, label: String, placeholder: String, leadingIcon: ImageVector, isPassword: Boolean = false, passwordVisible: Boolean = false, onPasswordToggle: (() -> Unit)? = null )</ID>
+    <ID>FunctionNaming:WebDavSyncScreen.kt$@Composable private fun CompactConfigField( value: String, onValueChange: (String) -&gt; Unit, label: String, placeholder: String, leadingIcon: ImageVector, isPassword: Boolean = false, passwordVisible: Boolean = false, onPasswordToggle: (() -&gt; Unit)? = null )</ID>
     <ID>FunctionNaming:WebDavSyncScreen.kt$@Composable private fun ConnectionHeroSection(state: ConnectionState, config: WebDavConfig)</ID>
     <ID>FunctionNaming:WebDavSyncScreen.kt$@Composable private fun SyncActionButton( modifier: Modifier = Modifier, icon: ImageVector, label: String, description: String, tint: Color, isLoading: Boolean, isSuccess: Boolean, onClick: () -&gt; Unit )</ID>
     <ID>FunctionNaming:WebDavSyncScreen.kt$@Composable private fun SyncActionButtons( onUpload: () -&gt; Unit, onDownload: () -&gt; Unit, uploadState: Triple&lt;Boolean, Boolean, Boolean&gt;, downloadState: Triple&lt;Boolean, Boolean, Boolean&gt; )</ID>
@@ -51,7 +49,7 @@
     <ID>LongMethod:WebDavSyncScreen.kt$@Composable private fun WebDavConfigPanel( expanded: Boolean, onToggle: () -&gt; Unit, serverUrl: String, onServerUrlChange: (String) -&gt; Unit, username: String, onUsernameChange: (String) -&gt; Unit, password: String, onPasswordChange: (String) -&gt; Unit, remotePath: String, onRemotePathChange: (String) -&gt; Unit, trustAllCertificates: Boolean, onTrustAllCertificatesChange: (Boolean) -&gt; Unit, passwordVisible: Boolean, onPasswordToggle: () -&gt; Unit, onTestConnection: () -&gt; Unit, isTesting: Boolean, isConnected: Boolean )</ID>
     <ID>LongParameterList:WebDavSyncScreen.kt$( expanded: Boolean, onToggle: () -&gt; Unit, serverUrl: String, onServerUrlChange: (String) -&gt; Unit, username: String, onUsernameChange: (String) -&gt; Unit, password: String, onPasswordChange: (String) -&gt; Unit, remotePath: String, onRemotePathChange: (String) -&gt; Unit, trustAllCertificates: Boolean, onTrustAllCertificatesChange: (Boolean) -&gt; Unit, passwordVisible: Boolean, onPasswordToggle: () -&gt; Unit, onTestConnection: () -&gt; Unit, isTesting: Boolean, isConnected: Boolean )</ID>
     <ID>LongParameterList:WebDavSyncScreen.kt$( modifier: Modifier = Modifier, icon: ImageVector, label: String, description: String, tint: Color, isLoading: Boolean, isSuccess: Boolean, onClick: () -&gt; Unit )</ID>
-    <ID>LongParameterList:WebDavSyncScreen.kt$( value: String, onValueChange: (String) -&gt; Unit, label: String, placeholder: String, leadingIcon: ImageVector, isPassword: Boolean = false, passwordVisible: Boolean = false, onPasswordToggle: (() -> Unit)? = null )</ID>
+    <ID>LongParameterList:WebDavSyncScreen.kt$( value: String, onValueChange: (String) -&gt; Unit, label: String, placeholder: String, leadingIcon: ImageVector, isPassword: Boolean = false, passwordVisible: Boolean = false, onPasswordToggle: (() -&gt; Unit)? = null )</ID>
     <ID>MatchingDeclarationName:AiConfigComponents.kt$ModelOption</ID>
     <ID>MaxLineLength:AiConfigComponents.kt$border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = if (testState !is TestConnectionState.Testing &amp;&amp; apiKey.isNotBlank()) 0.5f else 0.2f))</ID>
     <ID>MaxLineLength:BackupScreen.kt$Text("请先选择备份文件夹", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(horizontal = 4.dp))</ID>

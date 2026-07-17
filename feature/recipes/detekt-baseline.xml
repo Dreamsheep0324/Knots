@@ -28,7 +28,6 @@
     <ID>FunctionNaming:AddRecipeScreen.kt$@Composable private fun NotesSection( state: AddRecipeUiState, viewModel: AddRecipeViewModel )</ID>
     <ID>FunctionNaming:AddRecipeScreen.kt$@Composable private fun PhotosSection( state: AddRecipeUiState, viewModel: AddRecipeViewModel, photoPicker: ManagedPhotoPickerLauncher )</ID>
     <ID>FunctionNaming:AddRecipeScreen.kt$@Composable private fun RatingSection( state: AddRecipeUiState, viewModel: AddRecipeViewModel )</ID>
-    <ID>FunctionNaming:AddRecipeScreen.kt$@Composable private fun SectionCard( title: String, icon: ImageVector, iconTint: Color, modifier: Modifier = Modifier, content: @Composable ColumnScope.() -&gt; Unit )</ID>
     <ID>FunctionNaming:AddRecipeScreen.kt$@Composable private fun StepsSection( state: AddRecipeUiState, viewModel: AddRecipeViewModel )</ID>
     <ID>FunctionNaming:AddRecipeScreen.kt$@Composable private fun TagsSection( state: AddRecipeUiState, viewModel: AddRecipeViewModel )</ID>
     <ID>FunctionNaming:AddRecipeScreen.kt$@Composable private fun TimeServingsSection( state: AddRecipeUiState, viewModel: AddRecipeViewModel )</ID>
@@ -38,23 +37,28 @@
     <ID>FunctionNaming:RecipeDetailComponents.kt$@Composable fun PersonChip( name: String, modifier: Modifier = Modifier )</ID>
     <ID>FunctionNaming:RecipeDetailComponents.kt$@Composable fun PortionScaler( currentServings: Int, onAdjust: (Int) -&gt; Unit, modifier: Modifier = Modifier )</ID>
     <ID>FunctionNaming:RecipeDetailComponents.kt$@Composable fun StepCard( step: CookingStep, modifier: Modifier = Modifier )</ID>
+    <ID>FunctionNaming:RecipeDetailComponents.kt$@Composable private fun IngredientRow( ingredient: Ingredient, dotColor: Color, isScaled: Boolean )</ID>
+    <ID>FunctionNaming:RecipeDetailComponents.kt$@Composable private fun ScalerButton( icon: ImageVector, contentDescription: String, onClick: () -&gt; Unit )</ID>
     <ID>FunctionNaming:RecipeDetailComponents.kt$fun FoodEmoji(cuisine: String?): String</ID>
     <ID>FunctionNaming:RecipeDetailScreen.kt$@Composable fun RecipeDetailScreen( recipeId: Long, navController: NavController, viewModel: RecipeDetailViewModel = hiltViewModel() )</ID>
     <ID>FunctionNaming:RecipeDetailScreen.kt$@Composable private fun BasicInfoCard( recipe: Recipe, currentServings: Int, onAdjustServings: (Int) -&gt; Unit )</ID>
     <ID>FunctionNaming:RecipeDetailScreen.kt$@Composable private fun DeleteButton(onDelete: () -&gt; Unit)</ID>
     <ID>FunctionNaming:RecipeDetailScreen.kt$@Composable private fun DescriptionSection(description: String)</ID>
-    <ID>FunctionNaming:RecipeDetailScreen.kt$@Composable private fun HeroSection(recipe: Recipe, onBack: () -&gt; Unit)</ID>
-    <ID>FunctionNaming:RecipeDetailScreen.kt$@Composable private fun InfoItem( icon: ImageVector, iconTint: Color, label: String, value: String, modifier: Modifier = Modifier )</ID>
+    <ID>FunctionNaming:RecipeDetailScreen.kt$@Composable private fun GlassIconButton( onClick: () -&gt; Unit, icon: ImageVector, contentDescription: String?, modifier: Modifier = Modifier, tint: Color = MaterialTheme.colorScheme.onSurface, backgroundColor: Color = Color.White.copy(alpha = 0.88f), size: Int = 38 )</ID>
+    <ID>FunctionNaming:RecipeDetailScreen.kt$@Composable private fun HeroSection( recipe: Recipe, onBack: () -&gt; Unit, onToggleFavorite: () -&gt; Unit, onEdit: () -&gt; Unit )</ID>
+    <ID>FunctionNaming:RecipeDetailScreen.kt$@Composable private fun InfoCapsule( text: String, tint: Color, leadingIcon: ImageVector? = null )</ID>
+    <ID>FunctionNaming:RecipeDetailScreen.kt$@Composable private fun InfoStat( icon: ImageVector, iconTint: Color, label: String, value: String, modifier: Modifier = Modifier )</ID>
     <ID>FunctionNaming:RecipeDetailScreen.kt$@Composable private fun IngredientsSection( ingredients: List&lt;Ingredient&gt;, currentServings: Int, originalServings: Int )</ID>
     <ID>FunctionNaming:RecipeDetailScreen.kt$@Composable private fun LoadingState()</ID>
     <ID>FunctionNaming:RecipeDetailScreen.kt$@Composable private fun NotesSection(notes: String)</ID>
     <ID>FunctionNaming:RecipeDetailScreen.kt$@Composable private fun PhotosGallerySection(photos: List&lt;String&gt;)</ID>
-    <ID>FunctionNaming:RecipeDetailScreen.kt$@Composable private fun RecipeDetailContent( recipe: Recipe, currentServings: Int, originalServings: Int, scaledIngredients: List&lt;Ingredient&gt;, contacts: List&lt;Contact&gt;, onBack: () -&gt; Unit, onEdit: () -&gt; Unit, onToggleFavorite: () -&gt; Unit, onAdjustServings: (Int) -&gt; Unit, onDelete: () -&gt; Unit )</ID>
+    <ID>FunctionNaming:RecipeDetailScreen.kt$@Composable private fun RatingBadge(rating: Int)</ID>
+    <ID>FunctionNaming:RecipeDetailScreen.kt$@Composable private fun RecipeDetailContent( recipe: Recipe, currentServings: Int, originalServings: Int, scaledIngredients: List&lt;Ingredient&gt;, contacts: List&lt;Contact&gt;, actions: RecipeDetailActions )</ID>
     <ID>FunctionNaming:RecipeDetailScreen.kt$@Composable private fun RelatedPeopleSection(contacts: List&lt;Contact&gt;)</ID>
+    <ID>FunctionNaming:RecipeDetailScreen.kt$@Composable private fun StatDivider()</ID>
     <ID>FunctionNaming:RecipeDetailScreen.kt$@Composable private fun StepsSection(steps: List&lt;CookingStep&gt;)</ID>
-    <ID>FunctionNaming:RecipeDetailScreen.kt$@Composable private fun SubtitleRow(recipe: Recipe)</ID>
-    <ID>FunctionNaming:RecipeDetailScreen.kt$@Composable private fun TitleRow( recipe: Recipe, onToggleFavorite: () -&gt; Unit, onEdit: () -&gt; Unit )</ID>
-    <ID>FunctionNaming:RecipeDetailScreen.kt$@Composable private fun VerticalDivider()</ID>
+    <ID>FunctionNaming:RecipeDetailScreen.kt$@Composable private fun TimelineStep( step: CookingStep, isLast: Boolean )</ID>
+    <ID>FunctionNaming:RecipeDetailScreen.kt$@Composable private fun TitleRow(recipe: Recipe)</ID>
     <ID>FunctionNaming:RecipeDetailScreen.kt$@OptIn(ExperimentalLayoutApi::class) @Composable private fun TagsSection(tags: List&lt;String&gt;)</ID>
     <ID>FunctionNaming:RecipesScreen.kt$@Composable fun RecipesScreen( navController: NavController, viewModel: RecipesViewModel = hiltViewModel() )</ID>
     <ID>FunctionNaming:RecipesScreen.kt$@Composable private fun CategoryTag(text: String)</ID>
@@ -67,16 +71,12 @@
     <ID>FunctionNaming:RecipesScreen.kt$@Composable private fun RecipeGridCard( item: RecipeListItem, onClick: () -&gt; Unit )</ID>
     <ID>FunctionNaming:RecipesScreen.kt$@Composable private fun RecipeGridView( items: List&lt;RecipeListItem&gt;, onItemClick: (Long) -&gt; Unit )</ID>
     <ID>FunctionNaming:RecipesScreen.kt$@Composable private fun RecipeSearchBar( query: String, onQueryChange: (String) -&gt; Unit, modifier: Modifier = Modifier )</ID>
-    <ID>ImplicitDefaultLocale:RecipeDetailViewModel.kt$RecipeDetailViewModel$String.format("%.1f", value)</ID>
-    <ID>ImplicitDefaultLocale:RecipeDetailViewModel.kt$RecipeDetailViewModel$String.format("%.2f", value)</ID>
-    <ID>LongMethod:RecipeDetailComponents.kt$@Composable fun IngredientGroupSection( groupName: String, groupType: IngredientGroupType, ingredients: List&lt;Ingredient&gt;, isScaled: Boolean, modifier: Modifier = Modifier )</ID>
+    <ID>LongMethod:RecipeDetailScreen.kt$@Composable private fun HeroSection( recipe: Recipe, onBack: () -&gt; Unit, onToggleFavorite: () -&gt; Unit, onEdit: () -&gt; Unit )</ID>
     <ID>LongMethod:RecipesScreen.kt$@Composable fun RecipesScreen( navController: NavController, viewModel: RecipesViewModel = hiltViewModel() )</ID>
     <ID>LongMethod:RecipesScreen.kt$@Composable private fun RecipeCard( item: RecipeListItem, searchQuery: String, onClick: () -&gt; Unit, onDelete: () -&gt; Unit )</ID>
     <ID>LongMethod:RecipesScreen.kt$@Composable private fun RecipeGalleryCard( item: RecipeListItem, onClick: () -&gt; Unit, onDelete: () -&gt; Unit )</ID>
     <ID>LongMethod:RecipesScreen.kt$@Composable private fun RecipeGridCard( item: RecipeListItem, onClick: () -&gt; Unit )</ID>
-    <ID>LongParameterList:RecipeDetailScreen.kt$( recipe: Recipe, currentServings: Int, originalServings: Int, scaledIngredients: List&lt;Ingredient&gt;, contacts: List&lt;Contact&gt;, onBack: () -&gt; Unit, onEdit: () -&gt; Unit, onToggleFavorite: () -&gt; Unit, onAdjustServings: (Int) -&gt; Unit, onDelete: () -&gt; Unit )</ID>
+    <ID>MatchingDeclarationName:RecipeDetailScreen.kt$RecipeDetailActions</ID>
     <ID>MaxLineLength:AddRecipeComponents.kt$placeholder = { Text("描述这一步的做法...", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)) }</ID>
-    <ID>MaxLineLength:AddRecipeScreen.kt$Text(title, style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold)</ID>
-    <ID>UnusedPrivateProperty:RecipeDetailViewModel.kt$RecipeDetailViewModel$private val contactRepository: ContactRepository</ID>
   </CurrentIssues>
 </SmellBaseline>

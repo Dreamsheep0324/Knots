@@ -8,11 +8,9 @@
     <ID>FunctionNaming:HomeChannelGrid.kt$@Composable private fun GlassChannelItem( channel: ChannelDef, signalStrength: Int, onClick: () -&gt; Unit )</ID>
     <ID>FunctionNaming:HomeOrbitalCalendar.kt$@Composable internal fun OrbitalCalendar( anniversaries: List&lt;Anniversary&gt;, events: List&lt;Event&gt;, canvasModifier: Modifier = Modifier.fillMaxWidth().height(242.dp), modifier: Modifier = Modifier )</ID>
     <ID>FunctionNaming:HomeScreen.kt$@Composable fun HomeScreen( navController: NavController, isTabletLayout: Boolean = false, viewModel: HomeViewModel = hiltViewModel() )</ID>
-    <ID>FunctionNaming:HomeScreen.kt$@Composable private fun HomeTopBar( timeStr: String, showSettings: Boolean = true, onSettingsClick: () -&gt; Unit )</ID>
+    <ID>FunctionNaming:HomeScreen.kt$@Composable private fun HomeTopBar( showSettings: Boolean = true, onSettingsClick: () -&gt; Unit )</ID>
     <ID>FunctionNaming:HomeScreen.kt$@Composable private fun PhoneHomeContent( dateStr: String, uiState: HomeUiState, channels: List&lt;ChannelDef&gt;, signalStrengths: Map&lt;Any, Int&gt;, onChannelClick: (Any) -&gt; Unit )</ID>
-    <ID>FunctionNaming:HomeScreen.kt$@Composable private fun TabletHomeContent( dateStr: String, uiState: HomeUiState, channels: List&lt;ChannelDef&gt;, signalStrengths: Map&lt;Any, Int&gt;, onChannelClick: (Any) -&gt; Unit )</ID>
     <ID>FunctionNaming:HomeSignalCard.kt$@Composable internal fun IncomingSignalCard( dateStr: String, contactCount: Int, eventCount: Int, giftCount: Int, anniversaryCount: Int, conversationCount: Int )</ID>
-    <ID>FunctionNaming:HomeSignalCard.kt$@Composable internal fun SectionHeader( icon: ImageVector, iconColor: Color, title: String, action: String?, onActionClick: (() -&gt; Unit)?, modifier: Modifier = Modifier )</ID>
     <ID>FunctionNaming:HomeSignalCard.kt$@Composable private fun StatGauge(value: Int, label: String, color: Color, icon: ImageVector)</ID>
     <ID>FunctionNaming:HomeTabletJournal.kt$@Composable internal fun JournalTabletHome( uiState: HomeUiState, channels: List&lt;ChannelDef&gt;, signalStrengths: Map&lt;Any, Int&gt;, onChannelClick: (Any) -&gt; Unit, onDecorPhotoPathChange: (String?) -&gt; Unit, modifier: Modifier = Modifier )</ID>
     <ID>FunctionNaming:HomeTabletJournal.kt$@Composable private fun JournalDateBanner( greeting: String, pendingTodoCount: Int, upcomingAnniversaryCount: Int, modifier: Modifier = Modifier )</ID>
@@ -58,9 +56,6 @@
     <ID>MaxLineLength:OrbitalCalendarInfo.kt$Text("周末", fontFamily = FontFamily.Monospace, fontSize = 7.sp, color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f))</ID>
     <ID>MaxLineLength:OrbitalCalendarInfo.kt$Text(date, fontFamily = FontFamily.Monospace, fontSize = 9.sp, color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f))</ID>
     <ID>MaxLineLength:OrbitalCalendarInfo.kt$Text(title, fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurface, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f))</ID>
-    <ID>UnusedParameter:HomeNavGraph.kt$onOverlayVisibleChange: (Boolean) -&gt; Unit</ID>
-    <ID>UnusedParameter:HomeNavGraph.kt$overlayVisible: Boolean</ID>
     <ID>UnusedParameter:HomeTabletJournal.kt$signalStrengths: Map&lt;Any, Int&gt;</ID>
-    <ID>UnusedPrivateMember:HomeScreen.kt$@Composable private fun TabletHomeContent( dateStr: String, uiState: HomeUiState, channels: List&lt;ChannelDef&gt;, signalStrengths: Map&lt;Any, Int&gt;, onChannelClick: (Any) -&gt; Unit )</ID>
   </CurrentIssues>
 </SmellBaseline>

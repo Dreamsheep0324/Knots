@@ -17,7 +17,7 @@
     <ID>FunctionNaming:SubscriptionDetailScreen.kt$@Composable private fun SubscriptionHeroCard(sub: Subscription)</ID>
     <ID>FunctionNaming:SubscriptionDetailScreen.kt$@Composable private fun SubscriptionTimelineCard(sub: Subscription)</ID>
     <ID>FunctionNaming:SubscriptionDetailScreen.kt$@Composable private fun TimelineItem(unit: String, value: String, color: Color)</ID>
-    <ID>FunctionNaming:SubscriptionDetailScreen.kt$@OptIn(ExperimentalMaterial3Api::class) @Composable fun SubscriptionDetailScreen( subscriptionId: Long, navController: NavController, viewModel: SubscriptionDetailViewModel = hiltViewModel() )</ID>
+    <ID>FunctionNaming:SubscriptionDetailScreen.kt$@OptIn(ExperimentalMaterial3Api::class) @Composable fun SubscriptionDetailScreen( navController: NavController, viewModel: SubscriptionDetailViewModel = hiltViewModel() )</ID>
     <ID>FunctionNaming:SubscriptionStatsScreen.kt$@Composable private fun BillingCalendarCard(state: SubscriptionStatsUiState)</ID>
     <ID>FunctionNaming:SubscriptionStatsScreen.kt$@Composable private fun CategoryBreakdownCard(state: SubscriptionStatsUiState)</ID>
     <ID>FunctionNaming:SubscriptionStatsScreen.kt$@Composable private fun KeyMetricsGrid(state: SubscriptionStatsUiState)</ID>
@@ -70,18 +70,17 @@
     <ID>MaxLineLength:SubscriptionDetailScreen.kt$Text(value, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold, fontFamily = FontFamily.Monospace, color = color)</ID>
     <ID>MaxLineLength:SubscriptionDetailScreen.kt$Text(value, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, color = color, fontFamily = FontFamily.Monospace)</ID>
     <ID>MaxLineLength:SubscriptionDetailScreen.kt$Text(value, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, fontFamily = FontFamily.Monospace, color = MaterialTheme.colorScheme.onSurface)</ID>
-    <ID>MaxLineLength:SubscriptionDetailScreen.kt$private</ID>
     <ID>MaxLineLength:SubscriptionStatsScreen.kt$Box</ID>
     <ID>MaxLineLength:SubscriptionStatsScreen.kt$Box(modifier = Modifier.size(4.dp).clip(CircleShape).background(MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f)))</ID>
-    <ID>MaxLineLength:SubscriptionStatsScreen.kt$MetricCard(Modifier.weight(1f), Icons.Default.Payments, "月度支出", "¥${formatPrice(state.monthlyTotal)}", MaterialTheme.colorScheme.primary)</ID>
+    <ID>MaxLineLength:SubscriptionStatsScreen.kt$MetricCard(Modifier.weight(1f), Icons.Default.Payments, "月度支出", "¥${formatPriceValue(state.monthlyTotal)}", MaterialTheme.colorScheme.primary)</ID>
     <ID>MaxLineLength:SubscriptionStatsScreen.kt$Row</ID>
     <ID>MaxLineLength:SubscriptionStatsScreen.kt$Text("${"%.1f".format(percentage)}%", style = MaterialTheme.typography.labelMedium, color = color, fontWeight = FontWeight.Bold)</ID>
     <ID>MaxLineLength:SubscriptionStatsScreen.kt$Text("${currentYear}年${monthLabel}", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, fontWeight = FontWeight.SemiBold)</ID>
     <ID>MaxLineLength:SubscriptionStatsScreen.kt$Text("${monthLabel}${monthBillingTotal}次扣费", modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp), style = MaterialTheme.typography.labelSmall, color = SignalAmber, fontWeight = FontWeight.Bold)</ID>
     <ID>MaxLineLength:SubscriptionStatsScreen.kt$Text("${subs.size}项", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)</ID>
-    <ID>MaxLineLength:SubscriptionStatsScreen.kt$Text("¥${formatPrice(amount)}", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold, fontFamily = FontFamily.Monospace)</ID>
-    <ID>MaxLineLength:SubscriptionStatsScreen.kt$Text("¥${formatPrice(state.yearlyProjection)}", style = MaterialTheme.typography.displaySmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary, fontFamily = FontFamily.Monospace)</ID>
-    <ID>MaxLineLength:SubscriptionStatsScreen.kt$Text("¥${formatPrice(totalAmount)}", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary, fontFamily = FontFamily.Monospace)</ID>
+    <ID>MaxLineLength:SubscriptionStatsScreen.kt$Text("¥${formatPriceValue(amount)}", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold, fontFamily = FontFamily.Monospace)</ID>
+    <ID>MaxLineLength:SubscriptionStatsScreen.kt$Text("¥${formatPriceValue(state.yearlyProjection)}", style = MaterialTheme.typography.displaySmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary, fontFamily = FontFamily.Monospace)</ID>
+    <ID>MaxLineLength:SubscriptionStatsScreen.kt$Text("¥${formatPriceValue(totalAmount)}", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary, fontFamily = FontFamily.Monospace)</ID>
     <ID>MaxLineLength:SubscriptionStatsScreen.kt$Text(category, modifier = Modifier.weight(1f), style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold)</ID>
     <ID>MaxLineLength:SubscriptionStatsScreen.kt$Text(label, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant, fontWeight = FontWeight.Medium)</ID>
     <ID>MaxLineLength:SubscriptionStatsScreen.kt$Text(sub.name, modifier = Modifier.weight(1f), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)</ID>
@@ -89,6 +88,5 @@
     <ID>MaxLineLength:SubscriptionsScreen.kt$Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "返回", tint = MaterialTheme.colorScheme.onSurface, modifier = Modifier.size(22.dp))</ID>
     <ID>MaxLineLength:SubscriptionsScreen.kt$Icon(Icons.Default.Add, contentDescription = "添加", tint = MaterialTheme.colorScheme.onSurface, modifier = Modifier.size(22.dp))</ID>
     <ID>NestedBlockDepth:SubscriptionStatsScreen.kt$@Composable private fun BillingCalendarCard(state: SubscriptionStatsUiState)</ID>
-    <ID>UnusedParameter:SubscriptionDetailScreen.kt$subscriptionId: Long</ID>
   </CurrentIssues>
 </SmellBaseline>
