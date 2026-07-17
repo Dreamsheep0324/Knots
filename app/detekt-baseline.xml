@@ -7,5 +7,6 @@
     <ID>TooGenericExceptionCaught:ReminderReceiver.kt$BootReceiver$e: Exception</ID>
     <ID>TooGenericExceptionCaught:ReminderReceiver.kt$ReminderReceiver$e: Exception</ID>
     <ID>TooGenericExceptionCaught:TangApplication.kt$TangApplication$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:TangNavHost.kt$e: Exception</ID>
   </CurrentIssues>
 </SmellBaseline>

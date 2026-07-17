@@ -5,14 +5,13 @@
     <ID>CyclomaticComplexMethod:ChatDetailComponents.kt$internal fun parseDialogue(event: Event, contactName: String?): List&lt;DialogueLine&gt;</ID>
     <ID>CyclomaticComplexMethod:ChatTabletScreen.kt$@Composable private fun CharacterPane( uiState: ChatDetailUiState, conversations: List&lt;ConversationUiModel&gt;, modifier: Modifier = Modifier )</ID>
     <ID>ExplicitItLambdaParameter:ChatScreen.kt${ _, it -&gt; it.eventId }</ID>
-    <ID>FunctionNaming:AddChatScreen.kt$@Composable fun AddChatScreen( contactId: Long? = null, eventId: Long? = null, navController: NavController, viewModel: AddChatViewModel = hiltViewModel() )</ID>
+    <ID>FunctionNaming:AddChatScreen.kt$@Composable fun AddChatScreen( navController: NavController, viewModel: AddChatViewModel = hiltViewModel() )</ID>
     <ID>FunctionNaming:ChatComponents.kt$@Composable internal fun ConversationItem( conversation: ConversationUiModel, showAvatar: Boolean, onClick: () -&gt; Unit, modifier: Modifier = Modifier )</ID>
     <ID>FunctionNaming:ChatDetailComponents.kt$@Composable internal fun DialogueScriptCard( dialogues: List&lt;DialogueLine&gt;, contactAvatar: String?, accentColor: Color, modifier: Modifier = Modifier )</ID>
     <ID>FunctionNaming:ChatDetailComponents.kt$@Composable internal fun MyDialogueLine(content: String, imageUri: String?)</ID>
     <ID>FunctionNaming:ChatDetailComponents.kt$@Composable internal fun RemarksCard(remarks: String, accentColor: Color)</ID>
     <ID>FunctionNaming:ChatDetailComponents.kt$@Composable internal fun ScriptHeader(event: Event, contact: Contact?, intimacyColor: Color)</ID>
     <ID>FunctionNaming:ChatDetailComponents.kt$@Composable internal fun TheirDialogueLine( name: String, avatar: String?, content: String, imageUri: String?, accentColor: Color )</ID>
-    <ID>FunctionNaming:ChatDetailScreen.kt$@Composable fun ChatDetailContent( eventId: Long, onEdit: () -&gt; Unit, onDelete: () -&gt; Unit, modifier: Modifier = Modifier, viewModel: ChatDetailViewModel = hiltViewModel() )</ID>
     <ID>FunctionNaming:ChatDetailScreen.kt$@Composable fun ChatDetailScreen( eventId: Long, navController: NavController, viewModel: ChatDetailViewModel = hiltViewModel() )</ID>
     <ID>FunctionNaming:ChatScreen.kt$@Composable fun ChatScreen( navController: NavController, isTabletLayout: Boolean = false, viewModel: ChatViewModel = hiltViewModel() )</ID>
     <ID>FunctionNaming:ChatScreen.kt$@Composable private fun ChatEmptyState()</ID>
@@ -36,7 +35,7 @@
     <ID>FunctionNaming:DialogueInputCard.kt$@Composable internal fun EmptyDialogueHint(contactName: String)</ID>
     <ID>FunctionNaming:RemarksCard.kt$@Composable internal fun RemarksCard( remarks: String, onRemarksChange: (String) -&gt; Unit )</ID>
     <ID>FunctionNaming:SceneInfoCard.kt$@Composable internal fun SceneInfoCard( title: String, selectedDate: Long, onTitleChange: (String) -&gt; Unit, onDateClick: () -&gt; Unit, titleFocusRequester: FocusRequester? = null )</ID>
-    <ID>LongMethod:AddChatScreen.kt$@Composable fun AddChatScreen( contactId: Long? = null, eventId: Long? = null, navController: NavController, viewModel: AddChatViewModel = hiltViewModel() )</ID>
+    <ID>LongMethod:AddChatScreen.kt$@Composable fun AddChatScreen( navController: NavController, viewModel: AddChatViewModel = hiltViewModel() )</ID>
     <ID>LongMethod:ChatComponents.kt$@Composable internal fun ConversationItem( conversation: ConversationUiModel, showAvatar: Boolean, onClick: () -&gt; Unit, modifier: Modifier = Modifier )</ID>
     <ID>LongMethod:ChatDetailComponents.kt$@Composable internal fun ScriptHeader(event: Event, contact: Contact?, intimacyColor: Color)</ID>
     <ID>LongMethod:ChatDetailScreen.kt$@Composable fun ChatDetailScreen( eventId: Long, navController: NavController, viewModel: ChatDetailViewModel = hiltViewModel() )</ID>
@@ -71,8 +70,6 @@
     <ID>MaxLineLength:SceneInfoCard.kt$Text("场景设定", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)</ID>
     <ID>MaxLineLength:SceneInfoCard.kt$modifier = Modifier.fillMaxWidth().then(if (titleFocusRequester != null) Modifier.focusRequester(titleFocusRequester) else Modifier)</ID>
     <ID>NewLineAtEndOfFile:ChatViewModel.kt$com.tang.prm.feature.chat.ChatViewModel.kt</ID>
-    <ID>UnusedParameter:AddChatScreen.kt$contactId: Long? = null</ID>
-    <ID>UnusedParameter:AddChatScreen.kt$eventId: Long? = null</ID>
     <ID>UnusedParameter:DialogueInputCard.kt$contactName: String</ID>
   </CurrentIssues>
 </SmellBaseline>

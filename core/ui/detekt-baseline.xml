@@ -8,7 +8,6 @@
     <ID>FunctionNaming:Avatars.kt$@Composable fun ContactAvatar( avatar: String?, name: String, size: Int = 48, modifier: Modifier = Modifier )</ID>
     <ID>FunctionNaming:ContactPickerDialog.kt$@Composable fun ContactPickerDialog( contacts: List&lt;com.tang.prm.domain.model.Contact&gt;, onDismiss: () -&gt; Unit, title: String = "选择联系人", subtitle: String? = null, multiSelect: Boolean = false, selectedContacts: List&lt;com.tang.prm.domain.model.Contact&gt; = emptyList(), onContactSelected: (com.tang.prm.domain.model.Contact) -&gt; Unit, emptyText: String = "暂无联系人", onCreateContact: (() -&gt; Unit)? = null )</ID>
     <ID>FunctionNaming:ContactRelationshipBadge.kt$@Composable fun ContactRelationshipBadge( relationship: String?, bracketed: Boolean = false, color: Color, fontSize: TextUnit = if (bracketed) 11.sp else 9.sp, textAlign: TextAlign? = null, maxLines: Int = Int.MAX_VALUE, overflow: TextOverflow = TextOverflow.Clip )</ID>
-    <ID>FunctionNaming:DashboardEmptyState.kt$@Composable fun DashboardEmptyState( title: String, metrics: List&lt;DashboardMetric&gt;, modifier: Modifier = Modifier, reminderText: String? = null )</ID>
     <ID>FunctionNaming:Dialogs.kt$@Composable fun AppConfirmDialog( title: String, text: String, confirmLabel: String = "确认", dismissLabel: String = "取消", onConfirm: () -&gt; Unit, onDismiss: () -&gt; Unit, isDestructive: Boolean = false )</ID>
     <ID>FunctionNaming:Dialogs.kt$@Composable fun DeleteConfirmDialog( title: String = "确认删除", message: String, onConfirm: () -&gt; Unit, onDismiss: () -&gt; Unit )</ID>
     <ID>FunctionNaming:Dialogs.kt$@Composable fun DiscardEditDialog( onDiscard: () -&gt; Unit, onDismiss: () -&gt; Unit )</ID>
@@ -17,8 +16,8 @@
     <ID>FunctionNaming:FormComponents.kt$@Composable fun DetailInfoRow( icon: ImageVector, label: String, value: String, iconColor: Color = MaterialTheme.colorScheme.primary, valueColor: Color = MaterialTheme.colorScheme.onSurface, maxLines: Int = 1 )</ID>
     <ID>FunctionNaming:FormComponents.kt$@Composable fun DetailSection( title: String, accentColor: Color = MaterialTheme.colorScheme.primary, content: @Composable ColumnScope.() -&gt; Unit )</ID>
     <ID>FunctionNaming:FormComponents.kt$@Composable fun FormScreenScaffold( title: String, onSaveClick: () -&gt; Unit, saveEnabled: Boolean = true, onBackClick: () -&gt; Unit, containerColor: Color = MaterialTheme.colorScheme.surface, snackbarHostState: SnackbarHostState = remember { SnackbarHostState() }, content: @Composable (PaddingValues) -&gt; Unit )</ID>
-    <ID>FunctionNaming:FormComponents.kt$@Composable fun FormSectionLabel(icon: ImageVector, label: String, color: Color)</ID>
-    <ID>FunctionNaming:FormComponents.kt$@Composable fun SectionHeader( title: String, modifier: Modifier = Modifier, action: @Composable (() -&gt; Unit)? = null )</ID>
+    <ID>FunctionNaming:FormComponents.kt$@Composable fun IconGradientSectionHeader( icon: ImageVector, iconColor: Color, title: String, action: String?, onActionClick: (() -&gt; Unit)?, modifier: Modifier = Modifier )</ID>
+    <ID>FunctionNaming:FormComponents.kt$@Composable fun SectionCard( title: String, icon: ImageVector, iconTint: Color, modifier: Modifier = Modifier, content: @Composable ColumnScope.() -&gt; Unit )</ID>
     <ID>FunctionNaming:FormFields.kt$@Composable fun FormSection( label: String, modifier: Modifier = Modifier, content: @Composable ColumnScope.() -&gt; Unit )</ID>
     <ID>FunctionNaming:FormFields.kt$@Composable fun FormTextField( value: String, onValueChange: (String) -&gt; Unit, label: String, modifier: Modifier = Modifier, singleLine: Boolean = true, maxLines: Int = if (singleLine) 1 else 5, isError: Boolean = false, errorMessage: String = "", trailingIcon: @Composable (() -&gt; Unit)? = null )</ID>
     <ID>FunctionNaming:GlassNavigation.kt$@Composable fun GlassBottomBar( items: List&lt;BottomNavItem&gt;, currentDestination: NavDestination?, onNavigate: (Any) -&gt; Unit, modifier: Modifier = Modifier )</ID>
@@ -46,19 +45,20 @@
     <ID>FunctionNaming:PhotoSlot.kt$@Composable private fun ThumbnailAddSlot(label: String, onClick: () -&gt; Unit)</ID>
     <ID>FunctionNaming:PhotoSlot.kt$@Composable private fun ThumbnailPhotoSlot(photoUri: String, onRemove: (() -&gt; Unit)?, onClick: (() -&gt; Unit)?)</ID>
     <ID>FunctionNaming:SearchBar.kt$@Composable fun SearchBar( query: String, onQueryChange: (String) -&gt; Unit, modifier: Modifier = Modifier, placeholder: String = "搜索", focusRequester: FocusRequester? = null, autoFocus: Boolean = false )</ID>
+    <ID>FunctionNaming:SectionHeader.kt$@Composable fun FormSectionLabel( icon: ImageVector, label: String, color: Color, modifier: Modifier = Modifier )</ID>
+    <ID>FunctionNaming:SectionHeader.kt$@Composable fun SectionHeader( title: String, modifier: Modifier = Modifier, action: @Composable (() -&gt; Unit)? = null )</ID>
+    <ID>FunctionNaming:SectionHeader.kt$@Composable fun SimpleSectionLabel( title: String, modifier: Modifier = Modifier )</ID>
+    <ID>FunctionNaming:SectionHeader.kt$@Composable fun TerminalSectionHeader( title: String, modifier: Modifier = Modifier )</ID>
     <ID>FunctionNaming:SegmentedToggleButton.kt$@Composable fun &lt;T&gt; SegmentedToggleButton( options: List&lt;SegmentedOption&lt;T&gt;&gt;, selectedKey: T, onSelectionChange: (T) -&gt; Unit, modifier: Modifier = Modifier, showLabel: Boolean = false )</ID>
     <ID>FunctionNaming:TabletSearchBar.kt$@Composable fun TabletSearchBar( query: String, onQueryChange: (String) -&gt; Unit, modifier: Modifier = Modifier, placeholder: String = "搜索" )</ID>
-    <ID>FunctionNaming:TabletTopBar.kt$@Composable fun TabletTopBar( title: String, subtitle: String, searchQuery: String, onSearchQueryChange: (String) -&gt; Unit, searchPlaceholder: String, onAddClick: () -&gt; Unit, addContentDescription: String, modifier: Modifier = Modifier, searchInline: Boolean = true )</ID>
     <ID>FunctionNaming:TagSelector.kt$@Composable fun AddTypeDialog( title: String, onDismiss: () -&gt; Unit, onConfirm: (String, String?, String?) -&gt; Unit, showIconPicker: Boolean = false )</ID>
     <ID>FunctionNaming:TagSelector.kt$@Composable fun DeleteTypeDialog( typeName: String, onDismiss: () -&gt; Unit, onConfirm: () -&gt; Unit )</ID>
     <ID>FunctionNaming:TagSelector.kt$@Composable private fun GridRow(items: List&lt;String&gt;, columns: Int, content: @Composable (String) -&gt; Unit)</ID>
     <ID>FunctionNaming:TagSelector.kt$@OptIn(ExperimentalLayoutApi::class) @Composable fun TagSelector( mode: TagSelectorMode, availableItems: List&lt;CustomType&gt;, selectedItems: List&lt;String&gt;, onSelectionChange: (List&lt;String&gt;) -&gt; Unit, onAddItem: (String, String?, String?) -&gt; Unit, onDeleteItem: (CustomType) -&gt; Unit, title: String? = null, emptyText: String = "暂无标签，点击新增添加", showHeader: Boolean = true, showAddButton: Boolean = true, showAddDialog: Boolean = false, onAddDialogDismiss: () -&gt; Unit = {}, iconResolver: ((String) -&gt; ImageVector?)? = null, showIconPicker: Boolean = false )</ID>
     <ID>FunctionNaming:Theme.kt$@Composable fun TangTheme( darkTheme: Boolean = isSystemInDarkTheme(), content: @Composable () -&gt; Unit )</ID>
-    <ID>FunctionNaming:WaveformDisplay.kt$@Suppress("UNUSED_PARAMETER") @Composable fun WaveformMonitor( waveType: WaveType = WaveType.Sine, isRunning: Boolean = true, modifier: Modifier = Modifier, lineColor: Color = Color.Green, gridColor: Color = Color.Unspecified, centerLineColor: Color = Color.Unspecified, glowColor: Color = Color.Unspecified, glowAlpha: Float = 0.12f, lineAlpha: Float = 0.85f, label: String = "" )</ID>
     <ID>FunctionNaming:densityfix.kt$@Composable fun FixedDensityProvider( context: Context, content: @Composable () -&gt; Unit )</ID>
     <ID>LongMethod:AvatarCropDialog.kt$@Composable fun AvatarCropDialog( imagePath: String, onCropComplete: (String) -&gt; Unit, onDismiss: () -&gt; Unit )</ID>
     <ID>LongMethod:ContactPickerDialog.kt$@Composable fun ContactPickerDialog( contacts: List&lt;com.tang.prm.domain.model.Contact&gt;, onDismiss: () -&gt; Unit, title: String = "选择联系人", subtitle: String? = null, multiSelect: Boolean = false, selectedContacts: List&lt;com.tang.prm.domain.model.Contact&gt; = emptyList(), onContactSelected: (com.tang.prm.domain.model.Contact) -&gt; Unit, emptyText: String = "暂无联系人", onCreateContact: (() -&gt; Unit)? = null )</ID>
-    <ID>LongMethod:DashboardEmptyState.kt$@Composable fun DashboardEmptyState( title: String, metrics: List&lt;DashboardMetric&gt;, modifier: Modifier = Modifier, reminderText: String? = null )</ID>
     <ID>LongMethod:Dialogs.kt$@Composable fun AppConfirmDialog( title: String, text: String, confirmLabel: String = "确认", dismissLabel: String = "取消", onConfirm: () -&gt; Unit, onDismiss: () -&gt; Unit, isDestructive: Boolean = false )</ID>
     <ID>LongMethod:HolographicCard.kt$@Composable fun HolographicCardOverlay( isFlipped: Boolean, onFlip: () -&gt; Unit, onClose: () -&gt; Unit, modifier: Modifier = Modifier, config: HolographicConfig = HolographicConfig.default, frontContent: @Composable () -&gt; Unit, backContent: @Composable () -&gt; Unit )</ID>
     <ID>LongMethod:TagSelector.kt$@Composable fun AddTypeDialog( title: String, onDismiss: () -&gt; Unit, onConfirm: (String, String?, String?) -&gt; Unit, showIconPicker: Boolean = false )</ID>
@@ -66,14 +66,10 @@
     <ID>LongParameterList:ContactPickerDialog.kt$( contacts: List&lt;com.tang.prm.domain.model.Contact&gt;, onDismiss: () -&gt; Unit, title: String = "选择联系人", subtitle: String? = null, multiSelect: Boolean = false, selectedContacts: List&lt;com.tang.prm.domain.model.Contact&gt; = emptyList(), onContactSelected: (com.tang.prm.domain.model.Contact) -&gt; Unit, emptyText: String = "暂无联系人", onCreateContact: (() -&gt; Unit)? = null )</ID>
     <ID>LongParameterList:FormComponents.kt$( show: Boolean, onDismiss: () -&gt; Unit, onDateSelected: (Long) -&gt; Unit, initialDate: Long? = null, confirmText: String = "确定", dismissText: String = "取消", confirmColor: Color = MaterialTheme.colorScheme.primary, dismissColor: Color = MaterialTheme.colorScheme.onSurfaceVariant )</ID>
     <ID>LongParameterList:FormFields.kt$( value: String, onValueChange: (String) -&gt; Unit, label: String, modifier: Modifier = Modifier, singleLine: Boolean = true, maxLines: Int = if (singleLine) 1 else 5, isError: Boolean = false, errorMessage: String = "", trailingIcon: @Composable (() -&gt; Unit)? = null )</ID>
-    <ID>LongParameterList:TabletTopBar.kt$( title: String, subtitle: String, searchQuery: String, onSearchQueryChange: (String) -&gt; Unit, searchPlaceholder: String, onAddClick: () -&gt; Unit, addContentDescription: String, modifier: Modifier = Modifier, searchInline: Boolean = true )</ID>
     <ID>LongParameterList:TagSelector.kt$( mode: TagSelectorMode, availableItems: List&lt;CustomType&gt;, selectedItems: List&lt;String&gt;, onSelectionChange: (List&lt;String&gt;) -&gt; Unit, onAddItem: (String, String?, String?) -&gt; Unit, onDeleteItem: (CustomType) -&gt; Unit, title: String? = null, emptyText: String = "暂无标签，点击新增添加", showHeader: Boolean = true, showAddButton: Boolean = true, showAddDialog: Boolean = false, onAddDialogDismiss: () -&gt; Unit = {}, iconResolver: ((String) -&gt; ImageVector?)? = null, showIconPicker: Boolean = false )</ID>
-    <ID>LongParameterList:WaveformDisplay.kt$( waveType: WaveType = WaveType.Sine, isRunning: Boolean = true, modifier: Modifier = Modifier, lineColor: Color = Color.Green, gridColor: Color = Color.Unspecified, centerLineColor: Color = Color.Unspecified, glowColor: Color = Color.Unspecified, glowAlpha: Float = 0.12f, lineAlpha: Float = 0.85f, label: String = "" )</ID>
-    <ID>MatchingDeclarationName:DashboardEmptyState.kt$DashboardMetric</ID>
     <ID>MatchingDeclarationName:Dimensions.kt$Dimens</ID>
     <ID>MatchingDeclarationName:HolographicCard.kt$HolographicConfig</ID>
     <ID>MatchingDeclarationName:TagSelector.kt$TagSelectorMode</ID>
-    <ID>MatchingDeclarationName:WaveformDisplay.kt$WaveType</ID>
     <ID>MatchingDeclarationName:densityfix.kt$DensityFix</ID>
     <ID>MaxLineLength:AvatarCropDialog.kt$drawRect(maskColor, topLeft = Offset(0f, circleCenter.y + circleRadius), size = Size(canvasSize.width, canvasSize.height - circleCenter.y - circleRadius))</ID>
     <ID>MaxLineLength:AvatarCropDialog.kt$drawRect(maskColor, topLeft = Offset(0f, circleCenter.y - circleRadius), size = Size(circleCenter.x - circleRadius, circleRadius * 2f))</ID>
@@ -88,6 +84,7 @@
     <ID>MaxLineLength:FormComponents.kt$Text(text = label, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 11.sp)</ID>
     <ID>MaxLineLength:FormComponents.kt$Text(text = title, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)</ID>
     <ID>MaxLineLength:FormComponents.kt$Text(text = value, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold, maxLines = maxLines, overflow = TextOverflow.Ellipsis, color = valueColor)</ID>
+    <ID>MaxLineLength:FormComponents.kt$Text(title, style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold)</ID>
     <ID>MaxLineLength:TagSelector.kt$.</ID>
     <ID>MaxLineLength:TagSelector.kt$Box</ID>
     <ID>MaxLineLength:TagSelector.kt$Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(14.dp), tint = MaterialTheme.colorScheme.primary)</ID>
@@ -110,8 +107,5 @@
     <ID>MayBeConst:Dimensions.kt$Dimens$val listPaneWeight = 0.4f</ID>
     <ID>TooGenericExceptionCaught:AvatarCropDialog.kt$e: Exception</ID>
     <ID>TooGenericExceptionCaught:Color.kt$e: Exception</ID>
-    <ID>UnusedParameter:TabletTopBar.kt$onAddClick: () -&gt; Unit</ID>
-    <ID>UnusedPrivateProperty:HolographicCard.kt$val _pulseAlpha by rememberPausableInfiniteFloatLoop( initialValue = if (config.enablePulse) config.pulseMinAlpha else 1f, targetValue = if (config.enablePulse) config.pulseMaxAlpha else 1f, durationMillis = if (config.enablePulse) config.pulseDuration else Int.MAX_VALUE, easing = AnimationTokens.Easing.linear, repeatMode = RepeatMode.Reverse, label = "holo_pulse" )</ID>
-    <ID>VariableNaming:HolographicCard.kt$val _pulseAlpha by rememberPausableInfiniteFloatLoop( initialValue = if (config.enablePulse) config.pulseMinAlpha else 1f, targetValue = if (config.enablePulse) config.pulseMaxAlpha else 1f, durationMillis = if (config.enablePulse) config.pulseDuration else Int.MAX_VALUE, easing = AnimationTokens.Easing.linear, repeatMode = RepeatMode.Reverse, label = "holo_pulse" )</ID>
   </CurrentIssues>
 </SmellBaseline>
