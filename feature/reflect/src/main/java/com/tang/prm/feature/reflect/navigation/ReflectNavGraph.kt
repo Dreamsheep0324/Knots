@@ -20,14 +20,15 @@ fun NavGraphBuilder.reflectGraph(navController: NavHostController, isTabletLayou
         PhotoAlbumScreen(navController = navController, initialPhotoId = photoId, isTabletLayout = isTabletLayout)
     }
     composable<FootprintsRoute> {
-        FootprintsScreen(navController = navController)
+        FootprintsScreen(navController = navController, isTabletLayout = isTabletLayout)
     }
     composable<ThoughtsRoute> {
         ThoughtsScreen(
-            onBack = { navController.popBackStack() }
+            onBack = { navController.popBackStack() },
+            isTabletLayout = isTabletLayout
         )
     }
     composable<FavoritesRoute> {
-        FavoritesScreen(navController = navController)
+        FavoritesScreen(navController = navController, isTabletLayout = isTabletLayout)
     }
 }

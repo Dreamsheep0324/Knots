@@ -12,12 +12,15 @@ import com.tang.prm.domain.repository.ContactRepository
 import com.tang.prm.domain.repository.CustomTypeRepository
 import com.tang.prm.domain.repository.EventRepository
 import com.tang.prm.domain.usecase.EventManageUseCase
+import com.tang.prm.domain.usecase.ObserveEventReferenceDataUseCase
 import com.tang.prm.domain.usecase.UpdateInteractionUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -32,10 +35,15 @@ class AddEventViewModel @Inject constructor(
     private val contactRepository: ContactRepository,
     private val customTypeRepository: CustomTypeRepository,
     private val eventManageUseCase: EventManageUseCase,
-    private val updateInteractionUseCase: UpdateInteractionUseCase
+    private val updateInteractionUseCase: UpdateInteractionUseCase,
+    private val observeReferenceDataUseCase: ObserveEventReferenceDataUseCase
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(AddEventUiState())
     val uiState: StateFlow<AddEventUiState> = _uiState.asStateFlow()
+
+    private val _errorMessage = MutableSharedFlow<String>(extraBufferCapacity = 1)
+    val errorMessage: SharedFlow<String> = _errorMessage.asSharedFlow()
+
     private var editingEventId: Long? = null
 
     private fun launchWithErrorHandling(block: suspend () -> Unit) {
@@ -48,14 +56,7 @@ class AddEventViewModel @Inject constructor(
 
     private fun loadReferenceData() {
         viewModelScope.launch {
-            val data = combine(
-                contactRepository.getAllContacts(),
-                customTypeRepository.getTypesByCategory(CustomCategories.EVENT_TYPE),
-                customTypeRepository.getTypesByCategory(CustomCategories.EMOTION),
-                customTypeRepository.getTypesByCategory(CustomCategories.WEATHER)
-            ) { contacts, eventTypes, emotions, weathers ->
-                RefData(contacts, eventTypes, emotions, weathers)
-            }.first()
+            val data = observeReferenceDataUseCase.invoke().first()
             if (data.emotions.isEmpty()) seedDefaultEmotions()
             if (data.weathers.isEmpty()) seedDefaultWeathers()
             _uiState.update {
@@ -68,13 +69,6 @@ class AddEventViewModel @Inject constructor(
             }
         }
     }
-
-    private data class RefData(
-        val contacts: List<Contact>,
-        val eventTypes: List<CustomType>,
-        val emotions: List<CustomType>,
-        val weathers: List<CustomType>
-    )
 
     private suspend fun seedDefaultWeathers() {
         if (customTypeRepository.getTypeCountByCategory(CustomCategories.WEATHER) > 0) return
@@ -117,7 +111,6 @@ class AddEventViewModel @Inject constructor(
     fun updateRemarks(value: String) = _uiState.update { it.copy(remarks = value, hasUnsavedChanges = true) }
     fun updatePhotos(value: List<String>) = _uiState.update { it.copy(photos = value, hasUnsavedChanges = true) }
     fun addPhoto(uri: String) = _uiState.update { it.copy(photos = it.photos + uri, hasUnsavedChanges = true) }
-    fun removePhoto(uri: String) = _uiState.update { it.copy(photos = it.photos.filter { p -> p != uri }, hasUnsavedChanges = true) }
     fun removePhotoAt(index: Int) = _uiState.update { it.copy(photos = it.photos.toMutableList().apply { removeAt(index) }, hasUnsavedChanges = true) }
     fun showContactPicker() = _uiState.update { it.copy(showContactPicker = true) }
     fun hideContactPicker() = _uiState.update { it.copy(showContactPicker = false) }
@@ -153,7 +146,10 @@ class AddEventViewModel @Inject constructor(
     fun saveEvent() {
         viewModelScope.launch {
             val state = _uiState.value
-            if (state.title.isBlank() || state.type.isBlank()) return@launch
+            if (state.title.isBlank() || state.type.isBlank()) {
+                _errorMessage.emit("请填写标题和事件类型")
+                return@launch
+            }
             val eventType = EventType.entries.find { it.name == state.type }
             val customTypeName = if (eventType == null) state.type else null
             val event = Event(id = editingEventId ?: 0, title = state.title, type = eventType ?: EventType.OTHER,

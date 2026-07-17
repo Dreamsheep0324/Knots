@@ -53,6 +53,7 @@ import com.tang.prm.ui.theme.TextGray
 @Composable
 fun FootprintsScreen(
     navController: NavController,
+    isTabletLayout: Boolean = false,
     viewModel: FootprintsViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -120,12 +121,20 @@ fun FootprintsScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(padding)
-                    .background(MaterialTheme.colorScheme.surface),
+                    .background(MaterialTheme.colorScheme.surface)
+                    .then(if (isTabletLayout) Modifier.padding(horizontal = 48.dp) else Modifier),
                 contentPadding = PaddingValues(bottom = 96.dp)
             ) {
                 uiState.footprints.firstOrNull()?.let { latest ->
                     item(key = "hero") {
-                        HeroCard(footprint = latest, eventTypes = uiState.eventTypes, onClick = { navController.navigate(EventDetailRoute(latest.id)) })
+                        // U-1 修复：标签根据筛选状态动态调整，避免"最新足迹"在年份筛选下语义失真
+                        val heroLabel = uiState.selectedYear?.let { "${it}年足迹" } ?: "最新足迹"
+                        HeroCard(
+                            footprint = latest,
+                            eventTypes = uiState.eventTypes,
+                            label = heroLabel,
+                            onClick = { navController.navigate(EventDetailRoute(latest.id)) }
+                        )
                     }
                 }
 
@@ -141,7 +150,8 @@ fun FootprintsScreen(
                     YearTabs(
                         availableYears = uiState.availableYears,
                         selectedYear = uiState.selectedYear,
-                        footprints = uiState.footprints,
+                        totalCount = uiState.totalFootprintCount,
+                        totalFootprintsByYear = uiState.totalFootprintsByYear,
                         onYearSelect = { viewModel.selectYear(it) }
                     )
                 }

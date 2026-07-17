@@ -36,6 +36,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
@@ -63,6 +64,7 @@ import com.tang.prm.ui.animation.primitives.rememberBlinkingAlpha
 @Composable
 fun FavoritesScreen(
     navController: NavController,
+    isTabletLayout: Boolean = false,
     viewModel: FavoritesViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -94,7 +96,8 @@ fun FavoritesScreen(
 
     val dateFormat: (Long) -> String = { DateUtils.formatMonthDayDot(it) }
 
-    Scaffold(
+    CompositionLocalProvider(LocalTermColors provides rememberTermColors()) {
+        Scaffold(
         topBar = {
             Column {
                 TopAppBar(
@@ -170,6 +173,7 @@ fun FavoritesScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
+                .then(if (isTabletLayout) Modifier.padding(horizontal = 48.dp) else Modifier)
         ) {
             Column(
                 modifier = Modifier
@@ -184,7 +188,11 @@ fun FavoritesScreen(
                         .fillMaxWidth()
                 ) { page ->
                     when (page) {
-                        0 -> Column(modifier = Modifier.fillMaxSize()) {
+                        0 -> Column(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .verticalScroll(rememberScrollState())
+                        ) {
                             TabListContent(
                                 favorites = favorites,
                                 viewModel = viewModel,
@@ -267,5 +275,6 @@ fun FavoritesScreen(
                 )
             }
         }
+    }
     }
 }

@@ -4,8 +4,7 @@ import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat
 import com.tang.prm.domain.model.Favorite
 import com.tang.prm.domain.repository.FavoriteRepository
-import io.mockk.coEvery
-import io.mockk.coVerify
+import com.tang.prm.domain.usecase.ObserveFavoritesUseCase
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
@@ -26,6 +25,7 @@ class FavoritesViewModelTest {
     @MockK
     private lateinit var favoriteRepository: FavoriteRepository
 
+    private lateinit var observeFavoritesUseCase: ObserveFavoritesUseCase
     private lateinit var viewModel: FavoritesViewModel
 
     private val testFavorites = listOf(
@@ -40,7 +40,8 @@ class FavoritesViewModelTest {
 
         every { favoriteRepository.getAllFavorites() } returns flowOf(testFavorites)
 
-        viewModel = FavoritesViewModel(favoriteRepository)
+        observeFavoritesUseCase = ObserveFavoritesUseCase(favoriteRepository)
+        viewModel = FavoritesViewModel(observeFavoritesUseCase)
     }
 
     @AfterEach
@@ -79,20 +80,10 @@ class FavoritesViewModelTest {
     }
 
     @Test
-    fun removeFavorite_callsRepository() = runTest {
-        val favorite = testFavorites[0]
-        coEvery { favoriteRepository.deleteFavoriteBySource(favorite.sourceType, favorite.sourceId) } returns Unit
-
-        viewModel.removeFavorite(favorite)
-
-        coVerify { favoriteRepository.deleteFavoriteBySource("EVENT", 10L) }
-    }
-
-    @Test
     fun init_emptyFavorites_showsEmptyList() = runTest {
         every { favoriteRepository.getAllFavorites() } returns flowOf(emptyList<Favorite>())
 
-        val freshViewModel = FavoritesViewModel(favoriteRepository)
+        val freshViewModel = FavoritesViewModel(observeFavoritesUseCase)
 
         freshViewModel.uiState.test {
             val state = awaitItem()

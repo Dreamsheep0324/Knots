@@ -30,6 +30,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -49,11 +50,9 @@ import com.tang.prm.ui.theme.EventLightIndigo
 import com.tang.prm.ui.theme.SignalAmber
 import com.tang.prm.ui.theme.SignalPurple
 import com.tang.prm.ui.theme.SignalSky
-import com.tang.prm.ui.theme.getEmotionColor
 import com.tang.prm.ui.theme.getEmotionIcon
 import com.tang.prm.ui.theme.getEventTypeStyle
 import com.tang.prm.ui.theme.getGenericIcon
-import com.tang.prm.ui.theme.getWeatherColor
 import com.tang.prm.ui.theme.getWeatherIcon
 import com.tang.prm.ui.theme.toComposeColor
 import com.tang.prm.domain.util.DateUtils
@@ -61,7 +60,7 @@ import java.util.Calendar
 
 @Composable
 internal fun EventCard(event: Event, eventTypes: List<CustomType>, onClick: () -> Unit, modifier: Modifier = Modifier) {
-    val customType = if (event.type != EventType.OTHER) eventTypes.find { it.key == event.type.name } ?: eventTypes.find { it.name == event.type.name } else event.customTypeName?.let { ctn -> eventTypes.find { it.name == ctn } }
+    val customType = resolveEventCustomType(event, eventTypes)
     val accentColor: Color
     val lightColor: Color
     val icon: ImageVector
@@ -94,7 +93,14 @@ internal fun EventCard(event: Event, eventTypes: List<CustomType>, onClick: () -
                         Text(text = event.title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f))
                         if (event.type != EventType.OTHER || event.customTypeName != null) {
                             Surface(shape = RoundedCornerShape(20.dp), color = lightColor) {
-                                Text(text = event.customTypeName ?: event.type.displayName, modifier = Modifier.padding(10.dp, 4.dp), style = MaterialTheme.typography.labelSmall, color = accentColor, fontWeight = FontWeight.SemiBold, fontSize = 11.sp)
+                                Text(
+                                    text = event.typeDisplayName,
+                                    modifier = Modifier.padding(10.dp, 4.dp),
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = accentColor,
+                                    fontWeight = FontWeight.SemiBold,
+                                    fontSize = 11.sp
+                                )
                             }
                         }
                     }
@@ -129,7 +135,7 @@ internal fun EventCard(event: Event, eventTypes: List<CustomType>, onClick: () -
 
                     event.weather?.let { weather ->
                         if (weather.isNotBlank()) {
-                            val wColor = getWeatherColor(weather)?.let { it.toComposeColor(SignalAmber) } ?: SignalAmber
+                            val wColor = resolveWeatherColor(weather)
                             val wIcon = getWeatherIcon(weather) ?: Icons.Default.WbSunny
                             MetaTag(icon = wIcon, text = weather, bgColor = wColor.copy(alpha = AnimationTokens.Alpha.faint), textColor = wColor)
                         }
@@ -137,7 +143,7 @@ internal fun EventCard(event: Event, eventTypes: List<CustomType>, onClick: () -
 
                     event.emotion?.let { emotion ->
                         if (emotion.isNotBlank()) {
-                            val eColor = getEmotionColor(emotion)?.let { it.toComposeColor(SignalPurple) } ?: SignalPurple
+                            val eColor = resolveEmotionColor(emotion)
                             val eIcon = getEmotionIcon(emotion) ?: Icons.Default.Favorite
                             MetaTag(icon = eIcon, text = emotion, bgColor = eColor.copy(alpha = AnimationTokens.Alpha.faint), textColor = eColor)
                         }
@@ -164,13 +170,7 @@ internal fun EventsTimelineView(
     events: List<Event>,
     onEventClick: (Event) -> Unit
 ) {
-    val eventsByDate = events.groupBy { event ->
-        val cal = Calendar.getInstance()
-        cal.timeInMillis = event.time
-        Triple(cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH))
-    }.toList().sortedByDescending { (date, _) ->
-        Calendar.getInstance().apply { set(date.first, date.second, date.third) }.timeInMillis
-    }
+    val eventsByDate = remember(events) { groupEventsByDate(events) }
 
     LazyColumn(
         modifier = Modifier.fillMaxSize(),

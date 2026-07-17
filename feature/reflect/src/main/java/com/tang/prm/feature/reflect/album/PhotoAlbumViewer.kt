@@ -64,49 +64,19 @@ internal fun SwipeablePhotoViewerDialog(
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
-                        .then(
-                            if (scale > 1.01f) {
-                                Modifier.pointerInput(photo.id) {
-                                    detectTransformGestures { _, pan, zoom, _ ->
-                                        val newScale = (scale * zoom).coerceIn(1f, 4f)
-                                        scale = newScale
-                                        if (newScale > 1.01f) {
-                                            offsetX += pan.x
-                                            offsetY += pan.y
-                                        } else {
-                                            offsetX = 0f
-                                            offsetY = 0f
-                                        }
-                                    }
-                                }
-                            } else {
-                                Modifier.pointerInput(photo.id) {
-                                    awaitPointerEventScope {
-                                        while (true) {
-                                            val event = awaitPointerEvent()
-                                            val changes = event.changes
-                                            if (changes.size >= 2) {
-                                                var totalZoom = 1f
-                                                for (i in 0 until changes.size - 1) {
-                                                    for (j in i + 1 until changes.size) {
-                                                        val currDist = (changes[i].position - changes[j].position).getDistance()
-                                                        val prevDist = (changes[i].previousPosition - changes[j].previousPosition).getDistance()
-                                                        if (prevDist > 0f) totalZoom *= currDist / prevDist
-                                                    }
-                                                }
-                                                val newScale = (scale * totalZoom).coerceIn(1f, 4f)
-                                                scale = newScale
-                                                if (newScale <= 1.01f) {
-                                                    offsetX = 0f
-                                                    offsetY = 0f
-                                                }
-                                                changes.forEach { it.consume() }
-                                            }
-                                        }
-                                    }
+                        .pointerInput(photo.id) {
+                            detectTransformGestures { _, pan, zoom, _ ->
+                                val newScale = (scale * zoom).coerceIn(1f, 4f)
+                                scale = newScale
+                                if (newScale > 1.01f) {
+                                    offsetX += pan.x
+                                    offsetY += pan.y
+                                } else {
+                                    offsetX = 0f
+                                    offsetY = 0f
                                 }
                             }
-                        )
+                        }
                 ) {
                     AsyncImage(
                         model = photo.uri,

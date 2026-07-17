@@ -41,7 +41,7 @@ internal fun ContactStoriesRow(
         contentPadding = PaddingValues(horizontal = 16.dp),
         horizontalArrangement = Arrangement.spacedBy(14.dp)
     ) {
-        items(contactThoughts.take(8), key = { it.contact.id }) { ct ->
+        items(contactThoughts, key = { it.contact.id }) { ct ->
             val isSelected = ct.contact.id == selectedContactId
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,

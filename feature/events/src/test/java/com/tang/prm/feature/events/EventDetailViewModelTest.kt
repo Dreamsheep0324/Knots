@@ -136,4 +136,20 @@ class EventDetailViewModelTest {
             cancelAndIgnoreRemainingEvents()
         }
     }
+
+    @Test
+    fun `eventId valid but event not found shows not found state`() = runTest {
+        // 模拟事件已被删除：getEventById 返回 null
+        every { eventRepository.getEventById(999L) } returns flowOf(null)
+        every { favoriteToggleUseCase.isFavorite(SourceTypes.EVENT, 999L) } returns flowOf(false)
+
+        val savedStateHandle = SavedStateHandle(mapOf("eventId" to 999L))
+        val vm = EventDetailViewModel(savedStateHandle, eventRepository, favoriteToggleUseCase)
+        vm.uiState.test {
+            val state = awaitItem()
+            assertThat(state.data.event).isNull()
+            assertThat(state.data.isLoading).isFalse()
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
 }

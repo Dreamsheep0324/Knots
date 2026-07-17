@@ -22,6 +22,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.tang.prm.domain.model.Contact
 import com.tang.prm.domain.model.CustomType
 import com.tang.prm.domain.model.Event
 import com.tang.prm.domain.model.EventType
@@ -179,47 +180,58 @@ private fun computeCalendarCells(
 
     val daysInMonth = cal.getActualMaximum(Calendar.DAY_OF_MONTH)
 
-    // Previous month trailing days
-    val prevCal = (cal.clone() as Calendar).apply {
-        add(Calendar.MONTH, -1)
-    }
+    val prevCal = (cal.clone() as Calendar).apply { add(Calendar.MONTH, -1) }
     val daysInPrevMonth = prevCal.getActualMaximum(Calendar.DAY_OF_MONTH)
+    val nextCal = (cal.clone() as Calendar).apply { add(Calendar.MONTH, 1) }
 
-    // Today
     val todayCal = Calendar.getInstance()
     val isCurrentMonth = todayCal.get(Calendar.YEAR) == year && todayCal.get(Calendar.MONTH) == month
     val todayDay = if (isCurrentMonth) todayCal.get(Calendar.DAY_OF_MONTH) else -1
 
-    // Selected date
     val selectedCal = Calendar.getInstance().apply { timeInMillis = selectedDate }
     val isSelectedMonth = selectedCal.get(Calendar.YEAR) == year && selectedCal.get(Calendar.MONTH) == month
     val selectedDay = if (isSelectedMonth) selectedCal.get(Calendar.DAY_OF_MONTH) else -1
 
-    // Event days
-    val eventDays = mutableSetOf<Int>()
-    calendarEvents.forEach { event ->
+    val eventDays = calendarEvents.mapNotNullTo(mutableSetOf()) { event ->
         val eventCal = Calendar.getInstance().apply { timeInMillis = event.time }
         if (eventCal.get(Calendar.YEAR) == year && eventCal.get(Calendar.MONTH) == month) {
-            eventDays.add(eventCal.get(Calendar.DAY_OF_MONTH))
-        }
+            eventCal.get(Calendar.DAY_OF_MONTH)
+        } else null
     }
 
     val cells = mutableListOf<CalendarCell>()
+    cells.addAll(computePreviousMonthTail(offset, daysInPrevMonth, prevCal))
+    cells.addAll(computeCurrentMonthDays(cal, daysInMonth, todayDay, selectedDay, eventDays))
+    cells.addAll(computeNextMonthHead(42 - cells.size, nextCal))
+    return cells
+}
 
-    // Previous month days
+/** 上月尾部填充日期（用于日历网格首行对齐）。 */
+private fun computePreviousMonthTail(
+    offset: Int,
+    daysInPrevMonth: Int,
+    prevCal: Calendar
+): List<CalendarCell> {
+    val cells = mutableListOf<CalendarCell>()
     for (i in 0 until offset) {
         val day = daysInPrevMonth - offset + i + 1
-        val dayCal = (prevCal.clone() as Calendar).apply {
-            set(Calendar.DAY_OF_MONTH, day)
-        }
+        val dayCal = (prevCal.clone() as Calendar).apply { set(Calendar.DAY_OF_MONTH, day) }
         cells.add(CalendarCell(day, isCurrentMonth = false, isToday = false, isSelected = false, hasEvents = false, timestamp = dayCal.timeInMillis))
     }
+    return cells
+}
 
-    // Current month days
+/** 当月所有日期单元格。 */
+private fun computeCurrentMonthDays(
+    cal: Calendar,
+    daysInMonth: Int,
+    todayDay: Int,
+    selectedDay: Int,
+    eventDays: Set<Int>
+): List<CalendarCell> {
+    val cells = mutableListOf<CalendarCell>()
     for (day in 1..daysInMonth) {
-        val dayCal = (cal.clone() as Calendar).apply {
-            set(Calendar.DAY_OF_MONTH, day)
-        }
+        val dayCal = (cal.clone() as Calendar).apply { set(Calendar.DAY_OF_MONTH, day) }
         cells.add(CalendarCell(
             day = day,
             isCurrentMonth = true,
@@ -229,19 +241,16 @@ private fun computeCalendarCells(
             timestamp = dayCal.timeInMillis
         ))
     }
+    return cells
+}
 
-    // Next month leading days
-    val nextCal = (cal.clone() as Calendar).apply {
-        add(Calendar.MONTH, 1)
-    }
-    val remaining = 42 - cells.size
+/** 下月头部填充日期（补齐 6×7 网格）。 */
+private fun computeNextMonthHead(remaining: Int, nextCal: Calendar): List<CalendarCell> {
+    val cells = mutableListOf<CalendarCell>()
     for (day in 1..remaining) {
-        val dayCal = (nextCal.clone() as Calendar).apply {
-            set(Calendar.DAY_OF_MONTH, day)
-        }
+        val dayCal = (nextCal.clone() as Calendar).apply { set(Calendar.DAY_OF_MONTH, day) }
         cells.add(CalendarCell(day, isCurrentMonth = false, isToday = false, isSelected = false, hasEvents = false, timestamp = dayCal.timeInMillis))
     }
-
     return cells
 }
 
@@ -359,6 +368,9 @@ internal fun SelectedDateEventsSection(
     eventTypes: List<CustomType>,
     onEventClick: (Event) -> Unit
 ) {
+    var expanded by remember { mutableStateOf(false) }
+    val visibleEvents = if (expanded) events else events.take(5)
+
     Column(
         modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp)
@@ -396,7 +408,7 @@ internal fun SelectedDateEventsSection(
                 )
             }
         } else {
-            events.take(5).forEach { event ->
+            visibleEvents.forEach { event ->
                 CompactEventCard(
                     event = event,
                     eventTypes = eventTypes,
@@ -404,13 +416,30 @@ internal fun SelectedDateEventsSection(
                 )
             }
             if (events.size > 5) {
-                Text(
-                    text = "还有 ${events.size - 5} 件事件",
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = AnimationTokens.Alpha.visible),
-                    modifier = Modifier.padding(start = 6.dp, top = 4.dp),
-                    fontSize = 12.sp
-                )
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(10.dp))
+                        .clickable { expanded = !expanded }
+                        .padding(vertical = 6.dp, horizontal = 6.dp),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = if (expanded) "收起" else "还有 ${events.size - 5} 件事件",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.primary,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Medium
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Icon(
+                        imageVector = if (expanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(14.dp)
+                    )
+                }
             }
         }
     }
@@ -422,7 +451,7 @@ private fun CompactEventCard(
     eventTypes: List<CustomType>,
     onClick: () -> Unit
 ) {
-    val accentColor = getEventAccentColor(event, eventTypes)
+    val accentColor = resolveEventAccentColor(event, eventTypes)
 
     Row(
         modifier = Modifier
@@ -469,16 +498,7 @@ internal fun DateGroupedEventList(
     eventTypes: List<CustomType>,
     onEventClick: (Event) -> Unit
 ) {
-    val groupedEvents = remember(events) {
-        events.groupBy { event ->
-            val cal = Calendar.getInstance().apply { timeInMillis = event.time }
-            Triple(cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH))
-        }.toList().sortedByDescending { (date, _) ->
-            Calendar.getInstance().apply {
-                set(date.first, date.second, date.third)
-            }.timeInMillis
-        }
-    }
+    val groupedEvents = remember(events) { groupEventsByDate(events) }
 
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
@@ -543,7 +563,7 @@ private fun CalendarEventCard(
     eventTypes: List<CustomType>,
     onClick: () -> Unit
 ) {
-    val accentColor = getEventAccentColor(event, eventTypes)
+    val accentColor = resolveEventAccentColor(event, eventTypes)
     val lightColor = accentColor.copy(alpha = AnimationTokens.Alpha.subtle)
 
     AppCard(
@@ -570,116 +590,135 @@ private fun CalendarEventCard(
                 modifier = Modifier.weight(1f),
                 verticalArrangement = Arrangement.spacedBy(6.dp)
             ) {
-                // 标题 + 时间
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = event.title,
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.onSurface,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.weight(1f),
-                        fontSize = 16.sp
-                    )
-                    Text(
-                        text = DateUtils.formatTime(event.time),
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = AnimationTokens.Alpha.visible),
-                        fontSize = 13.sp
-                    )
-                }
+                EventCardHeader(event = event)
+                EventCardLocation(location = event.location)
+                EventCardTagsRow(event = event, accentColor = accentColor, lightColor = lightColor)
+                EventCardParticipants(participants = event.participants)
+            }
+        }
+    }
+}
 
-                // 地点
-                event.location?.let { location ->
-                    if (location.isNotBlank()) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(4.dp)
-                        ) {
-                            Icon(
-                                Icons.Default.Place,
-                                contentDescription = null,
-                                tint = SignalSky,
-                                modifier = Modifier.size(14.dp)
-                            )
-                            Text(
-                                text = location,
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                                fontSize = 13.sp
-                            )
-                        }
-                    }
-                }
+/** 事件卡片标题行：标题 + 时间。 */
+@Composable
+private fun EventCardHeader(event: Event) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = event.title,
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.SemiBold,
+            color = MaterialTheme.colorScheme.onSurface,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.weight(1f),
+            fontSize = 16.sp
+        )
+        Text(
+            text = DateUtils.formatTime(event.time),
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = AnimationTokens.Alpha.visible),
+            fontSize = 13.sp
+        )
+    }
+}
 
-                // 标签行
-                val tags = buildList {
-                    val typeLabel = event.customTypeName ?: event.type.displayName
-                    if (event.type != EventType.OTHER || event.customTypeName != null) {
-                        add(EventTagData(typeLabel, accentColor, lightColor))
-                    }
-                    event.weather?.let { weather ->
-                        if (weather.isNotBlank()) {
-                            val wColor = getWeatherColor(weather)?.let { it.toComposeColor(SignalAmber) } ?: SignalAmber
-                            add(EventTagData(weather, wColor, wColor.copy(alpha = AnimationTokens.Alpha.faint)))
-                        }
-                    }
-                    if (event.photos.isNotEmpty()) {
-                        add(EventTagData("${event.photos.size}张", SignalPurple, SignalPurple.copy(alpha = AnimationTokens.Alpha.faint)))
-                    }
-                }
+/** 事件卡片地点行（地点为空时不显示）。 */
+@Composable
+private fun EventCardLocation(location: String?) {
+    location?.let { loc ->
+        if (loc.isNotBlank()) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                Icon(
+                    Icons.Default.Place,
+                    contentDescription = null,
+                    tint = SignalSky,
+                    modifier = Modifier.size(14.dp)
+                )
+                Text(
+                    text = loc,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    fontSize = 13.sp
+                )
+            }
+        }
+    }
+}
 
-                if (tags.isNotEmpty()) {
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(6.dp),
-                        modifier = Modifier.padding(top = 2.dp)
-                    ) {
-                        tags.forEach { tag ->
-                            EventTagChip(tag = tag)
-                        }
-                    }
-                }
+/** 事件卡片标签行：类型 / 天气 / 照片数量。 */
+@Composable
+private fun EventCardTagsRow(
+    event: Event,
+    accentColor: Color,
+    lightColor: Color
+) {
+    val tags = buildList {
+        if (event.type != EventType.OTHER || event.customTypeName != null) {
+            add(EventTagData(event.typeDisplayName, accentColor, lightColor))
+        }
+        event.weather?.let { weather ->
+            if (weather.isNotBlank()) {
+                val wColor = resolveWeatherColor(weather)
+                add(EventTagData(weather, wColor, wColor.copy(alpha = AnimationTokens.Alpha.faint)))
+            }
+        }
+        if (event.photos.isNotEmpty()) {
+            add(EventTagData("${event.photos.size}张", SignalPurple, SignalPurple.copy(alpha = AnimationTokens.Alpha.faint)))
+        }
+    }
 
-                // 参与者头像
-                if (event.participants.isNotEmpty()) {
-                    Row(
-                        modifier = Modifier.padding(top = 6.dp),
-                        horizontalArrangement = Arrangement.spacedBy((-8).dp)
-                    ) {
-                        event.participants.take(5).forEach { participant ->
-                            ContactAvatar(
-                                avatar = participant.avatar,
-                                name = participant.name,
-                                size = 26,
-                                modifier = Modifier.size(26.dp).clip(CircleShape)
-                            )
-                        }
-                        if (event.participants.size > 5) {
-                            Box(
-                                modifier = Modifier
-                                    .size(26.dp)
-                                    .clip(CircleShape)
-                                    .background(MaterialTheme.colorScheme.surfaceVariant),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text(
-                                    text = "+${event.participants.size - 5}",
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    fontSize = 11.sp,
-                                    fontWeight = FontWeight.Bold
-                                )
-                            }
-                        }
-                    }
-                }
+    if (tags.isNotEmpty()) {
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
+            modifier = Modifier.padding(top = 2.dp)
+        ) {
+            tags.forEach { tag ->
+                EventTagChip(tag = tag)
+            }
+        }
+    }
+}
+
+/** 事件卡片参与者头像行（无参与者时不显示）。 */
+@Composable
+private fun EventCardParticipants(participants: List<Contact>) {
+    if (participants.isEmpty()) return
+    Row(
+        modifier = Modifier.padding(top = 6.dp),
+        horizontalArrangement = Arrangement.spacedBy((-8).dp)
+    ) {
+        participants.take(5).forEach { participant ->
+            ContactAvatar(
+                avatar = participant.avatar,
+                name = participant.name,
+                size = 26,
+                modifier = Modifier.size(26.dp).clip(CircleShape)
+            )
+        }
+        if (participants.size > 5) {
+            Box(
+                modifier = Modifier
+                    .size(26.dp)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.surfaceVariant),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "+${participants.size - 5}",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Bold
+                )
             }
         }
     }
@@ -714,16 +753,3 @@ private fun EventTagChip(tag: EventTagData) {
 // 辅助函数
 // ═══════════════════════════════════════════════════════════════
 
-@Composable
-private fun getEventAccentColor(event: Event, eventTypes: List<CustomType>): Color {
-    val customType = if (event.type != EventType.OTHER) {
-        eventTypes.find { it.key == event.type.name } ?: eventTypes.find { it.name == event.type.name }
-    } else {
-        event.customTypeName?.let { ctn -> eventTypes.find { it.name == ctn } }
-    }
-    return if (customType != null) {
-        customType.color?.let { it.toComposeColor(SignalPurple) } ?: SignalPurple
-    } else {
-        getEventTypeStyle(event.type).accentColor
-    }
-}

@@ -24,7 +24,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.net.toUri
 import coil.compose.AsyncImage
 import com.tang.prm.domain.model.Event
 import com.tang.prm.domain.model.EventType
@@ -34,12 +33,12 @@ import com.tang.prm.ui.theme.InsightPink
 import com.tang.prm.ui.theme.SignalAmber
 import com.tang.prm.ui.theme.SignalPurple
 import com.tang.prm.ui.theme.SignalSky
-import com.tang.prm.ui.theme.toComposeColor
-import com.tang.prm.ui.theme.getEmotionColor
 import com.tang.prm.ui.theme.getEmotionIcon
-import com.tang.prm.ui.theme.getWeatherColor
 import com.tang.prm.ui.theme.getWeatherIcon
 import com.tang.prm.domain.util.DateUtils
+
+/** 事件创建者显示名（单用户日记应用，创建者固定为"我"）。 */
+private const val EVENT_AUTHOR_NAME = "我"
 
 @Composable
 internal fun RemarkSection(remarks: String, onEdit: () -> Unit) {
@@ -83,7 +82,7 @@ internal fun EventHeader(event: Event) {
         Spacer(modifier = Modifier.width(12.dp))
 
         Column(modifier = Modifier.weight(1f)) {
-            Text(text = "我", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+            Text(text = EVENT_AUTHOR_NAME, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(text = DateUtils.formatRelativeTime(event.time), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 Spacer(modifier = Modifier.width(4.dp))
@@ -96,7 +95,12 @@ internal fun EventHeader(event: Event) {
         if (event.type != EventType.OTHER || event.customTypeName != null) {
             Surface(color = MaterialTheme.colorScheme.primary.copy(alpha = AnimationTokens.Alpha.faint), shape = RoundedCornerShape(12.dp)) {
                 Box(modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)) {
-                    Text(text = event.customTypeName ?: event.type.displayName, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.SemiBold)
+                    Text(
+                        text = event.typeDisplayName,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.primary,
+                        fontWeight = FontWeight.SemiBold
+                    )
                 }
             }
         }
@@ -141,10 +145,10 @@ internal fun PolaroidPhotosRow(
         else -> {
             val rows = photos.chunked(3)
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                rows.forEach { row ->
+                rows.forEachIndexed { rowIndex, row ->
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         row.forEachIndexed { indexInRow, photo ->
-                            val globalIndex = photos.indexOf(photo)
+                            val globalIndex = rowIndex * 3 + indexInRow
                             PolaroidPhoto(
                                 photoUri = photo,
                                 rotation = if (indexInRow == 0) -1f else if (indexInRow == 2) 1f else 0f,
@@ -230,17 +234,12 @@ internal fun ParticipantAvatar(
     onClick: () -> Unit
 ) {
     Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.width(48.dp)) {
-        Box(
-            modifier = Modifier.size(40.dp).clip(CircleShape).background(MaterialTheme.colorScheme.primary.copy(alpha = AnimationTokens.Alpha.faint)).clickable(onClick = onClick),
-            contentAlignment = Alignment.Center
-        ) {
-            val avatarUrl = participant.avatar
-            if (!avatarUrl.isNullOrBlank()) {
-                AsyncImage(model = avatarUrl, contentDescription = null, modifier = Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
-            } else {
-                Text(text = participant.name.firstOrNull()?.toString() ?: "?", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
-            }
-        }
+        AvatarOrInitial(
+            avatarUrl = participant.avatar,
+            name = participant.name,
+            modifier = Modifier.size(40.dp).clickable(onClick = onClick),
+            initialColor = MaterialTheme.colorScheme.primary
+        )
         Spacer(modifier = Modifier.height(3.dp))
         Text(
             text = participant.name,
@@ -275,7 +274,7 @@ internal fun StatsRow(event: Event, modifier: Modifier = Modifier) {
 
             event.weather?.let { weather ->
                 if (weather.isNotBlank()) {
-                    val wColor = getWeatherColor(weather)?.let { it.toComposeColor(SignalAmber) } ?: SignalAmber
+                    val wColor = resolveWeatherColor(weather)
                     val wIcon = getWeatherIcon(weather)
                     WeatherTag(text = weather, icon = wIcon, color = wColor)
                 }
@@ -283,7 +282,7 @@ internal fun StatsRow(event: Event, modifier: Modifier = Modifier) {
 
             event.emotion?.let { emotion ->
                 if (emotion.isNotBlank()) {
-                    val eColor = getEmotionColor(emotion)?.let { it.toComposeColor(SignalPurple) } ?: SignalPurple
+                    val eColor = resolveEmotionColor(emotion)
                     val eIcon = getEmotionIcon(emotion)
                     EmotionTag(text = emotion, icon = eIcon, color = eColor)
                 }
@@ -366,48 +365,43 @@ internal fun InteractionButton(
     }
 }
 
-internal fun shareEvent(context: android.content.Context, event: Event) {
-    val sb = StringBuilder()
-
-    event.title.let { if (it.isNotBlank()) sb.appendLine(it) }
-
-    event.description?.let { if (it.isNotBlank()) sb.appendLine(it) }
-
-    sb.appendLine()
-
-    if (event.type != EventType.OTHER || event.customTypeName != null) sb.append("🏷️ ${event.customTypeName ?: event.type.displayName}  ")
-    event.location?.let { if (it.isNotBlank()) sb.append("📍 $it  ") }
-    event.weather?.let { if (it.isNotBlank()) sb.append("🌤️ $it  ") }
-    event.emotion?.let { if (it.isNotBlank()) sb.append("💭 $it  ") }
-
-    sb.appendLine()
-    sb.append("📅 ${DateUtils.formatDateTime(event.time)}")
-
-    if (event.participants.isNotEmpty()) {
-        sb.appendLine()
-        sb.append("👥 ${event.participants.joinToString("、") { it.name }}")
-    }
-
-    event.remarks?.let { if (it.isNotBlank()) sb.appendLine().appendLine().append("✨ $it") }
-
-    sb.appendLine().append("— 来自 YU")
-
-    val shareIntent = android.content.Intent().apply {
-        action = android.content.Intent.ACTION_SEND
-        putExtra(android.content.Intent.EXTRA_TEXT, sb.toString().trim())
-        type = "text/plain"
-
-        if (event.photos.isNotEmpty()) {
-            try {
-                val uri = event.photos.first().toUri()
-                if (uri.scheme == "content") {
-                    putExtra(android.content.Intent.EXTRA_STREAM, uri)
-                    type = "image/*"
-                    addFlags(android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                }
-            } catch (_: Exception) {}
+/**
+ * 事件未找到或已被删除时的错误兜底界面。
+ * 参照 feature/people 的 ContactNotFoundState 风格。
+ */
+@Composable
+internal fun EventNotFoundState(
+    onBack: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Default.Event,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+                modifier = Modifier.size(56.dp)
+            )
+            Text(
+                text = "未找到该事件",
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            Text(
+                text = "可能已被删除或加载失败",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Button(onClick = onBack) {
+                Text("返回")
+            }
         }
     }
-
-    context.startActivity(android.content.Intent.createChooser(shareIntent, "分享事件"))
 }

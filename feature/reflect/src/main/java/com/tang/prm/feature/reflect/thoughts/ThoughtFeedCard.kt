@@ -1,6 +1,5 @@
 package com.tang.prm.feature.reflect.thoughts
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -30,9 +29,14 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -41,7 +45,6 @@ import androidx.compose.ui.unit.sp
 import com.tang.prm.domain.model.Thought
 import com.tang.prm.ui.animation.core.AnimationTokens
 import com.tang.prm.ui.components.AppCard
-import com.tang.prm.ui.components.ContactAvatar
 import com.tang.prm.ui.theme.SignalAmber
 import com.tang.prm.ui.theme.SignalCoral
 import com.tang.prm.ui.theme.SignalGreen
@@ -60,10 +63,11 @@ internal fun ThoughtFeedCard(
     onToggleFavorite: () -> Unit,
     onCardClick: () -> Unit = {}
 ) {
-    val typeColor = ThoughtTypeColor[thought.type] ?: SignalAmber
-    val typeBg = ThoughtTypeBg[thought.type] ?: SignalAmber.copy(alpha = AnimationTokens.Alpha.faint)
-    val typeIcon = ThoughtTypeIcon[thought.type] ?: Icons.Default.Lightbulb
-    val typeLabel = ThoughtTypeLabel[thought.type] ?: "想法"
+    val style = thought.style
+    val typeColor = style.color
+    val typeBg = style.bg
+    val typeIcon = style.icon
+    val typeLabel = style.label
 
     AppCard(
         modifier = Modifier
@@ -172,6 +176,8 @@ internal fun ThoughtFeedCard(
 
             Spacer(modifier = Modifier.height(10.dp))
 
+            // Q-5 修复：用 TextLayoutResult 检测实际截断，替代基于字符数的误判
+            var layoutResult by remember { mutableStateOf<TextLayoutResult?>(null) }
             Text(
                 thought.content,
                 style = MaterialTheme.typography.bodyMedium,
@@ -182,10 +188,11 @@ internal fun ThoughtFeedCard(
                 },
                 lineHeight = 24.sp,
                 maxLines = 2,
-                overflow = TextOverflow.Ellipsis
+                overflow = TextOverflow.Ellipsis,
+                onTextLayout = { layoutResult = it }
             )
 
-            if (thought.content.length > 80) {
+            if (layoutResult?.hasVisualOverflow == true) {
                 Text(
                     "查看详情",
                     fontSize = 11.sp,
@@ -207,30 +214,11 @@ internal fun ThoughtFeedCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 if (contactName != null) {
-                    Surface(
-                        shape = RoundedCornerShape(100.dp),
-                        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = AnimationTokens.Alpha.half))
-                    ) {
-                        Row(
-                            modifier = Modifier.padding(start = 6.dp, end = 10.dp, top = 4.dp, bottom = 4.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            ContactAvatar(
-                                avatar = contactAvatar,
-                                name = contactName,
-                                size = 18
-                            )
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Text(
-                                contactName,
-                                fontSize = 12.sp,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis
-                            )
-                        }
-                    }
+                    ContactNameChip(
+                        name = contactName,
+                        avatar = contactAvatar,
+                        avatarSize = 18
+                    )
                     Spacer(modifier = Modifier.width(8.dp))
                 }
 

@@ -3,10 +3,9 @@
   <ManuallySuppressedIssues></ManuallySuppressedIssues>
   <CurrentIssues>
     <ID>CyclomaticComplexMethod:PhotoAlbumScreen.kt$@Composable fun PhotoAlbumScreen( navController: NavController, viewModel: PhotoAlbumViewModel = hiltViewModel(), initialPhotoId: Long? = null, isTabletLayout: Boolean = false )</ID>
-    <ID>CyclomaticComplexMethod:ThoughtDetailDialog.kt$@Composable internal fun ThoughtDetailDialog( thought: Thought, contactName: String?, contactAvatar: String?, isFavorite: Boolean, onDismiss: () -&gt; Unit, onToggleFavorite: () -&gt; Unit, onToggleTodo: () -&gt; Unit, onEdit: () -&gt; Unit, onDelete: () -&gt; Unit )</ID>
-    <ID>CyclomaticComplexMethod:ThoughtDialog.kt$@Composable internal fun ThoughtDialog( thought: Thought?, dialogType: ThoughtType, contacts: List&lt;Contact&gt;, onDismiss: () -&gt; Unit, onConfirm: (content: String, type: ThoughtType, contactId: Long?, isPrivate: Boolean, isTodo: Boolean, dueDate: Long?) -&gt; Unit )</ID>
+    <ID>FunctionNaming:ContactNameChip.kt$@Composable internal fun ContactNameChip( name: String, avatar: String?, avatarSize: Int, modifier: Modifier = Modifier )</ID>
     <ID>FunctionNaming:ContactStoriesRow.kt$@Composable internal fun ContactStoriesRow( contactThoughts: List&lt;ContactThoughts&gt;, selectedContactId: Long?, onContactClick: (Long) -&gt; Unit = {} )</ID>
-    <ID>FunctionNaming:FavoritesScreen.kt$@OptIn(ExperimentalFoundationApi::class) @Composable fun FavoritesScreen( navController: NavController, viewModel: FavoritesViewModel = hiltViewModel() )</ID>
+    <ID>FunctionNaming:FavoritesScreen.kt$@OptIn(ExperimentalFoundationApi::class) @Composable fun FavoritesScreen( navController: NavController, isTabletLayout: Boolean = false, viewModel: FavoritesViewModel = hiltViewModel() )</ID>
     <ID>FunctionNaming:FavoritesTermComponents.kt$@Composable internal fun TermCommentLine(text: String)</ID>
     <ID>FunctionNaming:FavoritesTermComponents.kt$@Composable internal fun TermFilterRow( filters: List&lt;String&gt;, selectedIndex: Int, onFilterClick: (Int) -&gt; Unit )</ID>
     <ID>FunctionNaming:FavoritesTermComponents.kt$@Composable internal fun TermKvRow(key: String, value: String)</ID>
@@ -21,16 +20,17 @@
     <ID>FunctionNaming:FavoritesTermDetail.kt$@Composable internal fun TermDetailPanel( favorite: Favorite?, modifier: Modifier = Modifier, onClick: () -&gt; Unit )</ID>
     <ID>FunctionNaming:FilterTabRow.kt$@Composable internal fun FilterTabRow( selectedFilter: String, onFilterSelected: (String) -&gt; Unit, counts: Map&lt;String, Int&gt; = emptyMap() )</ID>
     <ID>FunctionNaming:FootprintsComponents.kt$@Composable internal fun YearTabChip( label: String, count: Int, selected: Boolean, onClick: () -&gt; Unit )</ID>
-    <ID>FunctionNaming:FootprintsComponents.kt$@Composable internal fun YearTabs( availableYears: List&lt;Int&gt;, selectedYear: Int?, footprints: List&lt;FootprintItem&gt;, onYearSelect: (Int?) -&gt; Unit )</ID>
-    <ID>FunctionNaming:FootprintsHeroCard.kt$@Composable internal fun HeroCard(footprint: FootprintItem, eventTypes: List&lt;com.tang.prm.domain.model.CustomType&gt; = emptyList(), onClick: () -&gt; Unit = {})</ID>
+    <ID>FunctionNaming:FootprintsComponents.kt$@Composable internal fun YearTabs( availableYears: List&lt;Int&gt;, selectedYear: Int?, totalCount: Int, totalFootprintsByYear: Map&lt;Int, Int&gt;, onYearSelect: (Int?) -&gt; Unit )</ID>
+    <ID>FunctionNaming:FootprintsHeroCard.kt$@Composable internal fun HeroCard( footprint: FootprintItem, eventTypes: List&lt;com.tang.prm.domain.model.CustomType&gt; = emptyList(), label: String = "最新足迹", onClick: () -&gt; Unit = {} )</ID>
     <ID>FunctionNaming:FootprintsHeroCard.kt$@Composable internal fun StatsRow( footprintCount: Int, cityCount: Int, contactCount: Int )</ID>
     <ID>FunctionNaming:FootprintsHeroCard.kt$@Composable private fun StatCard( modifier: Modifier = Modifier, value: String, label: String, icon: ImageVector, iconBg: Color, iconTint: Color )</ID>
     <ID>FunctionNaming:FootprintsListCard.kt$@Composable internal fun FootprintMetaTag( icon: ImageVector, text: String, bgColor: Color, textColor: Color )</ID>
     <ID>FunctionNaming:FootprintsListCard.kt$@Composable internal fun ListCard( footprint: FootprintItem, dayFormat: (Long) -&gt; String, eventTypes: List&lt;CustomType&gt;, onClick: () -&gt; Unit = {} )</ID>
-    <ID>FunctionNaming:FootprintsScreen.kt$@Composable fun FootprintsScreen( navController: NavController, viewModel: FootprintsViewModel = hiltViewModel() )</ID>
-    <ID>FunctionNaming:FootprintsTimeline.kt$@Composable internal fun TimelineView(footprints: List&lt;FootprintItem&gt;, eventTypes: List&lt;com.tang.prm.domain.model.CustomType&gt;, onFootprintClick: (FootprintItem) -&gt; Unit = {})</ID>
-    <ID>FunctionNaming:FootprintsTimeline.kt$@Composable private fun TimelineCard( footprint: FootprintItem, dayFormat: (Long) -&gt; String, accentColor: Color, lightColor: Color, icon: ImageVector, onClick: () -&gt; Unit = {} )</ID>
-    <ID>FunctionNaming:FootprintsTimeline.kt$@Composable private fun TimelineItem( footprint: FootprintItem, dayFormat: (Long) -&gt; String, isLeft: Boolean, eventTypes: List&lt;com.tang.prm.domain.model.CustomType&gt;, onClick: () -&gt; Unit = {} )</ID>
+    <ID>FunctionNaming:FootprintsScreen.kt$@Composable fun FootprintsScreen( navController: NavController, isTabletLayout: Boolean = false, viewModel: FootprintsViewModel = hiltViewModel() )</ID>
+    <ID>FunctionNaming:FootprintsTimeline.kt$@Composable private fun MonthHeader(monthLabel: String)</ID>
+    <ID>FunctionNaming:FootprintsTimeline.kt$@Composable private fun TimelineCard( footprint: FootprintItem, accentColor: Color, lightColor: Color, icon: ImageVector, displayName: String, onClick: () -&gt; Unit = {} )</ID>
+    <ID>FunctionNaming:FootprintsTimeline.kt$@Composable private fun TimelineItem( footprint: FootprintItem, isLeft: Boolean, eventTypes: List&lt;com.tang.prm.domain.model.CustomType&gt;, onClick: () -&gt; Unit = {} )</ID>
+    <ID>FunctionNaming:FootprintsTimeline.kt$@Composable private fun TimelineSpacer(height: Dp)</ID>
     <ID>FunctionNaming:PhotoAlbumComponents.kt$@Composable internal fun FilterTabsSection( viewMode: String, onViewModeChange: (String) -&gt; Unit )</ID>
     <ID>FunctionNaming:PhotoAlbumComponents.kt$@Composable internal fun PhotoFilterDialog( contacts: List&lt;Contact&gt;, selectedContactId: Long?, filterSourceType: String?, onContactSelect: (Long?) -&gt; Unit, onSourceTypeSelect: (String?) -&gt; Unit, onDismiss: () -&gt; Unit )</ID>
     <ID>FunctionNaming:PhotoAlbumComponents.kt$@Composable internal fun PhotoStatCardItem( modifier: Modifier = Modifier, title: String, value: String, icon: ImageVector, color: Color )</ID>
@@ -39,34 +39,33 @@
     <ID>FunctionNaming:PhotoAlbumViewer.kt$@OptIn(ExperimentalFoundationApi::class) @Composable internal fun SwipeablePhotoViewerDialog( photos: List&lt;AlbumPhoto&gt;, initialIndex: Int, onDismiss: () -&gt; Unit, onToggleFavorite: (AlbumPhoto) -&gt; Unit, favoritePhotoIds: Set&lt;Long&gt; )</ID>
     <ID>FunctionNaming:PhotoDayView.kt$@Composable internal fun DailyPhotoView( groups: List&lt;PhotoGroup&gt;, onPhotoClick: (List&lt;AlbumPhoto&gt;, Int) -&gt; Unit, isTabletLayout: Boolean = false )</ID>
     <ID>FunctionNaming:PhotoDayView.kt$@Composable private fun DailyPhotoCard( group: PhotoGroup, photos: List&lt;AlbumPhoto&gt;, onPhotoClick: (Int) -&gt; Unit, showTimeline: Boolean = false, isLast: Boolean = false, isTabletLayout: Boolean = false )</ID>
-    <ID>FunctionNaming:PhotoDayView.kt$@Composable private fun DailyPhotoGrid( photos: List&lt;AlbumPhoto&gt;, onPhotoClick: (Int) -&gt; Unit, isTabletLayout: Boolean = false )</ID>
     <ID>FunctionNaming:PhotoEventView.kt$@Composable internal fun EventPhotoView( groups: List&lt;PhotoGroup&gt;, onPhotoClick: (List&lt;AlbumPhoto&gt;, Int) -&gt; Unit, isTabletLayout: Boolean = false )</ID>
     <ID>FunctionNaming:PhotoEventView.kt$@Composable private fun EventPhotoCard( group: PhotoGroup, photos: List&lt;AlbumPhoto&gt;, onPhotoClick: (Int) -&gt; Unit, showTimeline: Boolean = false, isLast: Boolean = false, isTabletLayout: Boolean = false )</ID>
-    <ID>FunctionNaming:PhotoEventView.kt$@Composable private fun EventPhotoGrid( photos: List&lt;AlbumPhoto&gt;, onPhotoClick: (Int) -&gt; Unit, isTabletLayout: Boolean = false )</ID>
     <ID>FunctionNaming:PhotoGrid.kt$@Composable internal fun PhotoGridView( photos: List&lt;AlbumPhoto&gt;, onPhotoClick: (Int) -&gt; Unit, isTabletLayout: Boolean = false )</ID>
     <ID>FunctionNaming:PhotoGrid.kt$@Composable private fun PhotoGridItem( photo: AlbumPhoto, onClick: () -&gt; Unit )</ID>
+    <ID>FunctionNaming:PhotoGridLayout.kt$@Composable internal fun PhotoGridLayout( photos: List&lt;AlbumPhoto&gt;, onPhotoClick: (Int) -&gt; Unit, isTabletLayout: Boolean, heights: PhotoGridHeights, overflowTextSize: TextUnit = 14.sp )</ID>
+    <ID>FunctionNaming:PhotoGridLayout.kt$@Composable private fun PhotoCell( photo: AlbumPhoto, height: Dp, cornerRadius: Dp, modifier: Modifier = Modifier, onPhotoClick: () -&gt; Unit, content: @Composable () -&gt; Unit = {} )</ID>
     <ID>FunctionNaming:TabDetailContent.kt$@Composable internal fun TabDetailContent( favorites: List&lt;Favorite&gt;, viewModel: FavoritesViewModel, uiState: FavoritesUiState, onFavoriteClick: (Favorite) -&gt; Unit )</ID>
     <ID>FunctionNaming:TabListContent.kt$@Composable internal fun ColumnScope.TabListContent( favorites: List&lt;Favorite&gt;, viewModel: FavoritesViewModel, uiState: FavoritesUiState, dateFormat: (Long) -&gt; String, selectedFavorite: Favorite?, onFavoriteClick: (Favorite) -&gt; Unit, onFavoriteNavigate: (Favorite) -&gt; Unit )</ID>
     <ID>FunctionNaming:TabLogContent.kt$@Composable internal fun TabLogContent(favorites: List&lt;Favorite&gt;)</ID>
     <ID>FunctionNaming:TabTreeContent.kt$@Composable internal fun TabTreeContent(favorites: List&lt;Favorite&gt;)</ID>
     <ID>FunctionNaming:ThoughtDetailDialog.kt$@Composable internal fun ThoughtDetailDialog( thought: Thought, contactName: String?, contactAvatar: String?, isFavorite: Boolean, onDismiss: () -&gt; Unit, onToggleFavorite: () -&gt; Unit, onToggleTodo: () -&gt; Unit, onEdit: () -&gt; Unit, onDelete: () -&gt; Unit )</ID>
     <ID>FunctionNaming:ThoughtDialog.kt$@Composable internal fun ThoughtDialog( thought: Thought?, dialogType: ThoughtType, contacts: List&lt;Contact&gt;, onDismiss: () -&gt; Unit, onConfirm: (content: String, type: ThoughtType, contactId: Long?, isPrivate: Boolean, isTodo: Boolean, dueDate: Long?) -&gt; Unit )</ID>
+    <ID>FunctionNaming:ThoughtDialog.kt$@Composable private fun TogglePill( selected: Boolean, onToggle: () -&gt; Unit, icon: ImageVector, selectedLabel: String, unselectedLabel: String, selectedColor: Color, modifier: Modifier = Modifier )</ID>
     <ID>FunctionNaming:ThoughtFeedCard.kt$@Composable internal fun ThoughtFeedCard( thought: Thought, contactName: String?, contactAvatar: String?, isFavorite: Boolean, exp: Int, onToggleTodo: () -&gt; Unit, onEdit: () -&gt; Unit, onDelete: () -&gt; Unit, onToggleFavorite: () -&gt; Unit, onCardClick: () -&gt; Unit = {} )</ID>
     <ID>FunctionNaming:ThoughtLevelBanner.kt$@Composable internal fun ThoughtLevelBanner(uiState: ThoughtsUiState)</ID>
-    <ID>FunctionNaming:ThoughtsScreen.kt$@Composable fun ThoughtsScreen( onBack: () -&gt; Unit, viewModel: ThoughtsViewModel = hiltViewModel() )</ID>
-    <ID>LongMethod:FavoritesScreen.kt$@OptIn(ExperimentalFoundationApi::class) @Composable fun FavoritesScreen( navController: NavController, viewModel: FavoritesViewModel = hiltViewModel() )</ID>
+    <ID>FunctionNaming:ThoughtsScreen.kt$@Composable fun ThoughtsScreen( onBack: () -&gt; Unit, isTabletLayout: Boolean = false, viewModel: ThoughtsViewModel = hiltViewModel() )</ID>
+    <ID>LongMethod:FavoritesScreen.kt$@OptIn(ExperimentalFoundationApi::class) @Composable fun FavoritesScreen( navController: NavController, isTabletLayout: Boolean = false, viewModel: FavoritesViewModel = hiltViewModel() )</ID>
     <ID>LongMethod:FavoritesTermDetail.kt$@Composable internal fun TermDetailPanel( favorite: Favorite?, modifier: Modifier = Modifier, onClick: () -&gt; Unit )</ID>
-    <ID>LongMethod:FootprintsHeroCard.kt$@Composable internal fun HeroCard(footprint: FootprintItem, eventTypes: List&lt;com.tang.prm.domain.model.CustomType&gt; = emptyList(), onClick: () -&gt; Unit = {})</ID>
+    <ID>LongMethod:FootprintsHeroCard.kt$@Composable internal fun HeroCard( footprint: FootprintItem, eventTypes: List&lt;com.tang.prm.domain.model.CustomType&gt; = emptyList(), label: String = "最新足迹", onClick: () -&gt; Unit = {} )</ID>
     <ID>LongMethod:FootprintsListCard.kt$@Composable internal fun ListCard( footprint: FootprintItem, dayFormat: (Long) -&gt; String, eventTypes: List&lt;CustomType&gt;, onClick: () -&gt; Unit = {} )</ID>
-    <ID>LongMethod:FootprintsScreen.kt$@Composable fun FootprintsScreen( navController: NavController, viewModel: FootprintsViewModel = hiltViewModel() )</ID>
-    <ID>LongMethod:FootprintsTimeline.kt$@Composable private fun TimelineCard( footprint: FootprintItem, dayFormat: (Long) -&gt; String, accentColor: Color, lightColor: Color, icon: ImageVector, onClick: () -&gt; Unit = {} )</ID>
+    <ID>LongMethod:FootprintsScreen.kt$@Composable fun FootprintsScreen( navController: NavController, isTabletLayout: Boolean = false, viewModel: FootprintsViewModel = hiltViewModel() )</ID>
+    <ID>LongMethod:FootprintsTimeline.kt$@Composable private fun TimelineCard( footprint: FootprintItem, accentColor: Color, lightColor: Color, icon: ImageVector, displayName: String, onClick: () -&gt; Unit = {} )</ID>
     <ID>LongMethod:PhotoAlbumComponents.kt$@Composable internal fun PhotoFilterDialog( contacts: List&lt;Contact&gt;, selectedContactId: Long?, filterSourceType: String?, onContactSelect: (Long?) -&gt; Unit, onSourceTypeSelect: (String?) -&gt; Unit, onDismiss: () -&gt; Unit )</ID>
     <ID>LongMethod:PhotoAlbumComponents.kt$@Composable internal fun PhotoStatsSection( photoCount: Int, contactCount: Int, locationCount: Int, isTabletLayout: Boolean = false )</ID>
     <ID>LongMethod:PhotoAlbumScreen.kt$@Composable fun PhotoAlbumScreen( navController: NavController, viewModel: PhotoAlbumViewModel = hiltViewModel(), initialPhotoId: Long? = null, isTabletLayout: Boolean = false )</ID>
     <ID>LongMethod:PhotoAlbumViewer.kt$@OptIn(ExperimentalFoundationApi::class) @Composable internal fun SwipeablePhotoViewerDialog( photos: List&lt;AlbumPhoto&gt;, initialIndex: Int, onDismiss: () -&gt; Unit, onToggleFavorite: (AlbumPhoto) -&gt; Unit, favoritePhotoIds: Set&lt;Long&gt; )</ID>
-    <ID>LongMethod:PhotoDayView.kt$@Composable private fun DailyPhotoGrid( photos: List&lt;AlbumPhoto&gt;, onPhotoClick: (Int) -&gt; Unit, isTabletLayout: Boolean = false )</ID>
     <ID>LongMethod:PhotoEventView.kt$@Composable private fun EventPhotoCard( group: PhotoGroup, photos: List&lt;AlbumPhoto&gt;, onPhotoClick: (Int) -&gt; Unit, showTimeline: Boolean = false, isLast: Boolean = false, isTabletLayout: Boolean = false )</ID>
-    <ID>LongMethod:PhotoEventView.kt$@Composable private fun EventPhotoGrid( photos: List&lt;AlbumPhoto&gt;, onPhotoClick: (Int) -&gt; Unit, isTabletLayout: Boolean = false )</ID>
     <ID>LongMethod:TabDetailContent.kt$@Composable internal fun TabDetailContent( favorites: List&lt;Favorite&gt;, viewModel: FavoritesViewModel, uiState: FavoritesUiState, onFavoriteClick: (Favorite) -&gt; Unit )</ID>
     <ID>LongMethod:TabLogContent.kt$@Composable internal fun TabLogContent(favorites: List&lt;Favorite&gt;)</ID>
     <ID>LongMethod:TabTreeContent.kt$@Composable internal fun TabTreeContent(favorites: List&lt;Favorite&gt;)</ID>
@@ -74,34 +73,28 @@
     <ID>LongMethod:ThoughtDialog.kt$@Composable internal fun ThoughtDialog( thought: Thought?, dialogType: ThoughtType, contacts: List&lt;Contact&gt;, onDismiss: () -&gt; Unit, onConfirm: (content: String, type: ThoughtType, contactId: Long?, isPrivate: Boolean, isTodo: Boolean, dueDate: Long?) -&gt; Unit )</ID>
     <ID>LongMethod:ThoughtFeedCard.kt$@Composable internal fun ThoughtFeedCard( thought: Thought, contactName: String?, contactAvatar: String?, isFavorite: Boolean, exp: Int, onToggleTodo: () -&gt; Unit, onEdit: () -&gt; Unit, onDelete: () -&gt; Unit, onToggleFavorite: () -&gt; Unit, onCardClick: () -&gt; Unit = {} )</ID>
     <ID>LongMethod:ThoughtLevelBanner.kt$@Composable internal fun ThoughtLevelBanner(uiState: ThoughtsUiState)</ID>
-    <ID>LongMethod:ThoughtsScreen.kt$@Composable fun ThoughtsScreen( onBack: () -&gt; Unit, viewModel: ThoughtsViewModel = hiltViewModel() )</ID>
+    <ID>LongMethod:ThoughtsScreen.kt$@Composable fun ThoughtsScreen( onBack: () -&gt; Unit, isTabletLayout: Boolean = false, viewModel: ThoughtsViewModel = hiltViewModel() )</ID>
     <ID>LongParameterList:ThoughtDetailDialog.kt$( thought: Thought, contactName: String?, contactAvatar: String?, isFavorite: Boolean, onDismiss: () -&gt; Unit, onToggleFavorite: () -&gt; Unit, onToggleTodo: () -&gt; Unit, onEdit: () -&gt; Unit, onDelete: () -&gt; Unit )</ID>
     <ID>LongParameterList:ThoughtFeedCard.kt$( thought: Thought, contactName: String?, contactAvatar: String?, isFavorite: Boolean, exp: Int, onToggleTodo: () -&gt; Unit, onEdit: () -&gt; Unit, onDelete: () -&gt; Unit, onToggleFavorite: () -&gt; Unit, onCardClick: () -&gt; Unit = {} )</ID>
+    <ID>MatchingDeclarationName:FavoritesConstants.kt$FavoriteType</ID>
+    <ID>MatchingDeclarationName:PhotoGridLayout.kt$PhotoGridHeights</ID>
+    <ID>MatchingDeclarationName:TermPalette.kt$TermColors</ID>
     <ID>MaxLineLength:FavoritesTermComponents.kt$Text("名称", modifier = Modifier.weight(1f), fontFamily = FontFamily.Monospace, fontSize = 9.sp, fontWeight = FontWeight.Bold, color = TermMuted)</ID>
     <ID>MaxLineLength:FavoritesTermComponents.kt$Text("日期", modifier = Modifier.width(44.dp), fontFamily = FontFamily.Monospace, fontSize = 9.sp, fontWeight = FontWeight.Bold, color = TermMuted)</ID>
     <ID>MaxLineLength:FootprintsComponents.kt$color = if (selected) Color.White.copy(alpha = AnimationTokens.Alpha.strong) else TextGray.copy(alpha = AnimationTokens.Alpha.visible)</ID>
-    <ID>MaxLineLength:FootprintsHeroCard.kt$internal</ID>
     <ID>MaxLineLength:FootprintsListCard.kt$ListCard(footprint = footprint, dayFormat = { DateUtils.formatMonthDayChineseFull(it) }, eventTypes = eventTypes, onClick = { onFootprintClick(footprint) })</ID>
     <ID>MaxLineLength:FootprintsListCard.kt$Text(text = text, fontFamily = FontFamily.Monospace, fontSize = 9.sp, color = textColor, fontWeight = FontWeight.Medium, maxLines = 1, overflow = TextOverflow.Ellipsis)</ID>
-    <ID>MaxLineLength:FootprintsListCard.kt$Triple(baseColor, baseColor.copy(alpha = AnimationTokens.Alpha.subtle), customType.icon?.let { getGenericIcon(it) } ?: Icons.Default.Event)</ID>
     <ID>MaxLineLength:FootprintsListCard.kt$internal</ID>
     <ID>MaxLineLength:FootprintsListCard.kt$val customType = if (eventType.isNotBlank()) eventTypes.find { it.key == eventType } ?: eventTypes.find { it.name == eventType } else null</ID>
-    <ID>MaxLineLength:FootprintsListCard.kt$val eventTypeDisplayName = customType?.name ?: EventType.entries.find { it.name == footprint.eventType }?.displayName ?: footprint.eventType</ID>
-    <ID>MaxLineLength:FootprintsScreen.kt$HeroCard(footprint = latest, eventTypes = uiState.eventTypes, onClick = { navController.navigate(EventDetailRoute(latest.id)) })</ID>
-    <ID>MaxLineLength:FootprintsTimeline.kt$internal</ID>
     <ID>MaxLineLength:PhotoAlbumComponents.kt$color = if (selectedContactId == contact.id) SignalPurple.copy(alpha = 0.1f) else MaterialTheme.colorScheme.surfaceVariant</ID>
     <ID>MaxLineLength:PhotoAlbumViewer.kt$Icon(Icons.Default.AccessTime, contentDescription = null, tint = Color.White.copy(alpha = 0.6f), modifier = Modifier.size(14.dp))</ID>
     <ID>MaxLineLength:PhotoAlbumViewer.kt$Icon(Icons.Default.Place, contentDescription = null, tint = Color.White.copy(alpha = 0.6f), modifier = Modifier.size(14.dp))</ID>
-    <ID>MaxLineLength:PhotoAlbumViewer.kt$val prevDist = (changes[i].previousPosition - changes[j].previousPosition).getDistance()</ID>
     <ID>MaxLineLength:TabTreeContent.kt$Text(fav.title, fontFamily = FontFamily.Monospace, fontSize = 10.sp, color = TermHighlight, maxLines = 1, overflow = TextOverflow.Ellipsis)</ID>
-    <ID>MaxLineLength:ThoughtDetailDialog.kt$border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = AnimationTokens.Alpha.half))</ID>
     <ID>MaxLineLength:ThoughtDialog.kt$Icon(Icons.Default.Close, contentDescription = "清除", modifier = Modifier.size(12.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)</ID>
     <ID>MaxLineLength:ThoughtDialog.kt$Icon(Icons.Default.Close, contentDescription = "移除", modifier = Modifier.size(14.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)</ID>
-    <ID>MaxLineLength:ThoughtDialog.kt$color = if (isPrivate) SignalAmber.copy(alpha = AnimationTokens.Alpha.faint) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)</ID>
-    <ID>MaxLineLength:ThoughtDialog.kt$color = if (isTodo) SignalGreen.copy(alpha = AnimationTokens.Alpha.faint) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)</ID>
-    <ID>MaxLineLength:ThoughtDialog.kt$if (isPrivate) SignalAmber.copy(alpha = AnimationTokens.Alpha.subtle) else MaterialTheme.colorScheme.outline.copy(alpha = AnimationTokens.Alpha.half)</ID>
-    <ID>MaxLineLength:ThoughtDialog.kt$if (isTodo) SignalGreen.copy(alpha = AnimationTokens.Alpha.subtle) else MaterialTheme.colorScheme.outline.copy(alpha = AnimationTokens.Alpha.half)</ID>
-    <ID>MaxLineLength:ThoughtLevelBanner.kt$"EXP ${uiState.gamification?.currentExp ?: 0}/${uiState.gamification?.expForNextLevel ?: 0} · 距离 Lv.${uiState.gamification?.nextLevel ?: 2} 还需 ${uiState.gamification?.expToNextLevel ?: 0} EXP"</ID>
+    <ID>MaxLineLength:ThoughtDialog.kt$color = if (selected) selectedColor.copy(alpha = AnimationTokens.Alpha.faint) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)</ID>
+    <ID>MaxLineLength:ThoughtDialog.kt$if (selected) selectedColor.copy(alpha = AnimationTokens.Alpha.subtle) else MaterialTheme.colorScheme.outline.copy(alpha = AnimationTokens.Alpha.half)</ID>
+    <ID>MaxLineLength:ThoughtLevelBanner.kt$"EXP ${gamification.currentExp}/${gamification.expForNextLevel} · 距离 Lv.${gamification.nextLevel} 还需 ${gamification.expToNextLevel} EXP"</ID>
     <ID>TooGenericExceptionCaught:PhotoAlbumViewModel.kt$PhotoAlbumViewModel$e: Exception</ID>
     <ID>UnusedParameter:TabListContent.kt$uiState: FavoritesUiState</ID>
     <ID>UnusedParameter:TabListContent.kt$viewModel: FavoritesViewModel</ID>

@@ -23,12 +23,14 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Lightbulb
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -55,11 +57,14 @@ import com.tang.prm.ui.theme.SignalAmber
 @Composable
 fun ThoughtsScreen(
     onBack: () -> Unit,
+    isTabletLayout: Boolean = false,
     viewModel: ThoughtsViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     var detailThoughtId by remember { mutableStateOf<Long?>(null) }
     val detailThought = detailThoughtId?.let { id -> uiState.data.filteredThoughts.find { it.id == id } }
+    // U-2 修复：删除前确认，避免误删不可恢复
+    var pendingDeleteId by remember { mutableStateOf<Long?>(null) }
 
     Scaffold(
         topBar = {
@@ -100,6 +105,7 @@ fun ThoughtsScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
+                .then(if (isTabletLayout) Modifier.padding(horizontal = 48.dp) else Modifier)
         ) {
             ThoughtLevelBanner(uiState = uiState)
 
@@ -162,7 +168,7 @@ fun ThoughtsScreen(
                             exp = viewModel.thoughtExp(thought),
                             onToggleTodo = { viewModel.toggleTodoDone(thought) },
                             onEdit = { viewModel.showEditDialog(thought) },
-                            onDelete = { viewModel.deleteThought(thought.id) },
+                            onDelete = { pendingDeleteId = thought.id },
                             onToggleFavorite = { viewModel.toggleFavorite(thought.id, thought.content) },
                             onCardClick = { detailThoughtId = thought.id }
                         )
@@ -182,7 +188,7 @@ fun ThoughtsScreen(
             onToggleFavorite = { viewModel.toggleFavorite(thought.id, thought.content) },
             onToggleTodo = { viewModel.toggleTodoDone(thought) },
             onEdit = { viewModel.showEditDialog(thought); detailThoughtId = null },
-            onDelete = { viewModel.deleteThought(thought.id); detailThoughtId = null }
+            onDelete = { pendingDeleteId = thought.id; detailThoughtId = null }
         )
     }
 
@@ -207,6 +213,28 @@ fun ThoughtsScreen(
                             dueDate = dueDate
                         )
                     )
+                }
+            }
+        )
+    }
+
+    // U-2 修复：删除确认对话框
+    pendingDeleteId?.let { deleteId ->
+        AlertDialog(
+            onDismissRequest = { pendingDeleteId = null },
+            title = { Text("删除想法") },
+            text = { Text("确定要删除这个想法吗？此操作不可恢复。") },
+            confirmButton = {
+                TextButton(onClick = {
+                    viewModel.deleteThought(deleteId)
+                    pendingDeleteId = null
+                }) {
+                    Text("删除", color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { pendingDeleteId = null }) {
+                    Text("取消")
                 }
             }
         )

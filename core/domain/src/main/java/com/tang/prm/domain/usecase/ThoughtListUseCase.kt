@@ -11,6 +11,7 @@ import javax.inject.Inject
 data class ThoughtListState(
     val allThoughts: List<Thought> = emptyList(),
     val contacts: List<Contact> = emptyList(),
+    val contactMap: Map<Long, Contact> = emptyMap(),
     val contactThoughts: List<ContactThoughts> = emptyList(),
     val todoThoughts: List<Thought> = emptyList(),
     val filteredThoughts: List<Thought> = emptyList(),
@@ -61,6 +62,7 @@ class ThoughtListUseCase @Inject constructor(
             ThoughtListState(
                 allThoughts = thoughts,
                 contacts = contacts,
+                contactMap = contactMap,
                 contactThoughts = contactThoughts,
                 todoThoughts = todos,
                 filteredThoughts = filtered,

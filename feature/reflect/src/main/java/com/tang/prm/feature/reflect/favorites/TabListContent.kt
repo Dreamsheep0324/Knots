@@ -29,7 +29,8 @@ internal fun ColumnScope.TabListContent(
 ) {
     TermPathBar(segments = listOf("~", "favorites", "all"))
 
-    TermCommentLine("# 总计 ${favorites.size} 项收藏 [查询耗时 0.02s]")
+    // Q-4 修复：移除硬编码的假"[查询耗时 0.02s]"
+    TermCommentLine("# 总计 ${favorites.size} 项收藏")
 
     TermPromptLine("ls -la")
 
@@ -37,21 +38,14 @@ internal fun ColumnScope.TabListContent(
 
     TermTableHeader()
 
-    val maxDisplayCount = 7
-    val displayFavorites = favorites.take(maxDisplayCount)
-    val hasMore = favorites.size > maxDisplayCount
-
-    displayFavorites.forEach { favorite ->
+    // B-6 修复：移除 7 条限制，全部渲染（外层 Column 已加 verticalScroll）
+    favorites.forEach { favorite ->
         TermTableRow(
             favorite = favorite,
             dateFormat = dateFormat,
             isSelected = favorite == selectedFavorite,
             onClick = { onFavoriteClick(favorite) }
         )
-    }
-
-    if (hasMore) {
-        TermCommentLine("  ... 还有 ${favorites.size - maxDisplayCount} 项未显示")
     }
 
     TermSeparator()

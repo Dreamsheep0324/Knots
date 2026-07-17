@@ -1,14 +1,12 @@
 package com.tang.prm.feature.reflect.album
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -23,13 +21,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil.compose.AsyncImage
 import com.tang.prm.domain.model.AlbumPhoto
 import com.tang.prm.ui.theme.SignalPurple
 import com.tang.prm.ui.theme.TextGray
@@ -109,7 +103,7 @@ private fun DailyPhotoCard(
                         text = group.groupTitle,
                         style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF111827),
+                        color = MaterialTheme.colorScheme.onSurface,
                         fontSize = 15.sp
                     )
                     if (group.contacts.isNotEmpty()) {
@@ -138,209 +132,14 @@ private fun DailyPhotoCard(
                 }
             }
 
-            DailyPhotoGrid(
+            // C-1 修复：DailyPhotoGrid 替换为统一的 PhotoGridLayout
+            PhotoGridLayout(
                 photos = photos,
                 onPhotoClick = onPhotoClick,
-                isTabletLayout = isTabletLayout
+                isTabletLayout = isTabletLayout,
+                heights = PhotoGridHeights.daily(isTabletLayout),
+                overflowTextSize = 16.sp
             )
-        }
-    }
-}
-
-@Composable
-private fun DailyPhotoGrid(
-    photos: List<AlbumPhoto>,
-    onPhotoClick: (Int) -> Unit,
-    isTabletLayout: Boolean = false
-) {
-    val spacing = if (isTabletLayout) 8.dp else 4.dp
-    val cornerRadius = if (isTabletLayout) 10.dp else 8.dp
-    val h1 = if (isTabletLayout) 200.dp else 140.dp
-    val h2 = if (isTabletLayout) 140.dp else 100.dp
-    val h4 = if (isTabletLayout) 110.dp else 80.dp
-
-    when {
-        photos.size == 1 -> {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(h1)
-                    .clip(RoundedCornerShape(cornerRadius))
-                    .background(Color(0xFFF3F4F6))
-                    .clickable { onPhotoClick(0) }
-            ) {
-                AsyncImage(
-                    model = photos[0].uri,
-                    contentDescription = null,
-                    modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Crop
-                )
-            }
-        }
-        photos.size == 2 -> {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(spacing)
-            ) {
-                photos.forEachIndexed { index, photo ->
-                    Box(
-                        modifier = Modifier
-                            .weight(1f)
-                            .height(h2)
-                            .clip(RoundedCornerShape(cornerRadius))
-                            .background(Color(0xFFF3F4F6))
-                            .clickable { onPhotoClick(index) }
-                    ) {
-                        AsyncImage(
-                            model = photo.uri,
-                            contentDescription = null,
-                            modifier = Modifier.fillMaxSize(),
-                            contentScale = ContentScale.Crop
-                        )
-                    }
-                }
-            }
-        }
-        photos.size == 3 -> {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(spacing)
-            ) {
-                photos.forEachIndexed { index, photo ->
-                    Box(
-                        modifier = Modifier
-                            .weight(1f)
-                            .height(h2)
-                            .clip(RoundedCornerShape(cornerRadius))
-                            .background(Color(0xFFF3F4F6))
-                            .clickable { onPhotoClick(index) }
-                    ) {
-                        AsyncImage(
-                            model = photo.uri,
-                            contentDescription = null,
-                            modifier = Modifier.fillMaxSize(),
-                            contentScale = ContentScale.Crop
-                        )
-                    }
-                }
-            }
-        }
-        photos.size == 4 -> {
-            Column(
-                verticalArrangement = Arrangement.spacedBy(spacing)
-            ) {
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(spacing)
-                ) {
-                    photos.subList(0, 2).forEachIndexed { index, photo ->
-                        Box(
-                            modifier = Modifier
-                                .weight(1f)
-                                .height(h4)
-                                .clip(RoundedCornerShape(cornerRadius))
-                                .background(Color(0xFFF3F4F6))
-                                .clickable { onPhotoClick(index) }
-                        ) {
-                            AsyncImage(
-                                model = photo.uri,
-                                contentDescription = null,
-                                modifier = Modifier.fillMaxSize(),
-                                contentScale = ContentScale.Crop
-                            )
-                        }
-                    }
-                }
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(spacing)
-                ) {
-                    photos.subList(2, 4).forEachIndexed { index, photo ->
-                        Box(
-                            modifier = Modifier
-                                .weight(1f)
-                                .height(h4)
-                                .clip(RoundedCornerShape(cornerRadius))
-                                .background(Color(0xFFF3F4F6))
-                                .clickable { onPhotoClick(index + 2) }
-                        ) {
-                            AsyncImage(
-                                model = photo.uri,
-                                contentDescription = null,
-                                modifier = Modifier.fillMaxSize(),
-                                contentScale = ContentScale.Crop
-                            )
-                        }
-                    }
-                }
-            }
-        }
-        else -> {
-            val displayCount = 4
-            val remainingCount = photos.size - displayCount
-
-            Column(
-                verticalArrangement = Arrangement.spacedBy(spacing)
-            ) {
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(spacing)
-                ) {
-                    photos.subList(0, 2).forEachIndexed { index, photo ->
-                        Box(
-                            modifier = Modifier
-                                .weight(1f)
-                                .height(h4)
-                                .clip(RoundedCornerShape(cornerRadius))
-                                .background(Color(0xFFF3F4F6))
-                                .clickable { onPhotoClick(index) }
-                        ) {
-                            AsyncImage(
-                                model = photo.uri,
-                                contentDescription = null,
-                                modifier = Modifier.fillMaxSize(),
-                                contentScale = ContentScale.Crop
-                            )
-                        }
-                    }
-                }
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(spacing)
-                ) {
-                    photos.subList(2, 4).forEachIndexed { index, photo ->
-                        val globalIndex = index + 2
-                        val isLast = index == 1 && remainingCount > 0
-
-                        Box(
-                            modifier = Modifier
-                                .weight(1f)
-                                .height(h4)
-                                .clip(RoundedCornerShape(cornerRadius))
-                                .background(Color(0xFFF3F4F6))
-                                .clickable { onPhotoClick(globalIndex) }
-                        ) {
-                            AsyncImage(
-                                model = photo.uri,
-                                contentDescription = null,
-                                modifier = Modifier.fillMaxSize(),
-                                contentScale = ContentScale.Crop
-                            )
-                            if (isLast) {
-                                Box(
-                                    modifier = Modifier
-                                        .fillMaxSize()
-                                        .background(Color.Black.copy(alpha = 0.5f)),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Text(
-                                        text = "+$remainingCount",
-                                        color = Color.White,
-                                        fontWeight = FontWeight.Bold,
-                                        fontSize = 16.sp
-                                    )
-                                }
-                            }
-                        }
-                    }
-                }
-            }
         }
     }
 }

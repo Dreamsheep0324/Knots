@@ -237,13 +237,13 @@ internal fun PolaroidContact(contact: Contact, onRemove: () -> Unit) {
         shape = RoundedCornerShape(8.dp), color = MaterialTheme.colorScheme.surface, border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline), shadowElevation = 3.dp) {
         Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(5.dp)) {
             Box(modifier = Modifier.size(50.dp)) {
-                if (contact.avatar != null) {
-                    AsyncImage(model = contact.avatar, contentDescription = null, modifier = Modifier.size(50.dp).clip(RoundedCornerShape(4.dp)), contentScale = ContentScale.Crop)
-                } else {
-                    Box(modifier = Modifier.size(50.dp).clip(RoundedCornerShape(4.dp)).background(MaterialTheme.colorScheme.primary.copy(alpha = AnimationTokens.Alpha.faint)), contentAlignment = Alignment.Center) {
-                        Text(contact.name.firstOrNull()?.toString() ?: "?", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
-                    }
-                }
+                AvatarOrInitial(
+                    avatarUrl = contact.avatar,
+                    name = contact.name,
+                    modifier = Modifier.size(50.dp),
+                    shape = RoundedCornerShape(4.dp),
+                    initialColor = MaterialTheme.colorScheme.primary
+                )
                 IconButton(onClick = onRemove, modifier = Modifier.align(Alignment.TopEnd).size(16.dp).background(Color.Black.copy(alpha = 0.35f), CircleShape)) {
                     Icon(Icons.Default.Close, contentDescription = null, tint = Color.White, modifier = Modifier.size(9.dp))
                 }
@@ -267,7 +267,7 @@ internal fun PolaroidAddButton(onClick: () -> Unit) {
 }
 
 @Composable
-internal fun PolaroidPhoto(photoUri: String, rotation: Float, onRemove: () -> Unit) {
+internal fun EditablePolaroidPhoto(photoUri: String, rotation: Float, onRemove: () -> Unit) {
     Surface(modifier = Modifier.rotate(rotation), shape = RoundedCornerShape(8.dp), color = MaterialTheme.colorScheme.surface, border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline), shadowElevation = 3.dp) {
         Column(modifier = Modifier.padding(5.dp, 5.dp, 5.dp, 12.dp)) {
             Box(modifier = Modifier.size(80.dp)) {

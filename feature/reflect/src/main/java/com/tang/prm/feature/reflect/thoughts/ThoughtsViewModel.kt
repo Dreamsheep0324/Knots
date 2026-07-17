@@ -6,13 +6,11 @@ import com.tang.prm.domain.model.Contact
 import com.tang.prm.domain.model.SourceTypes
 import com.tang.prm.domain.model.Thought
 import com.tang.prm.domain.model.ThoughtType
-import com.tang.prm.domain.repository.ThoughtRepository
 import com.tang.prm.domain.usecase.ContactThoughts
 import com.tang.prm.domain.usecase.FavoriteToggleUseCase
 import com.tang.prm.domain.usecase.GamificationState
 import com.tang.prm.domain.usecase.ThoughtListUseCase
-import com.tang.prm.ui.common.SearchState
-import com.tang.prm.ui.common.SearchStateManager
+import com.tang.prm.domain.usecase.ThoughtWriteUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.*
@@ -28,8 +26,6 @@ data class ThoughtsDataState(
     val filteredThoughts: List<Thought> = emptyList(),
     val selectedFilter: String = "all",
     val selectedContactId: Long? = null,
-    val searchQuery: String = "",
-    val isSearching: Boolean = false,
     val favoriteIds: Set<Long> = emptySet()
 )
 
@@ -47,29 +43,19 @@ data class ThoughtsUiState(
 
 private data class FilterState(
     val selectedFilter: String,
-    val selectedContactId: Long?,
-    val searchQuery: String,
-    val isSearching: Boolean
-)
-
-private data class DialogState(
-    val showDialog: Boolean,
-    val editingThought: Thought?,
-    val dialogType: ThoughtType
+    val selectedContactId: Long?
 )
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class ThoughtsViewModel @Inject constructor(
-    private val thoughtRepository: ThoughtRepository,
+    private val thoughtWriteUseCase: ThoughtWriteUseCase,
     private val favoriteToggleUseCase: FavoriteToggleUseCase,
     private val thoughtListUseCase: ThoughtListUseCase
 ) : ViewModel() {
 
     private val _selectedFilter = MutableStateFlow("all")
     private val _selectedContactId = MutableStateFlow<Long?>(null)
-    private val searchManager = SearchStateManager()
-    val searchState: StateFlow<SearchState> = searchManager.state
     private val _showDialog = MutableStateFlow(false)
     private val _editingThought = MutableStateFlow<Thought?>(null)
     private val _dialogType = MutableStateFlow(ThoughtType.MURMUR)
@@ -85,25 +71,25 @@ class ThoughtsViewModel @Inject constructor(
 
     private val filterState = combine(
         _selectedFilter,
-        _selectedContactId,
-        searchManager.state
-    ) { selectedFilter, selectedContactId, search ->
-        FilterState(selectedFilter, selectedContactId, search.query, search.isActive)
+        _selectedContactId
+    ) { selectedFilter, selectedContactId ->
+        FilterState(selectedFilter, selectedContactId)
     }
 
+    // C-6 修复：移除私有 DialogState（与 ThoughtsDialogState 字段完全重复），直接复用公共类型
     private val dialogState = combine(
         _showDialog,
         _editingThought,
         _dialogType
     ) { showDialog, editingThought, dialogType ->
-        DialogState(showDialog, editingThought, dialogType)
+        ThoughtsDialogState(showDialog, editingThought, dialogType)
     }
 
     private val thoughtListState = filterState.flatMapLatest { filter ->
         thoughtListUseCase.getThoughtListState(
             selectedFilter = filter.selectedFilter,
             selectedContactId = filter.selectedContactId,
-            searchQuery = filter.searchQuery
+            searchQuery = ""
         )
     }
 
@@ -117,21 +103,15 @@ class ThoughtsViewModel @Inject constructor(
             data = ThoughtsDataState(
                 allThoughts = listState.allThoughts,
                 contacts = listState.contacts,
-                contactMap = listState.contacts.associateBy { it.id },
+                contactMap = listState.contactMap,
                 contactThoughts = listState.contactThoughts,
                 todoThoughts = listState.todoThoughts,
                 filteredThoughts = listState.filteredThoughts,
                 selectedFilter = filter.selectedFilter,
                 selectedContactId = filter.selectedContactId,
-                searchQuery = filter.searchQuery,
-                isSearching = filter.isSearching,
                 favoriteIds = favIds
             ),
-            dialog = ThoughtsDialogState(
-                showDialog = dialog.showDialog,
-                editingThought = dialog.editingThought,
-                dialogType = dialog.dialogType
-            ),
+            dialog = dialog,
             gamification = listState.gamification
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), ThoughtsUiState())
@@ -150,10 +130,6 @@ class ThoughtsViewModel @Inject constructor(
             _selectedContactId.value = contactId
         }
     }
-
-    fun onSearchQueryChange(query: String) = searchManager.onQueryChange(query)
-
-    fun onSearchToggle() = searchManager.toggleSearch()
 
     fun showAddDialog(type: ThoughtType) {
         _dialogType.value = type
@@ -189,30 +165,27 @@ class ThoughtsViewModel @Inject constructor(
                 isTodo = isTodo,
                 dueDate = dueDate
             )
-            thoughtRepository.insertThought(thought)
+            thoughtWriteUseCase.insert(thought)
         }
         dismissDialog()
     }
 
     fun updateThought(thought: Thought) {
         viewModelScope.launch {
-            thoughtRepository.updateThought(thought.copy(updatedAt = System.currentTimeMillis()))
+            thoughtWriteUseCase.update(thought)
         }
         dismissDialog()
     }
 
     fun deleteThought(id: Long) {
         viewModelScope.launch {
-            thoughtRepository.deleteThought(id)
+            thoughtWriteUseCase.delete(id)
         }
     }
 
     fun toggleTodoDone(thought: Thought) {
         viewModelScope.launch {
-            thoughtRepository.updateThought(thought.copy(
-                isDone = !thought.isDone,
-                updatedAt = System.currentTimeMillis()
-            ))
+            thoughtWriteUseCase.toggleDone(thought)
         }
     }
 

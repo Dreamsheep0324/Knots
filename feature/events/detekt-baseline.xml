@@ -2,22 +2,23 @@
 <SmellBaseline>
   <ManuallySuppressedIssues></ManuallySuppressedIssues>
   <CurrentIssues>
-    <ID>CyclomaticComplexMethod:EventDetailComponents.kt$internal fun shareEvent(context: android.content.Context, event: Event)</ID>
+    <ID>CyclomaticComplexMethod:EventShareUtils.kt$internal fun shareEvent(context: Context, event: Event)</ID>
     <ID>CyclomaticComplexMethod:EventsComponents.kt$@Composable internal fun EventCard(event: Event, eventTypes: List&lt;CustomType&gt;, onClick: () -&gt; Unit, modifier: Modifier = Modifier)</ID>
     <ID>ExplicitItLambdaParameter:EventsScreen.kt${ _, it -&gt; it.id }</ID>
+    <ID>FunctionNaming:AddEventComponents.kt$@Composable internal fun EditablePolaroidPhoto(photoUri: String, rotation: Float, onRemove: () -&gt; Unit)</ID>
     <ID>FunctionNaming:AddEventComponents.kt$@Composable internal fun EmotionSelector( items: List&lt;CustomType&gt;, selectedItem: String, onSelect: (String) -&gt; Unit )</ID>
     <ID>FunctionNaming:AddEventComponents.kt$@Composable internal fun LinedPaperField(value: String, onValueChange: (String) -&gt; Unit, placeholder: String, minLines: Int = 3)</ID>
     <ID>FunctionNaming:AddEventComponents.kt$@Composable internal fun PolaroidAddButton(onClick: () -&gt; Unit)</ID>
     <ID>FunctionNaming:AddEventComponents.kt$@Composable internal fun PolaroidContact(contact: Contact, onRemove: () -&gt; Unit)</ID>
-    <ID>FunctionNaming:AddEventComponents.kt$@Composable internal fun PolaroidPhoto(photoUri: String, rotation: Float, onRemove: () -&gt; Unit)</ID>
     <ID>FunctionNaming:AddEventComponents.kt$@Composable internal fun PolaroidPhotoAddButton(onClick: () -&gt; Unit)</ID>
     <ID>FunctionNaming:AddEventComponents.kt$@Composable internal fun WeatherSelector( items: List&lt;CustomType&gt;, selectedItem: String, onSelect: (String) -&gt; Unit )</ID>
-    <ID>FunctionNaming:AddEventScreen.kt$@Composable private fun EventFormSections( uiState: AddEventUiState, viewModel: AddEventViewModel, photoPicker: com.tang.prm.ui.components.photo.ManagedPhotoPickerLauncher, showDatePicker: Boolean, onShowDatePicker: (Boolean) -&gt; Unit )</ID>
+    <ID>FunctionNaming:AddEventScreen.kt$@Composable private fun EventFormSections( uiState: AddEventUiState, viewModel: AddEventViewModel, photoPicker: com.tang.prm.ui.components.photo.ManagedPhotoPickerLauncher, onShowDatePicker: (Boolean) -&gt; Unit )</ID>
     <ID>FunctionNaming:AddEventScreen.kt$@Composable private fun EventHeaderCard( uiState: AddEventUiState, viewModel: AddEventViewModel, titleFocusRequester: FocusRequester )</ID>
     <ID>FunctionNaming:AddEventScreen.kt$@OptIn(ExperimentalMaterial3Api::class) @Composable fun AddEventScreen( contactId: Long? = null, eventId: Long? = null, navController: NavController, viewModel: AddEventViewModel = hiltViewModel() )</ID>
     <ID>FunctionNaming:EventDetailComponents.kt$@Composable internal fun EmotionTag(text: String, icon: ImageVector?, color: Color)</ID>
     <ID>FunctionNaming:EventDetailComponents.kt$@Composable internal fun EventHeader(event: Event)</ID>
     <ID>FunctionNaming:EventDetailComponents.kt$@Composable internal fun EventMainContent(event: Event)</ID>
+    <ID>FunctionNaming:EventDetailComponents.kt$@Composable internal fun EventNotFoundState( onBack: () -&gt; Unit, modifier: Modifier = Modifier )</ID>
     <ID>FunctionNaming:EventDetailComponents.kt$@Composable internal fun InfoTag(icon: ImageVector, text: String, bgColor: Color, textColor: Color)</ID>
     <ID>FunctionNaming:EventDetailComponents.kt$@Composable internal fun InteractionButton( icon: ImageVector, text: String, onClick: () -&gt; Unit, tint: Color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f) )</ID>
     <ID>FunctionNaming:EventDetailComponents.kt$@Composable internal fun InteractionRow( isFavorite: Boolean = false, onCommentClick: () -&gt; Unit, onShareClick: () -&gt; Unit, onFavoriteClick: () -&gt; Unit = {} )</ID>
@@ -34,18 +35,29 @@
     <ID>FunctionNaming:EventDetailTabletScreen.kt$@Composable fun EventDetailTabletScreen( eventId: Long, navController: NavController, viewModel: EventDetailViewModel = hiltViewModel() )</ID>
     <ID>FunctionNaming:EventDetailTabletScreen.kt$@Composable private fun AddRemarkCard(onAdd: () -&gt; Unit)</ID>
     <ID>FunctionNaming:EventDetailTabletScreen.kt$@Composable private fun Dot()</ID>
+    <ID>FunctionNaming:EventDetailTabletScreen.kt$@Composable private fun HeroBackground( photos: List&lt;String&gt;, accentColor: Color, pagerState: PagerState, onPhotoClick: (Int) -&gt; Unit )</ID>
+    <ID>FunctionNaming:EventDetailTabletScreen.kt$@Composable private fun HeroBottomContent( event: Event, accentColor: Color, photos: List&lt;String&gt;, pagerState: PagerState, coroutineScope: CoroutineScope, modifier: Modifier = Modifier )</ID>
     <ID>FunctionNaming:EventDetailTabletScreen.kt$@Composable private fun HeroEmotionBadge(emotion: String)</ID>
     <ID>FunctionNaming:EventDetailTabletScreen.kt$@Composable private fun HeroIconButton( icon: androidx.compose.ui.graphics.vector.ImageVector, onClick: () -&gt; Unit, tint: Color = Color.White )</ID>
+    <ID>FunctionNaming:EventDetailTabletScreen.kt$@Composable private fun HeroPhotoThumbnails( photos: List&lt;String&gt;, pagerState: PagerState, coroutineScope: CoroutineScope )</ID>
     <ID>FunctionNaming:EventDetailTabletScreen.kt$@Composable private fun HeroTimeItem(icon: androidx.compose.ui.graphics.vector.ImageVector, text: String)</ID>
+    <ID>FunctionNaming:EventDetailTabletScreen.kt$@Composable private fun HeroTopActionBar( onBack: () -&gt; Unit, onEdit: () -&gt; Unit, onDelete: () -&gt; Unit )</ID>
     <ID>FunctionNaming:EventDetailTabletScreen.kt$@Composable private fun HeroTypeBadge(event: Event, accentColor: Color)</ID>
     <ID>FunctionNaming:EventDetailTabletScreen.kt$@Composable private fun InfoGridItem( icon: androidx.compose.ui.graphics.vector.ImageVector, iconBg: Color, text: String, subText: String, iconTint: Color = MaterialTheme.colorScheme.onSurface, modifier: Modifier = Modifier )</ID>
     <ID>FunctionNaming:EventDetailTabletScreen.kt$@Composable private fun InfoSection( label: String, barColor: Color, count: String? = null, content: @Composable () -&gt; Unit )</ID>
+    <ID>FunctionNaming:EventDetailTabletScreen.kt$@Composable private fun InfoSidebarBottomBar( isFavorite: Boolean, onRemarkEdit: () -&gt; Unit, onShareClick: () -&gt; Unit, onFavoriteClick: () -&gt; Unit )</ID>
+    <ID>FunctionNaming:EventDetailTabletScreen.kt$@Composable private fun InfoSidebarHeader(event: Event)</ID>
+    <ID>FunctionNaming:EventDetailTabletScreen.kt$@Composable private fun InfoSidebarScrollContent( event: Event, onRemarkEdit: () -&gt; Unit, onParticipantClick: (Contact) -&gt; Unit, modifier: Modifier = Modifier )</ID>
     <ID>FunctionNaming:EventDetailTabletScreen.kt$@Composable private fun InteractionButtonItem( icon: androidx.compose.ui.graphics.vector.ImageVector, label: String, onClick: () -&gt; Unit, tint: Color = MaterialTheme.colorScheme.onSurfaceVariant )</ID>
-    <ID>FunctionNaming:EventDetailTabletScreen.kt$@Composable private fun ParticipantAvatarItem(participant: Contact)</ID>
+    <ID>FunctionNaming:EventDetailTabletScreen.kt$@Composable private fun LocationWeatherRow( event: Event, hasLocation: Boolean, hasWeather: Boolean )</ID>
+    <ID>FunctionNaming:EventDetailTabletScreen.kt$@Composable private fun ParticipantAvatarItem(participant: Contact, onClick: () -&gt; Unit)</ID>
     <ID>FunctionNaming:EventDetailTabletScreen.kt$@Composable private fun RemarkCard(remarks: String, onEdit: () -&gt; Unit)</ID>
-    <ID>FunctionNaming:EventDetailTabletScreen.kt$@Composable private fun TabletHeroLeft( event: Event, isFavorite: Boolean, onBack: () -&gt; Unit, onEdit: () -&gt; Unit, onDelete: () -&gt; Unit, onPhotoClick: (Int) -&gt; Unit, modifier: Modifier = Modifier )</ID>
-    <ID>FunctionNaming:EventDetailTabletScreen.kt$@Composable private fun TabletInfoRight( event: Event, isFavorite: Boolean, onRemarkEdit: () -&gt; Unit, onShareClick: () -&gt; Unit, onFavoriteClick: () -&gt; Unit, modifier: Modifier = Modifier )</ID>
+    <ID>FunctionNaming:EventDetailTabletScreen.kt$@Composable private fun TabletHeroLeft( event: Event, onBack: () -&gt; Unit, onEdit: () -&gt; Unit, onDelete: () -&gt; Unit, onPhotoClick: (Int) -&gt; Unit, modifier: Modifier = Modifier )</ID>
+    <ID>FunctionNaming:EventDetailTabletScreen.kt$@Composable private fun TabletInfoRight( event: Event, isFavorite: Boolean, onRemarkEdit: () -&gt; Unit, onShareClick: () -&gt; Unit, onFavoriteClick: () -&gt; Unit, onParticipantClick: (Contact) -&gt; Unit, modifier: Modifier = Modifier )</ID>
     <ID>FunctionNaming:EventDetailTabletScreen.kt$@Composable private fun TimeCard(event: Event)</ID>
+    <ID>FunctionNaming:EventViewUtils.kt$@Composable internal fun AvatarOrInitial( avatarUrl: String?, name: String, modifier: Modifier = Modifier, shape: Shape = CircleShape, bgColor: Color = MaterialTheme.colorScheme.primary.copy(alpha = AnimationTokens.Alpha.faint), initialColor: Color = MaterialTheme.colorScheme.primary, initialFontSize: TextUnit = TextUnit.Unspecified )</ID>
+    <ID>FunctionNaming:EventViewUtils.kt$@Composable internal fun EventTypeFilterRow( eventTypes: List&lt;CustomType&gt;, selectedType: String?, onTypeSelect: (String?) -&gt; Unit, modifier: Modifier = Modifier, style: FilterChipStyle = FilterChipStyle.Compact )</ID>
+    <ID>FunctionNaming:EventViewUtils.kt$@Composable private fun FilterChipItem( text: String, isSelected: Boolean, selectedColor: Color, onClick: () -&gt; Unit, shape: Shape, horizontalPadding: Dp, verticalPadding: Dp, isCompact: Boolean )</ID>
     <ID>FunctionNaming:EventsCalendarComponents.kt$@Composable internal fun CalendarGrid( monthOffset: Int, selectedDate: Long, calendarEvents: List&lt;Event&gt;, onDateSelected: (Long) -&gt; Unit )</ID>
     <ID>FunctionNaming:EventsCalendarComponents.kt$@Composable internal fun CalendarHeader( monthOffset: Int, onPrevious: () -&gt; Unit, onNext: () -&gt; Unit, onToday: () -&gt; Unit )</ID>
     <ID>FunctionNaming:EventsCalendarComponents.kt$@Composable internal fun CalendarStatsRow(stats: CalendarStats)</ID>
@@ -58,23 +70,28 @@
     <ID>FunctionNaming:EventsCalendarComponents.kt$@Composable private fun CalendarStatItem( value: String, label: String, color: Color, modifier: Modifier = Modifier )</ID>
     <ID>FunctionNaming:EventsCalendarComponents.kt$@Composable private fun CompactEventCard( event: Event, eventTypes: List&lt;CustomType&gt;, onClick: () -&gt; Unit )</ID>
     <ID>FunctionNaming:EventsCalendarComponents.kt$@Composable private fun DateGroupHeader(dateLabel: String, eventCount: Int)</ID>
+    <ID>FunctionNaming:EventsCalendarComponents.kt$@Composable private fun EventCardHeader(event: Event)</ID>
+    <ID>FunctionNaming:EventsCalendarComponents.kt$@Composable private fun EventCardLocation(location: String?)</ID>
+    <ID>FunctionNaming:EventsCalendarComponents.kt$@Composable private fun EventCardParticipants(participants: List&lt;Contact&gt;)</ID>
+    <ID>FunctionNaming:EventsCalendarComponents.kt$@Composable private fun EventCardTagsRow( event: Event, accentColor: Color, lightColor: Color )</ID>
     <ID>FunctionNaming:EventsCalendarComponents.kt$@Composable private fun EventTagChip(tag: EventTagData)</ID>
     <ID>FunctionNaming:EventsComponents.kt$@Composable internal fun EventCard(event: Event, eventTypes: List&lt;CustomType&gt;, onClick: () -&gt; Unit, modifier: Modifier = Modifier)</ID>
     <ID>FunctionNaming:EventsComponents.kt$@Composable internal fun EventsTimelineView( events: List&lt;Event&gt;, onEventClick: (Event) -&gt; Unit )</ID>
     <ID>FunctionNaming:EventsComponents.kt$@Composable internal fun MetaTag(icon: ImageVector, text: String, bgColor: Color, textColor: Color)</ID>
-    <ID>FunctionNaming:EventsScreen.kt$@Composable private fun TabletCalendarEventsContent( uiState: EventsUiState, searchState: SearchState, onSearchQueryChange: (String) -&gt; Unit, onTypeSelect: (String?) -&gt; Unit, onPreviousMonth: () -&gt; Unit, onNextMonth: () -&gt; Unit, onTodayClick: () -&gt; Unit, onDateSelected: (Long) -&gt; Unit, onEventClick: (com.tang.prm.domain.model.Event) -&gt; Unit )</ID>
-    <ID>FunctionNaming:EventsScreen.kt$@Composable private fun TabletFilterChips( eventTypes: List&lt;com.tang.prm.domain.model.CustomType&gt;, selectedType: String?, onTypeSelect: (String?) -&gt; Unit )</ID>
+    <ID>FunctionNaming:EventsScreen.kt$@Composable private fun EventsListContent( events: List&lt;Event&gt;, eventTypes: List&lt;CustomType&gt;, onEventClick: (Event) -&gt; Unit )</ID>
+    <ID>FunctionNaming:EventsScreen.kt$@Composable private fun EventsPhoneContent( uiState: EventsUiState, searchState: SearchState, onSearchQueryChange: (String) -&gt; Unit, onTypeSelect: (String?) -&gt; Unit, onEventClick: (Event) -&gt; Unit, onCreateEvent: () -&gt; Unit )</ID>
+    <ID>FunctionNaming:EventsScreen.kt$@Composable private fun EventsPhoneEmptyState(onCreateEvent: () -&gt; Unit)</ID>
+    <ID>FunctionNaming:EventsScreen.kt$@Composable private fun TabletCalendarEventsContent( uiState: EventsUiState, searchState: SearchState, callbacks: EventsTabletCallbacks )</ID>
+    <ID>FunctionNaming:EventsScreen.kt$@Composable private fun TabletCalendarLeftPanel( uiState: EventsUiState, callbacks: EventsTabletCallbacks, appearKey: Any, modifier: Modifier = Modifier )</ID>
+    <ID>FunctionNaming:EventsScreen.kt$@Composable private fun TabletCalendarRightPanel( uiState: EventsUiState, searchState: SearchState, callbacks: EventsTabletCallbacks, appearKey: Any, modifier: Modifier = Modifier )</ID>
+    <ID>FunctionNaming:EventsScreen.kt$@Composable private fun TabletRightPanelEmptyState(onCreateEvent: () -&gt; Unit)</ID>
     <ID>FunctionNaming:EventsScreen.kt$@OptIn(ExperimentalMaterial3Api::class) @Composable fun EventsScreen( navController: NavController, isTabletLayout: Boolean = false, viewModel: EventsViewModel = hiltViewModel() )</ID>
-    <ID>LongMethod:AddEventScreen.kt$@Composable private fun EventFormSections( uiState: AddEventUiState, viewModel: AddEventViewModel, photoPicker: com.tang.prm.ui.components.photo.ManagedPhotoPickerLauncher, showDatePicker: Boolean, onShowDatePicker: (Boolean) -&gt; Unit )</ID>
+    <ID>FunctionNaming:EventsScreen.kt$@OptIn(ExperimentalMaterial3Api::class) @Composable private fun EventsTopBar( isTabletLayout: Boolean, viewMode: String, viewModeOptions: List&lt;SegmentedOption&lt;String&gt;&gt;, onViewModeChange: (String) -&gt; Unit, onCreateEvent: () -&gt; Unit )</ID>
+    <ID>LongMethod:AddEventScreen.kt$@Composable private fun EventFormSections( uiState: AddEventUiState, viewModel: AddEventViewModel, photoPicker: com.tang.prm.ui.components.photo.ManagedPhotoPickerLauncher, onShowDatePicker: (Boolean) -&gt; Unit )</ID>
     <ID>LongMethod:AddEventScreen.kt$@OptIn(ExperimentalMaterial3Api::class) @Composable fun AddEventScreen( contactId: Long? = null, eventId: Long? = null, navController: NavController, viewModel: AddEventViewModel = hiltViewModel() )</ID>
     <ID>LongMethod:EventDetailScreen.kt$@Composable fun EventDetailScreen( eventId: Long, navController: NavController, viewModel: EventDetailViewModel = hiltViewModel() )</ID>
-    <ID>LongMethod:EventDetailTabletScreen.kt$@Composable private fun TabletHeroLeft( event: Event, isFavorite: Boolean, onBack: () -&gt; Unit, onEdit: () -&gt; Unit, onDelete: () -&gt; Unit, onPhotoClick: (Int) -&gt; Unit, modifier: Modifier = Modifier )</ID>
-    <ID>LongMethod:EventDetailTabletScreen.kt$@Composable private fun TabletInfoRight( event: Event, isFavorite: Boolean, onRemarkEdit: () -&gt; Unit, onShareClick: () -&gt; Unit, onFavoriteClick: () -&gt; Unit, modifier: Modifier = Modifier )</ID>
-    <ID>LongMethod:EventsCalendarComponents.kt$@Composable private fun CalendarEventCard( event: Event, eventTypes: List&lt;CustomType&gt;, onClick: () -&gt; Unit )</ID>
-    <ID>LongMethod:EventsScreen.kt$@Composable private fun TabletCalendarEventsContent( uiState: EventsUiState, searchState: SearchState, onSearchQueryChange: (String) -&gt; Unit, onTypeSelect: (String?) -&gt; Unit, onPreviousMonth: () -&gt; Unit, onNextMonth: () -&gt; Unit, onTodayClick: () -&gt; Unit, onDateSelected: (Long) -&gt; Unit, onEventClick: (com.tang.prm.domain.model.Event) -&gt; Unit )</ID>
-    <ID>LongMethod:EventsScreen.kt$@OptIn(ExperimentalMaterial3Api::class) @Composable fun EventsScreen( navController: NavController, isTabletLayout: Boolean = false, viewModel: EventsViewModel = hiltViewModel() )</ID>
-    <ID>LongParameterList:EventsScreen.kt$( uiState: EventsUiState, searchState: SearchState, onSearchQueryChange: (String) -&gt; Unit, onTypeSelect: (String?) -&gt; Unit, onPreviousMonth: () -&gt; Unit, onNextMonth: () -&gt; Unit, onTodayClick: () -&gt; Unit, onDateSelected: (Long) -&gt; Unit, onEventClick: (com.tang.prm.domain.model.Event) -&gt; Unit )</ID>
-    <ID>MaxLineLength:AddEventComponents.kt$AsyncImage(model = contact.avatar, contentDescription = null, modifier = Modifier.size(50.dp).clip(RoundedCornerShape(4.dp)), contentScale = ContentScale.Crop)</ID>
+    <ID>LongMethod:EventsComponents.kt$@Composable internal fun EventCard(event: Event, eventTypes: List&lt;CustomType&gt;, onClick: () -&gt; Unit, modifier: Modifier = Modifier)</ID>
+    <ID>LongParameterList:EventViewUtils.kt$( text: String, isSelected: Boolean, selectedColor: Color, onClick: () -&gt; Unit, shape: Shape, horizontalPadding: Dp, verticalPadding: Dp, isCompact: Boolean )</ID>
     <ID>MaxLineLength:AddEventComponents.kt$AsyncImage(model = photoUri, contentDescription = null, modifier = Modifier.size(80.dp).clip(RoundedCornerShape(3.dp)), contentScale = ContentScale.Crop)</ID>
     <ID>MaxLineLength:AddEventComponents.kt$Box</ID>
     <ID>MaxLineLength:AddEventComponents.kt$Box(modifier = Modifier.size(50.dp), contentAlignment = Alignment.Center) { Icon(Icons.Default.PersonAdd, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(20.dp)) }</ID>
@@ -85,7 +102,6 @@
     <ID>MaxLineLength:AddEventComponents.kt$Text("今天天气", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold)</ID>
     <ID>MaxLineLength:AddEventComponents.kt$Text("此刻心情", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold)</ID>
     <ID>MaxLineLength:AddEventComponents.kt$Text(contact.name, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurface, maxLines = 1, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth(), fontSize = 10.sp)</ID>
-    <ID>MaxLineLength:AddEventComponents.kt$Text(contact.name.firstOrNull()?.toString() ?: "?", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)</ID>
     <ID>MaxLineLength:AddEventComponents.kt$border = if (isSelected) BorderStroke(2.dp, itemColor.copy(alpha = 0.4f)) else BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = AnimationTokens.Alpha.half))</ID>
     <ID>MaxLineLength:AddEventComponents.kt$border = if (isSelected) BorderStroke(animatedBorderWidth, itemColor.copy(alpha = AnimationTokens.Alpha.half)) else BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = AnimationTokens.Alpha.half))</ID>
     <ID>MaxLineLength:AddEventComponents.kt$color = if (isSelected) itemColor.copy(alpha = AnimationTokens.Alpha.subtle) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)</ID>
@@ -106,7 +122,6 @@
     <ID>MaxLineLength:AddEventScreen.kt$Row</ID>
     <ID>MaxLineLength:AddEventScreen.kt$WeatherSelector(items = uiState.weathers, selectedItem = uiState.weather, onSelect = { viewModel.updateWeather(it) })</ID>
     <ID>MaxLineLength:AddEventScreen.kt$border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = com.tang.prm.ui.animation.core.AnimationTokens.Alpha.half))</ID>
-    <ID>MaxLineLength:AddEventScreen.kt$cal.timeInMillis = it</ID>
     <ID>MaxLineLength:AddEventScreen.kt$color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)</ID>
     <ID>MaxLineLength:AddEventScreen.kt$colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = Color.Transparent, unfocusedBorderColor = Color.Transparent, cursorColor = MaterialTheme.colorScheme.primary)</ID>
     <ID>MaxLineLength:AddEventScreen.kt$items(uiState.participants, key = { it.id }) { contact -&gt; PolaroidContact(contact = contact, onRemove = { viewModel.removeParticipant(contact) }) }</ID>
@@ -117,7 +132,6 @@
     <ID>MaxLineLength:AddEventViewModel.kt$AddEventViewModel$launchWithErrorHandling { customTypeRepository.insertType(CustomType(category = CustomCategories.EMOTION, name = name, color = color, sortOrder = _uiState.value.emotions.size)) }</ID>
     <ID>MaxLineLength:AddEventViewModel.kt$AddEventViewModel$launchWithErrorHandling { customTypeRepository.insertType(CustomType(category = CustomCategories.EVENT_TYPE, name = name, color = color, icon = icon, sortOrder = _uiState.value.eventTypes.size)) }</ID>
     <ID>MaxLineLength:AddEventViewModel.kt$AddEventViewModel$launchWithErrorHandling { customTypeRepository.insertType(CustomType(category = CustomCategories.WEATHER, name = name, color = color, sortOrder = _uiState.value.weathers.size)) }</ID>
-    <ID>MaxLineLength:EventDetailComponents.kt$AsyncImage(model = avatarUrl, contentDescription = null, modifier = Modifier.fillMaxSize(), contentScale = ContentScale.Crop)</ID>
     <ID>MaxLineLength:EventDetailComponents.kt$Icon(Icons.Default.Edit, contentDescription = null, modifier = Modifier.size(12.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f))</ID>
     <ID>MaxLineLength:EventDetailComponents.kt$Icon(Icons.Default.People, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(16.dp))</ID>
     <ID>MaxLineLength:EventDetailComponents.kt$Icon(Icons.Default.Public, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f), modifier = Modifier.size(12.dp))</ID>
@@ -127,14 +141,11 @@
     <ID>MaxLineLength:EventDetailComponents.kt$Text("个人感悟", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold)</ID>
     <ID>MaxLineLength:EventDetailComponents.kt$Text("编辑", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f))</ID>
     <ID>MaxLineLength:EventDetailComponents.kt$Text(text = "·", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f))</ID>
-    <ID>MaxLineLength:EventDetailComponents.kt$Text(text = "我", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)</ID>
     <ID>MaxLineLength:EventDetailComponents.kt$Text(text = DateUtils.formatDateTime(event.time), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)</ID>
     <ID>MaxLineLength:EventDetailComponents.kt$Text(text = DateUtils.formatRelativeTime(event.time), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)</ID>
+    <ID>MaxLineLength:EventDetailComponents.kt$Text(text = EVENT_AUTHOR_NAME, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)</ID>
     <ID>MaxLineLength:EventDetailComponents.kt$Text(text = description, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface, lineHeight = 22.sp)</ID>
-    <ID>MaxLineLength:EventDetailComponents.kt$Text(text = event.customTypeName ?: event.type.displayName, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.SemiBold)</ID>
-    <ID>MaxLineLength:EventDetailComponents.kt$Text(text = participant.name.firstOrNull()?.toString() ?: "?", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)</ID>
     <ID>MaxLineLength:EventDetailComponents.kt$Text(text = text, style = MaterialTheme.typography.labelSmall, color = textColor, fontWeight = FontWeight.Medium, maxLines = 1, overflow = TextOverflow.Ellipsis)</ID>
-    <ID>MaxLineLength:EventDetailComponents.kt$modifier = Modifier.size(40.dp).clip(CircleShape).background(MaterialTheme.colorScheme.primary.copy(alpha = AnimationTokens.Alpha.faint)).clickable(onClick = onClick)</ID>
     <ID>MaxLineLength:EventDetailTabletScreen.kt$Icon(Icons.Default.Add, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(16.dp))</ID>
     <ID>MaxLineLength:EventDetailTabletScreen.kt$Icon(Icons.Default.Edit, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(12.dp))</ID>
     <ID>MaxLineLength:EventsCalendarComponents.kt$cells.add(CalendarCell(day, isCurrentMonth = false, isToday = false, isSelected = false, hasEvents = false, timestamp = dayCal.timeInMillis))</ID>
@@ -153,15 +164,12 @@
     <ID>MaxLineLength:EventsComponents.kt$Text(text = DateUtils.formatRelativeTime(event.time), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp)</ID>
     <ID>MaxLineLength:EventsComponents.kt$Text(text = DateUtils.formatRelativeTime(event.time), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f), fontSize = 11.sp)</ID>
     <ID>MaxLineLength:EventsComponents.kt$Text(text = desc, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 2, overflow = TextOverflow.Ellipsis, lineHeight = 20.sp)</ID>
-    <ID>MaxLineLength:EventsComponents.kt$Text(text = event.customTypeName ?: event.type.displayName, modifier = Modifier.padding(10.dp, 4.dp), style = MaterialTheme.typography.labelSmall, color = accentColor, fontWeight = FontWeight.SemiBold, fontSize = 11.sp)</ID>
     <ID>MaxLineLength:EventsComponents.kt$Text(text = event.title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f))</ID>
     <ID>MaxLineLength:EventsComponents.kt$Text(text = event.title, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface, maxLines = 1, overflow = TextOverflow.Ellipsis)</ID>
     <ID>MaxLineLength:EventsComponents.kt$Text(text = it, style = MaterialTheme.typography.bodySmall, color = SignalSky, fontSize = 12.sp, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f, fill = false))</ID>
     <ID>MaxLineLength:EventsComponents.kt$Text(text = it, style = MaterialTheme.typography.labelSmall, color = SignalSky, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.width(80.dp), fontSize = 11.sp)</ID>
     <ID>MaxLineLength:EventsComponents.kt$Text(text = text, style = MaterialTheme.typography.labelSmall, color = textColor, fontWeight = FontWeight.Medium, fontSize = 11.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)</ID>
-    <ID>MaxLineLength:EventsComponents.kt$val customType = if (event.type != EventType.OTHER) eventTypes.find { it.key == event.type.name } ?: eventTypes.find { it.name == event.type.name } else event.customTypeName?.let { ctn -&gt; eventTypes.find { it.name == ctn } }</ID>
-    <ID>NestedBlockDepth:EventDetailComponents.kt$internal fun shareEvent(context: android.content.Context, event: Event)</ID>
-    <ID>UnusedParameter:AddEventScreen.kt$showDatePicker: Boolean</ID>
-    <ID>UnusedParameter:EventDetailTabletScreen.kt$isFavorite: Boolean</ID>
+    <ID>NestedBlockDepth:EventShareUtils.kt$internal fun shareEvent(context: Context, event: Event)</ID>
+    <ID>TooGenericExceptionCaught:EventShareUtils.kt$e: Exception</ID>
   </CurrentIssues>
 </SmellBaseline>

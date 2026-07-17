@@ -27,7 +27,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.tang.prm.domain.model.Favorite
-import com.tang.prm.ui.theme.SignalCoral
 import com.tang.prm.ui.theme.SignalGreen
 import com.tang.prm.ui.animation.primitives.rememberBreathingPulse
 import com.tang.prm.domain.util.DateUtils
@@ -57,13 +56,9 @@ internal fun TabLogContent(favorites: List<Favorite>) {
                 .clip(CircleShape)
                 .background(SignalGreen.copy(alpha = pulseAlpha))
         )
+        // Q-3 修复：移除硬编码的假 "DEL: 0"，只显示真实的 ADD 计数
         Text("ADD: ", fontFamily = FontFamily.Monospace, fontSize = 11.sp, color = TermText)
         Text("${favorites.size}", fontFamily = FontFamily.Monospace, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = TermText)
-        Text("·", fontFamily = FontFamily.Monospace, fontSize = 11.sp, color = TermMuted)
-        Text("DEL: ", fontFamily = FontFamily.Monospace, fontSize = 11.sp, color = TermText)
-        Text("0", fontFamily = FontFamily.Monospace, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = TermText)
-        Text("·", fontFamily = FontFamily.Monospace, fontSize = 11.sp, color = TermMuted)
-        Text("NET: +${favorites.size}", fontFamily = FontFamily.Monospace, fontSize = 11.sp, color = TermComment)
     }
 
     TermSeparator()
@@ -73,8 +68,9 @@ internal fun TabLogContent(favorites: List<Favorite>) {
             .sortedByDescending { it.createdAt }
             .groupBy { DateUtils.formatDate(it.createdAt) }
             .mapValues { entry ->
+                // Q-3 修复：简化 Triple→Pair，移除始终为 "ADD" 的死字段
                 entry.value.map { fav ->
-                    Triple(DateUtils.formatTime(fav.createdAt), fav, "ADD")
+                    Pair(DateUtils.formatTime(fav.createdAt), fav)
                 }
             }
     }
@@ -89,7 +85,7 @@ internal fun TabLogContent(favorites: List<Favorite>) {
             letterSpacing = 1.sp
         )
 
-        entries.forEach { (time, fav, op) ->
+        entries.forEach { (time, fav) ->
             val type = FavoriteType.fromCode(fav.sourceType)
             Column(
                 modifier = Modifier
@@ -104,12 +100,13 @@ internal fun TabLogContent(favorites: List<Favorite>) {
                         color = TermComment,
                         modifier = Modifier.width(32.dp)
                     )
+                    // Q-3 修复：op 始终为 "ADD"，直接写死，移除死分支
                     Text(
-                        op,
+                        "ADD",
                         fontFamily = FontFamily.Monospace,
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Bold,
-                        color = if (op == "ADD") SignalGreen else SignalCoral
+                        color = SignalGreen
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Box(

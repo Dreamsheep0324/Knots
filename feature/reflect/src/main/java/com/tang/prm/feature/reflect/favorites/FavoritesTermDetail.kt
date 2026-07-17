@@ -204,7 +204,7 @@ internal fun TermDetailPanel(
                 color = TermMuted
             )
             Text(
-                "${type.code} · ${type.size}",
+                type.code,
                 fontFamily = FontFamily.Monospace,
                 fontSize = 8.sp,
                 color = TermComment

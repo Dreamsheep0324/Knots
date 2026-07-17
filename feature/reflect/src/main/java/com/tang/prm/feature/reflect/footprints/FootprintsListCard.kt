@@ -58,9 +58,11 @@ internal fun ListCard(
     eventTypes: List<CustomType>,
     onClick: () -> Unit = {}
 ) {
-    val (accentColor, lightColor, icon) = resolveEventTypeStyle(footprint.eventType, eventTypes)
-    val customType = eventTypes.find { it.name == footprint.eventType }
-    val eventTypeDisplayName = customType?.name ?: EventType.entries.find { it.name == footprint.eventType }?.displayName ?: footprint.eventType
+    val style = resolveEventTypeStyle(footprint.eventType, eventTypes)
+    val accentColor = style.accentColor
+    val lightColor = style.lightColor
+    val icon = style.icon
+    val eventTypeDisplayName = style.displayName
 
     Surface(
         modifier = Modifier
@@ -155,11 +157,13 @@ internal fun ListCard(
                 ) {
                     Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                         footprint.weather?.takeIf { it.isNotBlank() }?.let { weather ->
+                            // C-5 修复：缓存天气颜色，避免同 Composable 内重复解析
+                            val weatherColor = getWeatherColorForFootprint(weather)
                             FootprintMetaTag(
                                 icon = getWeatherIconForFootprint(weather),
                                 text = weather,
-                                bgColor = getWeatherColorForFootprint(weather).copy(alpha = AnimationTokens.Alpha.faint),
-                                textColor = getWeatherColorForFootprint(weather)
+                                bgColor = weatherColor.copy(alpha = AnimationTokens.Alpha.faint),
+                                textColor = weatherColor
                             )
                         }
                         footprint.emotion?.takeIf { it.isNotBlank() }?.let { emotion ->
@@ -202,36 +206,38 @@ internal fun FootprintMetaTag(
     }
 }
 
+internal data class EventTypeStyle(
+    val accentColor: Color,
+    val lightColor: Color,
+    val icon: ImageVector,
+    val displayName: String
+)
+
 @Composable
-internal fun resolveEventTypeStyle(eventType: String, eventTypes: List<CustomType>): Triple<Color, Color, ImageVector> {
+internal fun resolveEventTypeStyle(eventType: String, eventTypes: List<CustomType>): EventTypeStyle {
     val customType = if (eventType.isNotBlank()) eventTypes.find { it.key == eventType } ?: eventTypes.find { it.name == eventType } else null
     return if (customType != null) {
         val baseColor = customType.color?.let { it.toComposeColor(SignalPurple) } ?: SignalPurple
-        Triple(baseColor, baseColor.copy(alpha = AnimationTokens.Alpha.subtle), customType.icon?.let { getGenericIcon(it) } ?: Icons.Default.Event)
+        EventTypeStyle(
+            accentColor = baseColor,
+            lightColor = baseColor.copy(alpha = AnimationTokens.Alpha.subtle),
+            icon = customType.icon?.let { getGenericIcon(it) } ?: Icons.Default.Event,
+            displayName = customType.name
+        )
     } else {
         val resolved = EventType.entries.find { it.name == eventType } ?: EventType.OTHER
         val style = getEventTypeStyle(resolved)
-        Triple(style.accentColor, style.lightColor, style.icon)
+        EventTypeStyle(
+            accentColor = style.accentColor,
+            lightColor = style.lightColor,
+            icon = style.icon,
+            displayName = resolved.displayName
+        )
     }
 }
 
-@Composable
-internal fun getEventTypeColor(eventType: String): Color {
-    val resolved = EventType.entries.find { it.name == eventType } ?: EventType.OTHER
-    return getEventTypeStyle(resolved).accentColor
-}
-
-@Composable
-internal fun getEventTypeIcon(eventType: String): ImageVector {
-    val resolved = EventType.entries.find { it.name == eventType } ?: EventType.OTHER
-    return getEventTypeStyle(resolved).icon
-}
-
-@Composable
-internal fun getEventTypeLightColor(eventType: String): Color {
-    val resolved = EventType.entries.find { it.name == eventType } ?: EventType.OTHER
-    return getEventTypeStyle(resolved).lightColor
-}
+// D-1 修复：已删除 getEventTypeColor/getEventTypeIcon/getEventTypeLightColor 三个无调用方的死函数
+// 功能已被 resolveEventTypeStyle 一次性返回 EventTypeStyle 覆盖
 
 internal fun getWeatherIconForFootprint(weather: String?): ImageVector {
     if (weather.isNullOrBlank()) return Icons.Default.WbSunny

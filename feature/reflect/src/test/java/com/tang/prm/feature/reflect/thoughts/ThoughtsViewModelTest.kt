@@ -12,6 +12,7 @@ import com.tang.prm.domain.repository.ThoughtRepository
 import com.tang.prm.domain.usecase.FavoriteToggleUseCase
 import com.tang.prm.domain.usecase.ThoughtGamificationUseCase
 import com.tang.prm.domain.usecase.ThoughtListUseCase
+import com.tang.prm.domain.usecase.ThoughtWriteUseCase
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -42,6 +43,7 @@ class ThoughtsViewModelTest {
 
     private lateinit var favoriteToggleUseCase: FavoriteToggleUseCase
     private lateinit var thoughtListUseCase: ThoughtListUseCase
+    private lateinit var thoughtWriteUseCase: ThoughtWriteUseCase
     private lateinit var viewModel: ThoughtsViewModel
 
     private val testThought = Thought(id = 1, content = "Hello", type = ThoughtType.MURMUR)
@@ -60,8 +62,9 @@ class ThoughtsViewModelTest {
 
         favoriteToggleUseCase = FavoriteToggleUseCase(favoriteRepository)
         thoughtListUseCase = ThoughtListUseCase(thoughtRepository, contactRepository, ThoughtGamificationUseCase())
+        thoughtWriteUseCase = ThoughtWriteUseCase(thoughtRepository)
 
-        viewModel = ThoughtsViewModel(thoughtRepository, favoriteToggleUseCase, thoughtListUseCase)
+        viewModel = ThoughtsViewModel(thoughtWriteUseCase, favoriteToggleUseCase, thoughtListUseCase)
     }
 
     @AfterEach
@@ -159,13 +162,4 @@ class ThoughtsViewModelTest {
         }
     }
 
-    @Test
-    fun onSearchQueryChange_filtersBySearchQuery() = runTest {
-        viewModel.onSearchQueryChange("Hello")
-
-        viewModel.uiState.test {
-            val state = awaitItem()
-            assertThat(state.data.searchQuery).isEqualTo("Hello")
-        }
-    }
 }

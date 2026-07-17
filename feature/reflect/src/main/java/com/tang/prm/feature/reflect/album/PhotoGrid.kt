@@ -31,6 +31,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.tang.prm.domain.model.AlbumPhoto
+import com.tang.prm.domain.model.SourceTypes
 import com.tang.prm.ui.theme.SignalAmber
 import com.tang.prm.ui.theme.SignalGreen
 import com.tang.prm.ui.theme.SignalPurple
@@ -85,17 +86,17 @@ private fun PhotoGridItem(
                 .padding(4.dp),
             shape = RoundedCornerShape(6.dp),
             color = when (photo.sourceType) {
-                "event" -> SignalGreen.copy(alpha = 0.85f)
-                "chat" -> SignalSky.copy(alpha = 0.85f)
-                "gift" -> SignalAmber.copy(alpha = 0.85f)
+                SourceTypes.ALBUM_EVENT -> SignalGreen.copy(alpha = 0.85f)
+                SourceTypes.ALBUM_CHAT -> SignalSky.copy(alpha = 0.85f)
+                SourceTypes.ALBUM_GIFT -> SignalAmber.copy(alpha = 0.85f)
                 else -> SignalPurple.copy(alpha = 0.85f)
             }
         ) {
             Icon(
                 imageVector = when (photo.sourceType) {
-                    "event" -> Icons.Default.Event
-                    "chat" -> Icons.AutoMirrored.Filled.Chat
-                    "gift" -> Icons.Default.CardGiftcard
+                    SourceTypes.ALBUM_EVENT -> Icons.Default.Event
+                    SourceTypes.ALBUM_CHAT -> Icons.AutoMirrored.Filled.Chat
+                    SourceTypes.ALBUM_GIFT -> Icons.Default.CardGiftcard
                     else -> Icons.Default.Image
                 },
                 contentDescription = null,

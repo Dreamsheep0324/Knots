@@ -24,7 +24,6 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
-import androidx.compose.material.icons.filled.Lightbulb
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -39,15 +38,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.tang.prm.domain.model.Thought
 import com.tang.prm.ui.animation.core.AnimationTokens
-import com.tang.prm.ui.components.ContactAvatar
 import com.tang.prm.ui.theme.DialogDefaults
-import com.tang.prm.ui.theme.SignalAmber
 import com.tang.prm.ui.theme.SignalCoral
 import com.tang.prm.ui.theme.SignalGreen
 import com.tang.prm.domain.util.DateUtils
@@ -64,10 +60,11 @@ internal fun ThoughtDetailDialog(
     onEdit: () -> Unit,
     onDelete: () -> Unit
 ) {
-    val typeColor = ThoughtTypeColor[thought.type] ?: SignalAmber
-    val typeBg = ThoughtTypeBg[thought.type] ?: SignalAmber.copy(alpha = AnimationTokens.Alpha.faint)
-    val typeIcon = ThoughtTypeIcon[thought.type] ?: Icons.Default.Lightbulb
-    val typeLabel = ThoughtTypeLabel[thought.type] ?: "想法"
+    val style = thought.style
+    val typeColor = style.color
+    val typeBg = style.bg
+    val typeIcon = style.icon
+    val typeLabel = style.label
 
     Dialog(onDismissRequest = onDismiss) {
         Surface(
@@ -221,26 +218,11 @@ internal fun ThoughtDetailDialog(
                     }
 
                     if (contactName != null) {
-                        Surface(
-                            shape = RoundedCornerShape(100.dp),
-                            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-                            border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = AnimationTokens.Alpha.half))
-                        ) {
-                            Row(
-                                modifier = Modifier.padding(start = 6.dp, end = 10.dp, top = 5.dp, bottom = 5.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                ContactAvatar(avatar = contactAvatar, name = contactName, size = 20)
-                                Spacer(modifier = Modifier.width(5.dp))
-                                Text(
-                                    contactName,
-                                    fontSize = 12.sp,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis
-                                )
-                            }
-                        }
+                        ContactNameChip(
+                            name = contactName,
+                            avatar = contactAvatar,
+                            avatarSize = 20
+                        )
                     }
 
                     Spacer(modifier = Modifier.weight(1f))

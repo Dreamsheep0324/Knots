@@ -37,6 +37,24 @@ internal fun ThoughtLevelBanner(uiState: ThoughtsUiState) {
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 8.dp)
     ) {
+        // Q-9 修复：gamification 未加载时显示 loading 占位，不再显示伪数据（Lv.1/EXP 0/0 STREAK）
+        val gamification = uiState.gamification
+        if (gamification == null) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(14.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                androidx.compose.material3.CircularProgressIndicator(
+                    modifier = Modifier.size(20.dp),
+                    strokeWidth = 2.dp,
+                    color = SignalAmber
+                )
+            }
+            return@AppCard
+        }
+
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -62,14 +80,14 @@ internal fun ThoughtLevelBanner(uiState: ThoughtsUiState) {
 
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    "Lv.${uiState.gamification?.currentLevel ?: 1}",
+                    "Lv.${gamification.currentLevel}",
                     fontFamily = FontFamily.Monospace,
                     fontSize = 13.sp,
                     fontWeight = FontWeight.SemiBold,
                     color = MaterialTheme.colorScheme.onSurface
                 )
                 Text(
-                    "EXP ${uiState.gamification?.currentExp ?: 0}/${uiState.gamification?.expForNextLevel ?: 0} · 距离 Lv.${uiState.gamification?.nextLevel ?: 2} 还需 ${uiState.gamification?.expToNextLevel ?: 0} EXP",
+                    "EXP ${gamification.currentExp}/${gamification.expForNextLevel} · 距离 Lv.${gamification.nextLevel} 还需 ${gamification.expToNextLevel} EXP",
                     fontFamily = FontFamily.Monospace,
                     fontSize = 10.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -82,7 +100,7 @@ internal fun ThoughtLevelBanner(uiState: ThoughtsUiState) {
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     LinearProgressIndicator(
-                        progress = { uiState.gamification?.levelProgress ?: 0f },
+                        progress = { gamification.levelProgress },
                         modifier = Modifier
                             .weight(1f)
                             .height(4.dp)
@@ -92,7 +110,7 @@ internal fun ThoughtLevelBanner(uiState: ThoughtsUiState) {
                     )
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(
-                        "${((uiState.gamification?.levelProgress ?: 0f) * 100).toInt()}%",
+                        "${(gamification.levelProgress * 100).toInt()}%",
                         fontFamily = FontFamily.Monospace,
                         fontSize = 9.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -111,7 +129,7 @@ internal fun ThoughtLevelBanner(uiState: ThoughtsUiState) {
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        "${uiState.gamification?.streak ?: 0}",
+                        "${gamification.streak}",
                         fontFamily = FontFamily.Monospace,
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,

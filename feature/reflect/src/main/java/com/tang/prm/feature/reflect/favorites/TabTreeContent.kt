@@ -33,11 +33,12 @@ internal fun TabTreeContent(favorites: List<Favorite>) {
 
     TermThickSeparator()
 
-    val typeCounts = remember(favorites) {
+    val typeGroups = remember(favorites) {
         FavoriteType.entries.associateWith { type ->
-            favorites.count { it.sourceType == type.code }
+            favorites.filter { it.sourceType == type.code }
         }
     }
+    val typeCounts = remember(typeGroups) { typeGroups.mapValues { it.value.size } }
     val maxCount = typeCounts.values.maxOrNull() ?: 1
 
     typeCounts.forEach { (type, count) ->
@@ -125,7 +126,7 @@ internal fun TabTreeContent(favorites: List<Favorite>) {
                 Text("($count)", fontFamily = FontFamily.Monospace, fontSize = 9.sp, color = TermComment)
             }
 
-            val typeFavorites = favorites.filter { it.sourceType == type.code }
+            val typeFavorites = typeGroups[type] ?: emptyList()
             val showItems = typeFavorites.take(2)
             showItems.forEachIndexed { itemIndex, fav ->
                 val isLastItem = itemIndex == showItems.size - 1 && count <= 2

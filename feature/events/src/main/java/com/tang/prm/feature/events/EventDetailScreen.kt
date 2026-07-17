@@ -19,6 +19,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.tang.prm.ui.components.DeleteConfirmDialog
+import com.tang.prm.ui.navigation.ContactDetailRoute
 import com.tang.prm.ui.navigation.EditEventRoute
 import com.tang.prm.ui.theme.Error
 
@@ -80,7 +81,22 @@ fun EventDetailScreen(
         },
         containerColor = MaterialTheme.colorScheme.surface
     ) { padding ->
-        uiState.data.event?.let { event ->
+        val event = uiState.data.event
+        if (event == null) {
+            if (uiState.data.isLoading) {
+                Box(
+                    modifier = Modifier.fillMaxSize().padding(padding),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator(color = MaterialTheme.colorScheme.primary, strokeWidth = 3.dp)
+                }
+            } else {
+                EventNotFoundState(
+                    onBack = { navController.popBackStack() },
+                    modifier = Modifier.padding(padding)
+                )
+            }
+        } else {
             LazyColumn(
                 modifier = Modifier.fillMaxSize().padding(padding),
                 verticalArrangement = Arrangement.spacedBy(0.dp)
@@ -100,7 +116,10 @@ fun EventDetailScreen(
 
                         if (event.participants.isNotEmpty()) {
                             Spacer(modifier = Modifier.height(16.dp))
-                            ParticipantsSection(participants = event.participants, onParticipantClick = {})
+                            ParticipantsSection(
+                                participants = event.participants,
+                                onParticipantClick = { contact -> navController.navigate(ContactDetailRoute(contact.id)) }
+                            )
                         }
                     }
                 }

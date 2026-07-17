@@ -10,6 +10,7 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -36,20 +37,18 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import com.tang.prm.domain.model.Contact
 import com.tang.prm.domain.model.Event
-import com.tang.prm.domain.model.EventType
 import com.tang.prm.domain.util.DateUtils
 import com.tang.prm.ui.animation.core.AnimationTokens
 import com.tang.prm.ui.components.DeleteConfirmDialog
+import com.tang.prm.ui.navigation.ContactDetailRoute
 import com.tang.prm.ui.navigation.EditEventRoute
 import com.tang.prm.ui.theme.*
 import com.tang.prm.ui.theme.getEmotionIcon
-import com.tang.prm.ui.theme.getEventTypeStyle
-import com.tang.prm.ui.theme.getWeatherColor
 import com.tang.prm.ui.theme.getWeatherIcon
-import com.tang.prm.ui.theme.toComposeColor
 
 // ═══════════════════════════════════════════════════════════════
 // 平板事件详情 — 方案A 杂志式
@@ -66,10 +65,6 @@ fun EventDetailTabletScreen(
     var showRemarkDialog by remember { mutableStateOf(false) }
     var showDeleteDialog by remember { mutableStateOf(false) }
     val context = LocalContext.current
-
-    LaunchedEffect(eventId) {
-        viewModel.setEventId(eventId)
-    }
 
     LaunchedEffect(uiState.dialog.isRemarkSaved) {
         if (uiState.dialog.isRemarkSaved) {
@@ -102,7 +97,9 @@ fun EventDetailTabletScreen(
             contentAlignment = Alignment.Center
         ) {
             if (uiState.data.isLoading) {
-                CircularProgressIndicator()
+                CircularProgressIndicator(color = MaterialTheme.colorScheme.primary, strokeWidth = 3.dp)
+            } else {
+                EventNotFoundState(onBack = { navController.popBackStack() })
             }
         }
         return
@@ -120,7 +117,6 @@ fun EventDetailTabletScreen(
         // ── 左侧 Hero 区 (56%) ──
         TabletHeroLeft(
             event = event,
-            isFavorite = uiState.data.isFavorite,
             onBack = { navController.popBackStack() },
             onEdit = { navController.navigate(EditEventRoute(eventId)) },
             onDelete = { showDeleteDialog = true },
@@ -135,6 +131,7 @@ fun EventDetailTabletScreen(
             onRemarkEdit = { showRemarkDialog = true },
             onShareClick = { shareEvent(context, event) },
             onFavoriteClick = { viewModel.toggleFavorite() },
+            onParticipantClick = { contact -> navController.navigate(ContactDetailRoute(contact.id)) },
             modifier = Modifier.weight(0.44f).fillMaxHeight()
         )
     }
@@ -147,195 +144,257 @@ fun EventDetailTabletScreen(
 @Composable
 private fun TabletHeroLeft(
     event: Event,
-    isFavorite: Boolean,
     onBack: () -> Unit,
     onEdit: () -> Unit,
     onDelete: () -> Unit,
     onPhotoClick: (Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val accentColor = getEventAccentColor(event)
+    val accentColor = resolveEventAccentColor(event)
     val photos = event.photos
     val pagerState = rememberPagerState(pageCount = { photos.size })
     val coroutineScope = rememberCoroutineScope()
 
     Box(modifier = modifier.background(MaterialTheme.colorScheme.surface)) {
-        // 背景图（可左右滑动切换）或纯色兜底
-        if (photos.isNotEmpty()) {
-            HorizontalPager(
-                state = pagerState,
-                modifier = Modifier.fillMaxSize()
-            ) { page ->
-                AsyncImage(
-                    model = photos[page],
-                    contentDescription = null,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .clickable { onPhotoClick(page) },
-                    contentScale = ContentScale.Crop
-                )
-            }
-            // 底部渐变遮罩，确保白色文字可读
-            Box(
+        HeroBackground(
+            photos = photos,
+            accentColor = accentColor,
+            pagerState = pagerState,
+            onPhotoClick = onPhotoClick
+        )
+        HeroTopActionBar(
+            onBack = onBack,
+            onEdit = onEdit,
+            onDelete = onDelete
+        )
+        HeroBottomContent(
+            event = event,
+            accentColor = accentColor,
+            photos = photos,
+            pagerState = pagerState,
+            coroutineScope = coroutineScope,
+            modifier = Modifier.align(Alignment.BottomStart).fillMaxWidth().padding(32.dp)
+        )
+    }
+}
+
+/**
+ * Hero 区背景：有照片时为可滑动图片 + 渐变遮罩；无照片时为强调色渐变兜底。
+ */
+@Composable
+private fun HeroBackground(
+    photos: List<String>,
+    accentColor: Color,
+    pagerState: PagerState,
+    onPhotoClick: (Int) -> Unit
+) {
+    if (photos.isNotEmpty()) {
+        HorizontalPager(
+            state = pagerState,
+            modifier = Modifier.fillMaxSize()
+        ) { page ->
+            AsyncImage(
+                model = photos[page],
+                contentDescription = null,
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(
-                        Brush.verticalGradient(
-                            colors = listOf(
-                                Color.Black.copy(alpha = 0.3f),
-                                Color.Transparent,
-                                Color.Black.copy(alpha = 0.5f),
-                                Color.Black.copy(alpha = 0.85f)
-                            )
-                        )
-                    )
-            )
-        } else {
-            // 无照片时使用渐变兜底
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(
-                        Brush.linearGradient(
-                            colors = listOf(accentColor, accentColor.copy(alpha = 0.7f))
-                        )
-                    )
+                    .clickable { onPhotoClick(page) },
+                contentScale = ContentScale.Crop
             )
         }
-        // 顶部操作栏
+        // 底部渐变遮罩，确保白色文字可读
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(
+                            Color.Black.copy(alpha = 0.3f),
+                            Color.Transparent,
+                            Color.Black.copy(alpha = 0.5f),
+                            Color.Black.copy(alpha = 0.85f)
+                        )
+                    )
+                )
+        )
+    } else {
+        // 无照片时使用渐变兜底
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(
+                    Brush.linearGradient(
+                        colors = listOf(accentColor, accentColor.copy(alpha = 0.7f))
+                    )
+                )
+        )
+    }
+}
+
+/**
+ * Hero 区顶部操作栏：返回 / 编辑 / 删除。
+ */
+@Composable
+private fun HeroTopActionBar(
+    onBack: () -> Unit,
+    onEdit: () -> Unit,
+    onDelete: () -> Unit
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth().padding(24.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        HeroIconButton(icon = Icons.AutoMirrored.Filled.ArrowBack, onClick = onBack)
+        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            HeroIconButton(icon = Icons.Default.Edit, onClick = onEdit)
+            HeroIconButton(icon = Icons.Default.Delete, onClick = onDelete, tint = Color.White)
+        }
+    }
+}
+
+/**
+ * Hero 区底部内容：标签、标题、描述、照片缩略图、时间信息。
+ */
+@Composable
+private fun HeroBottomContent(
+    event: Event,
+    accentColor: Color,
+    photos: List<String>,
+    pagerState: PagerState,
+    coroutineScope: CoroutineScope,
+    modifier: Modifier = Modifier
+) {
+    Column(modifier = modifier) {
+        // 标签行
         Row(
-            modifier = Modifier.fillMaxWidth().padding(24.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            HeroIconButton(icon = Icons.AutoMirrored.Filled.ArrowBack, onClick = onBack)
-            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                HeroIconButton(icon = Icons.Default.Edit, onClick = onEdit)
-                HeroIconButton(icon = Icons.Default.Delete, onClick = onDelete, tint = Color.White)
+            HeroTypeBadge(event = event, accentColor = accentColor)
+            event.emotion?.let { emotion ->
+                if (emotion.isNotBlank()) {
+                    HeroEmotionBadge(emotion = emotion)
+                }
             }
         }
 
-        // 底部内容
-        Column(
-            modifier = Modifier
-                .align(Alignment.BottomStart)
-                .fillMaxWidth()
-                .padding(32.dp)
-        ) {
-            // 标签行
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(10.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                HeroTypeBadge(event = event, accentColor = accentColor)
-                event.emotion?.let { emotion ->
-                    if (emotion.isNotBlank()) {
-                        HeroEmotionBadge(emotion = emotion)
-                    }
-                }
-            }
+        Spacer(modifier = Modifier.height(20.dp))
 
+        // 标题
+        Text(
+            text = event.title,
+            fontSize = 30.sp,
+            fontWeight = FontWeight.ExtraBold,
+            color = Color.White,
+            lineHeight = 38.sp
+        )
+
+        // 描述
+        event.description?.let { desc ->
+            if (desc.isNotBlank()) {
+                Spacer(modifier = Modifier.height(14.dp))
+                Text(
+                    text = desc,
+                    fontSize = 15.sp,
+                    color = Color.White.copy(alpha = 0.88f),
+                    lineHeight = 26.sp,
+                    maxLines = 4,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+        }
+
+        // 照片缩略图行 + 页码
+        if (photos.isNotEmpty()) {
             Spacer(modifier = Modifier.height(20.dp))
-
-            // 标题
-            Text(
-                text = event.title,
-                fontSize = 30.sp,
-                fontWeight = FontWeight.ExtraBold,
-                color = Color.White,
-                lineHeight = 38.sp
+            HeroPhotoThumbnails(
+                photos = photos,
+                pagerState = pagerState,
+                coroutineScope = coroutineScope
             )
+        }
 
-            // 描述
-            event.description?.let { desc ->
-                if (desc.isNotBlank()) {
-                    Spacer(modifier = Modifier.height(14.dp))
-                    Text(
-                        text = desc,
-                        fontSize = 15.sp,
-                        color = Color.White.copy(alpha = 0.88f),
-                        lineHeight = 26.sp,
-                        maxLines = 4,
-                        overflow = TextOverflow.Ellipsis
-                    )
+        // 时间信息条
+        Spacer(modifier = Modifier.height(24.dp))
+        HorizontalDivider(color = Color.White.copy(alpha = 0.15f))
+        Spacer(modifier = Modifier.height(20.dp))
+
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(20.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            HeroTimeItem(icon = Icons.Default.CalendarToday, text = DateUtils.formatMonthDayWeekday(event.time))
+            HeroTimeItem(icon = Icons.Default.Schedule, text = DateUtils.formatTime(event.time))
+            event.location?.let { loc ->
+                if (loc.isNotBlank()) {
+                    HeroTimeItem(icon = Icons.Default.Place, text = loc)
                 }
             }
+        }
+    }
+}
 
-            // 照片缩略图行 + 页码
-            if (photos.isNotEmpty()) {
-                Spacer(modifier = Modifier.height(20.dp))
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    LazyRow(
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        items(photos.size, key = { photos[it] }) { index ->
-                            val isSelected = pagerState.currentPage == index
-                            Box(
-                                modifier = Modifier
-                                    .size(56.dp)
-                                    .clip(RoundedCornerShape(10.dp))
-                                    .background(Color.White.copy(alpha = 0.15f))
-                                    .border(
-                                        width = if (isSelected) 2.dp else 0.dp,
-                                        color = Color.White,
-                                        shape = RoundedCornerShape(10.dp)
-                                    )
-                                    .clickable {
-                                        coroutineScope.launch {
-                                            pagerState.animateScrollToPage(index)
-                                        }
-                                    }
-                            ) {
-                                AsyncImage(
-                                    model = photos[index],
-                                    contentDescription = null,
-                                    modifier = Modifier.fillMaxSize(),
-                                    contentScale = ContentScale.Crop
-                                )
-                                if (isSelected) {
-                                    Box(
-                                        modifier = Modifier
-                                            .fillMaxSize()
-                                            .background(Color.White.copy(alpha = 0.15f))
-                                    )
-                                }
+/**
+ * Hero 区底部照片缩略图行 + 页码指示器。
+ */
+@Composable
+private fun HeroPhotoThumbnails(
+    photos: List<String>,
+    pagerState: PagerState,
+    coroutineScope: CoroutineScope
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        LazyRow(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier.weight(1f)
+        ) {
+            items(photos.size, key = { photos[it] }) { index ->
+                val isSelected = pagerState.currentPage == index
+                Box(
+                    modifier = Modifier
+                        .size(56.dp)
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(Color.White.copy(alpha = 0.15f))
+                        .border(
+                            width = if (isSelected) 2.dp else 0.dp,
+                            color = Color.White,
+                            shape = RoundedCornerShape(10.dp)
+                        )
+                        .clickable {
+                            coroutineScope.launch {
+                                pagerState.animateScrollToPage(index)
                             }
                         }
-                    }
-                    if (photos.size > 1) {
-                        Spacer(modifier = Modifier.width(12.dp))
-                        Text(
-                            text = "${pagerState.currentPage + 1}/${photos.size}",
-                            color = Color.White.copy(alpha = 0.7f),
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.SemiBold
+                ) {
+                    AsyncImage(
+                        model = photos[index],
+                        contentDescription = null,
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop
+                    )
+                    if (isSelected) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(Color.White.copy(alpha = 0.15f))
                         )
                     }
                 }
             }
-
-            // 时间信息条
-            Spacer(modifier = Modifier.height(24.dp))
-            HorizontalDivider(color = Color.White.copy(alpha = 0.15f))
-            Spacer(modifier = Modifier.height(20.dp))
-
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(20.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                HeroTimeItem(icon = Icons.Default.CalendarToday, text = DateUtils.formatMonthDayWeekday(event.time))
-                HeroTimeItem(icon = Icons.Default.Schedule, text = DateUtils.formatTime(event.time))
-                event.location?.let { loc ->
-                    if (loc.isNotBlank()) {
-                        HeroTimeItem(icon = Icons.Default.Place, text = loc)
-                    }
-                }
-            }
+        }
+        if (photos.size > 1) {
+            Spacer(modifier = Modifier.width(12.dp))
+            Text(
+                text = "${pagerState.currentPage + 1}/${photos.size}",
+                color = Color.White.copy(alpha = 0.7f),
+                fontSize = 12.sp,
+                fontWeight = FontWeight.SemiBold
+            )
         }
     }
 }
@@ -374,7 +433,7 @@ private fun HeroTypeBadge(event: Event, accentColor: Color) {
                 .background(accentColor, CircleShape)
         )
         Text(
-            text = event.customTypeName ?: event.type.displayName,
+            text = event.typeDisplayName,
             color = Color.White,
             fontSize = 14.sp,
             fontWeight = FontWeight.SemiBold
@@ -440,143 +499,197 @@ private fun TabletInfoRight(
     onRemarkEdit: () -> Unit,
     onShareClick: () -> Unit,
     onFavoriteClick: () -> Unit,
+    onParticipantClick: (Contact) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier) {
-        // 侧栏标题
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 28.dp, vertical = 20.dp)
-        ) {
-            Text(
-                text = "事件详情",
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = "${DateUtils.formatRelativeTime(event.createdAt)}创建",
-                fontSize = 13.sp,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
-
+        InfoSidebarHeader(event = event)
         HorizontalDivider(
             color = MaterialTheme.colorScheme.outline.copy(alpha = 0.1f),
             modifier = Modifier.padding(horizontal = 28.dp)
         )
-
-        // 可滚动内容
-        Column(
+        InfoSidebarScrollContent(
+            event = event,
+            onRemarkEdit = onRemarkEdit,
+            onParticipantClick = onParticipantClick,
             modifier = Modifier
                 .weight(1f)
                 .verticalScroll(rememberScrollState())
-                .padding(horizontal = 28.dp, vertical = 24.dp),
-            verticalArrangement = Arrangement.spacedBy(28.dp)
-        ) {
-            // 时间区
-            InfoSection(label = "时间", barColor = SignalGreen) {
-                TimeCard(event = event)
-            }
-
-            // 地点与天气
-            val hasLocation = !event.location.isNullOrBlank()
-            val hasWeather = !event.weather.isNullOrBlank()
-            if (hasLocation || hasWeather) {
-                InfoSection(label = "地点与天气", barColor = SignalSky) {
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        val location = event.location
-                        if (hasLocation && location != null) {
-                            InfoGridItem(
-                                icon = Icons.Default.LocationOn,
-                                iconBg = SignalSky.copy(alpha = 0.1f),
-                                text = location,
-                                subText = "地点",
-                                iconTint = SignalSky,
-                                modifier = Modifier.weight(1f)
-                            )
-                        }
-                        val weather = event.weather
-                        if (hasWeather && weather != null) {
-                            val wColor = getWeatherColor(weather)?.toComposeColor(SignalAmber) ?: SignalAmber
-                            val wIcon = getWeatherIcon(weather) ?: Icons.Default.WbSunny
-                            InfoGridItem(
-                                icon = wIcon,
-                                iconBg = wColor.copy(alpha = 0.1f),
-                                text = weather,
-                                subText = "天气",
-                                iconTint = wColor,
-                                modifier = Modifier.weight(1f)
-                            )
-                        }
-                    }
-                }
-            }
-
-            // 参与者
-            if (event.participants.isNotEmpty()) {
-                InfoSection(
-                    label = "参与者",
-                    barColor = SignalPurple,
-                    count = "${event.participants.size}人"
-                ) {
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(16.dp)
-                    ) {
-                        event.participants.take(8).forEach { participant ->
-                            ParticipantAvatarItem(participant = participant)
-                        }
-                    }
-                }
-            }
-
-            // 个人感悟
-            val remarks = event.remarks
-            if (!remarks.isNullOrBlank()) {
-                InfoSection(label = "个人感悟", barColor = SignalAmber) {
-                    RemarkCard(remarks = remarks, onEdit = onRemarkEdit)
-                }
-            } else {
-                InfoSection(label = "个人感悟", barColor = SignalAmber) {
-                    AddRemarkCard(onAdd = onRemarkEdit)
-                }
-            }
-        }
-
-        // 底部交互栏
+                .padding(horizontal = 28.dp, vertical = 24.dp)
+        )
         HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.1f))
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 14.dp),
-            horizontalArrangement = Arrangement.SpaceEvenly
-        ) {
-            InteractionButtonItem(
-                icon = Icons.Default.ChatBubbleOutline,
-                label = "评论",
-                onClick = onRemarkEdit
-            )
-            InteractionButtonItem(
-                icon = Icons.Default.Repeat,
-                label = "转发",
-                onClick = onShareClick
-            )
-            InteractionButtonItem(
-                icon = if (isFavorite) Icons.Default.Bookmark else Icons.Default.BookmarkBorder,
-                label = if (isFavorite) "已收藏" else "收藏",
-                onClick = onFavoriteClick,
-                tint = if (isFavorite) FavoriteGold else MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            InteractionButtonItem(
-                icon = Icons.Default.Share,
-                label = "分享",
-                onClick = onShareClick
+        InfoSidebarBottomBar(
+            isFavorite = isFavorite,
+            onRemarkEdit = onRemarkEdit,
+            onShareClick = onShareClick,
+            onFavoriteClick = onFavoriteClick
+        )
+    }
+}
+
+/**
+ * 侧栏顶部标题区：事件详情 + 创建时间。
+ */
+@Composable
+private fun InfoSidebarHeader(event: Event) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 28.dp, vertical = 20.dp)
+    ) {
+        Text(
+            text = "事件详情",
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onSurface
+        )
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(
+            text = "${DateUtils.formatRelativeTime(event.createdAt)}创建",
+            fontSize = 13.sp,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+    }
+}
+
+/**
+ * 侧栏可滚动内容区：时间、地点与天气、参与者、个人感悟。
+ */
+@Composable
+private fun InfoSidebarScrollContent(
+    event: Event,
+    onRemarkEdit: () -> Unit,
+    onParticipantClick: (Contact) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(28.dp)
+    ) {
+        // 时间区
+        InfoSection(label = "时间", barColor = SignalGreen) {
+            TimeCard(event = event)
+        }
+
+        // 地点与天气
+        val hasLocation = !event.location.isNullOrBlank()
+        val hasWeather = !event.weather.isNullOrBlank()
+        if (hasLocation || hasWeather) {
+            InfoSection(label = "地点与天气", barColor = SignalSky) {
+                LocationWeatherRow(
+                    event = event,
+                    hasLocation = hasLocation,
+                    hasWeather = hasWeather
+                )
+            }
+        }
+
+        // 参与者
+        if (event.participants.isNotEmpty()) {
+            InfoSection(
+                label = "参与者",
+                barColor = SignalPurple,
+                count = "${event.participants.size}人"
+            ) {
+                Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                    event.participants.take(8).forEach { participant ->
+                        ParticipantAvatarItem(
+                            participant = participant,
+                            onClick = { onParticipantClick(participant) }
+                        )
+                    }
+                }
+            }
+        }
+
+        // 个人感悟
+        val remarks = event.remarks
+        if (!remarks.isNullOrBlank()) {
+            InfoSection(label = "个人感悟", barColor = SignalAmber) {
+                RemarkCard(remarks = remarks, onEdit = onRemarkEdit)
+            }
+        } else {
+            InfoSection(label = "个人感悟", barColor = SignalAmber) {
+                AddRemarkCard(onAdd = onRemarkEdit)
+            }
+        }
+    }
+}
+
+/**
+ * 地点与天气行：根据事件数据展示地点和天气网格项。
+ */
+@Composable
+private fun LocationWeatherRow(
+    event: Event,
+    hasLocation: Boolean,
+    hasWeather: Boolean
+) {
+    Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+        val location = event.location
+        if (hasLocation && location != null) {
+            InfoGridItem(
+                icon = Icons.Default.LocationOn,
+                iconBg = SignalSky.copy(alpha = 0.1f),
+                text = location,
+                subText = "地点",
+                iconTint = SignalSky,
+                modifier = Modifier.weight(1f)
             )
         }
+        val weather = event.weather
+        if (hasWeather && weather != null) {
+            val wColor = resolveWeatherColor(weather)
+            val wIcon = getWeatherIcon(weather) ?: Icons.Default.WbSunny
+            InfoGridItem(
+                icon = wIcon,
+                iconBg = wColor.copy(alpha = 0.1f),
+                text = weather,
+                subText = "天气",
+                iconTint = wColor,
+                modifier = Modifier.weight(1f)
+            )
+        }
+    }
+}
+
+/**
+ * 侧栏底部交互栏：评论 / 转发 / 收藏 / 分享。
+ */
+@Composable
+private fun InfoSidebarBottomBar(
+    isFavorite: Boolean,
+    onRemarkEdit: () -> Unit,
+    onShareClick: () -> Unit,
+    onFavoriteClick: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 14.dp),
+        horizontalArrangement = Arrangement.SpaceEvenly
+    ) {
+        InteractionButtonItem(
+            icon = Icons.Default.ChatBubbleOutline,
+            label = "评论",
+            onClick = onRemarkEdit
+        )
+        InteractionButtonItem(
+            icon = Icons.Default.Repeat,
+            label = "转发",
+            onClick = onShareClick
+        )
+        InteractionButtonItem(
+            icon = if (isFavorite) Icons.Default.Bookmark else Icons.Default.BookmarkBorder,
+            label = if (isFavorite) "已收藏" else "收藏",
+            onClick = onFavoriteClick,
+            tint = if (isFavorite) FavoriteGold else MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        InteractionButtonItem(
+            icon = Icons.Default.Share,
+            label = "分享",
+            onClick = onShareClick
+        )
     }
 }
 
@@ -730,35 +843,19 @@ private fun InfoGridItem(
 }
 
 @Composable
-private fun ParticipantAvatarItem(participant: Contact) {
+private fun ParticipantAvatarItem(participant: Contact, onClick: () -> Unit) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier.width(52.dp)
+        modifier = Modifier.width(52.dp).clickable(onClick = onClick)
     ) {
-        Box(
-            modifier = Modifier
-                .size(46.dp)
-                .clip(CircleShape)
-                .background(SignalPurple.copy(alpha = AnimationTokens.Alpha.faint)),
-            contentAlignment = Alignment.Center
-        ) {
-            val avatarUrl = participant.avatar
-            if (!avatarUrl.isNullOrBlank()) {
-                AsyncImage(
-                    model = avatarUrl,
-                    contentDescription = null,
-                    modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Crop
-                )
-            } else {
-                Text(
-                    text = participant.name.firstOrNull()?.toString() ?: "?",
-                    fontSize = 17.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = SignalPurple
-                )
-            }
-        }
+        AvatarOrInitial(
+            avatarUrl = participant.avatar,
+            name = participant.name,
+            modifier = Modifier.size(46.dp),
+            bgColor = SignalPurple.copy(alpha = AnimationTokens.Alpha.faint),
+            initialColor = SignalPurple,
+            initialFontSize = 17.sp
+        )
         Spacer(modifier = Modifier.height(5.dp))
         Text(
             text = participant.name,
@@ -873,15 +970,6 @@ private fun InteractionButtonItem(
 // ═══════════════════════════════════════════════════════════════
 // 辅助函数
 // ═══════════════════════════════════════════════════════════════
-
-@Composable
-private fun getEventAccentColor(event: Event): Color {
-    return if (event.type != EventType.OTHER) {
-        getEventTypeStyle(event.type).accentColor
-    } else {
-        SignalElectric
-    }
-}
 
 private fun formatDuration(start: Long, end: Long): String {
     val diff = end - start

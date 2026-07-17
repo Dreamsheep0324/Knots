@@ -30,24 +30,21 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.tang.prm.domain.model.FootprintItem
 import com.tang.prm.ui.animation.core.AnimationTokens
 import com.tang.prm.ui.theme.CardBorder
 import com.tang.prm.ui.theme.GridLine
 import com.tang.prm.ui.theme.SignalElectric
 import com.tang.prm.ui.theme.SignalGreen
 import com.tang.prm.ui.theme.TextGray
-import java.util.Calendar
 
 @Composable
 internal fun YearTabs(
     availableYears: List<Int>,
     selectedYear: Int?,
-    footprints: List<FootprintItem>,
+    totalCount: Int,
+    totalFootprintsByYear: Map<Int, Int>,
     onYearSelect: (Int?) -> Unit
 ) {
-    val calendar = Calendar.getInstance()
-
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -57,23 +54,18 @@ internal fun YearTabs(
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            val allCount = footprints.size
             item {
                 YearTabChip(
                     label = "全部",
-                    count = allCount,
+                    count = totalCount,
                     selected = selectedYear == null,
                     onClick = { onYearSelect(null) }
                 )
             }
             items(availableYears, key = { it }) { year ->
-                val yearCount = footprints.count {
-                    calendar.timeInMillis = it.date
-                    calendar.get(Calendar.YEAR) == year
-                }
                 YearTabChip(
                     label = year.toString(),
-                    count = yearCount,
+                    count = totalFootprintsByYear[year] ?: 0,
                     selected = selectedYear == year,
                     onClick = { onYearSelect(year) }
                 )

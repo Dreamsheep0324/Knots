@@ -45,9 +45,17 @@ import com.tang.prm.domain.model.FootprintItem
 import com.tang.prm.domain.util.DateUtils
 
 @Composable
-internal fun HeroCard(footprint: FootprintItem, eventTypes: List<com.tang.prm.domain.model.CustomType> = emptyList(), onClick: () -> Unit = {}) {
+internal fun HeroCard(
+    footprint: FootprintItem,
+    eventTypes: List<com.tang.prm.domain.model.CustomType> = emptyList(),
+    label: String = "最新足迹",
+    onClick: () -> Unit = {}
+) {
     val dateFormat: (Long) -> String = { DateUtils.formatMonthDayChineseFull(it) }
-    val (accentColor, lightColor, icon) = resolveEventTypeStyle(footprint.eventType, eventTypes)
+    val style = resolveEventTypeStyle(footprint.eventType, eventTypes)
+    val accentColor = style.accentColor
+    val lightColor = style.lightColor
+    val icon = style.icon
 
     AppCard(
         modifier = Modifier
@@ -89,7 +97,7 @@ internal fun HeroCard(footprint: FootprintItem, eventTypes: List<com.tang.prm.do
                             .background(SignalGreen)
                     )
                     Text(
-                        text = "最新足迹",
+                        text = label,
                         fontFamily = FontFamily.Monospace,
                         fontSize = 9.sp,
                         fontWeight = FontWeight.Bold,

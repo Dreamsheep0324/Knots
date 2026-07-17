@@ -25,6 +25,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.tang.prm.domain.model.AlbumPhoto
 import com.tang.prm.domain.model.Contact
+import com.tang.prm.domain.model.SourceTypes
 import com.tang.prm.ui.animation.core.AnimationTokens
 import com.tang.prm.ui.components.ContactAvatar
 import com.tang.prm.ui.theme.*
@@ -58,9 +59,9 @@ internal fun groupPhotosBySource(photos: List<AlbumPhoto>): List<PhotoGroup> {
     return grouped.map { (key, groupPhotos) ->
         val firstPhoto = groupPhotos.first()
         val subtitle = when (firstPhoto.sourceType) {
-            "event" -> "事件"
-            "chat" -> "对话"
-            "gift" -> "礼物"
+            SourceTypes.ALBUM_EVENT -> "事件"
+            SourceTypes.ALBUM_CHAT -> "对话"
+            SourceTypes.ALBUM_GIFT -> "礼物"
             else -> "其他"
         }
         val contacts = groupPhotos.flatMap { photo ->
@@ -363,8 +364,8 @@ internal fun PhotoFilterDialog(
                                     modifier = Modifier.weight(1f)
                                 )
                                 FilterChip(
-                                    selected = filterSourceType == "event",
-                                    onClick = { onSourceTypeSelect("event") },
+                                    selected = filterSourceType == SourceTypes.ALBUM_EVENT,
+                                    onClick = { onSourceTypeSelect(SourceTypes.ALBUM_EVENT) },
                                     label = { Text("事件") },
                                     leadingIcon = {
                                         Icon(Icons.Default.Event, contentDescription = null, modifier = Modifier.size(16.dp))
@@ -377,8 +378,8 @@ internal fun PhotoFilterDialog(
                                     modifier = Modifier.weight(1f)
                                 )
                                 FilterChip(
-                                    selected = filterSourceType == "chat",
-                                    onClick = { onSourceTypeSelect("chat") },
+                                    selected = filterSourceType == SourceTypes.ALBUM_CHAT,
+                                    onClick = { onSourceTypeSelect(SourceTypes.ALBUM_CHAT) },
                                     label = { Text("对话") },
                                     leadingIcon = {
                                         Icon(Icons.AutoMirrored.Filled.Chat, contentDescription = null, modifier = Modifier.size(16.dp))
@@ -391,8 +392,8 @@ internal fun PhotoFilterDialog(
                                     modifier = Modifier.weight(1f)
                                 )
                                 FilterChip(
-                                    selected = filterSourceType == "gift",
-                                    onClick = { onSourceTypeSelect("gift") },
+                                    selected = filterSourceType == SourceTypes.ALBUM_GIFT,
+                                    onClick = { onSourceTypeSelect(SourceTypes.ALBUM_GIFT) },
                                     label = { Text("礼物") },
                                     leadingIcon = {
                                         Icon(Icons.Default.CardGiftcard, contentDescription = null, modifier = Modifier.size(16.dp))

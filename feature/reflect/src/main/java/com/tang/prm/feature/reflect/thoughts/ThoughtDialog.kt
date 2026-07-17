@@ -47,6 +47,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -105,17 +107,18 @@ internal fun ThoughtDialog(
         containerColor = DialogDefaults.containerColor,
         title = {
             Row(verticalAlignment = Alignment.CenterVertically) {
+                val selectedStyle = selectedType.style
                 Surface(
                     shape = CircleShape,
-                    color = (ThoughtTypeBg[selectedType] ?: SignalAmber.copy(alpha = AnimationTokens.Alpha.faint)),
+                    color = selectedStyle.bg,
                     modifier = Modifier.size(28.dp)
                 ) {
                     Box(contentAlignment = Alignment.Center) {
                         Icon(
-                            ThoughtTypeIcon[selectedType] ?: Icons.Default.Lightbulb,
+                            selectedStyle.icon,
                             contentDescription = null,
                             modifier = Modifier.size(14.dp),
-                            tint = ThoughtTypeColor[selectedType] ?: SignalAmber
+                            tint = selectedStyle.color
                         )
                     }
                 }
@@ -135,31 +138,33 @@ internal fun ThoughtDialog(
                     shape = RoundedCornerShape(12.dp)
                 )
 
+                val typeSectionStyle = selectedType.style
                 FormSectionLabel(
-                    icon = ThoughtTypeIcon[selectedType] ?: Icons.Default.Lightbulb,
+                    icon = typeSectionStyle.icon,
                     label = "类型",
-                    color = ThoughtTypeColor[selectedType] ?: SignalAmber
+                    color = typeSectionStyle.color
                 )
                 FlowRow(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
                     ThoughtType.entries.forEach { type ->
+                        val typeStyle = type.style
                         FilterChip(
                             selected = selectedType == type,
                             onClick = { selectedType = type },
-                            label = { Text(ThoughtTypeLabel[type] ?: type.key, fontSize = 12.sp) },
+                            label = { Text(typeStyle.label, fontSize = 12.sp) },
                             leadingIcon = {
                                 Icon(
-                                    ThoughtTypeIcon[type] ?: Icons.Default.Lightbulb,
+                                    typeStyle.icon,
                                     contentDescription = null,
                                     modifier = Modifier.size(14.dp)
                                 )
                             },
                             colors = FilterChipDefaults.filterChipColors(
-                                selectedContainerColor = (ThoughtTypeColor[type] ?: SignalAmber).copy(alpha = AnimationTokens.Alpha.subtle),
-                                selectedLabelColor = ThoughtTypeColor[type] ?: SignalAmber,
-                                selectedLeadingIconColor = ThoughtTypeColor[type] ?: SignalAmber
+                                selectedContainerColor = typeStyle.color.copy(alpha = AnimationTokens.Alpha.subtle),
+                                selectedLabelColor = typeStyle.color,
+                                selectedLeadingIconColor = typeStyle.color
                             )
                         )
                     }
@@ -226,105 +231,61 @@ internal fun ThoughtDialog(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    Surface(
-                        modifier = Modifier
-                            .weight(1f)
-                            .clip(RoundedCornerShape(12.dp))
-                            .clickable { isPrivate = !isPrivate },
-                        shape = RoundedCornerShape(12.dp),
-                        color = if (isPrivate) SignalAmber.copy(alpha = AnimationTokens.Alpha.faint) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-                        border = BorderStroke(
-                            1.dp,
-                            if (isPrivate) SignalAmber.copy(alpha = AnimationTokens.Alpha.subtle) else MaterialTheme.colorScheme.outline.copy(alpha = AnimationTokens.Alpha.half)
-                        )
-                    ) {
-                        Row(
-                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.Center
-                        ) {
-                            Icon(
-                                Icons.Default.Lock,
-                                contentDescription = null,
-                                modifier = Modifier.size(16.dp),
-                                tint = if (isPrivate) SignalAmber else MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Text(
-                                if (isPrivate) "私密" else "公开",
-                                fontSize = 12.sp,
-                                fontWeight = if (isPrivate) FontWeight.SemiBold else FontWeight.Normal,
-                                color = if (isPrivate) SignalAmber else MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                    }
-
-                    Surface(
-                        modifier = Modifier
-                            .weight(1f)
-                            .clip(RoundedCornerShape(12.dp))
-                            .clickable { isTodo = !isTodo },
-                        shape = RoundedCornerShape(12.dp),
-                        color = if (isTodo) SignalGreen.copy(alpha = AnimationTokens.Alpha.faint) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-                        border = BorderStroke(
-                            1.dp,
-                            if (isTodo) SignalGreen.copy(alpha = AnimationTokens.Alpha.subtle) else MaterialTheme.colorScheme.outline.copy(alpha = AnimationTokens.Alpha.half)
-                        )
-                    ) {
-                        Row(
-                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.Center
-                        ) {
-                            Icon(
-                                if (isTodo) Icons.Default.CheckBox else Icons.Default.CheckBoxOutlineBlank,
-                                contentDescription = null,
-                                modifier = Modifier.size(16.dp),
-                                tint = if (isTodo) SignalGreen else MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Text(
-                                if (isTodo) "待办" else "非待办",
-                                fontSize = 12.sp,
-                                fontWeight = if (isTodo) FontWeight.SemiBold else FontWeight.Normal,
-                                color = if (isTodo) SignalGreen else MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                    }
+                    TogglePill(
+                        selected = isPrivate,
+                        onToggle = { isPrivate = !isPrivate },
+                        icon = Icons.Default.Lock,
+                        selectedLabel = "私密",
+                        unselectedLabel = "公开",
+                        selectedColor = SignalAmber,
+                        modifier = Modifier.weight(1f)
+                    )
+                    TogglePill(
+                        selected = isTodo,
+                        onToggle = {
+                            isTodo = !isTodo
+                            // B-4 修复：关闭 isTodo 时清空 dueDate，避免脏数据入库
+                            if (!isTodo) dueDate = null
+                        },
+                        icon = if (isTodo) Icons.Default.CheckBox else Icons.Default.CheckBoxOutlineBlank,
+                        selectedLabel = "待办",
+                        unselectedLabel = "非待办",
+                        selectedColor = SignalGreen,
+                        modifier = Modifier.weight(1f)
+                    )
                 }
 
-                if (isTodo) {
-                    AnimatedVisibility(visible = isTodo) {
-                        Surface(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clip(RoundedCornerShape(12.dp))
-                                .clickable { showDatePicker = true },
-                            shape = RoundedCornerShape(12.dp),
-                            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = AnimationTokens.Alpha.half))
+                // B-5 修复：移除外层 if，由 AnimatedVisibility 自身控制可见性和动画
+                AnimatedVisibility(visible = isTodo) {
+                    Surface(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(12.dp))
+                            .clickable { showDatePicker = true },
+                        shape = RoundedCornerShape(12.dp),
+                        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = AnimationTokens.Alpha.half))
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(12.dp),
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Row(
-                                modifier = Modifier.padding(12.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Icon(
-                                    Icons.Default.Edit,
-                                    contentDescription = null,
-                                    modifier = Modifier.size(16.dp),
-                                    tint = SignalGreen
-                                )
-                                Spacer(modifier = Modifier.width(8.dp))
-                                Text(
-                                    dueDate?.let { "截止 ${DateUtils.formatMonthDayChinese(it)}" } ?: "设置截止日期",
-                                    fontSize = 12.sp,
-                                    color = if (dueDate != null) SignalGreen else MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                                if (dueDate != null) {
-                                    Spacer(modifier = Modifier.weight(1f))
-                                    IconButton(onClick = { dueDate = null }, modifier = Modifier.size(24.dp)) {
-                                        Icon(Icons.Default.Close, contentDescription = "清除", modifier = Modifier.size(12.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
-                                    }
+                            Icon(
+                                Icons.Default.Edit,
+                                contentDescription = null,
+                                modifier = Modifier.size(16.dp),
+                                tint = SignalGreen
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                dueDate?.let { "截止 ${DateUtils.formatMonthDayChinese(it)}" } ?: "设置截止日期",
+                                fontSize = 12.sp,
+                                color = if (dueDate != null) SignalGreen else MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            if (dueDate != null) {
+                                Spacer(modifier = Modifier.weight(1f))
+                                IconButton(onClick = { dueDate = null }, modifier = Modifier.size(24.dp)) {
+                                    Icon(Icons.Default.Close, contentDescription = "清除", modifier = Modifier.size(12.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
                                 }
                             }
                         }
@@ -350,4 +311,51 @@ internal fun ThoughtDialog(
             }
         }
     )
+}
+
+/**
+ * C-4 提取：通用的切换胶囊组件，消除 isPrivate 和 isTodo 两处重复的 Surface 结构。
+ * 差异通过参数注入：icon/selectedLabel/unselectedLabel/selectedColor。
+ */
+@Composable
+private fun TogglePill(
+    selected: Boolean,
+    onToggle: () -> Unit,
+    icon: ImageVector,
+    selectedLabel: String,
+    unselectedLabel: String,
+    selectedColor: Color,
+    modifier: Modifier = Modifier
+) {
+    Surface(
+        modifier = modifier
+            .clip(RoundedCornerShape(12.dp))
+            .clickable { onToggle() },
+        shape = RoundedCornerShape(12.dp),
+        color = if (selected) selectedColor.copy(alpha = AnimationTokens.Alpha.faint) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+        border = BorderStroke(
+            1.dp,
+            if (selected) selectedColor.copy(alpha = AnimationTokens.Alpha.subtle) else MaterialTheme.colorScheme.outline.copy(alpha = AnimationTokens.Alpha.half)
+        )
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
+        ) {
+            Icon(
+                icon,
+                contentDescription = null,
+                modifier = Modifier.size(16.dp),
+                tint = if (selected) selectedColor else MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Spacer(modifier = Modifier.width(6.dp))
+            Text(
+                if (selected) selectedLabel else unselectedLabel,
+                fontSize = 12.sp,
+                fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
+                color = if (selected) selectedColor else MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+    }
 }

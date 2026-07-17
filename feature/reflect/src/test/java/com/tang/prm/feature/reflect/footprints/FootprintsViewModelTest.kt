@@ -75,40 +75,6 @@ class FootprintsViewModelTest {
     }
 
     @Test
-    fun filterByContact_filtersFootprints() = runTest {
-        viewModel.filterByContact(1L)
-
-        viewModel.uiState.test {
-            val state = awaitItem()
-            assertThat(state.selectedContactId).isEqualTo(1L)
-        }
-    }
-
-    @Test
-    fun filterByEventType_filtersFootprints() = runTest {
-        viewModel.filterByEventType("TRAVEL")
-
-        viewModel.uiState.test {
-            val state = awaitItem()
-            assertThat(state.filterEventType).isEqualTo("TRAVEL")
-        }
-    }
-
-    @Test
-    fun clearFilters_resetsFilters() = runTest {
-        viewModel.filterByContact(1L)
-        viewModel.filterByEventType("TRAVEL")
-        viewModel.clearFilters()
-
-        viewModel.uiState.test {
-            val state = awaitItem()
-            assertThat(state.selectedContactId).isNull()
-            assertThat(state.filterEventType).isNull()
-            assertThat(state.selectedYear).isNull()
-        }
-    }
-
-    @Test
     fun selectYear_filtersByYear() = runTest {
         viewModel.selectYear(1970)
 

@@ -53,10 +53,7 @@ import com.tang.prm.ui.theme.SignalAmber
 import com.tang.prm.ui.theme.SignalGreen
 import com.tang.prm.ui.theme.SignalPurple
 import com.tang.prm.ui.theme.SignalSky
-import com.tang.prm.ui.theme.toComposeColor
-import com.tang.prm.ui.theme.getEmotionColor
 import com.tang.prm.ui.theme.getEmotionIcon
-import com.tang.prm.ui.theme.getWeatherColor
 import com.tang.prm.ui.theme.getGenericIcon
 import com.tang.prm.ui.theme.getWeatherIcon
 import com.tang.prm.domain.util.DateUtils
@@ -100,15 +97,19 @@ fun AddEventScreen(
         }
     }
 
+    LaunchedEffect(Unit) {
+        viewModel.errorMessage.collect { msg ->
+            snackbarHostState.showSnackbar(msg)
+        }
+    }
+
     if (showDatePicker) {
         AppDatePicker(
             show = showDatePicker,
             onDismiss = { showDatePicker = false },
             confirmText = "下一步",
             onDateSelected = {
-                val cal = Calendar.getInstance(); val cur = Calendar.getInstance().apply { timeInMillis = uiState.time }
-                cal.timeInMillis = it; cal.set(Calendar.HOUR_OF_DAY, cur.get(Calendar.HOUR_OF_DAY)); cal.set(Calendar.MINUTE, cur.get(Calendar.MINUTE))
-                viewModel.updateTime(cal.timeInMillis)
+                viewModel.updateTime(mergeDateAndTime(it, uiState.time))
                 showTimePicker = true
             }
         )
@@ -158,7 +159,7 @@ fun AddEventScreen(
                 }
             }
 
-            item { EventFormSections(uiState, viewModel, photoPicker, showDatePicker, onShowDatePicker = { showDatePicker = it }) }
+            item { EventFormSections(uiState, viewModel, photoPicker, onShowDatePicker = { showDatePicker = it }) }
 
             item { Spacer(modifier = Modifier.height(32.dp)) }
         }
@@ -188,7 +189,7 @@ private fun EventHeaderCard(
                 if (uiState.weather.isNotBlank()) {
                     Spacer(modifier = Modifier.width(10.dp))
                     val wIcon = getWeatherIcon(uiState.weather)
-                    val wColor = getWeatherColor(uiState.weather)?.let { it.toComposeColor(SignalAmber) } ?: SignalAmber
+                    val wColor = resolveWeatherColor(uiState.weather)
                     if (wIcon != null) Icon(wIcon, contentDescription = null, tint = wColor, modifier = Modifier.size(13.dp))
                     Spacer(modifier = Modifier.width(3.dp))
                     Text(uiState.weather, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -196,7 +197,7 @@ private fun EventHeaderCard(
                 if (uiState.emotion.isNotBlank()) {
                     Spacer(modifier = Modifier.width(10.dp))
                     val eIcon = getEmotionIcon(uiState.emotion)
-                    val eColor = getEmotionColor(uiState.emotion)?.let { it.toComposeColor(SignalPurple) } ?: SignalPurple
+                    val eColor = resolveEmotionColor(uiState.emotion)
                     if (eIcon != null) Icon(eIcon, contentDescription = null, tint = eColor, modifier = Modifier.size(13.dp))
                     Spacer(modifier = Modifier.width(3.dp))
                     Text(uiState.emotion, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -211,7 +212,6 @@ private fun EventFormSections(
     uiState: AddEventUiState,
     viewModel: AddEventViewModel,
     photoPicker: com.tang.prm.ui.components.photo.ManagedPhotoPickerLauncher,
-    showDatePicker: Boolean,
     onShowDatePicker: (Boolean) -> Unit
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -287,7 +287,7 @@ private fun EventFormSections(
             } else {
                 LazyRow(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                     itemsIndexed(uiState.photos, key = { idx, _ -> idx }) { idx, photo ->
-                        PolaroidPhoto(
+                        EditablePolaroidPhoto(
                             photoUri = photo,
                             rotation = if (idx % 2 == 0) -1.5f else 1.5f,
                             onRemove = { viewModel.removePhotoAt(idx) }
@@ -302,4 +302,17 @@ private fun EventFormSections(
             LinedPaperField(value = uiState.remarks, onValueChange = viewModel::updateRemarks, placeholder = "写下你的感受...", minLines = 3)
         }
     }
+}
+
+/**
+ * 合并日期和时间：取 [dateMillis] 的年月日 + [timeMillis] 的时分秒，返回合并后的时间戳。
+ * 用于日期选择器：用户选中新日期后，保留原有时间的时分。
+ */
+private fun mergeDateAndTime(dateMillis: Long, timeMillis: Long): Long {
+    val timeCal = Calendar.getInstance().apply { timeInMillis = timeMillis }
+    return Calendar.getInstance().apply {
+        timeInMillis = dateMillis
+        set(Calendar.HOUR_OF_DAY, timeCal.get(Calendar.HOUR_OF_DAY))
+        set(Calendar.MINUTE, timeCal.get(Calendar.MINUTE))
+    }.timeInMillis
 }
