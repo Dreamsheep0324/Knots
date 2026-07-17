@@ -1,6 +1,7 @@
 package com.tang.prm.data.mapper
 
 import com.tang.prm.data.local.entity.EventEntity
+import com.tang.prm.data.local.entity.EventLocationItemWithParticipants
 import com.tang.prm.data.local.entity.EventWithParticipants
 import com.tang.prm.domain.model.Event
 import com.tang.prm.domain.model.EventType
@@ -11,7 +12,7 @@ fun EventEntity.toDomain(participants: List<Contact> = emptyList()) = Event(
     customTypeName = if (EventType.entries.none { it.name == type }) type else customTypeName,
     title = title, description = description,
     time = time, endTime = endTime, location = location, latitude = latitude, longitude = longitude,
-    photos = photos,
+    photos = photos, photosCount = photosCount,
     emotion = emotion, weather = weather, amount = amount, remarks = remarks, promise = promise,
     conversationSummary = conversationSummary, giftName = giftName,
     participants = participants, createdAt = createdAt, updatedAt = updatedAt
@@ -38,7 +39,7 @@ fun EventWithParticipants.toDomain() = Event(
     location = event.location,
     latitude = event.latitude,
     longitude = event.longitude,
-    photos = event.photos,
+    photos = event.photos, photosCount = event.photosCount,
     emotion = event.emotion,
     weather = event.weather,
     amount = event.amount,
@@ -52,3 +53,24 @@ fun EventWithParticipants.toDomain() = Event(
 )
 
 fun List<EventWithParticipants>.toDomainList() = map { it.toDomain() }
+
+/**
+ * Map lightweight [EventLocationItemWithParticipants] (footprint projection) to domain [Event].
+ * photos is empty (not loaded); use [Event.photosCount] for photo-count display.
+ */
+fun EventLocationItemWithParticipants.toDomain() = Event(
+    id = event.id,
+    type = event.type.toEnumOrDefault(EventType.OTHER),
+    customTypeName = if (EventType.entries.none { it.name == event.type }) event.type else event.customTypeName,
+    title = event.title,
+    description = event.description,
+    time = event.time,
+    location = event.location,
+    photos = emptyList(),
+    photosCount = event.photosCount,
+    emotion = event.emotion,
+    weather = event.weather,
+    participants = participants.map { it.toDomain() },
+    createdAt = event.createdAt,
+    updatedAt = event.updatedAt
+)

@@ -60,6 +60,7 @@ import androidx.navigation.NavController
 import com.tang.prm.ui.theme.Error
 import com.tang.prm.ui.theme.Success
 import com.tang.prm.ui.components.AppConfirmDialog
+import com.tang.prm.ui.components.SimpleSectionLabel
 
 @Composable
 fun BackupScreen(
@@ -154,7 +155,7 @@ fun BackupScreen(
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             // === 备份目录 ===
-            item { BackupSectionLabel("备份目录") }
+            item { SimpleSectionLabel("备份目录") }
 
             item {
                 OutlinedButton(
@@ -170,7 +171,7 @@ fun BackupScreen(
             }
 
             // === 备份区域 ===
-            item { BackupSectionLabel("备份") }
+            item { SimpleSectionLabel("备份") }
 
             // 自动备份开关
             item {
@@ -236,7 +237,7 @@ fun BackupScreen(
             }
 
             // === 恢复区域 ===
-            item { BackupSectionLabel("恢复") }
+            item { SimpleSectionLabel("恢复") }
 
             item {
                 OutlinedButton(
@@ -266,7 +267,7 @@ fun BackupScreen(
             if (state is BackupState.RestoreError) { item { ErrorTip((state as BackupState.RestoreError).message) } }
 
             // === 危险操作 ===
-            item { BackupSectionLabel("危险操作") }
+            item { SimpleSectionLabel("危险操作") }
 
             item {
                 OutlinedButton(
@@ -296,7 +297,7 @@ fun BackupScreen(
             if (state is BackupState.ClearError) { item { ErrorTip((state as BackupState.ClearError).message) } }
 
             // === 备份列表 ===
-            item { BackupSectionLabel("备份列表") }
+            item { SimpleSectionLabel("备份列表") }
 
             if (backupFiles.isEmpty()) {
                 item {

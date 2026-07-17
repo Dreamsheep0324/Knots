@@ -1,16 +1,18 @@
 package com.tang.prm.domain.util
 
 import com.nlf.calendar.Lunar
-import com.nlf.calendar.LunarYear
 import com.nlf.calendar.Solar
 import java.util.Calendar
+import java.util.concurrent.ConcurrentHashMap
 
 object LunarUtils {
     data class SolarDate(val year: Int, val month: Int, val day: Int)
 
-    // 缓存：同一天内 solarToLunar 结果不变，避免重复查表计算
-    private val solarToLunarCache = mutableMapOf<String, SolarDate?>()
-    private val lunarToSolarCache = mutableMapOf<String, Triple<Int, Int, Int>?>()
+    // 缓存：同一天内 solarToLunar 结果不变，避免重复查表计算。
+    // 使用 ConcurrentHashMap 保证多协程并发读写的线程安全；
+    // 农历转换是确定性函数，getOrPut 偶发重复计算结果一致，无需 computeIfAbsent 的强原子。
+    private val solarToLunarCache = ConcurrentHashMap<String, SolarDate?>()
+    private val lunarToSolarCache = ConcurrentHashMap<String, Triple<Int, Int, Int>?>()
 
     /**
      * 农历转公历。
@@ -46,29 +48,6 @@ object LunarUtils {
             } catch (e: Exception) {
                 null
             }
-        }
-    }
-
-    fun getJieQi(year: Int): List<Pair<String, Long>> {
-        return try {
-            val lunarYear = LunarYear.fromYear(year)
-            val jieQiJulianDays = lunarYear.jieQiJulianDays
-            val jieQiNames = Lunar.JIE_QI_IN_USE
-
-            jieQiNames.indices.mapNotNull { i ->
-                val julianDay = jieQiJulianDays.getOrNull(i) ?: return@mapNotNull null
-                val name = jieQiNames[i]
-                if (name.isNotEmpty()) {
-                    val solar = Solar.fromJulianDay(julianDay)
-                    val cal = Calendar.getInstance().apply {
-                        set(solar.year, solar.month - 1, solar.day, 0, 0, 0)
-                        set(Calendar.MILLISECOND, 0)
-                    }
-                    name to cal.timeInMillis
-                } else null
-            }.sortedBy { it.second }
-        } catch (e: Exception) {
-            emptyList()
         }
     }
 

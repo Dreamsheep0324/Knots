@@ -14,8 +14,8 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import com.tang.prm.domain.model.BackupImageQuality
+import com.tang.prm.domain.repository.BackupRepositoryInterface
 import com.tang.prm.domain.repository.SettingsRepository
-import com.tang.prm.domain.usecase.BackupRestoreUseCase
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ProcessLifecycleOwner
@@ -29,7 +29,7 @@ class TangApplication : Application(), ImageLoaderFactory {
     lateinit var settingsRepository: SettingsRepository
 
     @Inject
-    lateinit var backupRestoreUseCase: BackupRestoreUseCase
+    lateinit var backupRepository: BackupRepositoryInterface
 
     /** 应用级协程作用域，随进程生命周期存在，避免绑定 Activity 导致泄漏 */
     private val appScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
@@ -47,27 +47,31 @@ class TangApplication : Application(), ImageLoaderFactory {
 
         // 初始化指纹
         appScope.launch {
-            val enabled = settingsRepository.getAutoBackupEnabled().first()
-            if (enabled) {
-                lastFingerprint = backupRestoreUseCase.computeDataFingerprint()
+            try {
+                val enabled = settingsRepository.getAutoBackupEnabled().first()
+                if (enabled) {
+                    lastFingerprint = backupRepository.computeDataFingerprint()
+                }
+            } catch (e: Exception) {
+                Log.e("TangApplication", "初始化数据指纹失败，首次回到前台将触发全量备份", e)
             }
         }
     }
 
     private fun checkAutoBackup() {
         appScope.launch {
-            val enabled = settingsRepository.getAutoBackupEnabled().first()
-            if (!enabled) return@launch
-            if (!backupRestoreUseCase.hasBackupDir()) return@launch
+            try {
+                val enabled = settingsRepository.getAutoBackupEnabled().first()
+                if (!enabled) return@launch
+                if (!backupRepository.hasBackupDir()) return@launch
 
-            val currentFingerprint = backupRestoreUseCase.computeDataFingerprint()
-            if (currentFingerprint != lastFingerprint && currentFingerprint.isNotEmpty()) {
-                lastFingerprint = currentFingerprint
-                try {
-                    backupRestoreUseCase.backupToDir(BackupImageQuality.ORIGINAL)
-                } catch (e: Exception) {
-                    Log.w("TangApplication", "自动备份失败", e)
+                val currentFingerprint = backupRepository.computeDataFingerprint()
+                if (currentFingerprint != lastFingerprint && currentFingerprint.isNotEmpty()) {
+                    lastFingerprint = currentFingerprint
+                    backupRepository.backupToDir(BackupImageQuality.ORIGINAL)
                 }
+            } catch (e: Exception) {
+                Log.w("TangApplication", "自动备份检查失败", e)
             }
         }
     }

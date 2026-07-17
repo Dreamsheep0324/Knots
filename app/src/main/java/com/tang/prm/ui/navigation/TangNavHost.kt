@@ -1,5 +1,6 @@
 package com.tang.prm.ui.navigation
 
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
@@ -52,6 +53,7 @@ import com.tang.prm.feature.gifts.navigation.giftsGraph
 import com.tang.prm.feature.home.navigation.homeGraph
 import com.tang.prm.feature.people.navigation.peopleGraph
 import com.tang.prm.feature.profile.navigation.profileGraph
+import com.tang.prm.feature.recipes.navigation.recipesGraph
 import com.tang.prm.feature.reflect.navigation.reflectGraph
 import com.tang.prm.feature.remember.navigation.rememberGraph
 import com.tang.prm.feature.subscription.navigation.subscriptionGraph
@@ -97,7 +99,8 @@ fun TangNavHost(
         }
     }
 
-    if (updateInfo != null) {
+    val info = updateInfo
+    if (info != null) {
         AlertDialog(
             onDismissRequest = { updateInfo = null },
             containerColor = DialogDefaults.containerColor,
@@ -118,7 +121,7 @@ fun TangNavHost(
             },
             text = {
                 Text(
-                    "结绳 v${updateInfo!!.latestVersion} 已发布，是否前往下载更新？",
+                    "结绳 v${info.latestVersion} 已发布，是否前往下载更新？",
                     fontSize = 14.sp,
                     lineHeight = 20.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -126,11 +129,13 @@ fun TangNavHost(
             },
             confirmButton = {
                 TextButton(onClick = {
-                    val url = updateInfo!!.releaseUrl
+                    val url = info.releaseUrl
                     updateInfo = null
                     try {
                         uriHandler.openUri(url)
-                    } catch (_: Exception) {}
+                    } catch (e: Exception) {
+                        Log.w("TangNavHost", "打开更新链接失败: $url", e)
+                    }
                 }) {
                     Text("立即更新", fontWeight = FontWeight.SemiBold)
                 }
@@ -183,7 +188,7 @@ fun TangNavHost(
                     popEnterTransition = transitions.popEnterTransition,
                     popExitTransition = transitions.popExitTransition
                 ) {
-                    homeGraph(navController, overlayVisible, { overlayVisible = it }, isTabletLayout)
+                    homeGraph(navController, isTabletLayout)
                     giftsGraph(navController)
                     reflectGraph(navController, isTabletLayout)
                     circleGraph(navController)
@@ -194,6 +199,7 @@ fun TangNavHost(
                     profileGraph(navController)
                     eventsGraph(navController, isTabletLayout)
                     chatGraph(navController, isTabletLayout)
+                    recipesGraph(navController)
                 }
             }
         }
@@ -208,7 +214,7 @@ fun TangNavHost(
                 popEnterTransition = transitions.popEnterTransition,
                 popExitTransition = transitions.popExitTransition
             ) {
-                homeGraph(navController, overlayVisible, { overlayVisible = it }, isTabletLayout)
+                homeGraph(navController, isTabletLayout)
                 giftsGraph(navController)
                 reflectGraph(navController)
                 circleGraph(navController)
@@ -219,6 +225,7 @@ fun TangNavHost(
                 profileGraph(navController)
                 eventsGraph(navController)
                 chatGraph(navController)
+                recipesGraph(navController)
             }
 
             if (showBottomBar && !overlayVisible) {

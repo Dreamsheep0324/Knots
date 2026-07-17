@@ -9,12 +9,13 @@ import javax.inject.Inject
 
 class RetryInterceptor @Inject constructor() : Interceptor {
     companion object {
-        private const val MAX_RETRIES = 3
+        private const val MAX_RETRIES = 2
         private val RETRYABLE_EXCEPTIONS = setOf(
             SocketTimeoutException::class.java,
             UnknownHostException::class.java,
             IOException::class.java
         )
+        private val RANDOM = java.util.Random()
     }
 
     override fun intercept(chain: Interceptor.Chain): Response {
@@ -33,7 +34,10 @@ class RetryInterceptor @Inject constructor() : Interceptor {
                 lastException = e
                 if (e::class.java !in RETRYABLE_EXCEPTIONS) throw e
                 if (attempt < MAX_RETRIES - 1) {
-                    Thread.sleep(1000L * (1 shl attempt))
+                    // 指数退避 + 随机抖动，避免多客户端同步重试导致雪崩
+                    val baseDelay = 1000L * (1 shl attempt)
+                    val jitter = RANDOM.nextInt(300).toLong()
+                    Thread.sleep(baseDelay + jitter)
                 }
             }
         }

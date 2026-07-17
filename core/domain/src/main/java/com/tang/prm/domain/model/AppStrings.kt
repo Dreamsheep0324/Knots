@@ -9,17 +9,8 @@ object AppStrings {
 
     object EventType {
         const val MEETUP = "见面"
-        const val DINING = "聚餐"
         const val CONVERSATION = "对话记录"
         const val OTHER = "其他"
-    }
-
-    object Intimacy {
-        const val NEW = "初识"
-        const val ACQUAINTANCE = "泛交"
-        const val FRIEND = "朋友"
-        const val CLOSE = "密友"
-        const val FAMILY = "至亲"
     }
 
     object ContactDetail {

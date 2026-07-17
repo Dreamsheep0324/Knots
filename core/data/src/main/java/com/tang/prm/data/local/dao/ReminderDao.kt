@@ -9,17 +9,8 @@ interface ReminderDao {
     @Query("SELECT * FROM reminders WHERE isCompleted = 0 AND isIgnored = 0 ORDER BY time ASC")
     fun getActiveReminders(): Flow<List<ReminderEntity>>
 
-    @Query("SELECT * FROM reminders WHERE time BETWEEN :startTime AND :endTime AND isCompleted = 0 AND isIgnored = 0")
-    fun getRemindersInRange(startTime: Long, endTime: Long): Flow<List<ReminderEntity>>
-
     @Query("SELECT * FROM reminders WHERE contactId = :contactId AND isCompleted = 0 AND isIgnored = 0 ORDER BY time ASC")
     fun getRemindersByContact(contactId: Long): Flow<List<ReminderEntity>>
-
-    @Query("SELECT * FROM reminders WHERE anniversaryId = :anniversaryId AND isCompleted = 0 AND isIgnored = 0 ORDER BY time ASC")
-    fun getRemindersByAnniversary(anniversaryId: Long): Flow<List<ReminderEntity>>
-
-    @Query("SELECT * FROM reminders WHERE id = :id")
-    fun getReminderById(id: Long): Flow<ReminderEntity?>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertReminder(reminder: ReminderEntity): Long

@@ -106,6 +106,8 @@ val SemanticPurpleText = Color(0xFF7C3AED)
 val SemanticCoralBg: Color
     @Composable @ReadOnlyComposable get() = if (isSystemInDarkTheme()) Color(0xFF3A1A1A) else Color(0xFFFEE2E2)
 val SemanticCoralText = Color(0xFFDC2626)
+val SemanticGreenBg: Color
+    @Composable @ReadOnlyComposable get() = if (isSystemInDarkTheme()) Color(0xFF1A3A2E) else Color(0xFFD1FAE5)
 
 // ── 品牌信号色（明暗通用，无需深色适配） ─────────────────────────
 val SignalCoral = Color(0xFFEF4444)
@@ -115,12 +117,25 @@ val SignalGreen = Color(0xFF10B981)
 val SignalPurple = Color(0xFF6366F1)
 val SignalGold = Color(0xFFFBBF24)
 val SignalElectric = Color(0xFF2196F3)
+val SignalCyan = Color(0xFF4DD0E1)
 val EventMoneyTeal = Color(0xFF14B8A6)
 val FavoriteGold = Color(0xFFFFB300)
 val AnniversaryBirthday = Color(0xFFF97316)
 val AnniversaryDate = Color(0xFFE91E63)
 val AnniversaryHoliday = Color(0xFF0EA5E9)
 val OutlineVariantLight = Color(0xFFCBD5E1)
+
+// ── 图表调色板（订阅统计圆环图等，明暗通用） ─────────────────────
+val SubscriptionChartPalette = listOf(
+    Color(0xFF5B8FF9), // 柔蓝
+    Color(0xFF5AD8A6), // 薄荷绿
+    Color(0xFFF6BD16), // 暖金
+    Color(0xFFE86452), // 珊瑚红
+    Color(0xFF6DC8EC), // 天青
+    Color(0xFF945FB9), // 紫藤
+    Color(0xFFFF9845), // 蜜橙
+    Color(0xFF1E9493), // 青碧
+)
 
 // ── 深色模式标签色（用于 Tag 组件） ──────────────────────────────
 val DarkTagBlueBg = Color(0x1A58A6FF)

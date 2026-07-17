@@ -12,9 +12,6 @@ interface ThoughtDao {
     @Query("SELECT * FROM thoughts WHERE contactId = :contactId ORDER BY createdAt DESC")
     fun getThoughtsByContact(contactId: Long): Flow<List<ThoughtEntity>>
 
-    @Query("SELECT * FROM thoughts WHERE type = :type ORDER BY createdAt DESC")
-    fun getThoughtsByType(type: String): Flow<List<ThoughtEntity>>
-
     @Query("SELECT * FROM thoughts WHERE isTodo = 1 ORDER BY dueDate ASC, createdAt DESC")
     fun getTodoThoughts(): Flow<List<ThoughtEntity>>
 

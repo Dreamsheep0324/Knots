@@ -5,7 +5,6 @@ import com.tang.prm.data.mapper.mapList
 import com.tang.prm.data.mapper.toDomain
 import com.tang.prm.data.mapper.toEntity
 import com.tang.prm.domain.model.Thought
-import com.tang.prm.domain.model.ThoughtType
 import com.tang.prm.domain.repository.ThoughtRepository
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
@@ -21,9 +20,6 @@ class ThoughtRepositoryImpl @Inject constructor(
 
     override fun getThoughtsByContact(contactId: Long): Flow<List<Thought>> =
         thoughtDao.getThoughtsByContact(contactId).mapList { it.toDomain() }
-
-    override fun getThoughtsByType(type: ThoughtType): Flow<List<Thought>> =
-        thoughtDao.getThoughtsByType(type.key).mapList { it.toDomain() }
 
     override fun getTodoThoughts(): Flow<List<Thought>> =
         thoughtDao.getTodoThoughts().mapList { it.toDomain() }

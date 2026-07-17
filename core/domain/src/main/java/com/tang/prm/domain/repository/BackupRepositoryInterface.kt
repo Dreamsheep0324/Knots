@@ -5,11 +5,9 @@ import kotlinx.coroutines.flow.Flow
 import java.io.File
 
 interface BackupRepositoryInterface {
-    suspend fun backupToUri(uri: String, imageQuality: BackupImageQuality = BackupImageQuality.STANDARD): Flow<BackupResult>
     suspend fun restoreFromUri(uri: String): Flow<RestoreResult>
     fun generateBackupFileName(): String
     suspend fun clearAllData(): ClearDataResult
-    suspend fun backupToFile(file: File, imageQuality: BackupImageQuality = BackupImageQuality.ORIGINAL): BackupInfo
     // SAF 外部目录备份管理
     fun getBackupDirUri(): String?
     fun setBackupDirUri(uri: String)

@@ -5,7 +5,6 @@ import com.google.common.truth.Truth.assertThat
 import com.tang.prm.domain.model.Anniversary
 import com.tang.prm.domain.model.AnniversaryType
 import com.tang.prm.domain.repository.AnniversaryRepository
-import com.tang.prm.domain.repository.ContactRepository
 import com.tang.prm.domain.usecase.GetAnniversaryDisplayUseCase
 import com.tang.prm.domain.util.DateCalcUtils
 import com.tang.prm.domain.util.DateUtils
@@ -31,7 +30,6 @@ import org.junit.jupiter.api.extension.ExtendWith
 class AnniversariesViewModelTest {
 
     private lateinit var anniversaryRepository: AnniversaryRepository
-    private lateinit var contactRepository: ContactRepository
     private lateinit var getAnniversaryDisplayUseCase: GetAnniversaryDisplayUseCase
     private lateinit var viewModel: AnniversariesViewModel
 
@@ -55,12 +53,10 @@ class AnniversariesViewModelTest {
         every { DateCalcUtils.getTodayStart() } returns System.currentTimeMillis()
 
         anniversaryRepository = mockk()
-        contactRepository = mockk()
         getAnniversaryDisplayUseCase = GetAnniversaryDisplayUseCase()
         every { anniversaryRepository.getAllAnniversaries() } returns flowOf(listOf(testAnniversary))
-        every { contactRepository.getAllContacts() } returns flowOf(emptyList())
 
-        viewModel = AnniversariesViewModel(anniversaryRepository, contactRepository, getAnniversaryDisplayUseCase)
+        viewModel = AnniversariesViewModel(anniversaryRepository, getAnniversaryDisplayUseCase)
     }
 
     @AfterEach

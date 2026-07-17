@@ -39,7 +39,6 @@ fun NavGraphBuilder.subscriptionGraph(navController: NavHostController) {
     composable<SubscriptionDetailRoute> { backStackEntry ->
         val route = backStackEntry.toRoute<SubscriptionDetailRoute>()
         SubscriptionDetailScreen(
-            subscriptionId = route.subscriptionId,
             navController = navController
         )
     }

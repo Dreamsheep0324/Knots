@@ -315,12 +315,6 @@ internal fun CalendarStatsRow(stats: CalendarStats) {
             color = SignalSky,
             modifier = Modifier.weight(1f)
         )
-        CalendarStatItem(
-            value = "¥${formatAmount(stats.totalSpending)}",
-            label = "花费",
-            color = SignalAmber,
-            modifier = Modifier.weight(1f)
-        )
     }
 }
 
@@ -352,14 +346,6 @@ private fun CalendarStatItem(
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             fontSize = 12.sp
         )
-    }
-}
-
-private fun formatAmount(amount: Double): String {
-    return if (amount == amount.toLong().toDouble()) {
-        amount.toLong().toString()
-    } else {
-        String.format("%.1f", amount)
     }
 }
 
@@ -638,11 +624,6 @@ private fun CalendarEventCard(
                     val typeLabel = event.customTypeName ?: event.type.displayName
                     if (event.type != EventType.OTHER || event.customTypeName != null) {
                         add(EventTagData(typeLabel, accentColor, lightColor))
-                    }
-                    event.amount?.let { amount ->
-                        if (amount > 0) {
-                            add(EventTagData("¥${formatAmount(amount)}", SignalAmber, SignalAmber.copy(alpha = AnimationTokens.Alpha.faint)))
-                        }
                     }
                     event.weather?.let { weather ->
                         if (weather.isNotBlank()) {

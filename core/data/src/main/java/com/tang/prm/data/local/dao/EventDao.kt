@@ -2,6 +2,7 @@ package com.tang.prm.data.local.dao
 
 import androidx.room.*
 import com.tang.prm.data.local.entity.EventEntity
+import com.tang.prm.data.local.entity.EventLocationItemWithParticipants
 import com.tang.prm.data.local.entity.EventParticipantCrossRef
 import com.tang.prm.data.local.entity.EventWithParticipants
 import kotlinx.coroutines.flow.Flow
@@ -9,7 +10,7 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface EventDao {
     @Transaction
-    @Query("SELECT * FROM events ORDER BY time DESC")
+    @Query("SELECT * FROM events WHERE type != 'CONVERSATION' ORDER BY time DESC")
     fun getAllEventsWithParticipants(): Flow<List<EventWithParticipants>>
 
     @Transaction
@@ -17,7 +18,7 @@ interface EventDao {
     fun getEventByIdWithParticipants(id: Long): Flow<EventWithParticipants?>
 
     @Transaction
-    @Query("SELECT * FROM events ORDER BY time DESC LIMIT :limit")
+    @Query("SELECT * FROM events WHERE type != 'CONVERSATION' ORDER BY time DESC LIMIT :limit")
     fun getRecentEventsWithParticipants(limit: Int): Flow<List<EventWithParticipants>>
 
     @Transaction
@@ -66,9 +67,24 @@ interface EventDao {
     @Query("SELECT COUNT(*) FROM events WHERE type != 'CONVERSATION'")
     fun getEventCount(): Flow<Int>
 
+    @Query("SELECT COUNT(*) FROM events WHERE type = :type")
+    fun getEventCountByType(type: String): Flow<Int>
+
+    @Query("SELECT COUNT(*) FROM events WHERE location IS NOT NULL AND location != ''")
+    fun getEventCountWithLocation(): Flow<Int>
+
     @Transaction
     @Query("SELECT * FROM events WHERE location IS NOT NULL AND location != '' ORDER BY time DESC")
     fun getEventsWithLocation(): Flow<List<EventWithParticipants>>
+
+    /**
+     * Lightweight projection of events with location, for footprint aggregation.
+     * Avoids reading photos JSON, remarks, promise, conversationSummary, giftName,
+     * amount, latitude, longitude, endTime; participants use [ContactListItemEntity] projection.
+     */
+    @Transaction
+    @Query("SELECT id, type, title, customTypeName, description, time, location, weather, emotion, photos_count, createdAt, updatedAt FROM events WHERE location IS NOT NULL AND location != '' ORDER BY time DESC")
+    fun getEventLocationItemsWithParticipants(): Flow<List<EventLocationItemWithParticipants>>
 
     @Query("SELECT COALESCE(SUM(photos_count), 0) FROM events")
     fun getPhotoCount(): Flow<Int>

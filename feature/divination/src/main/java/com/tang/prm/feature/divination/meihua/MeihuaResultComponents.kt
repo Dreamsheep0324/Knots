@@ -50,6 +50,7 @@ import androidx.core.content.FileProvider
 import com.tang.prm.engine.divination.model.MeihuaData
 import com.tang.prm.feature.divination.components.YaoDisplayData
 import com.tang.prm.ui.theme.Dimens
+import com.tang.prm.ui.components.TerminalSectionHeader
 import com.tang.prm.ui.theme.SignalGreen
 import java.io.File
 import java.io.FileOutputStream
@@ -63,7 +64,7 @@ internal fun InterpretationSection(data: MeihuaData) {
         border = BorderStroke(0.5.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.3f))
     ) {
         Column(modifier = Modifier.padding(12.dp)) {
-            MeihuaSectionHeader(title = "卦辞")
+            TerminalSectionHeader(title = "卦辞")
 
             Spacer(modifier = Modifier.height(8.dp))
 
@@ -212,29 +213,6 @@ internal fun buildDeepAnalysis(data: MeihuaData): String {
     }
 
     return lines.joinToString("\n")
-}
-
-@Composable
-internal fun MeihuaSectionHeader(title: String) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
-    ) {
-        Text(
-            text = title,
-            fontFamily = FontFamily.Monospace,
-            fontSize = 13.sp,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onSurface
-        )
-        Spacer(modifier = Modifier.width(8.dp))
-        Box(
-            modifier = Modifier
-                .weight(1f)
-                .height(0.5.dp)
-                .background(MaterialTheme.colorScheme.outline.copy(alpha = 0.3f))
-        )
-    }
 }
 
 @Composable

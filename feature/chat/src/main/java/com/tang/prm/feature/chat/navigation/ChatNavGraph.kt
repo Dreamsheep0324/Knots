@@ -19,10 +19,8 @@ fun NavGraphBuilder.chatGraph(
     composable<ChatRoute> {
         ChatScreen(navController = navController, isTabletLayout = isTabletLayout)
     }
-    composable<AddChatRoute> { backStackEntry ->
-        val route = backStackEntry.toRoute<AddChatRoute>()
-        val contactId = route.contactId.let { if (it == 0L) null else it }
-        AddChatScreen(contactId = contactId, navController = navController)
+    composable<AddChatRoute> {
+        AddChatScreen(navController = navController)
     }
     composable<ChatDetailRoute> { backStackEntry ->
         val route = backStackEntry.toRoute<ChatDetailRoute>()
@@ -30,6 +28,6 @@ fun NavGraphBuilder.chatGraph(
     }
     composable<EditChatRoute> { backStackEntry ->
         val route = backStackEntry.toRoute<EditChatRoute>()
-        AddChatScreen(eventId = route.eventId, navController = navController)
+        AddChatScreen(navController = navController)
     }
 }

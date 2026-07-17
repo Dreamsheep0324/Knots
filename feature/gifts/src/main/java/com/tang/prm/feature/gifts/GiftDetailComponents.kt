@@ -1,4 +1,4 @@
-﻿@file:OptIn(ExperimentalMaterial3Api::class)
+@file:OptIn(ExperimentalMaterial3Api::class)
 
 package com.tang.prm.feature.gifts
 
@@ -38,7 +38,7 @@ import com.tang.prm.ui.animation.core.AnimationTokens
 import com.tang.prm.ui.animation.primitives.rememberContinuousRotation
 import com.tang.prm.ui.theme.*
 import com.tang.prm.domain.util.DateUtils
-import kotlin.math.roundToInt
+
 
 // ═══════════════════════════════════════════════════════════════
 //  MODERN DETAIL CONTENT — 简洁现代化内容
@@ -231,7 +231,6 @@ internal fun DetailInfoCard(
             DetailRow(label = "礼物分类", value = giftTypeData.displayName)
             gift.occasion?.let { DetailRow(label = "赠送场合", value = it) }
             gift.location?.let { DetailRow(label = "赠送地点", value = it) }
-            gift.amount?.let { DetailRow(label = "礼物金额", value = "¥${it.roundToInt()}") }
         }
     }
 }

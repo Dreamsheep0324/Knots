@@ -1,21 +1,21 @@
 package com.tang.prm.feature.people.contacts
 
+import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tang.prm.domain.model.Contact
-import com.tang.prm.domain.model.ContactGroup
 import com.tang.prm.domain.model.CustomCategories
 import com.tang.prm.domain.model.CustomType
-import com.tang.prm.domain.repository.ContactRepository
-import com.tang.prm.domain.repository.ContactGroupRepository
-import com.tang.prm.domain.repository.CustomTypeRepository
 import com.tang.prm.domain.usecase.CreateContactUseCase
+import com.tang.prm.domain.usecase.GetContactForEditUseCase
+import com.tang.prm.domain.usecase.ObserveContactFormReferenceDataUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import com.tang.prm.domain.util.DateUtils
+import com.tang.prm.domain.util.parseListField
+import com.tang.prm.domain.util.serializeListField
 import javax.inject.Inject
 
 data class AddContactUiState(
@@ -42,7 +42,6 @@ data class AddContactUiState(
     val avatar: String? = null,
     val intimacyScore: Int = 50,
     val groupId: Long? = null,
-    val groups: List<ContactGroup> = emptyList(),
     val relationships: List<CustomType> = emptyList(),
     val educations: List<CustomType> = emptyList(),
     val hobbyOptions: List<CustomType> = emptyList(),
@@ -52,18 +51,23 @@ data class AddContactUiState(
     val isEditing: Boolean = false,
     val hasUnsavedChanges: Boolean = false,
     val isSaved: Boolean = false,
+    val isSaving: Boolean = false,
+    val saveError: String? = null,
     val createdAt: Long = 0
 )
 
 @HiltViewModel
 class AddContactViewModel @Inject constructor(
-    private val contactRepository: ContactRepository,
-    private val groupRepository: ContactGroupRepository,
-    private val customTypeRepository: CustomTypeRepository,
     private val createContactUseCase: CreateContactUseCase,
+    private val getContactForEditUseCase: GetContactForEditUseCase,
+    private val observeReferenceDataUseCase: ObserveContactFormReferenceDataUseCase,
     private val contactFormHelper: ContactFormHelper,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
+
+    companion object {
+        private const val TAG = "AddContactViewModel"
+    }
 
     private val contactId: Long = savedStateHandle.get<Long>("contactId") ?: 0L
 
@@ -79,28 +83,9 @@ class AddContactViewModel @Inject constructor(
 
     private fun loadReferenceData() {
         viewModelScope.launch {
-            val data = combine(
-                groupRepository.getAllGroups(),
-                combine(
-                    customTypeRepository.getTypesByCategory(CustomCategories.RELATIONSHIP),
-                    customTypeRepository.getTypesByCategory(CustomCategories.EDUCATION),
-                    customTypeRepository.getTypesByCategory(CustomCategories.HOBBY)
-                ) { relationships, educations, hobbies ->
-                    Triple(relationships, educations, hobbies)
-                },
-                combine(
-                    customTypeRepository.getTypesByCategory(CustomCategories.HABIT),
-                    customTypeRepository.getTypesByCategory(CustomCategories.DIET),
-                    customTypeRepository.getTypesByCategory(CustomCategories.SKILL)
-                ) { habits, diets, skills ->
-                    Triple(habits, diets, skills)
-                }
-            ) { groups, ref1, ref2 ->
-                CombinedRefData(groups, ref1.first, ref1.second, ref1.third, ref2.first, ref2.second, ref2.third)
-            }.collect { data ->
+            observeReferenceDataUseCase.invoke().collect { data ->
                 _uiState.update { state ->
                     state.copy(
-                        groups = data.groups,
                         relationships = data.relationships,
                         educations = data.educations,
                         hobbyOptions = data.hobbies,
@@ -113,19 +98,9 @@ class AddContactViewModel @Inject constructor(
         }
     }
 
-    private data class CombinedRefData(
-        val groups: List<ContactGroup>,
-        val relationships: List<CustomType>,
-        val educations: List<CustomType>,
-        val hobbies: List<CustomType>,
-        val habits: List<CustomType>,
-        val diets: List<CustomType>,
-        val skills: List<CustomType>
-    )
-
     private fun loadContact(id: Long) {
         viewModelScope.launch {
-            val contact = contactRepository.getContactById(id).first()
+            val contact = getContactForEditUseCase(id)
             contact?.let {
                 _uiState.update { state ->
                     state.copy(
@@ -140,10 +115,10 @@ class AddContactViewModel @Inject constructor(
                         city = it.city,
                         address = it.address,
                         education = it.education,
-                        hobbies = contactFormHelper.parseListField(it.hobby),
-                        habits = contactFormHelper.parseListField(it.habit),
-                        diets = contactFormHelper.parseListField(it.diet),
-                        skills = contactFormHelper.parseListField(it.skill),
+                        hobbies = parseListField(it.hobby),
+                        habits = parseListField(it.habit),
+                        diets = parseListField(it.diet),
+                        skills = parseListField(it.skill),
                         notes = it.notes,
                         avatar = it.avatar,
                         intimacyScore = it.intimacyScore,
@@ -174,8 +149,6 @@ class AddContactViewModel @Inject constructor(
     fun updateCompany(value: String) = updateField { it.copy(company = value.ifBlank { null }) }
     fun updateJobTitle(value: String) = updateField { it.copy(jobTitle = value.ifBlank { null }) }
     fun updateBirthday(value: String?) = updateField { it.copy(birthday = value) }
-    fun updateIsLunarBirthday(value: Boolean) = updateField { it.copy(isLunarBirthday = value, isLeapMonthBirthday = if (!value) false else it.isLeapMonthBirthday) }
-    fun updateIsLeapMonthBirthday(value: Boolean) = updateField { it.copy(isLeapMonthBirthday = value) }
     fun updateKnowingDate(value: String?) = updateField { it.copy(knowingDate = value) }
     fun updateNickname(value: String) = updateField { it.copy(nickname = value.ifBlank { null }) }
     fun updateRelationship(value: String) = updateField { it.copy(relationship = value.ifBlank { null }) }
@@ -191,65 +164,73 @@ class AddContactViewModel @Inject constructor(
     fun updateIntimacyScore(value: Int) = updateField { it.copy(intimacyScore = value.coerceIn(0, 100)) }
 
     fun saveContact() {
+        val state = _uiState.value
+        if (state.name.isBlank() || state.isSaving) return
+
         viewModelScope.launch {
-            val state = _uiState.value
-            if (state.name.isBlank()) return@launch
+            _uiState.update { it.copy(isSaving = true, saveError = null) }
+            try {
+                val contact = buildContactFromState(state)
 
-            val birthdayLong = state.birthday?.let {
-                DateUtils.parseDateToMillis(it)
+                if (state.isEditing) {
+                    createContactUseCase.updateContact(
+                        contact = contact,
+                        isLunarBirthday = state.isLunarBirthday,
+                        isLeapMonthBirthday = state.isLeapMonthBirthday,
+                        contactName = state.name,
+                        contactAvatar = state.avatar
+                    )
+                } else {
+                    createContactUseCase.createContact(
+                        contact = contact,
+                        isLunarBirthday = state.isLunarBirthday,
+                        contactName = state.name,
+                        contactAvatar = state.avatar
+                    )
+                }
+
+                _uiState.update { it.copy(isSaving = false, isSaved = true) }
+            } catch (e: Exception) {
+                Log.e(TAG, "保存联系人失败", e)
+                _uiState.update { it.copy(isSaving = false, saveError = "保存失败：${e.message ?: "未知错误"}") }
             }
-
-            val knowingDateLong = state.knowingDate?.let {
-                DateUtils.parseDateToMillis(it)
-            }
-
-            val contact = Contact(
-                id = if (state.isEditing) state.id else 0,
-                name = state.name,
-                phone = state.phone.ifBlank { null },
-                email = state.email.ifBlank { null },
-                city = state.city,
-                company = state.company,
-                jobTitle = state.jobTitle,
-                nickname = state.nickname,
-                relationship = state.relationship,
-                address = state.address,
-                education = state.education,
-                hobby = contactFormHelper.serializeListField(state.hobbies),
-                habit = contactFormHelper.serializeListField(state.habits),
-                diet = contactFormHelper.serializeListField(state.diets),
-                skill = contactFormHelper.serializeListField(state.skills),
-                notes = state.notes,
-                avatar = state.avatar,
-                intimacyScore = state.intimacyScore,
-                groupId = state.groupId,
-                birthday = birthdayLong,
-                isLunarBirthday = state.isLunarBirthday,
-                isLeapMonthBirthday = state.isLeapMonthBirthday,
-                knowingDate = knowingDateLong,
-                createdAt = if (state.isEditing) state.createdAt else System.currentTimeMillis(),
-                updatedAt = System.currentTimeMillis()
-            )
-
-            if (state.isEditing) {
-                createContactUseCase.updateContact(
-                    contact = contact,
-                    isLunarBirthday = state.isLunarBirthday,
-                    isLeapMonthBirthday = state.isLeapMonthBirthday,
-                    contactName = state.name,
-                    contactAvatar = state.avatar
-                )
-            } else {
-                createContactUseCase.createContact(
-                    contact = contact,
-                    isLunarBirthday = state.isLunarBirthday,
-                    contactName = state.name,
-                    contactAvatar = state.avatar
-                )
-            }
-
-            _uiState.update { it.copy(isSaved = true) }
         }
+    }
+
+    fun clearSaveError() {
+        _uiState.update { it.copy(saveError = null) }
+    }
+
+    private fun buildContactFromState(state: AddContactUiState): Contact {
+        val birthdayLong = state.birthday?.let { DateUtils.parseDateToMillis(it) }
+        val knowingDateLong = state.knowingDate?.let { DateUtils.parseDateToMillis(it) }
+        return Contact(
+            id = if (state.isEditing) state.id else 0,
+            name = state.name,
+            phone = state.phone.ifBlank { null },
+            email = state.email.ifBlank { null },
+            city = state.city,
+            company = state.company,
+            jobTitle = state.jobTitle,
+            nickname = state.nickname,
+            relationship = state.relationship,
+            address = state.address,
+            education = state.education,
+            hobby = serializeListField(state.hobbies),
+            habit = serializeListField(state.habits),
+            diet = serializeListField(state.diets),
+            skill = serializeListField(state.skills),
+            notes = state.notes,
+            avatar = state.avatar,
+            intimacyScore = state.intimacyScore,
+            groupId = state.groupId,
+            birthday = birthdayLong,
+            isLunarBirthday = state.isLunarBirthday,
+            isLeapMonthBirthday = state.isLeapMonthBirthday,
+            knowingDate = knowingDateLong,
+            createdAt = if (state.isEditing) state.createdAt else System.currentTimeMillis(),
+            updatedAt = System.currentTimeMillis()
+        )
     }
 
     fun addCustomType(category: String, name: String, color: String? = null, icon: String? = null) {

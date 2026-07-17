@@ -58,11 +58,6 @@ import com.tang.prm.domain.model.AppStrings
 import com.tang.prm.ui.animation.core.AnimationTokens
 import com.tang.prm.ui.components.AppCard
 import com.tang.prm.ui.theme.Error
-import com.tang.prm.ui.theme.IntimacyAcquaintance
-import com.tang.prm.ui.theme.IntimacyClose
-import com.tang.prm.ui.theme.IntimacyFamily
-import com.tang.prm.ui.theme.IntimacyFriend
-import com.tang.prm.ui.theme.IntimacyNew
 import com.tang.prm.ui.theme.SceneOrange
 
 internal val SectionIconSize = 36.dp
@@ -96,7 +91,7 @@ internal val IntimacyLevels = com.tang.prm.domain.model.IntimacyTier.entries.map
 }
 
 @Composable
-internal fun ProfileHeader(avatar: String?, onAvatarClick: () -> Unit) {
+internal fun AddContactProfileHeader(avatar: String?, onAvatarClick: () -> Unit) {
     AppCard(
         modifier = Modifier.fillMaxWidth()
     ) {

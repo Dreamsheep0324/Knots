@@ -33,16 +33,7 @@ class ContactRepositoryImplTest {
     private lateinit var contactAttributeDao: ContactAttributeDao
 
     @MockK
-    private lateinit var anniversaryDao: AnniversaryDao
-
-    @MockK
     private lateinit var giftDao: GiftDao
-
-    @MockK
-    private lateinit var thoughtDao: ThoughtDao
-
-    @MockK
-    private lateinit var circleDao: CircleDao
 
     @MockK
     private lateinit var todoDao: TodoDao
@@ -67,8 +58,7 @@ class ContactRepositoryImplTest {
         mockkStatic("com.tang.prm.util.SqlUtilsKt")
         every { any<String>().escapeSqlWildcards() } answers { firstArg() }
         repository = ContactRepositoryImpl(
-            contactDao, contactAttributeDao, anniversaryDao, giftDao, thoughtDao,
-            circleDao, todoDao, reminderDao, database
+            contactDao, contactAttributeDao, giftDao, todoDao, reminderDao, database
         )
     }
 
@@ -87,17 +77,6 @@ class ContactRepositoryImplTest {
 
         assertThat(result).hasSize(1)
         assertThat(result[0].name).isEqualTo("Alice")
-    }
-
-    @Test
-    fun searchContacts_callsDaoWithKeyword() = runTest {
-        every { contactDao.searchContacts("test") } returns flowOf(listOf(entity))
-        every { contactAttributeDao.getAttributesForAllContacts() } returns flowOf<List<ContactAttributeEntity>>(emptyList())
-
-        val result = repository.searchContacts("test").first()
-
-        assertThat(result).hasSize(1)
-        coVerify { contactDao.searchContacts("test") }
     }
 
     @Test

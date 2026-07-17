@@ -43,15 +43,6 @@ class ContactDaoTest {
     }
 
     @Test
-    fun searchContacts() = runBlocking {
-        dao.insertContact(ContactEntity(name = "张三", phone = "13800138000"))
-        dao.insertContact(ContactEntity(name = "李四", phone = "13900139000"))
-        val result = dao.searchContacts("张").first()
-        assertThat(result).hasSize(1)
-        assertThat(result[0].name).isEqualTo("张三")
-    }
-
-    @Test
     fun updateContact() = runBlocking {
         val id = dao.insertContact(ContactEntity(name = "张三", phone = "13800138000"))
         val inserted = dao.getAllContacts().first()[0]

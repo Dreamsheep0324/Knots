@@ -1,5 +1,6 @@
 package com.tang.prm.feature.events
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tang.prm.domain.model.Contact
@@ -36,6 +37,12 @@ class AddEventViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(AddEventUiState())
     val uiState: StateFlow<AddEventUiState> = _uiState.asStateFlow()
     private var editingEventId: Long? = null
+
+    private fun launchWithErrorHandling(block: suspend () -> Unit) {
+        viewModelScope.launch {
+            runCatching { block() }.onFailure { Log.e(TAG, "操作失败", it) }
+        }
+    }
 
     init { loadReferenceData() }
 
@@ -131,17 +138,17 @@ class AddEventViewModel @Inject constructor(
     }
 
     fun addEventType(name: String, color: String? = null, icon: String? = null) {
-        viewModelScope.launch { customTypeRepository.insertType(CustomType(category = CustomCategories.EVENT_TYPE, name = name, color = color, icon = icon, sortOrder = _uiState.value.eventTypes.size)) }
+        launchWithErrorHandling { customTypeRepository.insertType(CustomType(category = CustomCategories.EVENT_TYPE, name = name, color = color, icon = icon, sortOrder = _uiState.value.eventTypes.size)) }
     }
-    fun deleteEventType(type: CustomType) { viewModelScope.launch { customTypeRepository.deleteTypeById(type.id) } }
+    fun deleteEventType(type: CustomType) { launchWithErrorHandling { customTypeRepository.deleteTypeById(type.id) } }
     fun addEmotion(name: String, color: String? = null) {
-        viewModelScope.launch { customTypeRepository.insertType(CustomType(category = CustomCategories.EMOTION, name = name, color = color, sortOrder = _uiState.value.emotions.size)) }
+        launchWithErrorHandling { customTypeRepository.insertType(CustomType(category = CustomCategories.EMOTION, name = name, color = color, sortOrder = _uiState.value.emotions.size)) }
     }
-    fun deleteEmotion(type: CustomType) { viewModelScope.launch { customTypeRepository.deleteTypeById(type.id) } }
+    fun deleteEmotion(type: CustomType) { launchWithErrorHandling { customTypeRepository.deleteTypeById(type.id) } }
     fun addWeather(name: String, color: String? = null) {
-        viewModelScope.launch { customTypeRepository.insertType(CustomType(category = CustomCategories.WEATHER, name = name, color = color, sortOrder = _uiState.value.weathers.size)) }
+        launchWithErrorHandling { customTypeRepository.insertType(CustomType(category = CustomCategories.WEATHER, name = name, color = color, sortOrder = _uiState.value.weathers.size)) }
     }
-    fun deleteWeather(type: CustomType) { viewModelScope.launch { customTypeRepository.deleteTypeById(type.id) } }
+    fun deleteWeather(type: CustomType) { launchWithErrorHandling { customTypeRepository.deleteTypeById(type.id) } }
 
     fun saveEvent() {
         viewModelScope.launch {
@@ -161,12 +168,16 @@ class AddEventViewModel @Inject constructor(
                     updateInteractionUseCase(p.id, p.intimacyScore, state.time)
                 }
             } else {
-                val eid = eventManageUseCase.insertEventWithParticipants(event, state.participants.map { it.id })
+                eventManageUseCase.insertEventWithParticipants(event, state.participants.map { it.id })
                 state.participants.forEach { p ->
                     updateInteractionUseCase(p.id, p.intimacyScore, state.time)
                 }
             }
             _uiState.update { it.copy(isSaved = true) }
         }
+    }
+
+    private companion object {
+        const val TAG = "AddEventViewModel"
     }
 }

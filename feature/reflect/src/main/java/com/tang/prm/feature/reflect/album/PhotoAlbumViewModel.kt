@@ -124,9 +124,4 @@ class PhotoAlbumViewModel @Inject constructor(
         }
     }
 
-    fun isPhotoFavorite(photoId: String): Boolean {
-        return _favoritePhotoIds.value.contains(
-            photoId.toList().fold(0L) { acc, c -> acc * 31L + c.code.toLong() }
-        )
-    }
 }

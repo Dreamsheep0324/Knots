@@ -36,6 +36,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.tang.prm.ui.components.EmptyState
+import com.tang.prm.ui.components.TerminalSectionHeader
 import com.tang.prm.feature.divination.DivinationViewModel
 import com.tang.prm.feature.divination.AiViewModel
 import com.tang.prm.feature.divination.components.ResultHexagramDisplay
@@ -143,7 +144,7 @@ fun MeihuaResultScreen(
 
                 Spacer(modifier = Modifier.height(20.dp))
 
-                MeihuaSectionHeader(title = "六爻详情")
+                TerminalSectionHeader(title = "六爻详情")
 
                 Spacer(modifier = Modifier.height(8.dp))
 
@@ -151,7 +152,7 @@ fun MeihuaResultScreen(
 
                 Spacer(modifier = Modifier.height(20.dp))
 
-                MeihuaSectionHeader(title = "事之始终")
+                TerminalSectionHeader(title = "事之始终")
 
                 Spacer(modifier = Modifier.height(8.dp))
 

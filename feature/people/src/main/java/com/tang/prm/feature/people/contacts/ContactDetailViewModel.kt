@@ -1,5 +1,6 @@
 package com.tang.prm.feature.people.contacts
 
+import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -52,6 +53,10 @@ class ContactDetailViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
+    companion object {
+        private const val TAG = "ContactDetailViewModel"
+    }
+
     private val _contactId = MutableStateFlow(savedStateHandle.get<Long>("contactId") ?: 0L)
     private val _dialogState = MutableStateFlow(ContactDetailDialogState())
 
@@ -81,6 +86,9 @@ class ContactDetailViewModel @Inject constructor(
         _dialogState
     ) { data, dialog ->
         ContactDetailUiState(data = data, dialog = dialog)
+    }.catch { e ->
+        Log.e(TAG, "联系人详情数据流异常", e)
+        emit(ContactDetailUiState(data = ContactDetailDataState(isLoading = false)))
     }.stateIn(
         viewModelScope,
         SharingStarted.WhileSubscribed(5000),
@@ -112,34 +120,42 @@ class ContactDetailViewModel @Inject constructor(
 
     fun deleteContact() {
         viewModelScope.launch {
-            aggregationUseCase.deleteContact(_contactId.value)
-            _events.send(ContactDetailEvent.ContactDeleted)
+            runCatching {
+                aggregationUseCase.deleteContact(_contactId.value)
+                _events.send(ContactDetailEvent.ContactDeleted)
+            }.onFailure { Log.e(TAG, "删除联系人失败", it) }
         }
     }
 
     fun toggleFavorite(thoughtId: Long, content: String) {
         viewModelScope.launch {
-            favoriteToggleUseCase(
-                type = SourceTypes.THOUGHT,
-                sourceId = thoughtId,
-                title = content.take(50),
-                description = content
-            )
+            runCatching {
+                favoriteToggleUseCase(
+                    type = SourceTypes.THOUGHT,
+                    sourceId = thoughtId,
+                    title = content.take(50),
+                    description = content
+                )
+            }.onFailure { Log.e(TAG, "切换收藏失败", it) }
         }
     }
 
     fun toggleTodoDone(thought: Thought) {
         viewModelScope.launch {
-            aggregationUseCase.updateThought(thought.copy(
-                isDone = !thought.isDone,
-                updatedAt = System.currentTimeMillis()
-            ))
+            runCatching {
+                aggregationUseCase.updateThought(thought.copy(
+                    isDone = !thought.isDone,
+                    updatedAt = System.currentTimeMillis()
+                ))
+            }.onFailure { Log.e(TAG, "更新待办状态失败", it) }
         }
     }
 
     fun deleteThought(id: Long) {
         viewModelScope.launch {
-            aggregationUseCase.deleteThought(id)
+            runCatching {
+                aggregationUseCase.deleteThought(id)
+            }.onFailure { Log.e(TAG, "删除想法失败", it) }
         }
     }
 }

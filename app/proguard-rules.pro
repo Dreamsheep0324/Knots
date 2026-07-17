@@ -79,6 +79,10 @@
 -keep class androidx.security.crypto.** { *; }
 -dontwarn androidx.security.crypto.**
 
+# ---- Tink (EncryptedSharedPreferences 依赖) ----
+# Tink 引用 errorprone 注解做编译期检查，运行时无需该依赖
+-dontwarn com.google.errorprone.annotations.**
+
 # ---- Kotlinx Coroutines ----
 -dontwarn kotlinx.coroutines.**
 

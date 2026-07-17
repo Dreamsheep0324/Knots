@@ -81,6 +81,6 @@ fun NavGraphBuilder.peopleGraph(
                 onDismiss = { pendingCropPath = null }
             )
         }
-        AddContactScreen(contactId = route.contactId, navController = navController, onPickAvatar = { avatarPicker.launch() }, viewModel = viewModel)
+        AddContactScreen(navController = navController, onPickAvatar = { avatarPicker.launch() }, viewModel = viewModel)
     }
 }

@@ -12,14 +12,6 @@ val PixelFontFamily = FontFamily(
     Font(R.font.vt323_regular)
 )
 
-/** 终端标识样式 — 短文本用 VT323（SYS://、时间戳、徽章、引语） */
-val TerminalLabel = TextStyle(
-    fontFamily = PixelFontFamily,
-    fontWeight = FontWeight.Normal,
-    fontSize = 16.sp,
-    lineHeight = 20.sp
-)
-
 val Typography = Typography(
     headlineLarge = TextStyle(
         fontFamily = FontFamily.Default,

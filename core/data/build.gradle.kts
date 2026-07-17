@@ -10,7 +10,6 @@ android {
 
     defaultConfig {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        consumerProguardFiles("consumer-rules.pro")
     }
 
     ksp {
@@ -20,7 +19,6 @@ android {
 
 dependencies {
     implementation(project(":core:domain"))
-    implementation(project(":engine:divination"))
 
     // Room
     implementation(libs.room.runtime)
@@ -38,11 +36,8 @@ dependencies {
     implementation(libs.datastore.preferences)
     implementation(libs.security.crypto)
 
-    // OkHttp
+    // OkHTTP
     implementation(libs.okhttp)
-
-    // Gson
-    implementation(libs.gson)
 
     // Core
     implementation(libs.core.ktx)
@@ -50,9 +45,6 @@ dependencies {
     // Coroutines
     implementation(libs.kotlinx.coroutines.core)
     implementation(libs.kotlinx.coroutines.android)
-
-    // Coil
-    implementation(libs.coil.compose)
 
     // Lunar calendar
     implementation(libs.lunar)

@@ -1,6 +1,5 @@
 package com.tang.prm.data.remote
 
-import com.google.gson.annotations.SerializedName
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -11,7 +10,6 @@ data class ChatRequest(
     val stream: Boolean = true,
     val temperature: Double = 0.7,
     @SerialName("max_tokens")
-    @SerializedName("max_tokens")
     val maxTokens: Int = 2048
 )
 
@@ -30,7 +28,6 @@ data class ChatStreamResponse(
 data class StreamChoice(
     val delta: DeltaContent? = null,
     @SerialName("finish_reason")
-    @SerializedName("finish_reason")
     val finishReason: String? = null
 )
 
@@ -48,6 +45,5 @@ data class ChatResponse(
 data class ChatChoice(
     val message: ChatMessage? = null,
     @SerialName("finish_reason")
-    @SerializedName("finish_reason")
     val finishReason: String? = null
 )

@@ -53,7 +53,7 @@ class FootprintAggregationUseCase @Inject constructor(
                     description = event.description,
                     weather = event.weather,
                     emotion = event.emotion,
-                    photoCount = event.photos.size
+                    photoCount = event.photosCount
                 )
             }
             .sortedByDescending { it.date }

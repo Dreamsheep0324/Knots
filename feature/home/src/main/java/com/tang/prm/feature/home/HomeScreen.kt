@@ -9,17 +9,12 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -33,6 +28,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.Stable
@@ -57,6 +53,7 @@ import com.tang.prm.ui.navigation.ThoughtsRoute
 import com.tang.prm.ui.navigation.FavoritesRoute
 import com.tang.prm.ui.navigation.DivinationRoute
 import com.tang.prm.ui.navigation.SubscriptionsRoute
+import com.tang.prm.ui.navigation.RecipesRoute
 import com.tang.prm.ui.theme.*
 import com.tang.prm.domain.util.DateUtils
 
@@ -81,6 +78,7 @@ internal val channels = listOf(
     ChannelDef("收藏", SignalGold, FavoritesRoute, "珍藏回忆与重要内容", Icons.Default.Star),
     ChannelDef("占卜", SignalElectric, DivinationRoute, "梅花易数 · 六爻纳甲", textIcon = "☯"),
     ChannelDef("订阅", SignalSky, SubscriptionsRoute, "会员订阅与到期提醒", Icons.Default.CreditCard),
+    ChannelDef("菜谱", SignalElectric, RecipesRoute, "一起做过的菜与味道", Icons.Default.Restaurant),
 )
 
 @Composable
@@ -91,15 +89,15 @@ fun HomeScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    var currentTime by remember { mutableLongStateOf(System.currentTimeMillis()) }
+    // dateStr 仅在跨日时才变化：每分钟检查一次，仅当格式化日期不同时更新 state，避免无谓重组
+    var dateStr by remember { mutableStateOf(DateUtils.formatYearMonthDay(System.currentTimeMillis())) }
     LaunchedEffect(Unit) {
         while (true) {
-            kotlinx.coroutines.delay(1000)
-            currentTime = System.currentTimeMillis()
+            kotlinx.coroutines.delay(60_000L)
+            val newDateStr = DateUtils.formatYearMonthDay(System.currentTimeMillis())
+            if (newDateStr != dateStr) dateStr = newDateStr
         }
     }
-    val timeStr = DateUtils.formatTimeWithSeconds(currentTime)
-    val dateStr = DateUtils.formatYearMonthDay(currentTime)
 
     val signalStrengths = remember(uiState) {
         mapOf(
@@ -110,10 +108,12 @@ fun HomeScreen(
             ThoughtsRoute to uiState.thoughtCount,
             FavoritesRoute to uiState.favoriteCount,
             DivinationRoute to 0,
-            SubscriptionsRoute to uiState.subscriptionCount
+            SubscriptionsRoute to uiState.subscriptionCount,
+            RecipesRoute to uiState.recipeCount
         )
     }
-    val onChannelClick = { route: Any -> navController.navigate(route) }
+    val onChannelClick = remember(navController) { { route: Any -> navController.navigate(route) } }
+    val onSettingsClick = remember(navController) { { navController.navigate(SettingsRoute) } }
 
     Column(
         modifier = Modifier
@@ -122,9 +122,8 @@ fun HomeScreen(
     ) {
         if (isTabletLayout) {
             HomeTopBar(
-                timeStr = timeStr,
                 showSettings = false,
-                onSettingsClick = { navController.navigate(SettingsRoute) }
+                onSettingsClick = onSettingsClick
             )
 
             JournalTabletHome(
@@ -136,9 +135,8 @@ fun HomeScreen(
             )
         } else {
             HomeTopBar(
-                timeStr = timeStr,
                 showSettings = true,
-                onSettingsClick = { navController.navigate(SettingsRoute) }
+                onSettingsClick = onSettingsClick
             )
             PhoneHomeContent(
                 dateStr = dateStr,
@@ -153,10 +151,19 @@ fun HomeScreen(
 
 @Composable
 private fun HomeTopBar(
-    timeStr: String,
     showSettings: Boolean = true,
     onSettingsClick: () -> Unit
 ) {
+    // 秒级时钟状态下沉到 TopBar 内部，避免每秒触发整个 HomeScreen 重组
+    var currentTime by remember { mutableLongStateOf(System.currentTimeMillis()) }
+    LaunchedEffect(Unit) {
+        while (true) {
+            kotlinx.coroutines.delay(1000)
+            currentTime = System.currentTimeMillis()
+        }
+    }
+    val timeStr = DateUtils.formatTimeWithSeconds(currentTime)
+
     TopAppBar(
         title = {
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -241,65 +248,6 @@ private fun PhoneHomeContent(
                 signalStrengths = signalStrengths,
                 onChannelClick = onChannelClick
             )
-        }
-    }
-}
-
-@Composable
-private fun TabletHomeContent(
-    dateStr: String,
-    uiState: HomeUiState,
-    channels: List<ChannelDef>,
-    signalStrengths: Map<Any, Int>,
-    onChannelClick: (Any) -> Unit
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(horizontal = 16.dp, vertical = 2.dp),
-        horizontalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        // 左栏：信号卡 + 频道网格 (weight 0.38)
-        Column(
-            modifier = Modifier
-                .weight(Dimens.homeLeftWeight)
-                .fillMaxHeight()
-                .verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(10.dp)
-        ) {
-            IncomingSignalCard(
-                dateStr = dateStr,
-                contactCount = uiState.contactCount,
-                eventCount = uiState.eventCount,
-                giftCount = uiState.giftCount,
-                anniversaryCount = uiState.anniversaryCount,
-                conversationCount = uiState.conversationCount
-            )
-
-            ChannelGrid(
-                channels = channels,
-                signalStrengths = signalStrengths,
-                onChannelClick = onChannelClick
-            )
-
-            Spacer(modifier = Modifier.padding(bottom = 80.dp))
-        }
-
-        // 右栏：大轨道罗盘 (weight 0.62)
-        Column(
-            modifier = Modifier
-                .weight(1f - Dimens.homeLeftWeight)
-                .fillMaxHeight()
-                .verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(10.dp)
-        ) {
-            OrbitalCalendar(
-                anniversaries = uiState.upcomingAnniversaries,
-                events = uiState.recentEvents,
-                canvasModifier = Modifier.fillMaxWidth().aspectRatio(1f)
-            )
-
-            Spacer(modifier = Modifier.padding(bottom = 80.dp))
         }
     }
 }

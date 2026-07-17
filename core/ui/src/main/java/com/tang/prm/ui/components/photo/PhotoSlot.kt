@@ -30,8 +30,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import coil.request.ImageRequest
 
 /**
  * 统一的图片展示槽位
@@ -138,7 +140,10 @@ private fun AvatarPhotoSlot(photoUri: String, onClick: (() -> Unit)?) {
         contentAlignment = Alignment.Center
     ) {
         AsyncImage(
-            model = photoUri,
+            model = ImageRequest.Builder(LocalContext.current)
+                .data(photoUri)
+                .crossfade(true)
+                .build(),
             contentDescription = "头像",
             modifier = Modifier.size(100.dp).clip(CircleShape),
             contentScale = ContentScale.Crop
@@ -183,7 +188,10 @@ private fun ThumbnailPhotoSlot(photoUri: String, onRemove: (() -> Unit)?, onClic
             .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier)
     ) {
         AsyncImage(
-            model = photoUri,
+            model = ImageRequest.Builder(LocalContext.current)
+                .data(photoUri)
+                .crossfade(true)
+                .build(),
             contentDescription = "照片",
             modifier = Modifier.size(80.dp).clip(RoundedCornerShape(8.dp)),
             contentScale = ContentScale.Crop
@@ -251,7 +259,10 @@ private fun PolaroidPhotoSlot(photoUri: String, onRemove: (() -> Unit)?, onClick
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             AsyncImage(
-                model = photoUri,
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data(photoUri)
+                    .crossfade(true)
+                    .build(),
                 contentDescription = "照片",
                 modifier = Modifier
                     .size(72.dp)

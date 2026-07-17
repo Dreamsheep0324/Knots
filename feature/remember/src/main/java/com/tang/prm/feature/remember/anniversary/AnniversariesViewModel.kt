@@ -42,7 +42,6 @@ private data class CategorizedAnniversaries(
 @HiltViewModel
 class AnniversariesViewModel @Inject constructor(
     private val anniversaryRepository: AnniversaryRepository,
-    private val contactRepository: ContactRepository,
     private val getAnniversaryDisplayUseCase: GetAnniversaryDisplayUseCase
 ) : ViewModel() {
 

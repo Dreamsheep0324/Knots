@@ -105,9 +105,6 @@ class AnniversaryRepositoryImpl @Inject constructor(
     override fun getAnniversariesByContact(contactId: Long): Flow<List<Anniversary>> =
         anniversaryDao.getAnniversariesByContactWithContact(contactId).mapList { it.toDomain() }
 
-    override fun getAnniversariesInRange(startDate: Long, endDate: Long): Flow<List<Anniversary>> =
-        anniversaryDao.getAnniversariesInRangeWithContact(startDate, endDate).mapList { it.toDomain() }
-
     override fun getUpcomingAnniversaries(limit: Int): Flow<List<Anniversary>> {
         val today = DateCalcUtils.getTodayStart()
         return anniversaryDao.getUpcomingCandidatesWithContact(today).mapList { it.toDomain() }.map { list ->
@@ -119,21 +116,6 @@ class AnniversaryRepositoryImpl @Inject constructor(
                 .map { it.first }
         }.flowOn(Dispatchers.Default)
     }
-
-    override fun getPastAnniversaries(limit: Int): Flow<List<Anniversary>> {
-        val today = DateCalcUtils.getTodayStart()
-        return anniversaryDao.getPastCandidatesWithContact(today).mapList { it.toDomain() }.map { list ->
-            list
-                .map { it to it.effectiveDate() }
-                .filter { it.second < today }
-                .sortedByDescending { it.second }
-                .take(limit)
-                .map { it.first }
-        }.flowOn(Dispatchers.Default)
-    }
-
-    override fun getAnniversariesByType(type: String): Flow<List<Anniversary>> =
-        anniversaryDao.getAnniversariesByTypeWithContact(type).mapList { it.toDomain() }
 
     override suspend fun insertAnniversary(anniversary: Anniversary): Long =
         anniversaryDao.insertAnniversary(anniversary.toEntity())

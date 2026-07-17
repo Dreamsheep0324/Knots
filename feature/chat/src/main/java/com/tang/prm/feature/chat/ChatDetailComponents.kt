@@ -29,6 +29,7 @@ import com.tang.prm.ui.components.AppCard
 import com.tang.prm.ui.components.ContactAvatar
 import com.tang.prm.ui.theme.Dimens
 import com.tang.prm.ui.theme.SceneOrange
+import com.tang.prm.ui.theme.SemanticBlueBg
 import com.tang.prm.domain.util.DateUtils
 
 internal data class DialogueLine(
@@ -101,7 +102,7 @@ internal fun getIntimacyColor(score: Int): Color =
 internal val MyBubbleColor: Color
     @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.primary
 internal val MyBubbleBg: Color
-    @Composable get() = if (androidx.compose.foundation.isSystemInDarkTheme()) Color(0xFF1A3A4A) else Color(0xFFE3F2FD)
+    @Composable @ReadOnlyComposable get() = SemanticBlueBg
 
 @Composable
 internal fun ScriptHeader(event: Event, contact: Contact?, intimacyColor: Color) {

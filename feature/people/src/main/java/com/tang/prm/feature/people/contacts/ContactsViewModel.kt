@@ -1,32 +1,23 @@
 package com.tang.prm.feature.people.contacts
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tang.prm.domain.model.*
 import com.tang.prm.domain.repository.*
-import com.tang.prm.domain.model.IntimacyTier
-import com.tang.prm.domain.usecase.IntimacyLevels
 import com.tang.prm.domain.usecase.filterBy
 import com.tang.prm.ui.common.SearchState
 import com.tang.prm.ui.common.SearchStateManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.launch
 import javax.inject.Inject
-
-data class IntimacyStats(
-    val level: String,
-    val count: Int
-)
 
 data class ContactsDataState(
     val contacts: List<Contact> = emptyList(),
     val groups: List<ContactGroup> = emptyList(),
     val relationships: List<CustomType> = emptyList(),
-    val selectedGroupId: Long? = null,
     val selectedRelationship: String? = null,
-    val selectedIntimacy: String? = null,
     val viewMode: Int = 0,
     val isReorderMode: Boolean = false,
     val isLoading: Boolean = false
@@ -44,15 +35,11 @@ data class ContactsUiState(
 
 private data class FilterParams(
     val query: String,
-    val groupId: Long?,
-    val relationship: String?,
-    val intimacy: String?
+    val relationship: String?
 )
 
 private data class SelectionState(
-    val groupId: Long?,
     val relationship: String?,
-    val intimacy: String?,
     val viewMode: Int,
     val isReorderMode: Boolean
 )
@@ -72,15 +59,14 @@ class ContactsViewModel @Inject constructor(
 ) : ViewModel() {
 
     companion object {
+        private const val TAG = "ContactsViewModel"
         private const val DEBOUNCE_MS = 300L
     }
 
     private val searchManager = SearchStateManager()
     val searchState: StateFlow<SearchState> = searchManager.state
 
-    private val _selectedGroupId = MutableStateFlow<Long?>(null)
     private val _selectedRelationship = MutableStateFlow<String?>(null)
-    private val _selectedIntimacy = MutableStateFlow<String?>(null)
     private val _viewMode = MutableStateFlow(0)
     private val _isReorderMode = MutableStateFlow(false)
     private val _dialogState = MutableStateFlow(ContactsDialogState())
@@ -90,17 +76,15 @@ class ContactsViewModel @Inject constructor(
         searchManager.state
             .map { it.query }
             .debounce { query -> if (query.isBlank()) 0L else DEBOUNCE_MS },
-        _selectedGroupId,
-        _selectedRelationship,
-        _selectedIntimacy
-    ) { query, groupId, relationship, intimacy ->
-        FilterParams(query, groupId, relationship, intimacy)
+        _selectedRelationship
+    ) { query, relationship ->
+        FilterParams(query, relationship)
     }
 
     private val filteredContacts = filterState.flatMapLatest { params ->
         val keyword = params.query.ifBlank { null }
         contactRepository.getContactListItems().map { contacts ->
-            contacts.filterBy(keyword, params.groupId, params.relationship, params.intimacy)
+            contacts.filterBy(keyword = keyword, relationship = params.relationship)
         }
     }
 
@@ -113,22 +97,23 @@ class ContactsViewModel @Inject constructor(
             DataBundle(contacts, groups, relationships)
         },
         combine(
-            _selectedGroupId,
             _selectedRelationship,
-            _selectedIntimacy,
             _viewMode,
             _isReorderMode
-        ) { groupId, relationship, intimacy, viewMode, isReorderMode ->
-            SelectionState(groupId, relationship, intimacy, viewMode, isReorderMode)
+        ) { relationship, viewMode, isReorderMode ->
+            SelectionState(relationship, viewMode, isReorderMode)
         },
         _dialogState,
         _manualOrder
     ) { dataBundle, selection, dialog, manualOrder ->
-        val sorted = if (selection.isReorderMode && manualOrder != null) {
-            val orderMap = manualOrder.withIndex().associate { it.value to it.index }
-            dataBundle.contacts.sortedBy { orderMap[it.id] ?: Int.MAX_VALUE }
-        } else if (selection.isReorderMode) {
-            dataBundle.contacts
+        // 非排序模式：按亲密度降序；排序模式：优先使用用户手动调整的顺序，未调整时沿用当前显示顺序（避免进入排序模式时顺序突变）
+        val sorted = if (selection.isReorderMode) {
+            if (manualOrder != null) {
+                val orderMap = manualOrder.withIndex().associate { it.value to it.index }
+                dataBundle.contacts.sortedBy { orderMap[it.id] ?: Int.MAX_VALUE }
+            } else {
+                dataBundle.contacts.sortedByDescending { it.intimacyScore }
+            }
         } else {
             dataBundle.contacts.sortedByDescending { it.intimacyScore }
         }
@@ -138,40 +123,22 @@ class ContactsViewModel @Inject constructor(
                 contacts = sorted,
                 groups = dataBundle.groups,
                 relationships = dataBundle.relationships,
-                selectedGroupId = selection.groupId,
                 selectedRelationship = selection.relationship,
-                selectedIntimacy = selection.intimacy,
                 viewMode = selection.viewMode,
                 isReorderMode = selection.isReorderMode,
                 isLoading = false
             ),
             dialog = dialog
         )
+    }.catch { e ->
+        Log.e(TAG, "联系人数据流异常", e)
+        emit(ContactsUiState())
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), ContactsUiState())
-
-    fun getIntimacyStats(contacts: List<Contact>): List<IntimacyStats> {
-        return IntimacyLevels.map { level ->
-            val count = contacts.count { IntimacyTier.of(it.intimacyScore).label == level }
-            IntimacyStats(level, count)
-        }
-    }
-
-    fun getContactsGroupedByIntimacy(contacts: List<Contact>): Map<String, List<Contact>> {
-        return contacts.groupBy { IntimacyTier.of(it.intimacyScore).label }
-    }
 
     fun onSearchQueryChange(query: String) = searchManager.onQueryChange(query)
 
-    fun onGroupSelected(groupId: Long?) {
-        _selectedGroupId.value = groupId
-    }
-
     fun onRelationshipSelected(relationship: String?) {
         _selectedRelationship.value = relationship
-    }
-
-    fun onIntimacySelected(intimacy: String?) {
-        _selectedIntimacy.value = intimacy
     }
 
     fun onViewModeChange(mode: Int) {
@@ -182,11 +149,9 @@ class ContactsViewModel @Inject constructor(
     }
 
     fun toggleReorderMode() {
-        val newMode = !_isReorderMode.value
-        _isReorderMode.value = newMode
-        if (!newMode) {
-            _manualOrder.value = null
-        }
+        _isReorderMode.value = !_isReorderMode.value
+        // 保留 _manualOrder，让用户再次进入排序模式时仍能看到上次调整的顺序；
+        // 仅在切换视图模式（onViewModeChange）时清空。
     }
 
     fun moveContact(fromIndex: Int, toIndex: Int) {
@@ -209,9 +174,4 @@ class ContactsViewModel @Inject constructor(
         _dialogState.value = current.copy(flippedCardId = newFlippedId)
     }
 
-    fun deleteContact(id: Long) {
-        viewModelScope.launch {
-            contactRepository.deleteContact(id)
-        }
-    }
 }

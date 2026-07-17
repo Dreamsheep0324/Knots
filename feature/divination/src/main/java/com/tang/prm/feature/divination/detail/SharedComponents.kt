@@ -77,29 +77,6 @@ internal fun RelationTag(relation: String) {
 }
 
 @Composable
-internal fun RecordSectionHeader(title: String) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(
-            text = title,
-            fontFamily = FontFamily.Monospace,
-            fontSize = 13.sp,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onSurface
-        )
-        Spacer(modifier = Modifier.width(8.dp))
-        Box(
-            modifier = Modifier
-                .weight(1f)
-                .height(0.5.dp)
-                .background(MaterialTheme.colorScheme.outline.copy(alpha = 0.3f))
-        )
-    }
-}
-
-@Composable
 internal fun InfoTag(text: String, color: Color) {
     Surface(
         shape = RoundedCornerShape(4.dp),

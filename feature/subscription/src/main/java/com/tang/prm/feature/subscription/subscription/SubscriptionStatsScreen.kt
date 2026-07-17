@@ -53,10 +53,12 @@ import com.tang.prm.domain.model.Subscription
 import com.tang.prm.domain.model.SubscriptionCycle
 import com.tang.prm.ui.animation.core.AnimationTokens
 import com.tang.prm.ui.components.AppCard
+import com.tang.prm.ui.components.FormSectionLabel
 import com.tang.prm.ui.theme.SignalAmber
 import com.tang.prm.ui.theme.SignalGreen
 import com.tang.prm.ui.theme.SignalPurple
 import com.tang.prm.ui.theme.SignalSky
+import com.tang.prm.ui.theme.SubscriptionChartPalette
 import java.util.Calendar
 import kotlin.math.min
 
@@ -122,19 +124,13 @@ fun SubscriptionStatsScreen(
 private fun YearlyProjectionCard(state: SubscriptionStatsUiState) {
     AppCard(modifier = Modifier.fillMaxWidth()) {
         Column(modifier = Modifier.padding(horizontal = 20.dp, vertical = 22.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Box(modifier = Modifier.size(28.dp).clip(CircleShape).background(SignalGreen.copy(alpha = AnimationTokens.Alpha.faint)), contentAlignment = Alignment.Center) {
-                    Icon(Icons.Default.TrendingUp, contentDescription = null, tint = SignalGreen, modifier = Modifier.size(14.dp))
-                }
-                Spacer(modifier = Modifier.width(8.dp))
-                Text("年度预估", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
-            }
+            FormSectionLabel(icon = Icons.Default.TrendingUp, label = "年度预估", color = SignalGreen)
             Spacer(modifier = Modifier.height(16.dp))
-            Text("¥${formatPrice(state.yearlyProjection)}", style = MaterialTheme.typography.displaySmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary, fontFamily = FontFamily.Monospace)
+            Text("¥${formatPriceValue(state.yearlyProjection)}", style = MaterialTheme.typography.displaySmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary, fontFamily = FontFamily.Monospace)
             Spacer(modifier = Modifier.height(6.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(24.dp)) {
-                ProjectionSubItem("月均", "¥${formatPrice(state.monthlyAverage)}")
-                ProjectionSubItem("日均", "¥${formatPrice(state.dailyAverage)}")
+                ProjectionSubItem("月均", "¥${formatPriceValue(state.monthlyAverage)}")
+                ProjectionSubItem("日均", "¥${formatPriceValue(state.dailyAverage)}")
             }
         }
     }
@@ -152,8 +148,8 @@ private fun ProjectionSubItem(label: String, value: String) {
 @Composable
 private fun KeyMetricsGrid(state: SubscriptionStatsUiState) {
     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-        MetricCard(Modifier.weight(1f), Icons.Default.Payments, "月度支出", "¥${formatPrice(state.monthlyTotal)}", MaterialTheme.colorScheme.primary)
-        MetricCard(Modifier.weight(1f), Icons.Default.Today, "日均支出", "¥${formatPrice(state.dailyAverage)}", SignalSky)
+        MetricCard(Modifier.weight(1f), Icons.Default.Payments, "月度支出", "¥${formatPriceValue(state.monthlyTotal)}", MaterialTheme.colorScheme.primary)
+        MetricCard(Modifier.weight(1f), Icons.Default.Today, "日均支出", "¥${formatPriceValue(state.dailyAverage)}", SignalSky)
     }
     Spacer(modifier = Modifier.height(4.dp))
     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -176,16 +172,7 @@ private fun MetricCard(modifier: Modifier = Modifier, icon: ImageVector, title: 
 }
 
 // ── 分类占比卡片（圆环图） ──
-private val categoryColors = listOf(
-    Color(0xFF5B8FF9), // 柔蓝
-    Color(0xFF5AD8A6), // 薄荷绿
-    Color(0xFFF6BD16), // 暖金
-    Color(0xFFE86452), // 珊瑚红
-    Color(0xFF6DC8EC), // 天青
-    Color(0xFF945FB9), // 紫藤
-    Color(0xFFFF9845), // 蜜橙
-    Color(0xFF1E9493), // 青碧
-)
+private val categoryColors = SubscriptionChartPalette
 
 @Composable
 private fun CategoryBreakdownCard(state: SubscriptionStatsUiState) {
@@ -253,7 +240,7 @@ private fun CategoryBreakdownCard(state: SubscriptionStatsUiState) {
 
                         // 中心文字
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text("¥${formatPrice(totalAmount)}", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary, fontFamily = FontFamily.Monospace)
+                            Text("¥${formatPriceValue(totalAmount)}", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary, fontFamily = FontFamily.Monospace)
                             Text("年度总计", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
                     }
@@ -276,7 +263,7 @@ private fun CategoryBreakdownCard(state: SubscriptionStatsUiState) {
                         Spacer(modifier = Modifier.width(8.dp))
                         Text("${"%.1f".format(percentage)}%", style = MaterialTheme.typography.labelMedium, color = color, fontWeight = FontWeight.Bold)
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("¥${formatPrice(amount)}", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold, fontFamily = FontFamily.Monospace)
+                        Text("¥${formatPriceValue(amount)}", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold, fontFamily = FontFamily.Monospace)
                     }
 
                     // 该分类下的订阅列表
@@ -291,7 +278,7 @@ private fun CategoryBreakdownCard(state: SubscriptionStatsUiState) {
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Text(sub.name, modifier = Modifier.weight(1f), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                                 Text(
-                                    "¥${formatPrice(sub.price)}/${sub.cycle.displayName}",
+                                    "¥${formatPriceValue(sub.price)}/${sub.cycle.displayName}",
                                     style = MaterialTheme.typography.labelSmall,
                                     fontWeight = FontWeight.Medium,
                                     fontFamily = FontFamily.Monospace,
@@ -463,4 +450,3 @@ private fun BillingCalendarCard(state: SubscriptionStatsUiState) {
     }
 }
 
-private fun formatPrice(value: Double): String = if (value == value.toLong().toDouble()) "%.0f".format(value) else "%.2f".format(value)

@@ -20,11 +20,6 @@
     <ID>FunctionNaming:BackupComponents.kt$@Composable internal fun ErrorTip(message: String?)</ID>
     <ID>FunctionNaming:BackupComponents.kt$@Composable internal fun SuccessTip(message: String)</ID>
     <ID>FunctionNaming:BackupScreen.kt$@Composable fun BackupScreen( navController: NavController, viewModel: BackupViewModel = hiltViewModel() )</ID>
-    <ID>FunctionNaming:ProfileScreen.kt$@Composable fun ProfileScreen(navController: NavController, viewModel: ProfileViewModel = hiltViewModel())</ID>
-    <ID>FunctionNaming:ProfileScreen.kt$@Composable private fun EditProfileDialog(currentName: String, currentSignature: String, onDismiss: () -&gt; Unit, onConfirm: (String, String) -&gt; Unit)</ID>
-    <ID>FunctionNaming:ProfileScreen.kt$@Composable private fun ProfileHeader(userName: String, userSignature: String, onEditClick: () -&gt; Unit)</ID>
-    <ID>FunctionNaming:ProfileScreen.kt$@Composable private fun SettingsItem(icon: ImageVector, title: String, subtitle: String, onClick: () -&gt; Unit)</ID>
-    <ID>FunctionNaming:ProfileScreen.kt$@Composable private fun SettingsSection(title: String, content: @Composable ColumnScope.() -&gt; Unit)</ID>
     <ID>FunctionNaming:SettingsComponents.kt$@Composable internal fun SectionLabel(title: String)</ID>
     <ID>FunctionNaming:SettingsComponents.kt$@Composable internal fun SettingsCard(content: @Composable () -&gt; Unit)</ID>
     <ID>FunctionNaming:SettingsComponents.kt$@Composable internal fun SettingsEntryItem( icon: ImageVector, iconTint: Color, title: String, subtitle: String, onClick: () -&gt; Unit )</ID>
@@ -41,7 +36,7 @@
     <ID>FunctionNaming:WebDavSyncScreen.kt$@Composable private fun CloudBackupHeader(onRefresh: () -&gt; Unit)</ID>
     <ID>FunctionNaming:WebDavSyncScreen.kt$@Composable private fun CloudBackupItem( version: CloudBackupVersion, onRestore: () -&gt; Unit, onDelete: () -&gt; Unit, isRestoring: Boolean )</ID>
     <ID>FunctionNaming:WebDavSyncScreen.kt$@Composable private fun CloudEmptyState()</ID>
-    <ID>FunctionNaming:WebDavSyncScreen.kt$@Composable private fun CompactConfigField( value: String, onValueChange: (String) -&gt; Unit, label: String, placeholder: String, leadingIcon: ImageVector, isPassword: Boolean = false, passwordVisible: Boolean = false, onPasswordToggle: (() -&gt; Unit)? = null )</ID>
+    <ID>FunctionNaming:WebDavSyncScreen.kt$@Composable private fun CompactConfigField( value: String, onValueChange: (String) -&gt; Unit, label: String, placeholder: String, leadingIcon: ImageVector, isPassword: Boolean = false, passwordVisible: Boolean = false, onPasswordToggle: (() -> Unit)? = null )</ID>
     <ID>FunctionNaming:WebDavSyncScreen.kt$@Composable private fun ConnectionHeroSection(state: ConnectionState, config: WebDavConfig)</ID>
     <ID>FunctionNaming:WebDavSyncScreen.kt$@Composable private fun SyncActionButton( modifier: Modifier = Modifier, icon: ImageVector, label: String, description: String, tint: Color, isLoading: Boolean, isSuccess: Boolean, onClick: () -&gt; Unit )</ID>
     <ID>FunctionNaming:WebDavSyncScreen.kt$@Composable private fun SyncActionButtons( onUpload: () -&gt; Unit, onDownload: () -&gt; Unit, uploadState: Triple&lt;Boolean, Boolean, Boolean&gt;, downloadState: Triple&lt;Boolean, Boolean, Boolean&gt; )</ID>
@@ -56,17 +51,11 @@
     <ID>LongMethod:WebDavSyncScreen.kt$@Composable private fun WebDavConfigPanel( expanded: Boolean, onToggle: () -&gt; Unit, serverUrl: String, onServerUrlChange: (String) -&gt; Unit, username: String, onUsernameChange: (String) -&gt; Unit, password: String, onPasswordChange: (String) -&gt; Unit, remotePath: String, onRemotePathChange: (String) -&gt; Unit, trustAllCertificates: Boolean, onTrustAllCertificatesChange: (Boolean) -&gt; Unit, passwordVisible: Boolean, onPasswordToggle: () -&gt; Unit, onTestConnection: () -&gt; Unit, isTesting: Boolean, isConnected: Boolean )</ID>
     <ID>LongParameterList:WebDavSyncScreen.kt$( expanded: Boolean, onToggle: () -&gt; Unit, serverUrl: String, onServerUrlChange: (String) -&gt; Unit, username: String, onUsernameChange: (String) -&gt; Unit, password: String, onPasswordChange: (String) -&gt; Unit, remotePath: String, onRemotePathChange: (String) -&gt; Unit, trustAllCertificates: Boolean, onTrustAllCertificatesChange: (Boolean) -&gt; Unit, passwordVisible: Boolean, onPasswordToggle: () -&gt; Unit, onTestConnection: () -&gt; Unit, isTesting: Boolean, isConnected: Boolean )</ID>
     <ID>LongParameterList:WebDavSyncScreen.kt$( modifier: Modifier = Modifier, icon: ImageVector, label: String, description: String, tint: Color, isLoading: Boolean, isSuccess: Boolean, onClick: () -&gt; Unit )</ID>
-    <ID>LongParameterList:WebDavSyncScreen.kt$( value: String, onValueChange: (String) -&gt; Unit, label: String, placeholder: String, leadingIcon: ImageVector, isPassword: Boolean = false, passwordVisible: Boolean = false, onPasswordToggle: (() -&gt; Unit)? = null )</ID>
+    <ID>LongParameterList:WebDavSyncScreen.kt$( value: String, onValueChange: (String) -&gt; Unit, label: String, placeholder: String, leadingIcon: ImageVector, isPassword: Boolean = false, passwordVisible: Boolean = false, onPasswordToggle: (() -> Unit)? = null )</ID>
     <ID>MatchingDeclarationName:AiConfigComponents.kt$ModelOption</ID>
     <ID>MaxLineLength:AiConfigComponents.kt$border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = if (testState !is TestConnectionState.Testing &amp;&amp; apiKey.isNotBlank()) 0.5f else 0.2f))</ID>
     <ID>MaxLineLength:BackupScreen.kt$Text("请先选择备份文件夹", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(horizontal = 4.dp))</ID>
     <ID>MaxLineLength:BackupScreen.kt$val isDeleting = state is BackupState.DeletingBackup &amp;&amp; (state as BackupState.DeletingBackup).fileName == fileInfo.fileName</ID>
-    <ID>MaxLineLength:ProfileScreen.kt$Box</ID>
-    <ID>MaxLineLength:ProfileScreen.kt$LazyColumn</ID>
-    <ID>MaxLineLength:ProfileScreen.kt$OutlinedTextField(value = name, onValueChange = { name = it }, label = { Text("昵称") }, singleLine = true, modifier = Modifier.fillMaxWidth())</ID>
-    <ID>MaxLineLength:ProfileScreen.kt$OutlinedTextField(value = signature, onValueChange = { signature = it }, label = { Text("个性签名") }, singleLine = true, modifier = Modifier.fillMaxWidth())</ID>
-    <ID>MaxLineLength:ProfileScreen.kt$Text(title, style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Medium, modifier = Modifier.padding(vertical = 8.dp))</ID>
-    <ID>MaxLineLength:ProfileScreen.kt$item { ProfileHeader(userName = uiState.userName, userSignature = uiState.userSignature, onEditClick = { showEditDialog = true }) }</ID>
     <ID>MaxLineLength:WebDavSyncScreen.kt$CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.5.dp, color = MaterialTheme.colorScheme.primary)</ID>
     <ID>MaxLineLength:WebDavSyncScreen.kt$Icon(Icons.Default.Cloud, contentDescription = null, modifier = Modifier.size(14.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)</ID>
     <ID>MaxLineLength:WebDavSyncScreen.kt$Icon(Icons.Default.Cloud, contentDescription = null, modifier = Modifier.size(44.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.25f))</ID>
@@ -88,6 +77,5 @@
     <ID>MaxLineLength:WebDavSyncViewModel.kt$WebDavSyncViewModel$is SyncResult.PartialSuccess -&gt; SyncState.PartialSuccess(result.fileName, result.succeeded, result.failed, result.skipped)</ID>
     <ID>TooGenericExceptionCaught:BackupViewModel.kt$BackupViewModel$e: Exception</ID>
     <ID>TooGenericExceptionCaught:WebDavSyncViewModel.kt$WebDavSyncViewModel$e: Exception</ID>
-    <ID>UnusedParameter:ProfileScreen.kt$navController: NavController</ID>
   </CurrentIssues>
 </SmellBaseline>

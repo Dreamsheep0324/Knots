@@ -1,6 +1,6 @@
 package com.tang.prm.data.repository
 
-import com.google.gson.Gson
+import android.util.Log
 import com.tang.prm.data.remote.ChatMessage
 import com.tang.prm.data.remote.ChatRequest
 import com.tang.prm.data.remote.ChatStreamResponse
@@ -17,6 +17,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -33,8 +34,45 @@ class AiRepositoryImpl @Inject constructor(
     private val settingsRepository: SettingsRepository
 ) : AiRepository {
 
-    private val gson = Gson()
+    private val json = Json { ignoreUnknownKeys = true; isLenient = true }
     private val jsonMediaType = "application/json; charset=utf-8".toMediaType()
+
+    private fun buildChatHttpRequest(
+        apiKey: String, baseUrl: String, model: String,
+        systemPrompt: String, userPrompt: String
+    ): Request {
+        val request = ChatRequest(
+            model = model,
+            messages = listOf(
+                ChatMessage(role = "system", content = systemPrompt),
+                ChatMessage(role = "user", content = userPrompt)
+            )
+        )
+        val jsonBody = json.encodeToString(ChatRequest.serializer(), request)
+        return Request.Builder()
+            .url("$baseUrl/v1/chat/completions")
+            .addHeader("Authorization", "Bearer $apiKey")
+            .addHeader("Content-Type", "application/json")
+            .post(jsonBody.toRequestBody(jsonMediaType))
+            .build()
+    }
+
+    private fun parseSseChunk(data: String): String? {
+        return try {
+            json.decodeFromString(ChatStreamResponse.serializer(), data)
+                ?.choices?.firstOrNull()?.delta?.content
+        } catch (e: Exception) {
+            Log.w("AiRepository", "解析流式响应 chunk 失败，跳过", e)
+            null
+        }
+    }
+
+    private fun errorCodeToMessage(code: Int): String = when (code) {
+        401 -> "ERROR:INVALID_API_KEY"
+        429 -> "ERROR:RATE_LIMIT"
+        500, 502, 503 -> "ERROR:SERVER_ERROR"
+        else -> "ERROR:HTTP_$code"
+    }
 
     override fun streamChat(systemPrompt: String, userPrompt: String): Flow<String> = callbackFlow {
         val apiKey = settingsRepository.aiApiKey.first()
@@ -47,39 +85,15 @@ class AiRepositoryImpl @Inject constructor(
             return@callbackFlow
         }
 
-        val request = ChatRequest(
-            model = model,
-            messages = listOf(
-                ChatMessage(role = "system", content = systemPrompt),
-                ChatMessage(role = "user", content = userPrompt)
-            )
-        )
-
-        val jsonBody = gson.toJson(request)
-        val httpRequest = Request.Builder()
-            .url("$baseUrl/v1/chat/completions")
-            .addHeader("Authorization", "Bearer $apiKey")
-            .addHeader("Content-Type", "application/json")
-            .post(jsonBody.toRequestBody(jsonMediaType))
-            .build()
-
+        val httpRequest = buildChatHttpRequest(apiKey, baseUrl, model, systemPrompt, userPrompt)
         val call = okHttpClient.newCall(httpRequest)
 
         // 在独立协程中执行阻塞 IO，主协程立即注册 awaitClose 以响应取消。
-        // 旧实现将 awaitClose 放在所有阻塞调用之后，导致消费者取消 Flow 时
-        // call.cancel() 不会被调用，阻塞读取继续直到流耗尽或超时。
         val job: Job = launch(Dispatchers.IO) {
             try {
                 call.execute().use { response ->
                     if (!response.isSuccessful) {
-                        val errorCode = response.code
-                        val errorMsg = when (errorCode) {
-                            401 -> "ERROR:INVALID_API_KEY"
-                            429 -> "ERROR:RATE_LIMIT"
-                            500, 502, 503 -> "ERROR:SERVER_ERROR"
-                            else -> "ERROR:HTTP_$errorCode"
-                        }
-                        trySend(errorMsg)
+                        trySend(errorCodeToMessage(response.code))
                         return@use
                     }
 
@@ -93,15 +107,7 @@ class AiRepositoryImpl @Inject constructor(
                         if (line.startsWith("data: ")) {
                             val data = line.removePrefix("data: ").trim()
                             if (data == "[DONE]") break
-                            try {
-                                val streamResp = gson.fromJson(data, ChatStreamResponse::class.java)
-                                val content = streamResp?.choices?.firstOrNull()?.delta?.content
-                                if (content != null) {
-                                    trySend(content)
-                                }
-                            } catch (_: Exception) {
-                                continue
-                            }
+                            parseSseChunk(data)?.let { trySend(it) }
                         }
                     }
                 }
@@ -114,14 +120,10 @@ class AiRepositoryImpl @Inject constructor(
             } catch (e: Exception) {
                 trySend("ERROR:${e.javaClass.simpleName}")
             } finally {
-                // 显式关闭 Flow，消费者收到完成信号。
-                // 旧实现收到 [DONE] 后 break 进入 awaitClose，但未调用 close()，
-                // 导致 Flow 永远挂起，collect 永不完成。
                 close()
             }
         }
 
-        // 立即注册取消回调：消费者取消 Flow 时取消 OkHttp Call + 子协程
         awaitClose {
             call.cancel()
             job.cancel()
@@ -143,7 +145,7 @@ class AiRepositoryImpl @Inject constructor(
             maxTokens = 5
         )
 
-        val jsonBody = gson.toJson(request)
+        val jsonBody = json.encodeToString(ChatRequest.serializer(), request)
         val httpRequest = Request.Builder()
             .url(url)
             .addHeader("Authorization", "Bearer $apiKey")

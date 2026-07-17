@@ -2,7 +2,9 @@ package com.tang.prm.domain.usecase
 
 import com.tang.prm.domain.model.AlbumPhoto
 import com.tang.prm.domain.model.Contact
+import com.tang.prm.domain.model.Event
 import com.tang.prm.domain.model.EventType
+import com.tang.prm.domain.model.Gift
 import com.tang.prm.domain.model.SourceTypes
 import com.tang.prm.domain.repository.ContactRepository
 import com.tang.prm.domain.repository.EventRepository
@@ -36,53 +38,48 @@ class PhotoAlbumAggregationUseCase @Inject constructor(
         contactRepository.getAllContacts().distinctUntilChanged()
     ) { events, gifts, contacts ->
         val contactMap = contacts.associateBy { it.id }
-        val allPhotos = mutableListOf<AlbumPhoto>()
-
-        events.forEach { event ->
-            event.photos.forEachIndexed { photoIndex, photoUri ->
-                val participant = event.participants.firstOrNull()
-                val allNames = event.participants.map { it.name }
-                val allAvatars = event.participants.map { it.avatar }
-                val sourceType = if (event.type == EventType.CONVERSATION) SourceTypes.ALBUM_CHAT else SourceTypes.ALBUM_EVENT
-                allPhotos.add(
-                    AlbumPhoto(
-                        id = "${sourceType}_${event.id}_${photoIndex}",
-                        uri = photoUri,
-                        sourceType = sourceType,
-                        sourceId = event.id,
-                        sourceTitle = event.title,
-                        contactId = participant?.id,
-                        contactName = participant?.name,
-                        contactAvatar = participant?.avatar,
-                        allContactNames = allNames,
-                        allContactAvatars = allAvatars,
-                        date = event.time,
-                        location = event.location
-                    )
-                )
-            }
-        }
-
-        gifts.forEach { gift ->
-            gift.photos.forEachIndexed { photoIndex, pathString ->
-                allPhotos.add(
-                    AlbumPhoto(
-                        id = "gift_${gift.id}_${photoIndex}",
-                        uri = pathString.trim(),
-                        sourceType = SourceTypes.ALBUM_GIFT,
-                        sourceId = gift.id,
-                        sourceTitle = gift.giftName,
-                        contactId = gift.contactId,
-                        contactName = contactMap[gift.contactId]?.name,
-                        contactAvatar = contactMap[gift.contactId]?.avatar,
-                        date = gift.date,
-                        location = gift.location
-                    )
-                )
-            }
-        }
-
-        allPhotos.sortByDescending { it.date }
+        val allPhotos = (extractEventPhotos(events) + extractGiftPhotos(gifts, contactMap))
+            .sortedByDescending { it.date }
         PhotoAlbumAggregateData(allPhotos, contacts)
     }
+
+    private fun extractEventPhotos(events: List<Event>): List<AlbumPhoto> =
+        events.flatMap { event ->
+            val sourceType = if (event.type == EventType.CONVERSATION) SourceTypes.ALBUM_CHAT else SourceTypes.ALBUM_EVENT
+            val participant = event.participants.firstOrNull()
+            event.photos.mapIndexed { photoIndex, photoUri ->
+                AlbumPhoto(
+                    id = "${sourceType}_${event.id}_${photoIndex}",
+                    uri = photoUri,
+                    sourceType = sourceType,
+                    sourceId = event.id,
+                    sourceTitle = event.title,
+                    contactId = participant?.id,
+                    contactName = participant?.name,
+                    contactAvatar = participant?.avatar,
+                    allContactNames = event.participants.map { it.name },
+                    allContactAvatars = event.participants.map { it.avatar },
+                    date = event.time,
+                    location = event.location
+                )
+            }
+        }
+
+    private fun extractGiftPhotos(gifts: List<Gift>, contactMap: Map<Long, Contact>): List<AlbumPhoto> =
+        gifts.flatMap { gift ->
+            gift.photos.mapIndexed { photoIndex, pathString ->
+                AlbumPhoto(
+                    id = "gift_${gift.id}_${photoIndex}",
+                    uri = pathString.trim(),
+                    sourceType = SourceTypes.ALBUM_GIFT,
+                    sourceId = gift.id,
+                    sourceTitle = gift.giftName,
+                    contactId = gift.contactId,
+                    contactName = contactMap[gift.contactId]?.name,
+                    contactAvatar = contactMap[gift.contactId]?.avatar,
+                    date = gift.date,
+                    location = gift.location
+                )
+            }
+        }
 }

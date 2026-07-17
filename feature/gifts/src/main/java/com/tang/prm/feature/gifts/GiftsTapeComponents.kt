@@ -1,4 +1,4 @@
-﻿package com.tang.prm.feature.gifts
+package com.tang.prm.feature.gifts
 
 import com.tang.prm.ui.animation.core.AnimationTokens
 import com.tang.prm.ui.animation.primitives.rememberContinuousRotation
@@ -27,7 +27,7 @@ import androidx.compose.ui.unit.sp
 import com.tang.prm.domain.model.GiftType
 import com.tang.prm.ui.theme.*
 import com.tang.prm.domain.util.DateUtils
-import kotlin.math.roundToInt
+
 import com.tang.prm.ui.theme.GiftTypeStyle
 import com.tang.prm.ui.theme.toStyle
 import java.util.Locale
@@ -159,15 +159,7 @@ private fun TapeLabelInfo(
                 color = TextGray.copy(alpha = AnimationTokens.Alpha.half)
             )
             Spacer(modifier = Modifier.height(4.dp))
-            gift.amount?.let { amt ->
-                Text(
-                    "¥${amt.roundToInt()}",
-                    fontFamily = FontFamily.Monospace,
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = TextGray
-                )
-            } ?: gift.occasion?.let { occ ->
+            gift.occasion?.let { occ ->
                 Box(
                     modifier = Modifier
                         .clip(RoundedCornerShape(4.dp))

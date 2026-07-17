@@ -41,9 +41,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-@Suppress("UNUSED_PARAMETER")
 fun AddContactScreen(
-    contactId: Long = 0L,
     navController: androidx.navigation.NavController,
     onPickAvatar: (() -> Unit)? = null,
     viewModel: AddContactViewModel = hiltViewModel()
@@ -102,7 +100,7 @@ fun AddContactScreen(
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             item {
-                ProfileHeader(
+                AddContactProfileHeader(
                     avatar = uiState.avatar,
                     onAvatarClick = { onPickAvatar?.invoke() }
                 )

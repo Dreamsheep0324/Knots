@@ -41,7 +41,6 @@ data class HolographicConfig(
     val enableScanLine: Boolean = true,
     val enableShimmer: Boolean = true,
     val enableFloat: Boolean = true,
-    val enableWaveform: Boolean = false,
     val enablePulse: Boolean = true,
     val scanLineColor: Color = Color.Unspecified,
     val shimmerColor: Color = Color.Unspecified,
@@ -192,15 +191,6 @@ private fun HolographicCardContent(
         easing = AnimationTokens.Easing.emphasis,
         repeatMode = RepeatMode.Reverse,
         label = "holo_float"
-    )
-
-    val _pulseAlpha by rememberPausableInfiniteFloatLoop(
-        initialValue = if (config.enablePulse) config.pulseMinAlpha else 1f,
-        targetValue = if (config.enablePulse) config.pulseMaxAlpha else 1f,
-        durationMillis = if (config.enablePulse) config.pulseDuration else Int.MAX_VALUE,
-        easing = AnimationTokens.Easing.linear,
-        repeatMode = RepeatMode.Reverse,
-        label = "holo_pulse"
     )
 
     val scanLineOffset by rememberPausableInfiniteFloatLoop(

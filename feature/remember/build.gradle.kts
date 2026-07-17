@@ -7,7 +7,6 @@ android {
     namespace = "com.tang.prm.feature.remember"
     defaultConfig {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        consumerProguardFiles("consumer-rules.pro")
     }
 }
 

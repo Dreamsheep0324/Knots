@@ -10,6 +10,8 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -17,6 +19,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
@@ -27,13 +30,14 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.tang.prm.domain.model.Contact
 import com.tang.prm.domain.model.CustomType
-import com.tang.prm.domain.model.AppStrings
 import com.tang.prm.ui.animation.core.AnimationTokens
 import com.tang.prm.ui.theme.SignalAmber
 import com.tang.prm.ui.theme.SignalSky
 import com.tang.prm.domain.util.Zodiac
 import com.tang.prm.domain.util.ZodiacUtils
 import androidx.compose.ui.res.painterResource
+import java.util.Calendar
+import kotlinx.coroutines.delay
 
 @Composable
 internal fun ProfileHeader(
@@ -94,12 +98,30 @@ internal fun ProfileHeader(
                     .border(3.dp, MaterialTheme.colorScheme.outline, CircleShape),
                 contentAlignment = Alignment.Center
             ) {
-                AsyncImage(
-                    model = contact.avatar,
-                    contentDescription = contact.name,
-                    modifier = Modifier.fillMaxSize().clip(CircleShape),
-                    contentScale = ContentScale.Crop
-                )
+                val avatar = contact.avatar
+                if (avatar != null) {
+                    AsyncImage(
+                        model = avatar,
+                        contentDescription = contact.name,
+                        modifier = Modifier.fillMaxSize().clip(CircleShape),
+                        contentScale = ContentScale.Crop
+                    )
+                } else {
+                    // 无头像：primary 色块 + 首字母兜底，避免空白圆圈
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(MaterialTheme.colorScheme.primary),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = contact.name.firstOrNull()?.toString() ?: "?",
+                            style = MaterialTheme.typography.headlineMedium,
+                            color = Color.White,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
             }
 
             Spacer(modifier = Modifier.height(12.dp))
@@ -223,12 +245,21 @@ private fun ZodiacTagChip(zodiac: Zodiac) {
 
 @Composable
 private fun DaysKnownBadge(knowingDate: Long, color: Color) {
-    val text = remember(knowingDate) {
-        val diff = System.currentTimeMillis() - knowingDate
-        val days = (diff / (1000L * 60 * 60 * 24)).toInt().coerceAtLeast(0)
-        val years = days / 365
-        val remainDays = days % 365
-        if (years > 0) "${years}年${remainDays}天" else "${days}天"
+    // 使用 produceState 而非 remember：让 badge 在跨日时自动更新（页面停留到午夜也会刷新）。
+    // remember(knowingDate) 仅在 knowingDate 变化时重算，长时间停留同一页面会显示过期天数。
+    val text by produceState(initialValue = "", knowingDate) {
+        while (true) {
+            value = formatKnownDuration(knowingDate) ?: "0天"
+            // 计算到下一次午夜的时长，跨日时自动重新计算
+            val nextMidnight = Calendar.getInstance().apply {
+                add(Calendar.DAY_OF_YEAR, 1)
+                set(Calendar.HOUR_OF_DAY, 0)
+                set(Calendar.MINUTE, 0)
+                set(Calendar.SECOND, 0)
+                set(Calendar.MILLISECOND, 0)
+            }.timeInMillis
+            delay((nextMidnight - System.currentTimeMillis()).coerceAtLeast(0L))
+        }
     }
     Surface(shape = RoundedCornerShape(14.dp), color = color.copy(alpha = AnimationTokens.Alpha.faint)) {
         Row(
@@ -267,19 +298,14 @@ private fun IntimacyBadge(score: Int, color: Color, level: IntimacyLevelInfo) {
                 Icon(imageVector = level.icon, contentDescription = null, tint = color, modifier = Modifier.size(16.dp))
             }
             Text(text = level.name, style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold, color = color)
-            Box(
-                modifier = Modifier
-                    .width(48.dp)
-                    .height(4.dp)
-                    .background(color.copy(alpha = AnimationTokens.Alpha.subtle), RoundedCornerShape(2.dp))
-            ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxHeight()
-                        .fillMaxWidth(score / 100f)
-                        .background(color, RoundedCornerShape(2.dp))
-                )
-            }
+            IntimacyProgressBar(
+                score = score,
+                fillBrush = SolidColor(color),
+                modifier = Modifier.width(48.dp),
+                height = 4.dp,
+                cornerRadius = 2.dp,
+                background = color.copy(alpha = AnimationTokens.Alpha.subtle)
+            )
             Text(text = "$score", style = MaterialTheme.typography.labelSmall, color = color, fontWeight = FontWeight.Bold, fontSize = 11.sp)
         }
     }

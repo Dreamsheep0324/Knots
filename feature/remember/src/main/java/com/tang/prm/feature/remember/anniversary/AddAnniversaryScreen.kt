@@ -30,7 +30,6 @@ import com.tang.prm.ui.components.DiscardEditDialog
 @Composable
 fun AddAnniversaryScreen(
     contactId: Long? = null,
-    anniversaryId: Long? = null,
     navController: NavController,
     viewModel: AddAnniversaryViewModel = hiltViewModel()
 ) {

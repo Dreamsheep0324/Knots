@@ -7,7 +7,6 @@ android {
     namespace = "com.tang.prm.feature.reflect"
     defaultConfig {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        consumerProguardFiles("consumer-rules.pro")
     }
 }
 

@@ -1,6 +1,7 @@
 package com.tang.prm.feature.people.contacts
 
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import com.tang.prm.ui.animation.core.AnimationTokens
 import com.tang.prm.ui.animation.primitives.rememberBreathingPulse
 import androidx.compose.foundation.BorderStroke
@@ -12,7 +13,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
@@ -44,9 +44,6 @@ import com.tang.prm.ui.components.ContactAvatar
 import com.tang.prm.ui.components.ContactRelationshipBadge
 import com.tang.prm.ui.theme.LocalIntimacyColors
 import com.tang.prm.ui.theme.SignalGreen
-import java.util.Locale
-
-internal val CardGreen = SignalGreen
 
 @Composable
 internal fun ContactsCardView(
@@ -107,7 +104,7 @@ private fun ContactMiniCard(
                         horizontalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
                         Text(
-                            "[${String.format(Locale.US, "%04d", contact.id)}]",
+                            "[${contact.formattedId}]",
                             fontFamily = FontFamily.Monospace,
                             fontSize = 9.sp,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -154,20 +151,14 @@ private fun ContactMiniCard(
                         modifier = Modifier.weight(1f),
                         verticalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(6.dp)
-                                .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(1.dp))
-                                .border(0.5.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(1.dp))
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxHeight()
-                                    .fillMaxWidth((contact.intimacyScore.toFloat() / 100f).coerceIn(0f, 1f))
-                                    .background(rarityColor.copy(alpha = AnimationTokens.Alpha.strong), RoundedCornerShape(1.dp))
-                            )
-                        }
+                        IntimacyProgressBar(
+                            score = contact.intimacyScore,
+                            fillBrush = SolidColor(rarityColor.copy(alpha = AnimationTokens.Alpha.strong)),
+                            modifier = Modifier.fillMaxWidth(),
+                            height = 6.dp,
+                            cornerRadius = 1.dp,
+                            border = BorderStroke(0.5.dp, MaterialTheme.colorScheme.outline)
+                        )
 
                         Row(
                             modifier = Modifier.fillMaxWidth(),
@@ -188,13 +179,13 @@ private fun ContactMiniCard(
                                     modifier = Modifier
                                         .size(5.dp)
                                         .clip(CircleShape)
-                                        .background(CardGreen.copy(alpha = statusAlpha))
+                                        .background(SignalGreen.copy(alpha = statusAlpha))
                                 )
                                 Text(
                                     "在线",
                                     fontFamily = FontFamily.Monospace,
                                     fontSize = 8.sp,
-                                    color = CardGreen
+                                    color = SignalGreen
                                 )
                             }
 

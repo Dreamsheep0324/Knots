@@ -42,9 +42,7 @@ import com.tang.prm.domain.model.IntimacyTier
 import com.tang.prm.domain.model.Contact
 import com.tang.prm.ui.animation.core.AnimationTokens
 import com.tang.prm.ui.animation.core.rememberPausableInfiniteFloatLoop
-import com.tang.prm.ui.animation.primitives.rememberBreathingPulse
 import com.tang.prm.ui.animation.primitives.rememberScanLineOffset
-import com.tang.prm.ui.animation.primitives.rememberShimmerPhase
 import com.tang.prm.ui.components.ContactAvatar
 import com.tang.prm.ui.components.ContactRelationshipBadge
 import com.tang.prm.ui.theme.Dimens
@@ -78,18 +76,8 @@ internal fun TerminalCardFrontV2(
         label = "floatOffset"
     )
 
-    val _pulseAlpha by rememberBreathingPulse(
-        minAlpha = 0.2f,
-        maxAlpha = 0.6f,
-        cycleDuration = AnimationTokens.Cycle.normal
-    )
-
     val scanLineOffset by rememberScanLineOffset(
         cycleDuration = AnimationTokens.Cycle.slow
-    )
-
-    val _shimmerOffset by rememberShimmerPhase(
-        cycleDuration = 2500
     )
 
     var wavePhase by remember { mutableStateOf(0f) }

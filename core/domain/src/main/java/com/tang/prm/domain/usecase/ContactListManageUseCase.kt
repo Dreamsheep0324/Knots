@@ -82,14 +82,6 @@ class ContactListManageUseCase @Inject constructor(
         return allContacts.filter { it.id !in circle.memberIds }
     }
 
-    fun getFilteredContacts(contacts: List<Contact>, query: String): List<Contact> {
-        return if (query.isBlank()) contacts
-        else contacts.filter {
-            it.name.contains(query, ignoreCase = true) ||
-            it.phone?.contains(query, ignoreCase = true) == true
-        }
-    }
-
     fun getSortedCircles(circles: List<CircleWithMembers>, sortMode: CircleSortMode): List<CircleWithMembers> {
         return when (sortMode) {
             CircleSortMode.DEFAULT -> circles

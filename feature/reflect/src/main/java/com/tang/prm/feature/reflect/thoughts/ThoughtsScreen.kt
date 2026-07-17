@@ -3,7 +3,6 @@
 package com.tang.prm.feature.reflect.thoughts
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -19,7 +18,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
@@ -30,7 +28,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -42,7 +39,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontFamily
@@ -52,8 +48,8 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.tang.prm.domain.model.ThoughtType
-import com.tang.prm.ui.animation.core.AnimationTokens
 import com.tang.prm.ui.components.EmptyState
+import com.tang.prm.ui.components.IconGradientSectionHeader
 import com.tang.prm.ui.theme.SignalAmber
 
 @Composable
@@ -108,7 +104,7 @@ fun ThoughtsScreen(
             ThoughtLevelBanner(uiState = uiState)
 
             if (uiState.data.contactThoughts.isNotEmpty()) {
-                SectionHeader(
+                IconGradientSectionHeader(
                     icon = Icons.Default.Person,
                     iconColor = SignalAmber,
                     title = "关联人物",
@@ -217,63 +213,4 @@ fun ThoughtsScreen(
     }
 }
 
-@Composable
-private fun SectionHeader(
-    icon: ImageVector,
-    iconColor: Color,
-    title: String,
-    action: String?,
-    onActionClick: (() -> Unit)?,
-    modifier: Modifier = Modifier
-) {
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(vertical = 2.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Box(
-            modifier = Modifier
-                .size(20.dp)
-                .background(iconColor.copy(alpha = 0.1f), CircleShape),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(icon, contentDescription = null, tint = iconColor, modifier = Modifier.size(12.dp))
-        }
-        Spacer(modifier = Modifier.width(6.dp))
-        Text(
-            title,
-            fontSize = 13.sp,
-            fontWeight = FontWeight.SemiBold,
-            color = MaterialTheme.colorScheme.onSurface
-        )
-        Spacer(modifier = Modifier.width(8.dp))
-        Box(
-            modifier = Modifier
-                .weight(1f)
-                .height(1.dp)
-                .background(
-                    Brush.horizontalGradient(
-                        colors = listOf(iconColor.copy(alpha = 0.2f), Color.Transparent)
-                    )
-                )
-        )
-        if (action != null && onActionClick != null) {
-            Spacer(modifier = Modifier.width(6.dp))
-            Surface(
-                shape = RoundedCornerShape(8.dp),
-                color = iconColor.copy(alpha = AnimationTokens.Alpha.faint)
-            ) {
-                Text(
-                    action,
-                    fontFamily = FontFamily.Monospace,
-                    fontSize = 10.sp,
-                    color = iconColor,
-                    modifier = Modifier
-                        .clickable { onActionClick() }
-                        .padding(horizontal = 8.dp, vertical = 3.dp)
-                )
-            }
-        }
-    }
-}
+

@@ -19,8 +19,8 @@ android {
 
     defaultConfig {
         applicationId = "com.tang.prm"
-        versionCode = 10401
-        versionName = "1.4.1"
+        versionCode = 10500
+        versionName = "1.5.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -94,6 +94,7 @@ dependencies {
     implementation(project(":feature:profile"))
     implementation(project(":feature:circle"))
     implementation(project(":feature:home"))
+    implementation(project(":feature:recipes"))
 
     // Baseline Profile — release 构建自动集成 AOT 优化
     baselineProfile(project(":baselineprofile"))
@@ -104,20 +105,13 @@ dependencies {
 
     // Compose
     implementation(platform(libs.compose.bom))
-    implementation(libs.compose.ui)
-    implementation(libs.compose.ui.graphics)
-    implementation(libs.compose.ui.tooling.preview)
-    implementation(libs.compose.material3)
-    implementation(libs.compose.material.icons.extended)
-    implementation(libs.compose.foundation)
+    implementation(libs.bundles.compose)
 
     // AndroidX
     implementation(libs.core.ktx)
     implementation(libs.activity.compose)
-    implementation(libs.lifecycle.runtime.ktx)
+    implementation(libs.bundles.lifecycle)
     implementation(libs.lifecycle.process)
-    implementation(libs.lifecycle.viewmodel.compose)
-    implementation(libs.lifecycle.runtime.compose)
     implementation(libs.navigation.compose)
 
     // Hilt（app 模块需要自己的 Hilt 注入入口）
@@ -129,8 +123,7 @@ dependencies {
     implementation(libs.kotlinx.serialization.json)
 
     // Debug
-    debugImplementation(libs.compose.ui.tooling)
-    debugImplementation(libs.compose.ui.test.manifest)
+    debugImplementation(libs.bundles.compose.debug)
 
     // Test
     testImplementation(libs.junit.jupiter.api)

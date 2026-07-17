@@ -97,6 +97,11 @@ fun ContactDetailScreen(
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     CircularProgressIndicator(color = MaterialTheme.colorScheme.primary, strokeWidth = 3.dp)
                 }
+            } else {
+                // 加载失败或人物已被删除：显示错误提示 + 返回按钮
+                ContactNotFoundState(
+                    onBack = { navController.popBackStack() }
+                )
             }
         }
     }

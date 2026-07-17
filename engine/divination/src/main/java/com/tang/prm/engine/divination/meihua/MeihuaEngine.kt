@@ -50,8 +50,8 @@ object MeihuaEngine {
             Method.EXTERNAL -> resolveExternalMethod(externalSelections, externalCount)
         }
 
-        val upperTrigram = TrigramData.byIndex[methodResult.upperTrigramIndex]!!
-        val lowerTrigram = TrigramData.byIndex[methodResult.lowerTrigramIndex]!!
+        val upperTrigram = trigramByIndex(methodResult.upperTrigramIndex)
+        val lowerTrigram = trigramByIndex(methodResult.lowerTrigramIndex)
 
         val mainHexagram = findHexagramByTrigrams(methodResult.upperTrigramIndex, methodResult.lowerTrigramIndex)
 
@@ -77,8 +77,8 @@ object MeihuaEngine {
         val tiYong = resolveTiYongByMovingYao(upperTrigram, lowerTrigram, methodResult.movingYaoIndex)
         val changedTiYong = if (changedUpperTrigram != null && changedLowerTrigram != null) {
             resolveTiYongByMovingYao(
-                TrigramData.byIndex[changedUpperTrigram.first]!!,
-                TrigramData.byIndex[changedLowerTrigram.first]!!,
+                changedUpperTrigram.second,
+                changedLowerTrigram.second,
                 methodResult.movingYaoIndex
             )
         } else null
@@ -256,11 +256,17 @@ object MeihuaEngine {
     }
 
     private fun findHexagramByTrigrams(upperIndex: Int, lowerIndex: Int): HexagramInfo {
-        val upperTrigram = TrigramData.byIndex[upperIndex]!!
-        val lowerTrigram = TrigramData.byIndex[lowerIndex]!!
+        val upperTrigram = trigramByIndex(upperIndex)
+        val lowerTrigram = trigramByIndex(lowerIndex)
         val symbol = "${upperTrigram.symbol}${lowerTrigram.symbol}"
         return requireNotNull(HexagramData.findBySymbol(symbol)) {
             "未找到符号为 '$symbol' 的卦象（上卦索引=$upperIndex, 下卦索引=$lowerIndex）"
         }
+    }
+
+    /** 安全获取卦象信息：校验索引范围后 getValue，未来数据变更时 fail-fast 且错误信息有用 */
+    private fun trigramByIndex(index: Int): TrigramInfo {
+        require(index in 1..8) { "卦索引越界: $index（有效范围 1..8）" }
+        return TrigramData.byIndex.getValue(index)
     }
 }

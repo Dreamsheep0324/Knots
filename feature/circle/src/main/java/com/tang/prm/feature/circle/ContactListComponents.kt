@@ -5,7 +5,6 @@ import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -40,16 +39,14 @@ import androidx.compose.ui.unit.sp
 import com.tang.prm.ui.animation.core.AnimationTokens
 import com.tang.prm.ui.animation.core.rememberPausableInfiniteValue
 import com.tang.prm.ui.animation.primitives.rememberBreathingPulse
-import com.tang.prm.ui.theme.DarkOnSurfaceVariant
-import com.tang.prm.ui.theme.DarkOutline
 import com.tang.prm.ui.theme.SignalPurple
 
 internal val TerminalTextDim: Color
-    @Composable @ReadOnlyComposable get() = if (isSystemInDarkTheme()) DarkOnSurfaceVariant else Color(0xFF64748B)
+    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.onSurfaceVariant
 internal val TerminalTextMuted: Color
-    @Composable @ReadOnlyComposable get() = if (isSystemInDarkTheme()) DarkOnSurfaceVariant else Color(0xFF94A3B8)
+    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.onSurfaceVariant
 private val TerminalGrid: Color
-    @Composable @ReadOnlyComposable get() = if (isSystemInDarkTheme()) DarkOutline else Color(0xFFE2E8F0)
+    @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.outline
 
 @Composable
 internal fun TerminalPrompt() {

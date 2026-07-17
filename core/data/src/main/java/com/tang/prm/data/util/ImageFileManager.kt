@@ -2,6 +2,7 @@ package com.tang.prm.data.util
 
 import android.content.Context
 import android.net.Uri
+import android.util.Log
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -10,6 +11,7 @@ import java.util.UUID
 
 object ImageFileManager {
 
+    private const val TAG = "ImageFileManager"
     private const val DIR_NAME = "app_images"
 
     private fun getImagesDir(context: Context): File {
@@ -30,7 +32,10 @@ object ImageFileManager {
                     }
                 }
                 file.absolutePath
-            } catch (_: Exception) { null }
+            } catch (e: Exception) {
+                Log.w(TAG, "复制图片到内部存储失败: $uri", e)
+                null
+            }
         }
     }
 
@@ -53,7 +58,10 @@ object ImageFileManager {
     }
 
     fun countPhotosFromJson(photoJsons: List<String>): Int = photoJsons.sumOf { json ->
-        try { org.json.JSONArray(json).length() } catch (_: Exception) { 0 }
+        try { org.json.JSONArray(json).length() } catch (e: Exception) {
+            Log.w(TAG, "解析照片 JSON 失败", e)
+            0
+        }
     }
 
     suspend fun deleteLocalPhotos(photos: List<String>) {

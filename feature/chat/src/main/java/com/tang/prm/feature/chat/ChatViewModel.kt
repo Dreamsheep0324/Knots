@@ -24,9 +24,7 @@ data class ChatDataState(
     val conversations: List<ConversationUiModel> = emptyList(),
     val isLoading: Boolean = false
 )
-data class ChatDialogState(
-    val showDeleteConfirm: Long? = null
-)
+class ChatDialogState
 data class ChatUiState(
     val data: ChatDataState = ChatDataState(),
     val dialog: ChatDialogState = ChatDialogState()
@@ -61,7 +59,4 @@ class ChatViewModel @Inject constructor(
         ChatUiState(data = data, dialog = dialog)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), ChatUiState())
 
-    fun showDeleteConfirm(id: Long?) {
-        _dialogState.value = ChatDialogState(showDeleteConfirm = id)
-    }
 }

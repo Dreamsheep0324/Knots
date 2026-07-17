@@ -1,12 +1,9 @@
 package com.tang.prm.data.repository
 
 import android.content.Context
-import android.content.SharedPreferences
 import android.net.Uri
-import android.util.Base64
 import android.util.Log
 import com.tang.prm.data.remote.WebDavClient
-import com.tang.prm.data.util.safeCall
 import com.tang.prm.domain.model.CloudBackupVersion
 import com.tang.prm.domain.model.ConnectionTestResult
 import com.tang.prm.domain.model.FileEntry
@@ -16,16 +13,15 @@ import com.tang.prm.domain.model.SyncResult
 import com.tang.prm.domain.model.WebDavConfig
 import com.tang.prm.domain.repository.BackupRepositoryInterface
 import com.tang.prm.domain.repository.WebDavRepository
+import com.tang.prm.domain.util.DateUtils
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import java.io.File
 import javax.inject.Inject
-import javax.inject.Named
 import javax.inject.Singleton
 
 @Singleton
@@ -33,51 +29,24 @@ class WebDavRepositoryImpl @Inject constructor(
     @ApplicationContext private val context: Context,
     private val webDavClient: WebDavClient,
     private val backupRepository: BackupRepositoryInterface,
-    @Named("webdav") private val encryptedPrefs: SharedPreferences
+    private val configStore: WebDavConfigStore,
+    private val fileDiffCalculator: SyncFileDiffCalculator
 ) : WebDavRepository {
 
     companion object {
         private const val TAG = "WebDavRepository"
-        private const val PREFS_NAME = "webdav_config"
-        private const val KEY_SERVER_URL = "server_url"
-        private const val KEY_USERNAME = "username"
-        private const val KEY_PASSWORD = "password"
-        private const val KEY_REMOTE_PATH = "remote_path"
-        private const val KEY_AUTO_SYNC_ON_LAUNCH = "auto_sync_on_launch"
-        private const val KEY_LAST_SYNC_TIME = "last_sync_time"
-        private const val KEY_LAST_SYNC_DIRECTION = "last_sync_direction"
-        private const val KEY_TRUST_ALL_CERTS = "trust_all_certificates"
     }
 
     private val json = Json { ignoreUnknownKeys = true; encodeDefaults = true }
 
-    private val prefs: SharedPreferences by lazy {
-        context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-    }
-
-    private val configCache = MutableStateFlow(readConfig())
-
-    override fun getConfig(): Flow<WebDavConfig> = configCache
+    override fun getConfig(): Flow<WebDavConfig> = configStore.configCache
 
     override suspend fun saveConfig(config: WebDavConfig) {
-        safeCall {
-            prefs.edit().apply {
-                putString(KEY_SERVER_URL, config.serverUrl)
-                putString(KEY_USERNAME, config.username)
-                putString(KEY_REMOTE_PATH, config.remotePath)
-                putBoolean(KEY_AUTO_SYNC_ON_LAUNCH, config.autoSyncOnLaunch)
-                putBoolean(KEY_TRUST_ALL_CERTS, config.trustAllCertificates)
-                putLong(KEY_LAST_SYNC_TIME, config.lastSyncTime)
-                putString(KEY_LAST_SYNC_DIRECTION, config.lastSyncDirection)
-                apply()
-            }
-            savePassword(config.password)
-            configCache.value = config
-        }
+        configStore.saveConfig(config)
     }
 
     override suspend fun testConnection(): ConnectionTestResult {
-        val config = readConfig()
+        val config = configStore.readConfig()
         if (config.serverUrl.isBlank()) {
             return ConnectionTestResult.Error("未配置 WebDAV 服务器地址")
         }
@@ -85,7 +54,7 @@ class WebDavRepositoryImpl @Inject constructor(
     }
 
     override suspend fun listRemoteBackups(): List<CloudBackupVersion> {
-        val config = readConfig()
+        val config = configStore.readConfig()
         if (config.serverUrl.isBlank()) return emptyList()
 
         // 尝试读取增量清单
@@ -94,14 +63,20 @@ class WebDavRepositoryImpl @Inject constructor(
             val imageCount = manifest.images.size + manifest.giftPhotos.size
             val dbDisplayName = try {
                 val timePart = manifest.dbBackup.removePrefix("tang_backup_").removeSuffix(".zip")
-                java.text.SimpleDateFormat("yyyyMMdd_HHmmss", java.util.Locale.getDefault()).parse(timePart)
-                    ?.let { java.text.SimpleDateFormat("yyyy-MM-dd HH:mm", java.util.Locale.getDefault()).format(it) }
+                DateUtils.parseBackupTimestamp(timePart)
+                    ?.let { DateUtils.formatDateTimeHyphen(it) }
                     ?: manifest.dbBackup
-            } catch (_: Exception) { manifest.dbBackup }
+            } catch (e: Exception) {
+                Log.w(TAG, "解析远程清单日期失败，使用原始文件名", e)
+                manifest.dbBackup
+            }
 
             // 获取远端数据库文件大小
             val dbFileSize = if (manifest.dbBackup.isNotBlank()) {
-                try { webDavClient.getSubDirFileSize(config, "db", manifest.dbBackup) } catch (_: Exception) { 0L }
+                try { webDavClient.getSubDirFileSize(config, "db", manifest.dbBackup) } catch (e: Exception) {
+                    Log.w(TAG, "获取远程数据库文件大小失败，显示为 0", e)
+                    0L
+                }
             } else 0L
 
             return listOf(CloudBackupVersion(
@@ -121,7 +96,7 @@ class WebDavRepositoryImpl @Inject constructor(
     // ===== 增量上传 =====
 
     override suspend fun uploadBackup(): Flow<SyncResult> = flow {
-        val config = readConfig()
+        val config = configStore.readConfig()
         if (config.serverUrl.isBlank()) {
             emit(SyncResult.Error("未配置 WebDAV 服务器"))
             return@flow
@@ -148,8 +123,8 @@ class WebDavRepositoryImpl @Inject constructor(
         val localGiftPhotos = backupRepository.listLocalImageFiles("gift_photos")
 
         // 3. 计算差异
-        val (imagesToUpload, imagesToDeleteRemote) = computeFileDiff(localImages, remoteManifest?.images ?: emptyMap())
-        val (giftToUpload, giftToDeleteRemote) = computeFileDiff(localGiftPhotos, remoteManifest?.giftPhotos ?: emptyMap())
+        val (imagesToUpload, imagesToDeleteRemote) = fileDiffCalculator.computeUploadDiff(localImages, remoteManifest?.images ?: emptyMap())
+        val (giftToUpload, giftToDeleteRemote) = fileDiffCalculator.computeUploadDiff(localGiftPhotos, remoteManifest?.giftPhotos ?: emptyMap())
         val dbChanged = isDbChanged(remoteManifest)
 
         val totalSteps = (if (dbChanged) 1 else 0) + imagesToUpload.size + giftToUpload.size +
@@ -250,7 +225,7 @@ class WebDavRepositoryImpl @Inject constructor(
         )
         writeRemoteManifest(newManifest)
 
-        saveLastSyncTime(now, "upload")
+        configStore.saveLastSyncTime(now, "upload")
         val totalUploaded = imagesToUpload.size + giftToUpload.size - uploadFailures
         val totalSkipped = (localImages.size + localGiftPhotos.size) - imagesToUpload.size - giftToUpload.size
 
@@ -269,7 +244,7 @@ class WebDavRepositoryImpl @Inject constructor(
     // ===== 增量下载 =====
 
     override suspend fun downloadBackup(fileName: String): Flow<SyncResult> = flow {
-        val config = readConfig()
+        val config = configStore.readConfig()
         if (config.serverUrl.isBlank()) {
             emit(SyncResult.Error("未配置 WebDAV 服务器"))
             return@flow
@@ -288,10 +263,11 @@ class WebDavRepositoryImpl @Inject constructor(
                 backupRepository.restoreFromUri(uri).collect { result ->
                     when (result) {
                         is RestoreResult.Success -> {
-                            saveLastSyncTime(System.currentTimeMillis(), "download")
+                            configStore.saveLastSyncTime(System.currentTimeMillis(), "download")
                             emit(SyncResult.DownloadSuccess(fileName, 0, 0))
                         }
                         is RestoreResult.Error -> emit(SyncResult.Error(result.message))
+                        is RestoreResult.FatalError -> emit(SyncResult.Error(result.message))
                     }
                 }
             } catch (e: Exception) {
@@ -309,10 +285,10 @@ class WebDavRepositoryImpl @Inject constructor(
         val localGiftPhotos = backupRepository.listLocalImageFiles("gift_photos")
 
         // 3. 计算差异
-        val (imagesToDownload, imagesToDeleteLocal) = computeDownloadDiff(
+        val (imagesToDownload, imagesToDeleteLocal) = fileDiffCalculator.computeDownloadDiff(
             localImages, remoteManifest.images
         )
-        val (giftToDownload, giftToDeleteLocal) = computeDownloadDiff(
+        val (giftToDownload, giftToDeleteLocal) = fileDiffCalculator.computeDownloadDiff(
             localGiftPhotos, remoteManifest.giftPhotos
         )
         val dbChanged = true // 恢复时总是下载最新数据库
@@ -378,6 +354,10 @@ class WebDavRepositoryImpl @Inject constructor(
                             dbRestoreFailed = true
                             emit(SyncResult.Error(result.message))
                         }
+                        is RestoreResult.FatalError -> {
+                            dbRestoreFailed = true
+                            emit(SyncResult.Error(result.message))
+                        }
                     }
                 }
                 if (dbRestoreFailed) {
@@ -391,7 +371,7 @@ class WebDavRepositoryImpl @Inject constructor(
         // 7. 保存同步时间并报告结果
         //    注意：如果数据库恢复成功，restartApp() 已杀死进程，以下代码不会执行。
         //    但如果 dbChanged=false（不需要恢复数据库），则需要在这里报告结果。
-        saveLastSyncTime(System.currentTimeMillis(), "download")
+        configStore.saveLastSyncTime(System.currentTimeMillis(), "download")
         val totalDownloaded = imagesToDownload.size + giftToDownload.size - downloadFailures
         val totalSkipped = (localImages.size + localGiftPhotos.size) - imagesToDownload.size - giftToDownload.size
 
@@ -408,7 +388,7 @@ class WebDavRepositoryImpl @Inject constructor(
     }
 
     override suspend fun deleteRemoteBackup(fileName: String): Boolean {
-        val config = readConfig()
+        val config = configStore.readConfig()
         if (config.serverUrl.isBlank()) return false
         return webDavClient.deleteFile(config, fileName)
     }
@@ -417,16 +397,19 @@ class WebDavRepositoryImpl @Inject constructor(
 
     private suspend fun readRemoteManifest(): SyncManifest? {
         return try {
-            val config = readConfig()
+            val config = configStore.readConfig()
             val content = webDavClient.downloadSmallFile(config, "manifest.json")
             if (content != null) {
                 json.decodeFromString<SyncManifest>(content)
             } else null
-        } catch (_: Exception) { null }
+        } catch (e: Exception) {
+            Log.w(TAG, "读取远程清单失败", e)
+            null
+        }
     }
 
     private suspend fun writeRemoteManifest(manifest: SyncManifest) {
-        val config = readConfig()
+        val config = configStore.readConfig()
         val content = json.encodeToString(SyncManifest.serializer(), manifest)
         webDavClient.uploadSmallFile(config, "manifest.json", content)
     }
@@ -440,124 +423,5 @@ class WebDavRepositoryImpl @Inject constructor(
             if (walFile.exists()) walFile.lastModified() else 0L
         )
         return localDbModified > remoteManifest.dbTimestamp
-    }
-
-    /**
-     * 计算上传差异
-     * @return (需要上传的文件列表, 需要从远端删除的文件名列表)
-     */
-    private fun computeFileDiff(
-        localFiles: List<FileEntry>,
-        remoteEntries: Map<String, FileEntry>
-    ): Pair<List<FileEntry>, List<String>> {
-        val toUpload = mutableListOf<FileEntry>()
-        val toDeleteRemote = mutableListOf<String>()
-
-        val localFileNames = localFiles.map { it.name }.toSet()
-
-        // 远端有但本地没有 → 删除远端
-        for ((remoteName, _) in remoteEntries) {
-            if (remoteName !in localFileNames) {
-                toDeleteRemote.add(remoteName)
-            }
-        }
-
-        // 本地文件与远端对比
-        for (localFile in localFiles) {
-            val remoteEntry = remoteEntries[localFile.name]
-            if (remoteEntry == null) {
-                toUpload.add(localFile)
-            } else if (localFile.modified > remoteEntry.modified) {
-                toUpload.add(localFile)
-            }
-        }
-
-        return toUpload to toDeleteRemote
-    }
-
-    /**
-     * 计算下载差异
-     * @return (需要下载的文件列表, 需要从本地删除的文件名列表)
-     */
-    private fun computeDownloadDiff(
-        localFiles: List<FileEntry>,
-        remoteEntries: Map<String, FileEntry>
-    ): Pair<List<FileEntry>, List<String>> {
-        val toDownload = mutableListOf<FileEntry>()
-        val toDeleteLocal = mutableListOf<String>()
-
-        val localFileMap = localFiles.associateBy { it.name }
-
-        // 远端有但本地没有 → 下载
-        for ((remoteName, remoteEntry) in remoteEntries) {
-            val localEntry = localFileMap[remoteName]
-            if (localEntry == null) {
-                toDownload.add(remoteEntry)
-            } else if (remoteEntry.modified > localEntry.modified) {
-                toDownload.add(remoteEntry)
-            }
-        }
-
-        // 本地有但远端没有 → 删除本地
-        for (localFile in localFiles) {
-            if (localFile.name !in remoteEntries) {
-                toDeleteLocal.add(localFile.name)
-            }
-        }
-
-        return toDownload to toDeleteLocal
-    }
-
-    // ===== 配置管理 =====
-
-    private fun readConfig(): WebDavConfig {
-        val oldPassword = prefs.getString(KEY_PASSWORD, "") ?: ""
-        val newPassword = encryptedPrefs.getString(KEY_PASSWORD, "") ?: ""
-
-        val password = if (newPassword.isBlank() && oldPassword.isNotBlank()) {
-            val decoded = decodePassword(oldPassword)
-            savePassword(decoded)
-            prefs.edit().remove(KEY_PASSWORD).apply()
-            decoded
-        } else {
-            newPassword
-        }
-
-        return WebDavConfig(
-            serverUrl = prefs.getString(KEY_SERVER_URL, "") ?: "",
-            username = prefs.getString(KEY_USERNAME, "") ?: "",
-            password = password,
-            remotePath = prefs.getString(KEY_REMOTE_PATH, "/knots_backup/") ?: "/knots_backup/",
-            autoSyncOnLaunch = prefs.getBoolean(KEY_AUTO_SYNC_ON_LAUNCH, false),
-            lastSyncTime = prefs.getLong(KEY_LAST_SYNC_TIME, 0),
-            lastSyncDirection = prefs.getString(KEY_LAST_SYNC_DIRECTION, "") ?: "",
-            trustAllCertificates = prefs.getBoolean(KEY_TRUST_ALL_CERTS, false)
-        )
-    }
-
-    private suspend fun saveLastSyncTime(time: Long, direction: String) {
-        prefs.edit().apply {
-            putLong(KEY_LAST_SYNC_TIME, time)
-            putString(KEY_LAST_SYNC_DIRECTION, direction)
-            commit()
-        }
-        configCache.value = readConfig()
-    }
-
-    private fun savePassword(password: String) {
-        encryptedPrefs.edit().putString(KEY_PASSWORD, password).apply()
-    }
-
-    private fun readPassword(): String {
-        return encryptedPrefs.getString(KEY_PASSWORD, "") ?: ""
-    }
-
-    private fun decodePassword(encoded: String): String {
-        if (encoded.isBlank()) return ""
-        return try {
-            String(Base64.decode(encoded, Base64.NO_WRAP), Charsets.UTF_8)
-        } catch (_: Exception) {
-            encoded
-        }
     }
 }

@@ -57,6 +57,7 @@ import com.tang.prm.ui.theme.Dimens
 import com.tang.prm.ui.theme.SignalGreen
 import com.tang.prm.ui.theme.SignalPurple
 import com.tang.prm.ui.theme.Success
+import com.tang.prm.ui.components.SimpleSectionLabel
 import com.tang.prm.ui.theme.Warning
 
 @Composable
@@ -90,7 +91,7 @@ fun SettingsScreen(
             if (encryptionDegraded) {
                 item { EncryptionDegradedWarning() }
             }
-            item { SectionLabel("外观") }
+            item { SimpleSectionLabel("外观") }
             item {
                 SettingsCard {
                     ThemeEntryItem(
@@ -107,7 +108,7 @@ fun SettingsScreen(
                     )
                 }
             }
-            item { SectionLabel("AI配置") }
+            item { SimpleSectionLabel("AI配置") }
             item {
                 SettingsCard {
                     SettingsEntryItem(
@@ -119,7 +120,7 @@ fun SettingsScreen(
                     )
                 }
             }
-            item { SectionLabel("数据") }
+            item { SimpleSectionLabel("数据") }
             item {
                 SettingsCard {
                     SettingsEntryItem(
@@ -138,7 +139,7 @@ fun SettingsScreen(
                     )
                 }
             }
-            item { SectionLabel("其他") }
+            item { SimpleSectionLabel("其他") }
             item {
                 SettingsCard {
                     SettingsEntryItem(

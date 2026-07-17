@@ -1,5 +1,6 @@
 package com.tang.prm.feature.reflect.favorites
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tang.prm.domain.model.Favorite
@@ -48,7 +49,13 @@ class FavoritesViewModel @Inject constructor(
 
     fun removeFavorite(favorite: Favorite) {
         viewModelScope.launch {
-            favoriteRepository.deleteFavoriteBySource(favorite.sourceType, favorite.sourceId)
+            runCatching {
+                favoriteRepository.deleteFavoriteBySource(favorite.sourceType, favorite.sourceId)
+            }.onFailure { Log.e(TAG, "移除收藏失败", it) }
         }
+    }
+
+    private companion object {
+        const val TAG = "FavoritesViewModel"
     }
 }

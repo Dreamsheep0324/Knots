@@ -25,8 +25,6 @@ import com.tang.prm.domain.model.AlbumPhoto
 import com.tang.prm.ui.components.EmptyState
 import com.tang.prm.ui.theme.*
 
-private val AlbumAccent = SignalPurple
-
 @Composable
 fun PhotoAlbumScreen(
     navController: NavController,

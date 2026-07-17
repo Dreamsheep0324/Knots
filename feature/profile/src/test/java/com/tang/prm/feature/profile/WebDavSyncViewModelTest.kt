@@ -6,7 +6,8 @@ import com.tang.prm.domain.model.CloudBackupVersion
 import com.tang.prm.domain.model.ConnectionTestResult
 import com.tang.prm.domain.model.SyncResult
 import com.tang.prm.domain.model.WebDavConfig
-import com.tang.prm.domain.usecase.WebDavSyncUseCase
+import com.tang.prm.domain.repository.BackupRepositoryInterface
+import com.tang.prm.domain.repository.WebDavRepository
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -31,7 +32,10 @@ import org.junit.jupiter.api.extension.ExtendWith
 class WebDavSyncViewModelTest {
 
     @MockK
-    private lateinit var webDavSyncUseCase: WebDavSyncUseCase
+    private lateinit var webDavRepository: WebDavRepository
+
+    @MockK
+    private lateinit var backupRepository: BackupRepositoryInterface
 
     private lateinit var viewModel: WebDavSyncViewModel
 
@@ -46,11 +50,11 @@ class WebDavSyncViewModelTest {
         Dispatchers.setMain(UnconfinedTestDispatcher())
 
         // 默认返回空配置，避免 init 中的自动测试连接
-        every { webDavSyncUseCase.getConfig() } returns flowOf(WebDavConfig())
-        coEvery { webDavSyncUseCase.testConnection() } returns ConnectionTestResult.Success
-        coEvery { webDavSyncUseCase.listRemoteBackups() } returns emptyList()
+        every { webDavRepository.getConfig() } returns flowOf(WebDavConfig())
+        coEvery { webDavRepository.testConnection() } returns ConnectionTestResult.Success
+        coEvery { webDavRepository.listRemoteBackups() } returns emptyList()
 
-        viewModel = WebDavSyncViewModel(webDavSyncUseCase)
+        viewModel = WebDavSyncViewModel(webDavRepository, backupRepository)
     }
 
     @AfterEach
@@ -91,7 +95,7 @@ class WebDavSyncViewModelTest {
         @Test
         fun success_setsConnectionStateToSuccess() = runTest {
             backgroundScope.launch { viewModel.uiState.collect { } }
-            coEvery { webDavSyncUseCase.testConnection() } returns ConnectionTestResult.Success
+            coEvery { webDavRepository.testConnection() } returns ConnectionTestResult.Success
             viewModel.testConnection()
             advanceUntilIdle()
             assertThat(viewModel.uiState.value.dialog.connectionState).isInstanceOf(ConnectionState.Success::class.java)
@@ -100,7 +104,7 @@ class WebDavSyncViewModelTest {
         @Test
         fun error_setsConnectionStateToError() = runTest {
             backgroundScope.launch { viewModel.uiState.collect { } }
-            coEvery { webDavSyncUseCase.testConnection() } returns ConnectionTestResult.Error("网络错误")
+            coEvery { webDavRepository.testConnection() } returns ConnectionTestResult.Error("网络错误")
             viewModel.testConnection()
             advanceUntilIdle()
             assertThat(viewModel.uiState.value.dialog.connectionState).isInstanceOf(ConnectionState.Error::class.java)
@@ -110,7 +114,7 @@ class WebDavSyncViewModelTest {
         @Test
         fun setsTestingStateBeforeResult() = runTest {
             backgroundScope.launch { viewModel.uiState.collect { } }
-            coEvery { webDavSyncUseCase.testConnection() } returns ConnectionTestResult.Success
+            coEvery { webDavRepository.testConnection() } returns ConnectionTestResult.Success
             viewModel.testConnection()
             advanceUntilIdle()
             // After completion, should be Success (Testing is transient)
@@ -141,8 +145,8 @@ class WebDavSyncViewModelTest {
                 SyncResult.UploadProgress("上传中", 5, 10, "正在上传"),
                 SyncResult.UploadSuccess("backup.zip", 5, 2)
             )
-            coEvery { webDavSyncUseCase.uploadBackup() } returns flowOf(*results.toTypedArray())
-            coEvery { webDavSyncUseCase.listRemoteBackups() } returns emptyList()
+            coEvery { webDavRepository.uploadBackup() } returns flowOf(*results.toTypedArray())
+            coEvery { webDavRepository.listRemoteBackups() } returns emptyList()
 
             viewModel.uploadBackup()
 
@@ -159,7 +163,7 @@ class WebDavSyncViewModelTest {
         @Test
         fun error_setsErrorState() = runTest {
             backgroundScope.launch { viewModel.uiState.collect { } }
-            coEvery { webDavSyncUseCase.uploadBackup() } returns flowOf(SyncResult.Error("上传失败"))
+            coEvery { webDavRepository.uploadBackup() } returns flowOf(SyncResult.Error("上传失败"))
             viewModel.uploadBackup()
 
             advanceUntilIdle()
@@ -180,7 +184,7 @@ class WebDavSyncViewModelTest {
                 SyncResult.DownloadProgress("下载中", 3, 5, "正在下载"),
                 SyncResult.DownloadSuccess("backup.zip", 3, 1)
             )
-            coEvery { webDavSyncUseCase.downloadBackup("backup.zip") } returns flowOf(*results.toTypedArray())
+            coEvery { webDavRepository.downloadBackup("backup.zip") } returns flowOf(*results.toTypedArray())
 
             viewModel.downloadBackup("backup.zip")
 
@@ -198,7 +202,7 @@ class WebDavSyncViewModelTest {
             val results = listOf<SyncResult>(
                 SyncResult.PartialSuccess("backup.zip", 3, 1, 1)
             )
-            coEvery { webDavSyncUseCase.downloadBackup("backup.zip") } returns flowOf(*results.toTypedArray())
+            coEvery { webDavRepository.downloadBackup("backup.zip") } returns flowOf(*results.toTypedArray())
 
             viewModel.downloadBackup("backup.zip")
 
@@ -222,12 +226,12 @@ class WebDavSyncViewModelTest {
                 CloudBackupVersion(fileName = "backup1.zip", fileSize = 1024, lastModified = "2024-01-01", displayName = "备份1"),
                 CloudBackupVersion(fileName = "backup2.zip", fileSize = 2048, lastModified = "2024-01-02", displayName = "备份2")
             )
-            coEvery { webDavSyncUseCase.listRemoteBackups() } returns versions
+            coEvery { webDavRepository.listRemoteBackups() } returns versions
             viewModel.refreshCloudVersions()
 
             advanceUntilIdle()
 
-            coEvery { webDavSyncUseCase.deleteRemoteBackup("backup1.zip") } returns true
+            coEvery { webDavRepository.deleteRemoteBackup("backup1.zip") } returns true
             viewModel.deleteRemoteBackup("backup1.zip")
 
             advanceUntilIdle()
@@ -241,12 +245,12 @@ class WebDavSyncViewModelTest {
             val versions = listOf(
                 CloudBackupVersion(fileName = "backup1.zip", fileSize = 1024, lastModified = "2024-01-01", displayName = "备份1")
             )
-            coEvery { webDavSyncUseCase.listRemoteBackups() } returns versions
+            coEvery { webDavRepository.listRemoteBackups() } returns versions
             viewModel.refreshCloudVersions()
 
             advanceUntilIdle()
 
-            coEvery { webDavSyncUseCase.deleteRemoteBackup("backup1.zip") } returns false
+            coEvery { webDavRepository.deleteRemoteBackup("backup1.zip") } returns false
             viewModel.deleteRemoteBackup("backup1.zip")
 
             advanceUntilIdle()
@@ -264,7 +268,7 @@ class WebDavSyncViewModelTest {
             val versions = listOf(
                 CloudBackupVersion(fileName = "backup.zip", fileSize = 1024, lastModified = "2024-01-01", displayName = "备份")
             )
-            coEvery { webDavSyncUseCase.listRemoteBackups() } returns versions
+            coEvery { webDavRepository.listRemoteBackups() } returns versions
             viewModel.refreshCloudVersions()
 
             advanceUntilIdle()
@@ -292,7 +296,7 @@ class WebDavSyncViewModelTest {
         @Test
         fun setsCleaningThenDone() = runTest {
             backgroundScope.launch { viewModel.uiState.collect { } }
-            coEvery { webDavSyncUseCase.cleanOrphanedImages() } returns 5
+            coEvery { backupRepository.cleanOrphanedImages() } returns 5
             viewModel.cleanOrphanedImages()
 
             advanceUntilIdle()
@@ -315,9 +319,9 @@ class WebDavSyncViewModelTest {
 
         @Test
         fun callsSaveConfig() = runTest {
-            coEvery { webDavSyncUseCase.saveConfig(any()) } returns Unit
+            coEvery { webDavRepository.saveConfig(any()) } returns Unit
             viewModel.updateConfig(defaultConfig)
-            coVerify { webDavSyncUseCase.saveConfig(defaultConfig) }
+            coVerify { webDavRepository.saveConfig(defaultConfig) }
         }
     }
 

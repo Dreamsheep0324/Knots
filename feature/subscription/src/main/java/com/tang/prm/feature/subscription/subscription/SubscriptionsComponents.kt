@@ -37,16 +37,10 @@ import com.tang.prm.ui.theme.SemanticAmberBg
 import com.tang.prm.ui.theme.SignalAmber
 import com.tang.prm.ui.theme.SemanticCoralBg
 import com.tang.prm.ui.theme.SemanticCoralText
+import com.tang.prm.ui.theme.SemanticGreenBg
 import com.tang.prm.ui.theme.SignalAmber
 import com.tang.prm.ui.theme.SignalCoral
 import com.tang.prm.ui.theme.SignalGreen
-
-private val SemanticGreenBg: Color
-    @Composable get() = if (isSystemInDarkTheme()) Color(0xFF1A3A2E) else Color(0xFFD1FAE5)
-
-@Composable
-private fun isSystemInDarkTheme(): Boolean =
-    androidx.compose.foundation.isSystemInDarkTheme()
 
 @Composable
 fun StatsSummaryCard(
@@ -333,16 +327,8 @@ fun CountdownBadge(
     }
 }
 
-private fun formatPrice(subscription: Subscription): String {
-    val symbol = when (subscription.currency) {
-        "CNY" -> "¥"
-        "USD" -> "$"
-        "EUR" -> "€"
-        else -> ""
-    }
-    val cycleLabel = subscription.cycle.displayName
-    return "$symbol${subscription.price}/$cycleLabel"
-}
+private fun formatPrice(subscription: Subscription): String =
+    "${formatPriceWithSymbol(subscription.price, subscription.currency)}/${subscription.cycle.displayName}"
 
 private val categoryColors: List<Color>
     @Composable get() = listOf(

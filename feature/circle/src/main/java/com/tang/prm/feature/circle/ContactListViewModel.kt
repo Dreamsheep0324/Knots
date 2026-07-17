@@ -215,8 +215,4 @@ class ContactListViewModel @Inject constructor(
         }
     }
 
-    companion object {
-        val PresetColors = ContactListManageUseCase.PresetColors
-        val WaveformTypes = ContactListManageUseCase.WaveformTypes
-    }
 }

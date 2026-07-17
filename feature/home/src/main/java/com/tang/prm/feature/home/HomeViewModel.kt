@@ -1,5 +1,6 @@
 package com.tang.prm.feature.home
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tang.prm.domain.model.*
@@ -38,6 +39,7 @@ data class HomeUiState(
     val eventCount: Int = 0,
     val conversationCount: Int = 0,
     val subscriptionCount: Int = 0,
+    val recipeCount: Int = 0,
     val tierDistribution: Map<IntimacyTier, Int> = emptyMap(),
     val isLoading: Boolean = true,
     val decorPhotoPath: String? = null
@@ -51,6 +53,12 @@ class HomeViewModel @Inject constructor(
     private val todoRepository: TodoRepository,
     private val reminderRepository: ReminderRepository
 ) : ViewModel() {
+
+    private fun launchWithErrorHandling(block: suspend () -> Unit) {
+        viewModelScope.launch {
+            runCatching { block() }.onFailure { Log.e(TAG, "操作失败", it) }
+        }
+    }
 
     /** 问候语随时间更新，每 30 分钟检查一次跨越早/中/晚分界 */
     private val greetingFlow: Flow<String> = flow {
@@ -97,6 +105,7 @@ class HomeViewModel @Inject constructor(
             eventCount = stats.eventCount,
             conversationCount = stats.conversationCount,
             subscriptionCount = stats.subscriptionCount,
+            recipeCount = stats.recipeCount,
             tierDistribution = stats.tierDistribution,
             isLoading = false,
             decorPhotoPath = decorPhotoPath
@@ -104,20 +113,18 @@ class HomeViewModel @Inject constructor(
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), HomeUiState(isLoading = true))
 
     fun toggleTodoCompletion(todoId: Long, isCompleted: Boolean) {
-        viewModelScope.launch {
-            todoRepository.updateTodoCompletion(todoId, isCompleted)
-        }
+        launchWithErrorHandling { todoRepository.updateTodoCompletion(todoId, isCompleted) }
     }
 
     fun completeReminder(id: Long) {
-        viewModelScope.launch {
-            reminderRepository.markReminderCompleted(id)
-        }
+        launchWithErrorHandling { reminderRepository.markReminderCompleted(id) }
     }
 
     fun setDecorPhotoPath(path: String?) {
-        viewModelScope.launch {
-            settingsRepository.setHomeDecorPhotoPath(path)
-        }
+        launchWithErrorHandling { settingsRepository.setHomeDecorPhotoPath(path) }
+    }
+
+    private companion object {
+        const val TAG = "HomeViewModel"
     }
 }

@@ -27,7 +27,6 @@ internal fun ContactCardOverlay(
         config = HolographicConfig.default.copy(
             borderColor = rarityColor,
             borderAlpha = AnimationTokens.Alpha.half,
-            enableWaveform = true,
             enablePulse = true,
             enableFloat = true,
             enableScanLine = true,

@@ -3,13 +3,10 @@ package com.tang.prm.domain.util
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
-import java.time.format.DateTimeFormatter
-import java.util.Locale
 
 object DateCalcUtils {
 
     private val defaultZoneId = ZoneId.systemDefault()
-    private val shortDateFormatter = DateTimeFormatter.ofPattern("MM-dd", Locale.getDefault())
 
     fun safeDate(year: Int, month: Int, day: Int): LocalDate {
         if (month == 2 && day == 29 && !java.time.Year.isLeap(year.toLong())) {
@@ -96,7 +93,7 @@ object DateCalcUtils {
 
         val daysUntil = java.time.temporal.ChronoUnit.DAYS.between(today, thisYearBirthday).toInt()
         val thisYearDate = thisYearBirthday.atStartOfDay(defaultZoneId).toInstant().toEpochMilli()
-            .let { Instant.ofEpochMilli(it).atZone(defaultZoneId).format(shortDateFormatter) }
+            .let { DateUtils.formatShortDate(it) }
 
         val displayText = when {
             daysUntil == 0 -> "今天"

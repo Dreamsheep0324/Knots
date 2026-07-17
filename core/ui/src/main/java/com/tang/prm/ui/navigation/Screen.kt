@@ -76,6 +76,12 @@ import kotlinx.serialization.Serializable
 @Serializable data class EditSubscriptionRoute(val subscriptionId: Long)
 @Serializable object SubscriptionStatsRoute
 
+// Recipe routes
+@Serializable object RecipesRoute
+@Serializable object AddRecipeRoute
+@Serializable data class EditRecipeRoute(val recipeId: Long)
+@Serializable data class RecipeDetailRoute(val recipeId: Long)
+
 data class BottomNavItem(
     val route: String,
     val routeObject: Any,

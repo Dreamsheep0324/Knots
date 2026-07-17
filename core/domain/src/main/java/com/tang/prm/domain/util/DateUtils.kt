@@ -19,8 +19,6 @@ object DateUtils {
         MONTH_DAY_CHINESE("M月d日"),
         YEAR_MONTH_DAY_CHINESE("yyyy年M月d日"),
         TIME("HH:mm"),
-        MONTH_DAY_TIME("M月d日 HH:mm"),
-        FULL_DATE_TIME("yyyy年M月d日 HH:mm"),
         YEAR_MONTH_DAY_CHINESE_FULL("yyyy年MM月dd日"),
         YEAR_MONTH_DAY_DOT("yyyy.MM.dd"),
         YEAR_MONTH_CHINESE("yyyy年MM月"),
@@ -33,7 +31,8 @@ object DateUtils {
         MONTH_DAY_DOT("MM.dd"),
         MONTH_DAY_DOT_TIME("MM.dd HH:mm"),
         MONTH_DAY_SLASH_TIME("MM/dd HH:mm"),
-        YEAR_MONTH_DAY_SLASH_TIME("yyyy/MM/dd HH:mm");
+        YEAR_MONTH_DAY_SLASH_TIME("yyyy/MM/dd HH:mm"),
+        BACKUP_TIMESTAMP("yyyyMMdd_HHmmss");
 
         val formatter = DateTimeFormatter.ofPattern(pattern, Locale.getDefault())
     }
@@ -85,10 +84,6 @@ object DateUtils {
 
     fun formatTime(timestamp: Long): String = formatWith(timestamp, DateFormat.TIME)
 
-    fun formatMonthDayTime(timestamp: Long): String = formatWith(timestamp, DateFormat.MONTH_DAY_TIME)
-
-    fun formatFullDateTimeChinese(timestamp: Long): String = formatWith(timestamp, DateFormat.FULL_DATE_TIME)
-
     fun formatYearMonthDayChineseFull(timestamp: Long): String = formatWith(timestamp, DateFormat.YEAR_MONTH_DAY_CHINESE_FULL)
 
     fun formatYearMonthDayDot(timestamp: Long): String = formatWith(timestamp, DateFormat.YEAR_MONTH_DAY_DOT)
@@ -117,10 +112,25 @@ object DateUtils {
 
     fun formatShortDate(timestamp: Long): String = formatWith(timestamp, DateFormat.SHORT_DATE)
 
+    /** 格式化为备份文件名时间戳：yyyyMMdd_HHmmss */
+    fun formatBackupTimestamp(timestamp: Long): String = formatWith(timestamp, DateFormat.BACKUP_TIMESTAMP)
+
     fun parseDateToMillis(dateStr: String): Long? {
         return try {
             LocalDate.parse(dateStr, DateFormat.DATE.formatter)
                 .atStartOfDay(defaultZoneId)
+                .toInstant()
+                .toEpochMilli()
+        } catch (e: Exception) {
+            null
+        }
+    }
+
+    /** 解析备份文件名时间戳（yyyyMMdd_HHmmss）为 epoch millis，失败返回 null */
+    fun parseBackupTimestamp(timeStr: String): Long? {
+        return try {
+            java.time.LocalDateTime.parse(timeStr, DateFormat.BACKUP_TIMESTAMP.formatter)
+                .atZone(defaultZoneId)
                 .toInstant()
                 .toEpochMilli()
         } catch (e: Exception) {

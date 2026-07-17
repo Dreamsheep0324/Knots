@@ -1,4 +1,4 @@
-﻿package com.tang.prm.feature.chat
+package com.tang.prm.feature.chat
 
 import androidx.activity.compose.BackHandler
 import com.tang.prm.ui.components.photo.PhotoPickerConfig
@@ -25,8 +25,6 @@ import com.tang.prm.ui.theme.Dimens
 
 @Composable
 fun AddChatScreen(
-    contactId: Long? = null,
-    eventId: Long? = null,
     navController: NavController,
     viewModel: AddChatViewModel = hiltViewModel()
 ) {

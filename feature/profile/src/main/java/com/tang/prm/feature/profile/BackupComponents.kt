@@ -28,19 +28,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.tang.prm.domain.model.BackupFileInfo
-import java.text.SimpleDateFormat
-import java.util.Locale
-
-@Composable
-internal fun BackupSectionLabel(title: String) {
-    Text(
-        title,
-        style = MaterialTheme.typography.titleSmall,
-        color = MaterialTheme.colorScheme.primary,
-        fontWeight = FontWeight.Medium,
-        modifier = Modifier.padding(vertical = 8.dp)
-    )
-}
+import com.tang.prm.domain.util.DateUtils
 
 @Composable
 internal fun BackupFileItem(
@@ -66,7 +54,7 @@ internal fun BackupFileItem(
         // 文件信息
         Column(modifier = Modifier.weight(1f)) {
             Text(
-                formatBackupDate(fileInfo.timestamp),
+                DateUtils.formatDateTimeHyphen(fileInfo.timestamp),
                 style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.Medium,
                 color = MaterialTheme.colorScheme.onSurface
@@ -152,10 +140,4 @@ internal fun formatBackupFileSize(size: Long): String {
     if (size < 1024 * 1024) return "%.1f KB".format(size / 1024.0)
     if (size < 1024L * 1024 * 1024) return "%.1f MB".format(size / (1024.0 * 1024))
     return "%.1f GB".format(size / (1024.0 * 1024 * 1024))
-}
-
-private val backupDateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault())
-
-internal fun formatBackupDate(timestamp: Long): String {
-    return backupDateFormat.format(timestamp)
 }

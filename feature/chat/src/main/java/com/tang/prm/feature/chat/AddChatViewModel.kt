@@ -207,7 +207,7 @@ class AddChatViewModel @Inject constructor(
                     participants = listOf(contact)
                 )
 
-                val eventId = eventManageUseCase.insertEventWithParticipants(event, listOf(contact.id))
+                eventManageUseCase.insertEventWithParticipants(event, listOf(contact.id))
 
                 updateInteractionUseCase(
                     contact.id,

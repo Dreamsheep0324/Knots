@@ -1,5 +1,6 @@
 package com.tang.prm.feature.divination
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tang.prm.domain.repository.AiRepository
@@ -44,6 +45,12 @@ class AiViewModel @Inject constructor(
     private val _apiKeyConfigured = MutableStateFlow(false)
     val apiKeyConfigured: StateFlow<Boolean> = _apiKeyConfigured.asStateFlow()
 
+    private fun launchWithErrorHandling(block: suspend () -> Unit) {
+        viewModelScope.launch {
+            runCatching { block() }.onFailure { Log.e(TAG, "操作失败", it) }
+        }
+    }
+
     val savedGender: StateFlow<String> = settingsRepository.aiGender
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), "男")
 
@@ -63,11 +70,11 @@ class AiViewModel @Inject constructor(
     }
 
     fun saveGender(gender: String) {
-        viewModelScope.launch { settingsRepository.setAiGender(gender) }
+        launchWithErrorHandling { settingsRepository.setAiGender(gender) }
     }
 
     fun saveBirthDate(date: String) {
-        viewModelScope.launch { settingsRepository.setAiBirthDate(date) }
+        launchWithErrorHandling { settingsRepository.setAiBirthDate(date) }
     }
 
     fun startLiuyaoAnalysis(data: LiuyaoData, gender: String, birthDate: String, question: String) {
@@ -145,5 +152,9 @@ class AiViewModel @Inject constructor(
 
     fun reset() {
         _state.value = AiDeepState.Idle
+    }
+
+    private companion object {
+        const val TAG = "AiViewModel"
     }
 }

@@ -23,6 +23,7 @@ import com.tang.prm.data.local.database.migrations.MIGRATION_36_37
 import com.tang.prm.data.local.database.migrations.MIGRATION_37_38
 import com.tang.prm.data.local.database.migrations.MIGRATION_38_39
 import com.tang.prm.data.local.database.migrations.MIGRATION_39_40
+import com.tang.prm.data.local.database.migrations.MIGRATION_40_41
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -54,7 +55,7 @@ object DatabaseModule {
                 MIGRATION_31_33, MIGRATION_32_33,
                 MIGRATION_33_34, MIGRATION_34_35, MIGRATION_35_36,
                 MIGRATION_36_37, MIGRATION_37_38, MIGRATION_38_39,
-                MIGRATION_39_40
+                MIGRATION_39_40, MIGRATION_40_41
             )
             .build()
     }
@@ -103,6 +104,12 @@ object DatabaseModule {
 
     @Provides
     fun provideSubscriptionDao(database: TangDatabase): SubscriptionDao = database.subscriptionDao()
+
+    @Provides
+    fun provideRecipeDao(database: TangDatabase): RecipeDao = database.recipeDao()
+
+    @Provides
+    fun provideRecipeTagDao(database: TangDatabase): RecipeTagDao = database.recipeTagDao()
 
     @Provides
     @Singleton

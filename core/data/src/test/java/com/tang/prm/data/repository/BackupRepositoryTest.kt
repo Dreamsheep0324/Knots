@@ -5,6 +5,7 @@ import com.google.common.truth.Truth.assertThat
 import com.tang.prm.data.local.database.TangDatabase
 import com.tang.prm.domain.model.BackupResult
 import com.tang.prm.domain.model.RestoreResult
+import com.tang.prm.domain.repository.AppRestarter
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
@@ -25,11 +26,14 @@ class BackupRepositoryTest {
     @MockK
     private lateinit var database: TangDatabase
 
-    private lateinit var repository: BackupRepository
+    @MockK
+    private lateinit var appRestarter: AppRestarter
+
+    private lateinit var repository: BackupRepositoryImpl
 
     @BeforeEach
     fun setUp() {
-        repository = BackupRepository(context, database)
+        repository = BackupRepositoryImpl(context, database, appRestarter)
     }
 
     @Test

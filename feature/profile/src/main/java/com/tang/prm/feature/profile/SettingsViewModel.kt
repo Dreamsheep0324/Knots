@@ -1,5 +1,6 @@
 package com.tang.prm.feature.profile
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tang.prm.domain.repository.AiRepository
@@ -39,19 +40,21 @@ class SettingsViewModel @Inject constructor(
     val themeMode: StateFlow<ThemeMode> = settingsRepository.themeMode
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), ThemeMode.SYSTEM)
 
-    fun setThemeMode(mode: ThemeMode) {
+    private fun launchWithErrorHandling(block: suspend () -> Unit) {
         viewModelScope.launch {
-            settingsRepository.setThemeMode(mode)
+            runCatching { block() }.onFailure { Log.e(TAG, "操作失败", it) }
         }
+    }
+
+    fun setThemeMode(mode: ThemeMode) {
+        launchWithErrorHandling { settingsRepository.setThemeMode(mode) }
     }
 
     val tabletModeEnabled: StateFlow<Boolean> = settingsRepository.tabletModeEnabled
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
 
     fun setTabletModeEnabled(enabled: Boolean) {
-        viewModelScope.launch {
-            settingsRepository.setTabletModeEnabled(enabled)
-        }
+        launchWithErrorHandling { settingsRepository.setTabletModeEnabled(enabled) }
     }
 
     val aiApiKey: StateFlow<String> = settingsRepository.aiApiKey
@@ -64,15 +67,15 @@ class SettingsViewModel @Inject constructor(
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), "deepseek-v4-flash")
 
     fun setAiApiKey(key: String) {
-        viewModelScope.launch { settingsRepository.setAiApiKey(key) }
+        launchWithErrorHandling { settingsRepository.setAiApiKey(key) }
     }
 
     fun setAiBaseUrl(url: String) {
-        viewModelScope.launch { settingsRepository.setAiBaseUrl(url) }
+        launchWithErrorHandling { settingsRepository.setAiBaseUrl(url) }
     }
 
     fun setAiModel(model: String) {
-        viewModelScope.launch { settingsRepository.setAiModel(model) }
+        launchWithErrorHandling { settingsRepository.setAiModel(model) }
     }
 
     private val _testState = MutableStateFlow<TestConnectionState>(TestConnectionState.Idle)
@@ -91,5 +94,9 @@ class SettingsViewModel @Inject constructor(
 
     fun resetTestState() {
         _testState.value = TestConnectionState.Idle
+    }
+
+    private companion object {
+        const val TAG = "SettingsViewModel"
     }
 }

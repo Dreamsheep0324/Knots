@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
@@ -36,6 +37,7 @@ import androidx.compose.material.icons.filled.Lightbulb
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.TaskAlt
+import androidx.compose.material3.Button
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -102,6 +104,47 @@ internal val ThoughtTypeLabel = mapOf(
     ThoughtType.MURMUR to "碎碎念"
 )
 
+/**
+ * 联系人加载失败或已被删除时的兜底界面。
+ * 提供文案 + 返回按钮，避免空白页（手机/平板详情页共用）。
+ */
+@Composable
+internal fun ContactNotFoundState(
+    onBack: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Default.Person,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+                modifier = Modifier.size(56.dp)
+            )
+            Text(
+                text = "未找到该人物",
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            Text(
+                text = "可能已被删除或加载失败",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Button(onClick = onBack) {
+                Text("返回")
+            }
+        }
+    }
+}
+
 @Composable
 internal fun ContactThoughtDetailDialog(
     thought: Thought,
@@ -125,182 +168,230 @@ internal fun ContactThoughtDetailDialog(
             tonalElevation = 0.dp
         ) {
             Column(modifier = Modifier.fillMaxWidth()) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(start = 16.dp, end = 8.dp, top = 14.dp, bottom = 2.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Surface(
-                        shape = CircleShape,
-                        color = typeBg,
-                        modifier = Modifier.size(32.dp)
-                    ) {
-                        Box(contentAlignment = Alignment.Center) {
-                            Icon(
-                                typeIcon,
-                                contentDescription = null,
-                                modifier = Modifier.size(16.dp),
-                                tint = typeColor
-                            )
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.width(10.dp))
-
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            typeLabel,
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.SemiBold,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.padding(top = 1.dp)
-                        ) {
-                            Text(
-                                DateUtils.formatRelativeTime(thought.createdAt),
-                                fontFamily = FontFamily.Monospace,
-                                fontSize = 10.sp,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                            if (thought.isPrivate) {
-                                Spacer(modifier = Modifier.width(4.dp))
-                                Icon(
-                                    Icons.Default.Lock,
-                                    contentDescription = "私密",
-                                    modifier = Modifier.size(10.dp),
-                                    tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = AnimationTokens.Alpha.half)
-                                )
-                            }
-                        }
-                    }
-
-                    IconButton(onClick = onDismiss, modifier = Modifier.size(28.dp)) {
-                        Icon(
-                            Icons.Default.Close,
-                            contentDescription = "关闭",
-                            modifier = Modifier.size(16.dp),
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                }
+                ThoughtDialogHeader(
+                    thought = thought,
+                    typeColor = typeColor,
+                    typeBg = typeBg,
+                    typeIcon = typeIcon,
+                    typeLabel = typeLabel,
+                    onDismiss = onDismiss
+                )
 
                 HorizontalDivider(
                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp),
                     color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
                 )
 
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .heightIn(max = 320.dp)
-                        .verticalScroll(rememberScrollState())
-                        .padding(horizontal = 16.dp)
-                ) {
-                    Text(
-                        thought.content,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = if (thought.isTodo && thought.isDone) {
-                            MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = AnimationTokens.Alpha.half)
-                        } else {
-                            MaterialTheme.colorScheme.onSurface
-                        },
-                        lineHeight = 22.sp
+                ThoughtDialogContent(thought = thought)
+
+                HorizontalDivider(
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp),
+                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+                )
+
+                ThoughtDialogActions(
+                    thought = thought,
+                    contactName = contactName,
+                    contactAvatar = contactAvatar,
+                    isFavorite = isFavorite,
+                    onToggleFavorite = onToggleFavorite,
+                    onToggleTodo = onToggleTodo,
+                    onDelete = onDelete
+                )
+            }
+        }
+    }
+}
+
+/** 对话框头部：类型图标 + 类型/时间 + 私密标记 + 关闭按钮 */
+@Composable
+private fun ThoughtDialogHeader(
+    thought: Thought,
+    typeColor: Color,
+    typeBg: Color,
+    typeIcon: ImageVector,
+    typeLabel: String,
+    onDismiss: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(start = 16.dp, end = 8.dp, top = 14.dp, bottom = 2.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Surface(
+            shape = CircleShape,
+            color = typeBg,
+            modifier = Modifier.size(32.dp)
+        ) {
+            Box(contentAlignment = Alignment.Center) {
+                Icon(
+                    typeIcon,
+                    contentDescription = null,
+                    modifier = Modifier.size(16.dp),
+                    tint = typeColor
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.width(10.dp))
+
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                typeLabel,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.padding(top = 1.dp)
+            ) {
+                Text(
+                    DateUtils.formatRelativeTime(thought.createdAt),
+                    fontFamily = FontFamily.Monospace,
+                    fontSize = 10.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                if (thought.isPrivate) {
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Icon(
+                        Icons.Default.Lock,
+                        contentDescription = "私密",
+                        modifier = Modifier.size(10.dp),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = AnimationTokens.Alpha.half)
                     )
-
-                    if (thought.isTodo) {
-                        Spacer(modifier = Modifier.height(10.dp))
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(
-                                if (thought.isDone) Icons.Default.CheckBox else Icons.Default.CheckBoxOutlineBlank,
-                                contentDescription = null,
-                                modifier = Modifier.size(14.dp),
-                                tint = if (thought.isDone) SignalGreen else MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Text(
-                                if (thought.isDone) "已完成" else "待办中",
-                                fontSize = 12.sp,
-                                color = if (thought.isDone) SignalGreen else MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                            thought.dueDate?.let { dueDate ->
-                                Spacer(modifier = Modifier.width(6.dp))
-                                Text(
-                                    "· 截止 ${DateUtils.formatMonthDayChinese(dueDate)}",
-                                    fontFamily = FontFamily.Monospace,
-                                    fontSize = 10.sp,
-                                    color = SignalGreen
-                                )
-                            }
-                        }
-                    }
-                }
-
-                HorizontalDivider(
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp),
-                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
-                )
-
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(start = 8.dp, end = 12.dp, bottom = 8.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    IconButton(onClick = onToggleFavorite, modifier = Modifier.size(36.dp)) {
-                        Icon(
-                            if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
-                            contentDescription = if (isFavorite) "取消收藏" else "收藏",
-                            tint = if (isFavorite) SignalCoral else MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.size(18.dp)
-                        )
-                    }
-
-                    if (thought.isTodo) {
-                        IconButton(onClick = onToggleTodo, modifier = Modifier.size(36.dp)) {
-                            Icon(
-                                if (thought.isDone) Icons.Default.CheckBox else Icons.Default.CheckBoxOutlineBlank,
-                                contentDescription = if (thought.isDone) "已完成" else "待办",
-                                tint = if (thought.isDone) SignalGreen else MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.size(18.dp)
-                            )
-                        }
-                    }
-
-                    if (contactName != null) {
-                        Surface(
-                            shape = RoundedCornerShape(100.dp),
-                            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = AnimationTokens.Alpha.half))
-                        ) {
-                            Row(
-                                modifier = Modifier.padding(start = 6.dp, end = 10.dp, top = 5.dp, bottom = 5.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                com.tang.prm.ui.components.ContactAvatar(avatar = contactAvatar, name = contactName, size = 20)
-                                Spacer(modifier = Modifier.width(5.dp))
-                                Text(
-                                    contactName,
-                                    fontSize = 12.sp,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis
-                                )
-                            }
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.weight(1f))
-
-                    TextButton(onClick = onDelete) {
-                        Icon(Icons.Default.Delete, contentDescription = null, modifier = Modifier.size(14.dp), tint = SignalCoral)
-                        Spacer(modifier = Modifier.width(3.dp))
-                        Text("删除", color = SignalCoral, fontSize = 12.sp)
-                    }
                 }
             }
+        }
+
+        IconButton(onClick = onDismiss, modifier = Modifier.size(28.dp)) {
+            Icon(
+                Icons.Default.Close,
+                contentDescription = "关闭",
+                modifier = Modifier.size(16.dp),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+    }
+}
+
+/** 对话框内容区：正文 + 待办状态 */
+@Composable
+private fun ThoughtDialogContent(thought: Thought) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .heightIn(max = 320.dp)
+            .verticalScroll(rememberScrollState())
+            .padding(horizontal = 16.dp)
+    ) {
+        Text(
+            thought.content,
+            style = MaterialTheme.typography.bodyMedium,
+            color = if (thought.isTodo && thought.isDone) {
+                MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = AnimationTokens.Alpha.half)
+            } else {
+                MaterialTheme.colorScheme.onSurface
+            },
+            lineHeight = 22.sp
+        )
+
+        if (thought.isTodo) {
+            Spacer(modifier = Modifier.height(10.dp))
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    if (thought.isDone) Icons.Default.CheckBox else Icons.Default.CheckBoxOutlineBlank,
+                    contentDescription = null,
+                    modifier = Modifier.size(14.dp),
+                    tint = if (thought.isDone) SignalGreen else MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Spacer(modifier = Modifier.width(6.dp))
+                Text(
+                    if (thought.isDone) "已完成" else "待办中",
+                    fontSize = 12.sp,
+                    color = if (thought.isDone) SignalGreen else MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                thought.dueDate?.let { dueDate ->
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        "· 截止 ${DateUtils.formatMonthDayChinese(dueDate)}",
+                        fontFamily = FontFamily.Monospace,
+                        fontSize = 10.sp,
+                        color = SignalGreen
+                    )
+                }
+            }
+        }
+    }
+}
+
+/** 对话框底部操作栏：收藏 + 待办切换 + 联系人 + 删除 */
+@Composable
+private fun ThoughtDialogActions(
+    thought: Thought,
+    contactName: String?,
+    contactAvatar: String?,
+    isFavorite: Boolean,
+    onToggleFavorite: () -> Unit,
+    onToggleTodo: () -> Unit,
+    onDelete: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(start = 8.dp, end = 12.dp, bottom = 8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        IconButton(onClick = onToggleFavorite, modifier = Modifier.size(36.dp)) {
+            Icon(
+                if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                contentDescription = if (isFavorite) "取消收藏" else "收藏",
+                tint = if (isFavorite) SignalCoral else MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.size(18.dp)
+            )
+        }
+
+        if (thought.isTodo) {
+            IconButton(onClick = onToggleTodo, modifier = Modifier.size(36.dp)) {
+                Icon(
+                    if (thought.isDone) Icons.Default.CheckBox else Icons.Default.CheckBoxOutlineBlank,
+                    contentDescription = if (thought.isDone) "已完成" else "待办",
+                    tint = if (thought.isDone) SignalGreen else MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(18.dp)
+                )
+            }
+        }
+
+        if (contactName != null) {
+            Surface(
+                shape = RoundedCornerShape(100.dp),
+                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = AnimationTokens.Alpha.half))
+            ) {
+                Row(
+                    modifier = Modifier.padding(start = 6.dp, end = 10.dp, top = 5.dp, bottom = 5.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    com.tang.prm.ui.components.ContactAvatar(avatar = contactAvatar, name = contactName, size = 20)
+                    Spacer(modifier = Modifier.width(5.dp))
+                    Text(
+                        contactName,
+                        fontSize = 12.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.weight(1f))
+
+        TextButton(onClick = onDelete) {
+            Icon(Icons.Default.Delete, contentDescription = null, modifier = Modifier.size(14.dp), tint = SignalCoral)
+            Spacer(modifier = Modifier.width(3.dp))
+            Text("删除", color = SignalCoral, fontSize = 12.sp)
         }
     }
 }

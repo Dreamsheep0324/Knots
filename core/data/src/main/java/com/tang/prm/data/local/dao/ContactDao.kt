@@ -12,6 +12,9 @@ interface ContactDao {
     @Query("SELECT * FROM contacts ORDER BY updatedAt DESC")
     fun getAllContacts(): Flow<List<ContactEntity>>
 
+    @Query("SELECT intimacyScore FROM contacts")
+    fun getAllIntimacyScores(): Flow<List<Int>>
+
     /**
      * Lightweight column-projection query for contact list display.
      * Avoids reading large columns (notes, customFields, hobby, habit, diet, skill, etc.)
@@ -26,17 +29,8 @@ interface ContactDao {
     @Query("SELECT * FROM contacts WHERE id = :id")
     suspend fun getContactByIdOnce(id: Long): ContactEntity?
 
-    @Query("SELECT * FROM contacts WHERE name LIKE '%' || :keyword || '%' ESCAPE '\\' OR nickname LIKE '%' || :keyword || '%' ESCAPE '\\' OR phone LIKE '%' || :keyword || '%' ESCAPE '\\'")
-    fun searchContacts(keyword: String): Flow<List<ContactEntity>>
-
-    @Query("SELECT * FROM contacts WHERE groupId = :groupId")
-    fun getContactsByGroup(groupId: Long): Flow<List<ContactEntity>>
-
     @Query("SELECT * FROM contacts WHERE (:keyword IS NULL OR name LIKE '%' || :keyword || '%' ESCAPE '\\' OR nickname LIKE '%' || :keyword || '%' ESCAPE '\\' OR phone LIKE '%' || :keyword || '%' ESCAPE '\\') AND (:groupId IS NULL OR groupId = :groupId) AND (:relationship IS NULL OR relationship = :relationship) ORDER BY intimacyScore DESC")
     fun getFilteredContacts(keyword: String?, groupId: Long?, relationship: String?): Flow<List<ContactEntity>>
-
-    @Query("SELECT * FROM contacts ORDER BY intimacyScore DESC LIMIT :limit")
-    fun getTopContactsByIntimacy(limit: Int): Flow<List<ContactEntity>>
 
     @Query("SELECT * FROM contacts ORDER BY lastInteractionTime DESC LIMIT :limit")
     fun getRecentContacts(limit: Int): Flow<List<ContactEntity>>

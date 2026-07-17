@@ -27,7 +27,6 @@ internal fun FullscreenCardOverlay(
         onClose = onClose,
         config = HolographicConfig.default.copy(
             borderColor = rarityColor,
-            enableWaveform = true,
             enablePulse = true,
             enableFloat = true,
             enableScanLine = true,

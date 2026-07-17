@@ -85,7 +85,6 @@ data class SubscriptionDetailUiState(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SubscriptionDetailScreen(
-    subscriptionId: Long,
     navController: NavController,
     viewModel: SubscriptionDetailViewModel = hiltViewModel()
 ) {
@@ -410,8 +409,3 @@ private fun NotesCard(notes: String) {
         }
     }
 }
-
-// ── 格式化工具 ──
-private fun formatCurrencySymbol(currency: String): String = when (currency) { "CNY" -> "¥"; "USD" -> "$"; "EUR" -> "€"; "GBP" -> "£"; else -> currency }
-private fun formatPriceValue(price: Double): String = if (price == price.toLong().toDouble()) "%.0f".format(price) else "%.2f".format(price)
-private fun formatPriceWithSymbol(price: Double, currency: String): String = "${formatCurrencySymbol(currency)}${formatPriceValue(price)}"

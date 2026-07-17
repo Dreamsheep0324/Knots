@@ -25,12 +25,16 @@ import com.tang.prm.data.local.entity.*
         FavoriteEntity::class,
         DivinationRecordEntity::class,
         ContactAttributeEntity::class,
-        SubscriptionEntity::class
+        SubscriptionEntity::class,
+        RecipeEntity::class,
+        RecipeTagEntity::class,
+        RecipeContactCrossRef::class,
+        RecipeTagCrossRef::class
     ],
-    version = 40,
+    version = 41,
     exportSchema = true
 )
-@TypeConverters(ListStringConverter::class)
+@TypeConverters(ListStringConverter::class, RecipeDataConverter::class)
 abstract class TangDatabase : RoomDatabase() {
     abstract fun contactDao(): ContactDao
     abstract fun contactGroupDao(): ContactGroupDao
@@ -47,6 +51,8 @@ abstract class TangDatabase : RoomDatabase() {
     abstract fun divinationRecordDao(): DivinationRecordDao
     abstract fun contactAttributeDao(): ContactAttributeDao
     abstract fun subscriptionDao(): SubscriptionDao
+    abstract fun recipeDao(): RecipeDao
+    abstract fun recipeTagDao(): RecipeTagDao
 
     suspend fun checkpoint() {
         val db = openHelper.writableDatabase

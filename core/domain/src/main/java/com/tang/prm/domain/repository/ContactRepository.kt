@@ -10,12 +10,10 @@ interface ContactRepository {
     /** Lightweight query returning only columns needed for list display (avoids notes, customFields, etc.). */
     fun getContactListItems(): Flow<List<Contact>>
     fun getContactById(id: Long): Flow<Contact?>
-    fun searchContacts(keyword: String): Flow<List<Contact>>
-    fun getContactsByGroup(groupId: Long): Flow<List<Contact>>
     fun getFilteredContacts(keyword: String?, groupId: Long?, relationship: String?): Flow<List<Contact>>
-    fun getTopContactsByIntimacy(limit: Int): Flow<List<Contact>>
     fun getRecentContacts(limit: Int): Flow<List<Contact>>
     fun getContactCount(): Flow<Int>
+    fun getAllIntimacyScores(): Flow<List<Int>>
     suspend fun insertContact(contact: Contact): Long
     suspend fun updateContact(contact: Contact)
     suspend fun deleteContact(id: Long)

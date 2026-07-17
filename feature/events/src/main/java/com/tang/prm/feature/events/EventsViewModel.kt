@@ -3,6 +3,7 @@ package com.tang.prm.feature.events
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tang.prm.domain.model.*
+import com.tang.prm.domain.util.DateUtils
 import com.tang.prm.domain.repository.*
 import com.tang.prm.domain.usecase.filterBy
 import com.tang.prm.ui.common.SearchState
@@ -121,7 +122,7 @@ class EventsViewModel @Inject constructor(
         }
 
         val selectedDateStart = getDayStart(cal.selectedDate)
-        val selectedDateEnd = selectedDateStart + MILLIS_PER_DAY
+        val selectedDateEnd = selectedDateStart + DateUtils.MILLIS_PER_DAY
         val selectedDateEvents = filteredEvents.filter { event ->
             event.time >= selectedDateStart && event.time < selectedDateEnd
         }.sortedBy { it.time }
@@ -200,7 +201,6 @@ class EventsViewModel @Inject constructor(
 
     companion object {
         private const val DEBOUNCE_MS = 300L
-        private const val MILLIS_PER_DAY = 24L * 60 * 60 * 1000
 
         fun getMonthRange(monthOffset: Int): Pair<Long, Long> {
             val cal = Calendar.getInstance()

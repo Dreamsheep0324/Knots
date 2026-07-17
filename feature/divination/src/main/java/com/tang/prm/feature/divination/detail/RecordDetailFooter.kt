@@ -16,6 +16,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.tang.prm.ui.components.TerminalSectionHeader
 import com.tang.prm.ui.theme.SignalCoral
 
 @Composable
@@ -33,7 +34,7 @@ internal fun RecordDetailFooter(
             border = BorderStroke(0.5.dp, androidx.compose.material3.MaterialTheme.colorScheme.outline.copy(alpha = 0.3f))
         ) {
             Column(modifier = Modifier.padding(12.dp)) {
-                RecordSectionHeader("AI解读")
+                TerminalSectionHeader("AI解读")
 
                 Spacer(modifier = Modifier.height(8.dp))
 

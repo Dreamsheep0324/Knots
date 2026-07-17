@@ -41,5 +41,4 @@ enum class IntimacyTier(
 }
 
 fun getIntimacyLabel(score: Int): String = IntimacyTier.of(score).label
-fun getIntimacyColor(score: Int): Long = IntimacyTier.of(score).colorValue
 fun getCardRarityLabel(score: Int): String = IntimacyTier.of(score).cardRarity

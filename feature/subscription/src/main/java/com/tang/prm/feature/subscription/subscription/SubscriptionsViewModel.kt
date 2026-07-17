@@ -1,5 +1,6 @@
 package com.tang.prm.feature.subscription.subscription
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tang.prm.domain.model.Subscription
@@ -31,6 +32,12 @@ class SubscriptionsViewModel @Inject constructor(
     val searchState: StateFlow<SearchState> = searchManager.state
 
     private val _selectedTab = MutableStateFlow(0)
+
+    private fun launchWithErrorHandling(block: suspend () -> Unit) {
+        viewModelScope.launch {
+            runCatching { block() }.onFailure { Log.e(TAG, "操作失败", it) }
+        }
+    }
 
     init {
         observeSubscriptions()
@@ -83,7 +90,7 @@ class SubscriptionsViewModel @Inject constructor(
     }
 
     fun deleteSubscription(id: Long) {
-        viewModelScope.launch { subscriptionRepository.deleteSubscription(id) }
+        launchWithErrorHandling { subscriptionRepository.deleteSubscription(id) }
     }
 
     private fun tabToStatus(tab: Int): SubscriptionStatus? = when (tab) {
@@ -91,5 +98,9 @@ class SubscriptionsViewModel @Inject constructor(
         2 -> SubscriptionStatus.CANCELLED
         3 -> SubscriptionStatus.EXPIRED
         else -> null
+    }
+
+    private companion object {
+        const val TAG = "SubscriptionsViewModel"
     }
 }

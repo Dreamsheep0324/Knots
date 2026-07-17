@@ -7,7 +7,6 @@ interface GiftRepository {
     fun getAllGifts(): Flow<List<Gift>>
     fun getGiftById(id: Long): Flow<Gift?>
     fun getGiftsByContactId(contactId: Long): Flow<List<Gift>>
-    fun getGiftsBySentType(isSent: Boolean): Flow<List<Gift>>
     suspend fun insertGift(gift: Gift): Long
     suspend fun updateGift(gift: Gift)
     suspend fun deleteGiftById(id: Long)

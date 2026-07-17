@@ -2,12 +2,12 @@ package com.tang.prm.feature.profile
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.tang.prm.domain.usecase.BackupRestoreUseCase
 import com.tang.prm.domain.model.BackupFileInfo
 import com.tang.prm.domain.model.BackupImageQuality
 import com.tang.prm.domain.model.BackupInfo
 import com.tang.prm.domain.model.ClearDataResult
 import com.tang.prm.domain.model.RestoreResult
+import com.tang.prm.domain.repository.BackupRepositoryInterface
 import com.tang.prm.domain.repository.SettingsRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -17,7 +17,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import android.util.Log
 import javax.inject.Inject
 
 sealed class BackupState {
@@ -50,7 +49,7 @@ data class BackupUiState(
 
 @HiltViewModel
 class BackupViewModel @Inject constructor(
-    private val backupRestoreUseCase: BackupRestoreUseCase,
+    private val backupRepository: BackupRepositoryInterface,
     private val settingsRepository: SettingsRepository
 ) : ViewModel() {
 
@@ -80,12 +79,10 @@ class BackupViewModel @Inject constructor(
         BackupUiState(data = data, dialog = BackupDialogState(operationState = operationState))
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), BackupUiState())
 
-    private var lastDataFingerprint: String = ""
-
     init {
         viewModelScope.launch(Dispatchers.IO) {
-            _hasBackupDir.value = backupRestoreUseCase.hasBackupDir()
-            _backupDirName.value = backupRestoreUseCase.getBackupDirName()
+            _hasBackupDir.value = backupRepository.hasBackupDir()
+            _backupDirName.value = backupRepository.getBackupDirName()
         }
         viewModelScope.launch {
             settingsRepository.getAutoBackupEnabled().collect { _autoBackupEnabled.value = it }
@@ -94,10 +91,10 @@ class BackupViewModel @Inject constructor(
     }
 
     fun setBackupDir(uri: android.net.Uri) {
-        backupRestoreUseCase.setBackupDirUri(uri.toString())
+        backupRepository.setBackupDirUri(uri.toString())
         _hasBackupDir.value = true
         viewModelScope.launch(Dispatchers.IO) {
-            _backupDirName.value = backupRestoreUseCase.getBackupDirName()
+            _backupDirName.value = backupRepository.getBackupDirName()
         }
         viewModelScope.launch { loadBackupFiles() }
     }
@@ -106,7 +103,6 @@ class BackupViewModel @Inject constructor(
         _autoBackupEnabled.value = enabled
         viewModelScope.launch {
             settingsRepository.setAutoBackupEnabled(enabled)
-            if (enabled) lastDataFingerprint = computeDataFingerprint()
         }
     }
 
@@ -114,9 +110,8 @@ class BackupViewModel @Inject constructor(
         viewModelScope.launch {
             _state.value = BackupState.BackingUp
             try {
-                val info = backupRestoreUseCase.backupToDir(BackupImageQuality.ORIGINAL)
+                val info = backupRepository.backupToDir(BackupImageQuality.ORIGINAL)
                 loadBackupFiles()
-                lastDataFingerprint = computeDataFingerprint()
                 _state.value = BackupState.BackupSuccess(info)
             } catch (e: Exception) {
                 _state.value = BackupState.BackupError(e.message ?: "备份失败")
@@ -127,10 +122,11 @@ class BackupViewModel @Inject constructor(
     fun restoreFromLocal(fileName: String) {
         viewModelScope.launch {
             _state.value = BackupState.Restoring
-            backupRestoreUseCase.restoreBackup(fileName).collect { result ->
+            backupRepository.restoreBackup(fileName).collect { result ->
                 _state.value = when (result) {
                     is RestoreResult.Success -> BackupState.RestoreSuccess
                     is RestoreResult.Error -> BackupState.RestoreError(result.message)
+                    is RestoreResult.FatalError -> BackupState.RestoreError(result.message)
                 }
             }
         }
@@ -139,10 +135,11 @@ class BackupViewModel @Inject constructor(
     fun restoreFromUri(uri: android.net.Uri) {
         viewModelScope.launch {
             _state.value = BackupState.Restoring
-            backupRestoreUseCase.restoreFromUri(uri.toString()).collect { result ->
+            backupRepository.restoreFromUri(uri.toString()).collect { result ->
                 _state.value = when (result) {
                     is RestoreResult.Success -> BackupState.RestoreSuccess
                     is RestoreResult.Error -> BackupState.RestoreError(result.message)
+                    is RestoreResult.FatalError -> BackupState.RestoreError(result.message)
                 }
             }
         }
@@ -151,7 +148,7 @@ class BackupViewModel @Inject constructor(
     fun deleteBackupFile(fileName: String) {
         viewModelScope.launch {
             _state.value = BackupState.DeletingBackup(fileName)
-            backupRestoreUseCase.deleteBackup(fileName)
+            backupRepository.deleteBackup(fileName)
             loadBackupFiles()
             _state.value = BackupState.Idle
         }
@@ -160,7 +157,7 @@ class BackupViewModel @Inject constructor(
     fun clearAllData() {
         viewModelScope.launch {
             _state.value = BackupState.Clearing
-            when (val result = backupRestoreUseCase.clearAllData()) {
+            when (val result = backupRepository.clearAllData()) {
                 is ClearDataResult.Success -> _state.value = BackupState.ClearSuccess
                 is ClearDataResult.Error -> _state.value = BackupState.ClearError(result.message)
             }
@@ -172,27 +169,7 @@ class BackupViewModel @Inject constructor(
     }
 
     private suspend fun loadBackupFiles() {
-        _backupFiles.value = backupRestoreUseCase.listBackups()
+        _backupFiles.value = backupRepository.listBackups()
     }
 
-    private suspend fun computeDataFingerprint(): String {
-        return try { backupRestoreUseCase.computeDataFingerprint() } catch (_: Exception) { "" }
-    }
-
-    fun checkAndAutoBackup() {
-        if (!_autoBackupEnabled.value || !_hasBackupDir.value) return
-        viewModelScope.launch {
-            val currentFingerprint = computeDataFingerprint()
-            if (currentFingerprint != lastDataFingerprint && currentFingerprint.isNotEmpty()) {
-                lastDataFingerprint = currentFingerprint
-                try {
-                    backupRestoreUseCase.backupToDir(BackupImageQuality.ORIGINAL)
-                    loadBackupFiles()
-                } catch (e: Exception) {
-                    Log.e("BackupViewModel", "自动备份失败", e)
-                    _state.value = BackupState.BackupError("自动备份失败：${e.message}")
-                }
-            }
-        }
-    }
 }

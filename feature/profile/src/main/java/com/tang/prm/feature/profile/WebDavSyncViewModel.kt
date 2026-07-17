@@ -6,7 +6,8 @@ import com.tang.prm.domain.model.CloudBackupVersion
 import com.tang.prm.domain.model.ConnectionTestResult
 import com.tang.prm.domain.model.SyncResult
 import com.tang.prm.domain.model.WebDavConfig
-import com.tang.prm.domain.usecase.WebDavSyncUseCase
+import com.tang.prm.domain.repository.BackupRepositoryInterface
+import com.tang.prm.domain.repository.WebDavRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -34,7 +35,8 @@ data class WebDavUiState(
 
 @HiltViewModel
 class WebDavSyncViewModel @Inject constructor(
-    private val webDavSyncUseCase: WebDavSyncUseCase
+    private val webDavRepository: WebDavRepository,
+    private val backupRepository: BackupRepositoryInterface
 ) : ViewModel() {
 
     private val _cloudVersions = MutableStateFlow<List<CloudBackupVersion>>(emptyList())
@@ -46,7 +48,7 @@ class WebDavSyncViewModel @Inject constructor(
     private val _cleanResult = MutableStateFlow<CleanResult?>(null)
 
     val uiState: StateFlow<WebDavUiState> = combine(
-        webDavSyncUseCase.getConfig(),
+        webDavRepository.getConfig(),
         _cloudVersions,
         combine(_syncState, _connectionState, _cleanResult) { sync, conn, clean ->
             Triple(sync, conn, clean)
@@ -65,7 +67,7 @@ class WebDavSyncViewModel @Inject constructor(
 
     fun updateConfig(config: WebDavConfig) {
         viewModelScope.launch {
-            webDavSyncUseCase.saveConfig(config)
+            webDavRepository.saveConfig(config)
         }
     }
 
@@ -73,7 +75,7 @@ class WebDavSyncViewModel @Inject constructor(
         viewModelScope.launch {
             _connectionState.value = ConnectionState.Testing
             try {
-                val result = webDavSyncUseCase.testConnection()
+                val result = webDavRepository.testConnection()
                 _connectionState.value = when (result) {
                     is ConnectionTestResult.Success -> ConnectionState.Success
                     is ConnectionTestResult.Error -> ConnectionState.Error(result.message)
@@ -89,7 +91,7 @@ class WebDavSyncViewModel @Inject constructor(
         viewModelScope.launch {
             _syncState.value = SyncState.Uploading("准备中", 0, 0, "准备上传...")
             try {
-                webDavSyncUseCase.uploadBackup().collect { result ->
+                webDavRepository.uploadBackup().collect { result ->
                     _syncState.value = when (result) {
                         is SyncResult.UploadProgress -> SyncState.Uploading(result.phase, result.current, result.total, result.detail)
                         is SyncResult.UploadSuccess -> {
@@ -113,7 +115,7 @@ class WebDavSyncViewModel @Inject constructor(
         viewModelScope.launch {
             _syncState.value = SyncState.Downloading("准备中", 0, 0, "准备下载...")
             try {
-                webDavSyncUseCase.downloadBackup(fileName).collect { result ->
+                webDavRepository.downloadBackup(fileName).collect { result ->
                     _syncState.value = when (result) {
                         is SyncResult.UploadProgress -> SyncState.Idle
                         is SyncResult.DownloadProgress -> SyncState.Downloading(result.phase, result.current, result.total, result.detail)
@@ -132,7 +134,7 @@ class WebDavSyncViewModel @Inject constructor(
 
     fun deleteRemoteBackup(fileName: String) {
         viewModelScope.launch {
-            val success = webDavSyncUseCase.deleteRemoteBackup(fileName)
+            val success = webDavRepository.deleteRemoteBackup(fileName)
             if (success) {
                 _cloudVersions.value = _cloudVersions.value.filter { it.fileName != fileName }
             }
@@ -141,7 +143,7 @@ class WebDavSyncViewModel @Inject constructor(
 
     fun refreshCloudVersions() {
         viewModelScope.launch {
-            val versions = webDavSyncUseCase.listRemoteBackups()
+            val versions = webDavRepository.listRemoteBackups()
             _cloudVersions.value = versions
         }
     }
@@ -157,7 +159,7 @@ class WebDavSyncViewModel @Inject constructor(
     fun cleanOrphanedImages() {
         viewModelScope.launch {
             _cleanResult.value = CleanResult.Cleaning
-            val count = webDavSyncUseCase.cleanOrphanedImages()
+            val count = backupRepository.cleanOrphanedImages()
             _cleanResult.value = CleanResult.Done(count)
         }
     }
@@ -169,16 +171,16 @@ class WebDavSyncViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             // 只取首个配置做一次连接测试，不持续监听配置变化
-            val savedConfig = webDavSyncUseCase.getConfig().first()
+            val savedConfig = webDavRepository.getConfig().first()
             if (savedConfig.serverUrl.isNotBlank() && savedConfig.username.isNotBlank()) {
                 _connectionState.value = ConnectionState.Testing
-                val result = webDavSyncUseCase.testConnection()
+                val result = webDavRepository.testConnection()
                 _connectionState.value = when (result) {
                     is ConnectionTestResult.Success -> ConnectionState.Success
                     is ConnectionTestResult.Error -> ConnectionState.Error(result.message)
                 }
                 if (result is ConnectionTestResult.Success) {
-                    _cloudVersions.value = webDavSyncUseCase.listRemoteBackups()
+                    _cloudVersions.value = webDavRepository.listRemoteBackups()
                 }
             }
         }

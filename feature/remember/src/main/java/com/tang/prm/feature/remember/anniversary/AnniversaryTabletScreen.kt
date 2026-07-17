@@ -253,9 +253,6 @@ private fun UpcomingHeroCard(
     val date = remember(anniversary.date) {
         Instant.ofEpochMilli(anniversary.date).atZone(ZoneId.systemDefault()).toLocalDate()
     }
-    val monthAbbr = remember(date) {
-        date.month.getDisplayName(java.time.format.TextStyle.SHORT, java.util.Locale.ENGLISH).uppercase()
-    }
     val lunarText = if (anniversary.isLunar) LunarDateUtils.formatLunarDateShort(anniversary.date) else null
 
     Surface(

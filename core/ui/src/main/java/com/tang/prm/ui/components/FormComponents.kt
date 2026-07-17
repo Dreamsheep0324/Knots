@@ -2,7 +2,9 @@
 
 package com.tang.prm.ui.components
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -13,8 +15,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -22,40 +26,99 @@ import androidx.compose.ui.unit.sp
 import com.tang.prm.ui.animation.core.AnimationTokens
 import com.tang.prm.ui.theme.DialogDefaults
 
+/**
+ * 表单区块卡片：白底 + 16dp 圆角 + outline 边框 + 阴影，内含图标+标题+内容。
+ * 适用于事件、菜谱等新增/编辑表单。
+ */
 @Composable
-fun SectionHeader(
+fun SectionCard(
     title: String,
+    icon: ImageVector,
+    iconTint: Color,
     modifier: Modifier = Modifier,
-    action: @Composable (() -> Unit)? = null
+    content: @Composable ColumnScope.() -> Unit
+) {
+    Surface(
+        modifier = modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        color = MaterialTheme.colorScheme.surface,
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
+        shadowElevation = 3.dp
+    ) {
+        Column(modifier = Modifier.padding(horizontal = 18.dp, vertical = 16.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(icon, contentDescription = null, tint = iconTint, modifier = Modifier.size(18.dp))
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(title, style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold)
+            }
+            Spacer(modifier = Modifier.height(14.dp))
+            content()
+        }
+    }
+}
+
+/**
+ * 带图标的渐变分割线区块标题：圆形图标背景 + 标题 + 渐变线 + 可选操作按钮。
+ * 适用于列表/详情页的区块分隔。
+ */
+@Composable
+fun IconGradientSectionHeader(
+    icon: ImageVector,
+    iconColor: Color,
+    title: String,
+    action: String?,
+    onActionClick: (() -> Unit)?,
+    modifier: Modifier = Modifier
 ) {
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
+            .padding(vertical = 2.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(
-            text = title,
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.Medium
-        )
-        action?.invoke()
-    }
-}
-
-@Composable
-fun FormSectionLabel(icon: ImageVector, label: String, color: Color) {
-    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         Box(
             modifier = Modifier
-                .size(28.dp)
-                .background(color.copy(alpha = AnimationTokens.Alpha.faint), CircleShape),
+                .size(20.dp)
+                .background(iconColor.copy(alpha = 0.1f), CircleShape),
             contentAlignment = Alignment.Center
         ) {
-            Icon(icon, contentDescription = null, tint = color, modifier = Modifier.size(14.dp))
+            Icon(icon, contentDescription = null, tint = iconColor, modifier = Modifier.size(12.dp))
         }
-        Text(label, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+        Spacer(modifier = Modifier.width(6.dp))
+        Text(
+            title,
+            fontSize = 13.sp,
+            fontWeight = FontWeight.SemiBold,
+            color = MaterialTheme.colorScheme.onSurface
+        )
+        Spacer(modifier = Modifier.width(8.dp))
+        Box(
+            modifier = Modifier
+                .weight(1f)
+                .height(1.dp)
+                .background(
+                    Brush.horizontalGradient(
+                        colors = listOf(iconColor.copy(alpha = 0.2f), Color.Transparent)
+                    )
+                )
+        )
+        if (action != null && onActionClick != null) {
+            Spacer(modifier = Modifier.width(6.dp))
+            Surface(
+                shape = RoundedCornerShape(8.dp),
+                color = iconColor.copy(alpha = AnimationTokens.Alpha.faint)
+            ) {
+                Text(
+                    action,
+                    fontFamily = FontFamily.Monospace,
+                    fontSize = 10.sp,
+                    color = iconColor,
+                    modifier = Modifier
+                        .clickable { onActionClick() }
+                        .padding(horizontal = 8.dp, vertical = 3.dp)
+                )
+            }
+        }
     }
 }
 

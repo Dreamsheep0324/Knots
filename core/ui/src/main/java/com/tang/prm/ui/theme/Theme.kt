@@ -1,6 +1,9 @@
 package com.tang.prm.ui.theme
 
 import android.app.Activity
+import android.content.Context
+import android.content.ContextWrapper
+import android.util.Log
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
@@ -14,6 +17,19 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
+
+private const val TAG = "TangTheme"
+
+/**
+ * 递归解包 [ContextWrapper]，从任意包装上下文（如 Popup / Dialog / ContextThemeWrapper）
+ * 中取出最底层的 [Activity]。返回 null 表示当前上下文不依附于任何 Activity，
+ * 此时不应操作窗口属性。
+ */
+private fun Context.findActivity(): Activity? = when (this) {
+    is Activity -> this
+    is ContextWrapper -> baseContext.findActivity()
+    else -> null
+}
 
 private val LightColorScheme = lightColorScheme(
     primary = Primary,
@@ -67,7 +83,12 @@ fun TangTheme(
 
     if (!view.isInEditMode) {
         SideEffect {
-            val window = (view.context as Activity).window
+            val activity = view.context.findActivity()
+            if (activity == null) {
+                Log.w(TAG, "当前上下文不依附于 Activity，跳过状态栏配置")
+                return@SideEffect
+            }
+            val window = activity.window
             window.statusBarColor = android.graphics.Color.TRANSPARENT
             window.navigationBarColor = android.graphics.Color.TRANSPARENT
             val insetsController = WindowCompat.getInsetsController(window, view)

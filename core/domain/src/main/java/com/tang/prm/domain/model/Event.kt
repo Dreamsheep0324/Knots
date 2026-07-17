@@ -25,6 +25,7 @@ data class Event(
     val latitude: Double? = null,
     val longitude: Double? = null,
     val photos: List<String> = emptyList(),
+    val photosCount: Int = 0,
     val emotion: String? = null,
     val weather: String? = null,
     val amount: Double? = null,

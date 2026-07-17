@@ -75,7 +75,11 @@ abstract class RepositoryModule {
 
     @Binds
     @Singleton
-    abstract fun bindBackupRepository(impl: BackupRepository): BackupRepositoryInterface
+    abstract fun bindBackupRepository(impl: BackupRepositoryImpl): BackupRepositoryInterface
+
+    @Binds
+    @Singleton
+    abstract fun bindAppRestarter(impl: AppRestarterImpl): AppRestarter
 
     @Binds
     @Singleton
@@ -88,4 +92,8 @@ abstract class RepositoryModule {
     @Binds
     @Singleton
     abstract fun bindUpdateRepository(impl: UpdateRepositoryImpl): UpdateRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindRecipeRepository(impl: RecipeRepositoryImpl): RecipeRepository
 }

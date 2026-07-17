@@ -15,9 +15,6 @@ interface CircleDao {
     @Query("SELECT * FROM circles ORDER BY sortOrder ASC")
     fun getAllCirclesWithMembers(): Flow<List<CircleWithMembers>>
 
-    @Query("SELECT * FROM circles WHERE id = :id")
-    fun getCircleById(id: Long): Flow<CircleEntity?>
-
     @Query("SELECT DISTINCT c.* FROM circles c INNER JOIN circle_member_cross_ref cm ON c.id = cm.circleId WHERE cm.contactId = :contactId ORDER BY c.sortOrder ASC")
     fun getCirclesForContact(contactId: Long): Flow<List<CircleEntity>>
 
@@ -33,14 +30,6 @@ interface CircleDao {
     @Transaction
     @Query("SELECT DISTINCT c.* FROM circles c INNER JOIN circle_member_cross_ref cm ON c.id = cm.circleId WHERE cm.contactId = :contactId ORDER BY c.sortOrder ASC")
     fun getCirclesForContactWithMembers(contactId: Long): Flow<List<CircleWithMembers>>
-
-    @Transaction
-    @Query("SELECT * FROM circles WHERE parentCircleId = :parentId ORDER BY sortOrder ASC")
-    fun getChildCirclesWithMembers(parentId: Long): Flow<List<CircleWithMembers>>
-
-    @Transaction
-    @Query("SELECT * FROM circles WHERE parentCircleId IS NULL ORDER BY sortOrder ASC")
-    fun getRootCirclesWithMembers(): Flow<List<CircleWithMembers>>
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertCircle(circle: CircleEntity): Long
@@ -95,11 +84,6 @@ interface CircleDao {
             CircleMemberCrossRef(circleId = id, contactId = contactId)
         })
         return id
-    }
-
-    @Transaction
-    suspend fun updateCircleOrder(circles: List<CircleEntity>) {
-        circles.forEach { updateCircle(it) }
     }
 
     @Query("DELETE FROM circle_member_cross_ref WHERE contactId = :contactId")

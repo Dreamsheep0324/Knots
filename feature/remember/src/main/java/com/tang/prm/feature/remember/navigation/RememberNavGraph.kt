@@ -28,8 +28,7 @@ fun NavGraphBuilder.rememberGraph(
         val route = backStackEntry.toRoute<AnniversaryDetailRoute>()
         AnniversaryDetailScreen(anniversaryId = route.anniversaryId, navController = navController)
     }
-    composable<EditAnniversaryRoute> { backStackEntry ->
-        val route = backStackEntry.toRoute<EditAnniversaryRoute>()
-        AddAnniversaryScreen(anniversaryId = route.anniversaryId, navController = navController)
+    composable<EditAnniversaryRoute> {
+        AddAnniversaryScreen(navController = navController)
     }
 }

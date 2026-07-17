@@ -17,15 +17,6 @@ class TodoRepositoryImpl @Inject constructor(
     override fun getActiveTodos(): Flow<List<TodoItem>> =
         todoDao.getActiveTodos().mapList { it.toDomain() }
 
-    override fun getTodosByContact(contactId: Long): Flow<List<TodoItem>> =
-        todoDao.getTodosByContact(contactId).mapList { it.toDomain() }
-
-    override fun getTodosDueInRange(startTime: Long, endTime: Long): Flow<List<TodoItem>> =
-        todoDao.getTodosDueInRange(startTime, endTime).mapList { it.toDomain() }
-
-    override fun getRecentTodos(limit: Int): Flow<List<TodoItem>> =
-        todoDao.getRecentTodos(limit).mapList { it.toDomain() }
-
     override suspend fun insertTodo(todo: TodoItem): Long =
         todoDao.insertTodo(todo.toEntity())
 

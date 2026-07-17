@@ -29,14 +29,6 @@ object DensityFix {
         return calculatedDensity.coerceIn(1.5f, 3.5f)
     }
 
-    fun shouldFixDensity(context: Context, threshold: Float = 0.15f): Boolean {
-        val metrics = context.resources.displayMetrics
-        val systemDensity = metrics.density
-        if (systemDensity <= 0f || !systemDensity.isFinite()) return false
-        val unifiedDensity = calculateUnifiedDensity(context)
-        return kotlin.math.abs(systemDensity - unifiedDensity) > threshold
-    }
-
     fun createFixedDensity(context: Context): Density {
         val metrics = context.resources.displayMetrics
         val systemDensity = metrics.density

@@ -26,10 +26,7 @@ import javax.inject.Singleton
 class ContactRepositoryImpl @Inject constructor(
     private val contactDao: ContactDao,
     private val contactAttributeDao: ContactAttributeDao,
-    private val anniversaryDao: AnniversaryDao,
     private val giftDao: GiftDao,
-    private val thoughtDao: ThoughtDao,
-    private val circleDao: CircleDao,
     private val todoDao: TodoDao,
     private val reminderDao: ReminderDao,
     private val database: TangDatabase
@@ -45,24 +42,17 @@ class ContactRepositoryImpl @Inject constructor(
             contact?.toDomainWithAttributes(attrs)
         }
 
-    override fun searchContacts(keyword: String): Flow<List<Contact>> =
-        contactDao.searchContacts(keyword.escapeSqlWildcards()).withAttributes(contactAttributeDao.getAttributesForAllContacts())
-
-    override fun getContactsByGroup(groupId: Long): Flow<List<Contact>> =
-        contactDao.getContactsByGroup(groupId).withAttributes(contactAttributeDao.getAttributesForAllContacts())
-
     override fun getFilteredContacts(keyword: String?, groupId: Long?, relationship: String?): Flow<List<Contact>> {
         val escapedKeyword = keyword?.escapeSqlWildcards()
         return contactDao.getFilteredContacts(escapedKeyword, groupId, relationship).withAttributes(contactAttributeDao.getAttributesForAllContacts())
     }
 
-    override fun getTopContactsByIntimacy(limit: Int): Flow<List<Contact>> =
-        contactDao.getTopContactsByIntimacy(limit).withAttributes(contactAttributeDao.getAttributesForAllContacts())
-
     override fun getRecentContacts(limit: Int): Flow<List<Contact>> =
         contactDao.getRecentContacts(limit).withAttributes(contactAttributeDao.getAttributesForAllContacts())
 
     override fun getContactCount(): Flow<Int> = contactDao.getContactCount()
+
+    override fun getAllIntimacyScores(): Flow<List<Int>> = contactDao.getAllIntimacyScores()
 
     override suspend fun insertContact(contact: Contact): Long = database.withTransaction {
         val id = contactDao.insertContact(contact.toEntity())

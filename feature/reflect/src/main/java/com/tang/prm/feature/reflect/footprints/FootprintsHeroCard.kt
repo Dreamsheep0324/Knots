@@ -34,6 +34,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.tang.prm.ui.animation.core.AnimationTokens
+import com.tang.prm.ui.components.AppCard
 import com.tang.prm.ui.theme.CardBorder
 import com.tang.prm.ui.theme.SignalAmber
 import com.tang.prm.ui.theme.SignalElectric
@@ -48,14 +49,11 @@ internal fun HeroCard(footprint: FootprintItem, eventTypes: List<com.tang.prm.do
     val dateFormat: (Long) -> String = { DateUtils.formatMonthDayChineseFull(it) }
     val (accentColor, lightColor, icon) = resolveEventTypeStyle(footprint.eventType, eventTypes)
 
-    Surface(
+    AppCard(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 8.dp),
-        shape = RoundedCornerShape(16.dp),
-        color = MaterialTheme.colorScheme.surface,
         border = BorderStroke(1.dp, CardBorder),
-        shadowElevation = 3.dp,
         onClick = onClick
     ) {
         Row(

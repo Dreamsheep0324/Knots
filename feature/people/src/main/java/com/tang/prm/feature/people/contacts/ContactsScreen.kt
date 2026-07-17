@@ -40,10 +40,6 @@ fun ContactsScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val searchState by viewModel.searchState.collectAsStateWithLifecycle()
 
-    LaunchedEffect(Unit) {
-        viewModel.onViewModeChange(0)
-    }
-
     DisposableEffect(uiState.dialog.selectedCardId) {
         onOverlayVisibleChange(uiState.dialog.selectedCardId != null)
         onDispose {

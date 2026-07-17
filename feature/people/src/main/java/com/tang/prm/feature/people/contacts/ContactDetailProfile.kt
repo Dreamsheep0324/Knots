@@ -22,18 +22,8 @@ import com.tang.prm.ui.components.DetailInfoRow
 import com.tang.prm.ui.components.DetailSection
 import com.tang.prm.ui.theme.*
 import com.tang.prm.domain.util.DateUtils
+import com.tang.prm.domain.util.parseListField
 import com.tang.prm.ui.animation.core.AnimationTokens
-import org.json.JSONArray
-
-private fun parseListField(value: String?): List<String> {
-    if (value.isNullOrBlank()) return emptyList()
-    return try {
-        val arr = JSONArray(value)
-        (0 until arr.length()).map { arr.getString(it) }
-    } catch (e: Exception) {
-        value.split(",").map { it.trim() }.filter { it.isNotEmpty() }
-    }
-}
 
 @Composable
 internal fun ProfileContent(contact: Contact, uiState: ContactDetailUiState) {
@@ -54,18 +44,18 @@ internal fun ProfileContent(contact: Contact, uiState: ContactDetailUiState) {
         }
 
         if (hasLocationInfo(contact) || hasWorkInfo(contact)) {
-            DetailSection(title = "工作", accentColor = Color(0xFFFFA726)) {
+            DetailSection(title = "工作", accentColor = SignalAmber) {
                 contact.city?.takeIf { it.isNotBlank() }?.let {
-                    DetailInfoRow(icon = Icons.Default.LocationCity, label = "城市", value = it, iconColor = Color(0xFF9575CD))
+                    DetailInfoRow(icon = Icons.Default.LocationCity, label = "城市", value = it, iconColor = SignalPurple)
                 }
                 contact.address?.takeIf { it.isNotBlank() }?.let {
-                    DetailInfoRow(icon = Icons.Default.Home, label = "详细地址", value = it, iconColor = Color(0xFF66BB6A), maxLines = 2)
+                    DetailInfoRow(icon = Icons.Default.Home, label = "详细地址", value = it, iconColor = SignalGreen, maxLines = 2)
                 }
                 contact.company?.takeIf { it.isNotBlank() }?.let {
-                    DetailInfoRow(icon = Icons.Default.BusinessCenter, label = "公司", value = it, iconColor = Color(0xFFFFA726))
+                    DetailInfoRow(icon = Icons.Default.BusinessCenter, label = "公司", value = it, iconColor = SignalAmber)
                 }
                 contact.jobTitle?.takeIf { it.isNotBlank() }?.let {
-                    DetailInfoRow(icon = Icons.Default.Work, label = "职位", value = it, iconColor = Color(0xFFE65100))
+                    DetailInfoRow(icon = Icons.Default.Work, label = "职位", value = it, iconColor = SceneOrange)
                 }
             }
         }
@@ -76,25 +66,25 @@ internal fun ProfileContent(contact: Contact, uiState: ContactDetailUiState) {
                     DetailInfoRow(icon = Icons.Default.Phone, label = "电话", value = it, iconColor = Color(0xFF4DD0E1))
                 }
                 contact.email?.takeIf { it.isNotBlank() }?.let {
-                    DetailInfoRow(icon = Icons.Default.MoreHoriz, label = "其他", value = it, iconColor = Color(0xFF3B82F6))
+                    DetailInfoRow(icon = Icons.Default.MoreHoriz, label = "其他", value = it, iconColor = SignalSky)
                 }
             }
         }
 
         if (hasPersonalFeatureTags(contact)) {
-            DetailSection(title = "个人特征", accentColor = Color(0xFFF43F5E)) {
+            DetailSection(title = "个人特征", accentColor = InsightPink) {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     contact.hobby?.takeIf { it.isNotBlank() }?.let {
-                        FeatureTagSectionWithColors("爱好", parseListField(it).map { tag -> tag to uiState.data.hobbyOptions.find { o -> o.name == tag }?.color }, Color(0xFFF43F5E))
+                        FeatureTagSectionWithColors("爱好", parseListField(it).map { tag -> tag to uiState.data.hobbyOptions.find { o -> o.name == tag }?.color }, InsightPink)
                     }
                     contact.habit?.takeIf { it.isNotBlank() }?.let {
-                        FeatureTagSectionWithColors("习惯", parseListField(it).map { tag -> tag to uiState.data.habitOptions.find { o -> o.name == tag }?.color }, Color(0xFF3B82F6))
+                        FeatureTagSectionWithColors("习惯", parseListField(it).map { tag -> tag to uiState.data.habitOptions.find { o -> o.name == tag }?.color }, SignalSky)
                     }
                     contact.diet?.takeIf { it.isNotBlank() }?.let {
-                        FeatureTagSectionWithColors("饮食偏好", parseListField(it).map { tag -> tag to uiState.data.dietOptions.find { o -> o.name == tag }?.color }, Color(0xFFF97316))
+                        FeatureTagSectionWithColors("饮食偏好", parseListField(it).map { tag -> tag to uiState.data.dietOptions.find { o -> o.name == tag }?.color }, SceneOrange)
                     }
                     contact.skill?.takeIf { it.isNotBlank() }?.let {
-                        FeatureTagSectionWithColors("技能", parseListField(it).map { tag -> tag to uiState.data.skillOptions.find { o -> o.name == tag }?.color }, Color(0xFF8B5CF6))
+                        FeatureTagSectionWithColors("技能", parseListField(it).map { tag -> tag to uiState.data.skillOptions.find { o -> o.name == tag }?.color }, SignalPurple)
                     }
                     contact.mbti?.takeIf { it.isNotBlank() }?.let {
                         FeatureTagSection("MBTI", listOf(it), EventMoneyTeal)
@@ -104,18 +94,18 @@ internal fun ProfileContent(contact: Contact, uiState: ContactDetailUiState) {
         }
 
         if (hasFamilyInfo(contact)) {
-            DetailSection(title = "家庭/社交", accentColor = Color(0xFFEAB308)) {
+            DetailSection(title = "家庭/社交", accentColor = SignalGold) {
                 contact.spouseName?.takeIf { it.isNotBlank() }?.let {
-                    DetailInfoRow(icon = Icons.Default.Favorite, label = "配偶", value = it, iconColor = Color(0xFFF43F5E))
+                    DetailInfoRow(icon = Icons.Default.Favorite, label = "配偶", value = it, iconColor = InsightPink)
                 }
                 if (contact.childrenCount > 0) {
                     DetailInfoRow(icon = Icons.Default.ChildCare, label = "子女", value = "${contact.childrenCount}人", iconColor = SignalSky)
                 }
                 contact.childrenNames?.takeIf { it.isNotBlank() }?.let {
-                    DetailInfoRow(icon = Icons.Default.Face, label = "子女姓名", value = it, iconColor = Color(0xFF66BB6A))
+                    DetailInfoRow(icon = Icons.Default.Face, label = "子女姓名", value = it, iconColor = SignalGreen)
                 }
                 contact.introducer?.takeIf { it.isNotBlank() }?.let {
-                    DetailInfoRow(icon = Icons.Default.PersonAdd, label = "介绍人", value = it, iconColor = Color(0xFF9575CD))
+                    DetailInfoRow(icon = Icons.Default.PersonAdd, label = "介绍人", value = it, iconColor = SignalPurple)
                 }
             }
         }

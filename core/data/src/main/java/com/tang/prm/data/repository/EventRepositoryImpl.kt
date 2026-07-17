@@ -31,17 +31,13 @@ class EventRepositoryImpl @Inject constructor(
 ) : EventRepository {
 
     override fun getAllEvents(): Flow<List<Event>> =
-        eventDao.getAllEventsWithParticipants().map { list ->
-            list.filter { it.event.type != EventType.CONVERSATION.name }.map { it.toDomain() }
-        }
+        eventDao.getAllEventsWithParticipants().mapList { it.toDomain() }
 
     override fun getEventById(id: Long): Flow<Event?> =
         eventDao.getEventByIdWithParticipants(id).mapNullable { it.toDomain() }
 
     override fun getRecentEvents(limit: Int): Flow<List<Event>> =
-        eventDao.getRecentEventsWithParticipants(limit).map { list ->
-            list.filter { it.event.type != EventType.CONVERSATION.name }.map { it.toDomain() }
-        }
+        eventDao.getRecentEventsWithParticipants(limit).mapList { it.toDomain() }
 
     override fun getEventsByType(type: String): Flow<List<Event>> =
         eventDao.getEventsByTypeWithParticipants(type).mapList { it.toDomain() }
@@ -57,7 +53,7 @@ class EventRepositoryImpl @Inject constructor(
     }
 
     override fun getEventsWithLocation(): Flow<List<Event>> =
-        eventDao.getEventsWithLocation().mapList { it.toDomain() }
+        eventDao.getEventLocationItemsWithParticipants().mapList { it.toDomain() }
 
     override fun getParticipantIdsForEvent(eventId: Long): Flow<List<Long>> =
         eventDao.getParticipantIdsForEvent(eventId)
@@ -103,6 +99,10 @@ class EventRepositoryImpl @Inject constructor(
         eventDao.deleteEventParticipant(com.tang.prm.data.local.entity.EventParticipantCrossRef(eventId, contactId))
 
     override fun getEventCount(): Flow<Int> = eventDao.getEventCount()
+
+    override fun getEventCountByType(type: String): Flow<Int> = eventDao.getEventCountByType(type)
+
+    override fun getEventCountWithLocation(): Flow<Int> = eventDao.getEventCountWithLocation()
 
     override fun getPhotoCount(): Flow<Int> = eventDao.getPhotoCount()
 

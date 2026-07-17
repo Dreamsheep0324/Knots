@@ -20,6 +20,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.tang.prm.ui.components.TerminalSectionHeader
 
 @Composable
 internal fun MeihuaTiYongSection(
@@ -40,7 +41,7 @@ internal fun MeihuaTiYongSection(
 ) {
     Spacer(modifier = Modifier.height(20.dp))
 
-    RecordSectionHeader("体用总断")
+    TerminalSectionHeader("体用总断")
 
     Spacer(modifier = Modifier.height(8.dp))
 
@@ -106,7 +107,7 @@ internal fun MeihuaRelationsSection(
 ) {
     Spacer(modifier = Modifier.height(20.dp))
 
-    RecordSectionHeader("事之始终")
+    TerminalSectionHeader("事之始终")
 
     Spacer(modifier = Modifier.height(8.dp))
 

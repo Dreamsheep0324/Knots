@@ -27,6 +27,7 @@ class HomeStatsUseCaseTest {
     @MockK private lateinit var anniversaryRepository: AnniversaryRepository
     @MockK private lateinit var eventRepository: EventRepository
     @MockK private lateinit var subscriptionRepository: SubscriptionRepository
+    @MockK private lateinit var recipeRepository: RecipeRepository
 
     private lateinit var useCase: HomeStatsUseCase
 
@@ -35,7 +36,7 @@ class HomeStatsUseCaseTest {
         useCase = HomeStatsUseCase(
             giftRepository, thoughtRepository, contactRepository,
             favoriteRepository, circleRepository, anniversaryRepository,
-            eventRepository, subscriptionRepository
+            eventRepository, subscriptionRepository, recipeRepository
         )
     }
 
@@ -58,6 +59,8 @@ class HomeStatsUseCaseTest {
         every { eventRepository.getPhotoCount() } returns flowOf(eventPhotoCount)
         every { giftRepository.getPhotoCount() } returns flowOf(giftPhotoCount)
         every { subscriptionRepository.getSubscriptionCount() } returns flowOf(subscriptionCount)
+        every { recipeRepository.getRecipeCount() } returns flowOf(0)
+        every { contactRepository.getAllContacts() } returns flowOf(emptyList())
     }
 
     private fun mockEvent() = com.tang.prm.domain.model.Event(

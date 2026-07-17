@@ -50,17 +50,22 @@ class ReminderReceiver : BroadcastReceiver() {
             )
             val reminderRepository = entryPoint.reminderRepository()
             val pendingResult = goAsync()
-            val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+            val exceptionHandler = CoroutineExceptionHandler { _, throwable ->
+                Log.w("ReminderReceiver", "标记提醒完成异常", throwable)
+            }
+            val scope = CoroutineScope(Dispatchers.IO + SupervisorJob() + exceptionHandler)
             scope.launch {
                 try {
                     reminderRepository.markReminderCompleted(reminderId)
+                } catch (e: Exception) {
+                    Log.w("ReminderReceiver", "标记提醒完成失败", e)
                 } finally {
                     scope.cancel()
                     pendingResult.finish()
                 }
             }
         } catch (e: Exception) {
-            Log.w("ReminderReceiver", "标记提醒完成失败", e)
+            Log.w("ReminderReceiver", "EntryPoint 初始化失败", e)
         }
     }
 

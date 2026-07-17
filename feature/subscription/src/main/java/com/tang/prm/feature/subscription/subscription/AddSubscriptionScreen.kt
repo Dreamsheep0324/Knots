@@ -63,7 +63,11 @@ import com.tang.prm.ui.components.FormSectionLabel
 import com.tang.prm.ui.components.FormScreenScaffold
 import com.tang.prm.ui.components.TagSelector
 import com.tang.prm.ui.components.TagSelectorMode
+import com.tang.prm.ui.theme.SceneOrange
+import com.tang.prm.ui.theme.SignalGreen
+import com.tang.prm.ui.theme.SignalPurple
 import com.tang.prm.ui.theme.SignalSky
+import com.tang.prm.ui.theme.TextSlate
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
@@ -121,7 +125,7 @@ fun AddSubscriptionScreen(
             item {
                 SubscriptionFormSection(
                     icon = Icons.Default.CreditCard,
-                    iconColor = Color(0xFF42A5F5),
+                    iconColor = SignalSky,
                     title = "名称"
                 ) {
                     OutlinedTextField(
@@ -140,7 +144,7 @@ fun AddSubscriptionScreen(
             item {
                 SubscriptionFormSection(
                     icon = Icons.Default.Style,
-                    iconColor = Color(0xFF8B5CF6),
+                    iconColor = SignalPurple,
                     title = "分类"
                 ) {
                     TagSelector(
@@ -161,7 +165,7 @@ fun AddSubscriptionScreen(
             item {
                 SubscriptionFormSection(
                     icon = Icons.Default.Payments,
-                    iconColor = Color(0xFF22C55E),
+                    iconColor = SignalGreen,
                     title = "价格与周期"
                 ) {
                     // 价格输入
@@ -207,7 +211,7 @@ fun AddSubscriptionScreen(
             item {
                 SubscriptionFormSection(
                     icon = Icons.Default.CalendarToday,
-                    iconColor = Color(0xFFF97316),
+                    iconColor = SceneOrange,
                     title = "日期"
                 ) {
                     // 开始日期 - 可点击选择
@@ -251,7 +255,7 @@ fun AddSubscriptionScreen(
             item {
                 SubscriptionFormSection(
                     icon = Icons.Default.EditNote,
-                    iconColor = Color(0xFF64748B),
+                    iconColor = TextSlate,
                     title = "备注"
                 ) {
                     OutlinedTextField(

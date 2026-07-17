@@ -11,6 +11,9 @@ import com.tang.prm.domain.repository.GiftRepository
 import com.tang.prm.data.util.ImageFileManager
 import androidx.room.withTransaction
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import com.tang.prm.data.mapper.mapList
 import com.tang.prm.data.mapper.mapNullable
@@ -32,9 +35,6 @@ class GiftRepositoryImpl @Inject constructor(
 
     override fun getGiftsByContactId(contactId: Long): Flow<List<Gift>> =
         giftDao.getGiftsByContactId(contactId).mapList { it.toDomain() }
-
-    override fun getGiftsBySentType(isSent: Boolean): Flow<List<Gift>> =
-        giftDao.getGiftsBySentType(isSent).mapList { it.toDomain() }
 
     override suspend fun insertGift(gift: Gift): Long = giftDao.insertGift(gift.toEntity())
 
@@ -74,17 +74,18 @@ class GiftRepositoryImpl @Inject constructor(
         ImageFileManager.deleteLocalPhotos(photos)
 
     override suspend fun saveGiftWithPhotos(gift: Gift, photoUris: List<String>): Pair<Long, Int> {
-        val savedPaths = mutableListOf<String>()
-        var failedCount = 0
-        photoUris.forEach { uriString ->
-            val uri = Uri.parse(uriString)
-            val path = ImageFileManager.copyToInternalStorage(context, uri, "gift")
-            if (path != null) {
-                savedPaths.add(path)
-            } else {
-                failedCount++
-            }
+        // 并发复制图片，缩短用户保存等待时间
+        val copyResults = coroutineScope {
+            photoUris.map { uriString ->
+                async {
+                    val uri = Uri.parse(uriString)
+                    ImageFileManager.copyToInternalStorage(context, uri, "gift")
+                }
+            }.awaitAll()
         }
+        val savedPaths = copyResults.mapNotNull { it }
+        val failedCount = copyResults.count { it == null }
+
         val newGift = gift.copy(
             id = 0,
             photos = savedPaths,

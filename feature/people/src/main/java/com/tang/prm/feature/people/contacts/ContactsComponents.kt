@@ -4,6 +4,7 @@ import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -22,7 +23,10 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontWeight
@@ -38,6 +42,68 @@ import com.tang.prm.ui.components.ContactAvatar
 import com.tang.prm.ui.animation.primitives.staggeredAppear
 import com.tang.prm.ui.theme.*
 import com.tang.prm.domain.model.AppStrings
+import java.util.Locale
+
+/**
+ * 联系人 ID 的统一格式化（4 位补零，例如 42 → "0042"）。
+ * 用于 Holographic 卡牌、卡片视图等多处显示。
+ */
+internal val Contact.formattedId: String
+    get() = String.format(Locale.US, "%04d", id)
+
+/**
+ * 统一的亲密度进度条组件。
+ *
+ * 用于详情页徽章、列表卡片、画廊卡片、全息卡正/背面等多处场景。
+ * 通过 `fillBrush` 参数支持纯色或渐变填充，通过 `border` 参数可选边框。
+ *
+ * @param score 亲密度分数（0-100），内部会 coerceIn 防止溢出
+ * @param fillBrush 进度条填充画刷（纯色用 SolidColor，渐变用 Brush.horizontalGradient 等）
+ * @param modifier 用于设置宽度（如 Modifier.width(64.dp) 或 Modifier.fillMaxWidth()）
+ * @param height 进度条高度
+ * @param cornerRadius 圆角半径
+ * @param background 进度条轨道背景色
+ * @param border 可选边框（全息卡系列使用）
+ */
+@Composable
+internal fun IntimacyProgressBar(
+    score: Int,
+    fillBrush: Brush,
+    modifier: Modifier = Modifier,
+    height: Dp = 4.dp,
+    cornerRadius: Dp = 2.dp,
+    background: Color = MaterialTheme.colorScheme.surfaceVariant,
+    border: BorderStroke? = null
+) {
+    val shape = RoundedCornerShape(cornerRadius)
+    val trackModifier = if (border != null) {
+        modifier.height(height).background(background, shape).border(border, shape)
+    } else {
+        modifier.height(height).background(background, shape)
+    }
+    Box(modifier = trackModifier) {
+        Box(
+            modifier = Modifier
+                .fillMaxHeight()
+                .fillMaxWidth((score / 100f).coerceIn(0f, 1f))
+                .background(fillBrush, shape)
+        )
+    }
+}
+
+/**
+ * 格式化"认识时长"：精确到年+天（例如 "3年45天" 或 "12天"）。
+ * 时间戳为 0 或未来时间返回 null。
+ * 用于详情页头部 DaysKnownBadge 与平板 Hero 信息栏。
+ */
+internal fun formatKnownDuration(timestamp: Long): String? {
+    val diffMillis = System.currentTimeMillis() - timestamp
+    if (diffMillis <= 0) return null
+    val totalDays = (diffMillis / (24L * 60 * 60 * 1000)).toInt().coerceAtLeast(0)
+    val years = totalDays / 365
+    val days = totalDays % 365
+    return if (years > 0) "${years}年${days}天" else "${days}天"
+}
 
 @Composable
 internal fun RelationshipFilterChips(
@@ -149,6 +215,10 @@ internal fun ContactsList(
     val listState = rememberLazyListState()
     var dragIndex by remember { mutableIntStateOf(-1) }
     var dragOffsetY by remember { mutableFloatStateOf(0f) }
+    val density = LocalDensity.current
+    // 卡片高度 80dp 转 px，作为拖拽交换阈值（跨密度一致体验）
+    val itemHeightPx = with(density) { 80.dp.toPx() }
+    val swapThreshold = itemHeightPx / 2f
 
     Box(modifier = modifier) {
         LazyColumn(
@@ -193,11 +263,11 @@ internal fun ContactsList(
                 val isDragging = index == dragIndex
                 val elevation by animateDpAsState(
                     targetValue = if (isDragging) 12.dp else 3.dp,
-                    label = "elevate_$index"
+                    label = "elevate_${contact.id}"
                 )
                 val scale by animateFloatAsState(
                     targetValue = if (isDragging) 1.03f else 1f,
-                    label = "scale_$index"
+                    label = "scale_${contact.id}"
                 )
 
                 Box(
@@ -210,7 +280,7 @@ internal fun ContactsList(
                         .zIndex(if (isDragging) 1f else 0f)
                         .then(
                             if (isReorderMode) {
-                                Modifier.pointerInput(index) {
+                                Modifier.pointerInput(contact.id) {
                                     detectDragGesturesAfterLongPress(
                                         onDragStart = {
                                             dragIndex = index
@@ -220,13 +290,11 @@ internal fun ContactsList(
                                             change.consume()
                                             dragOffsetY += dragAmount.y
 
-                                            val itemHeight = 80f
-                                            val threshold = itemHeight / 2
-                                            if (dragOffsetY > threshold && index < contacts.size - 1) {
+                                            if (dragOffsetY > swapThreshold && index < contacts.size - 1) {
                                                 onMoveContact(index, index + 1)
                                                 dragIndex = index + 1
                                                 dragOffsetY = 0f
-                                            } else if (dragOffsetY < -threshold && index > 0) {
+                                            } else if (dragOffsetY < -swapThreshold && index > 0) {
                                                 onMoveContact(index, index - 1)
                                                 dragIndex = index - 1
                                                 dragOffsetY = 0f
@@ -243,7 +311,7 @@ internal fun ContactsList(
                                     )
                                 }
                             } else {
-                                Modifier.pointerInput(index) {
+                                Modifier.pointerInput(contact.id) {
                                     detectDragGesturesAfterLongPress(
                                         onDragStart = { onToggleReorder() },
                                         onDrag = { _, _ -> },
@@ -306,9 +374,6 @@ internal fun ContactGridCard(
     }
 }
 
-internal fun getContactListIntimacyColor(score: Int): Color =
-    Color(com.tang.prm.domain.model.IntimacyTier.of(score).colorValue)
-
 internal fun getContactListIntimacyLevel(score: Int): String =
     com.tang.prm.domain.model.IntimacyTier.of(score).label
 
@@ -320,7 +385,7 @@ internal fun ContactListCard(
     elevation: Dp = 3.dp,
     modifier: Modifier = Modifier
 ) {
-    val intimacyColor = getContactListIntimacyColor(contact.intimacyScore)
+    val intimacyColor = getIntimacyColor(contact.intimacyScore)
     val intimacyLevel = getContactListIntimacyLevel(contact.intimacyScore)
 
     Surface(
@@ -392,19 +457,13 @@ internal fun ContactListCard(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Box(
-                        modifier = Modifier
-                            .width(64.dp)
-                            .height(4.dp)
-                            .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(2.dp))
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxHeight()
-                                .fillMaxWidth(contact.intimacyScore / 100f)
-                                .background(intimacyColor, RoundedCornerShape(2.dp))
-                        )
-                    }
+                    IntimacyProgressBar(
+                        score = contact.intimacyScore,
+                        fillBrush = SolidColor(intimacyColor),
+                        modifier = Modifier.width(64.dp),
+                        height = 4.dp,
+                        cornerRadius = 2.dp
+                    )
                     Text(
                         text = "$intimacyLevel ${contact.intimacyScore}",
                         style = MaterialTheme.typography.labelSmall,

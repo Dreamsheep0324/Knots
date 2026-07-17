@@ -11,9 +11,7 @@ import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
-import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
@@ -87,32 +85,6 @@ class ChatViewModelTest {
             assertThat(conversation.lastMessage).isEqualTo("今天聊了天气")
             cancelAndIgnoreRemainingEvents()
         }
-    }
-
-    @Test
-    fun `showDeleteConfirm updates dialog state`() = runTest {
-        every { eventRepository.getEventsByType(EventType.CONVERSATION.name) } returns flowOf(emptyList())
-        viewModel = ChatViewModel(eventRepository)
-
-        val job = launch { viewModel.uiState.collect { } }
-        advanceUntilIdle()
-
-        viewModel.showDeleteConfirm(5L)
-        advanceUntilIdle()
-
-        assertThat(viewModel.uiState.value.dialog.showDeleteConfirm).isEqualTo(5L)
-        job.cancel()
-    }
-
-    @Test
-    fun `showDeleteConfirm with null clears dialog`() = runTest {
-        every { eventRepository.getEventsByType(EventType.CONVERSATION.name) } returns flowOf(emptyList())
-        viewModel = ChatViewModel(eventRepository)
-
-        viewModel.showDeleteConfirm(5L)
-        viewModel.showDeleteConfirm(null)
-
-        assertThat(viewModel.uiState.value.dialog.showDeleteConfirm).isNull()
     }
 
     @Test

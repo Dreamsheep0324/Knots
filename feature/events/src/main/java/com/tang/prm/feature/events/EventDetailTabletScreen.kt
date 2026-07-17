@@ -45,7 +45,6 @@ import com.tang.prm.ui.animation.core.AnimationTokens
 import com.tang.prm.ui.components.DeleteConfirmDialog
 import com.tang.prm.ui.navigation.EditEventRoute
 import com.tang.prm.ui.theme.*
-import com.tang.prm.ui.theme.getEmotionColor
 import com.tang.prm.ui.theme.getEmotionIcon
 import com.tang.prm.ui.theme.getEventTypeStyle
 import com.tang.prm.ui.theme.getWeatherColor
@@ -274,7 +273,7 @@ private fun TabletHeroLeft(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                         modifier = Modifier.weight(1f)
                     ) {
-                        items(photos.size) { index ->
+                        items(photos.size, key = { photos[it] }) { index ->
                             val isSelected = pagerState.currentPage == index
                             Box(
                                 modifier = Modifier
@@ -372,7 +371,7 @@ private fun HeroTypeBadge(event: Event, accentColor: Color) {
         Box(
             modifier = Modifier
                 .size(8.dp)
-                .background(Color(0xFF4ADE80), CircleShape)
+                .background(accentColor, CircleShape)
         )
         Text(
             text = event.customTypeName ?: event.type.displayName,
@@ -385,7 +384,6 @@ private fun HeroTypeBadge(event: Event, accentColor: Color) {
 
 @Composable
 private fun HeroEmotionBadge(emotion: String) {
-    val eColor = getEmotionColor(emotion)?.toComposeColor(SignalPurple) ?: SignalPurple
     Row(
         modifier = Modifier
             .clip(RoundedCornerShape(22.dp))
@@ -403,39 +401,6 @@ private fun HeroEmotionBadge(emotion: String) {
             color = Color.White.copy(alpha = 0.9f),
             fontSize = 13.sp
         )
-    }
-}
-
-@Composable
-private fun HeroPhotoThumb(
-    photoUri: String?,
-    isMore: Boolean,
-    moreCount: Int = 0,
-    onClick: () -> Unit
-) {
-    Box(
-        modifier = Modifier
-            .size(76.dp)
-            .clip(RoundedCornerShape(14.dp))
-            .background(Color.White.copy(alpha = 0.12f))
-            .clickable(onClick = onClick),
-        contentAlignment = Alignment.Center
-    ) {
-        if (isMore) {
-            Text(
-                text = "+$moreCount",
-                color = Color.White.copy(alpha = 0.8f),
-                fontSize = 14.sp,
-                fontWeight = FontWeight.SemiBold
-            )
-        } else if (photoUri != null) {
-            AsyncImage(
-                model = photoUri,
-                contentDescription = null,
-                modifier = Modifier.fillMaxSize(),
-                contentScale = ContentScale.Crop
-            )
-        }
     }
 }
 

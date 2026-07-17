@@ -22,6 +22,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.tang.prm.ui.theme.SignalCoral
+import com.tang.prm.ui.components.TerminalSectionHeader
 import com.tang.prm.ui.theme.SignalGreen
 
 @Composable
@@ -30,7 +31,7 @@ internal fun LiuyaoTableSection(
 ) {
     Spacer(modifier = Modifier.height(20.dp))
 
-    RecordSectionHeader("六爻详情")
+    TerminalSectionHeader("六爻详情")
 
     Spacer(modifier = Modifier.height(8.dp))
 
@@ -138,7 +139,7 @@ internal fun LiuyaoYaoDetailSection(
         border = BorderStroke(0.5.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.3f))
     ) {
         Column(modifier = Modifier.padding(12.dp)) {
-            RecordSectionHeader("爻辞详注")
+            TerminalSectionHeader("爻辞详注")
 
             Spacer(modifier = Modifier.height(8.dp))
 

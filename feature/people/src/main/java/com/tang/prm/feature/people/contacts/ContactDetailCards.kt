@@ -35,74 +35,118 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.tang.prm.domain.model.Anniversary
-import com.tang.prm.domain.model.AnniversaryType
 import com.tang.prm.domain.model.CustomType
 import com.tang.prm.domain.model.Event
 import com.tang.prm.domain.model.Gift
 import com.tang.prm.domain.model.Thought
 import com.tang.prm.domain.model.EventType
 import com.tang.prm.ui.components.AppCard
-import com.tang.prm.ui.theme.AnniversaryBirthday
 import com.tang.prm.ui.theme.SignalAmber
-import com.tang.prm.ui.theme.SignalGreen
-import com.tang.prm.ui.theme.SignalSky
 import com.tang.prm.domain.util.DateUtils
-import com.tang.prm.domain.model.AppStrings
 import com.tang.prm.ui.animation.core.AnimationTokens
 import com.tang.prm.ui.theme.Dimens
 import com.tang.prm.ui.theme.SignalPurple
 import com.tang.prm.ui.theme.getEventTypeStyle
 import com.tang.prm.ui.theme.getGenericIcon
 import com.tang.prm.ui.theme.toComposeColor
-import java.util.Locale
+
 
 @Composable
 internal fun EventsContent(events: List<Event>, eventTypes: List<CustomType>, onEventClick: (Long) -> Unit) {
-    ContentSection(emptyIcon = Icons.Default.Event, emptyText = "暂无事件记录") {
+    ContentSection(
+        itemCount = events.size,
+        emptyIcon = Icons.Default.Event,
+        emptyText = "暂无事件记录"
+    ) {
         events.forEach { event -> EventCard(event = event, eventTypes = eventTypes, onClick = { onEventClick(event.id) }) }
     }
 }
 
 @Composable
 internal fun AnniversariesContent(anniversaries: List<Anniversary>, onAnniversaryClick: (Long) -> Unit) {
-    ContentSection(emptyIcon = Icons.Default.Cake, emptyText = "暂无纪念日") {
+    ContentSection(
+        itemCount = anniversaries.size,
+        emptyIcon = Icons.Default.Cake,
+        emptyText = "暂无纪念日"
+    ) {
         anniversaries.forEach { a -> AnniversaryCard(anniversary = a, onClick = { onAnniversaryClick(a.id) }) }
     }
 }
 
 @Composable
 internal fun GiftsContent(gifts: List<Gift>, onGiftClick: (Long) -> Unit) {
-    ContentSection(emptyIcon = Icons.Default.CardGiftcard, emptyText = "暂无礼物记录") {
+    ContentSection(
+        itemCount = gifts.size,
+        emptyIcon = Icons.Default.CardGiftcard,
+        emptyText = "暂无礼物记录"
+    ) {
         gifts.forEach { gift -> GiftCard(gift = gift, onClick = { onGiftClick(gift.id) }) }
     }
 }
 
 @Composable
 internal fun ThoughtsContent(thoughts: List<Thought>, onThoughtClick: (Long) -> Unit) {
-    ContentSection(emptyIcon = Icons.Default.Lightbulb, emptyText = "暂无想法记录") {
+    ContentSection(
+        itemCount = thoughts.size,
+        emptyIcon = Icons.Default.Lightbulb,
+        emptyText = "暂无想法记录"
+    ) {
         thoughts.forEach { thought -> ThoughtCard(thought = thought, onClick = { onThoughtClick(thought.id) }) }
     }
 }
 
 @Composable
 internal fun ChatContent(conversations: List<Event>, onConversationClick: (Long) -> Unit) {
-    ContentSection(emptyIcon = Icons.AutoMirrored.Filled.Chat, emptyText = "暂无对话记录") {
+    ContentSection(
+        itemCount = conversations.size,
+        emptyIcon = Icons.AutoMirrored.Filled.Chat,
+        emptyText = "暂无对话记录"
+    ) {
         conversations.forEach { c -> ChatCard(conversation = c, onClick = { onConversationClick(c.id) }) }
     }
 }
 
-@Suppress("UNUSED_PARAMETER")
 @Composable
-private fun ContentSection(emptyIcon: ImageVector, emptyText: String, content: @Composable ColumnScope.() -> Unit) {
-    Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        content()
+private fun ContentSection(
+    itemCount: Int,
+    emptyIcon: ImageVector,
+    emptyText: String,
+    content: @Composable ColumnScope.() -> Unit
+) {
+    if (itemCount == 0) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 48.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Icon(
+                imageVector = emptyIcon,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+                modifier = Modifier.size(36.dp)
+            )
+            Text(
+                text = emptyText,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+            )
+        }
+    } else {
+        Column(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            content()
+        }
     }
 }
 
 @Composable
 private fun EventCard(event: Event, eventTypes: List<CustomType>, onClick: () -> Unit) {
     val typeLabel = event.customTypeName ?: getEventTypeLabel(event.type)
-    val customType = if (event.type != EventType.OTHER) eventTypes.find { it.key == event.type.name } ?: eventTypes.find { it.name == event.type.name } else event.customTypeName?.let { ctn -> eventTypes.find { it.name == ctn } }
+    val customType = resolveEventCustomType(event, eventTypes)
     val accentColor: Color
     val icon: ImageVector
 
@@ -135,11 +179,7 @@ private fun EventCard(event: Event, eventTypes: List<CustomType>, onClick: () ->
 
 @Composable
 private fun AnniversaryCard(anniversary: Anniversary, onClick: () -> Unit) {
-    val accentColor = when (anniversary.type) {
-        AnniversaryType.BIRTHDAY -> AnniversaryBirthday
-        AnniversaryType.ANNIVERSARY -> SignalPurple
-        AnniversaryType.HOLIDAY -> SignalAmber
-    }
+    val accentColor = anniversary.type.accentColor
     ContentCard(onClick = onClick, icon = Icons.Default.Cake, iconColor = accentColor) {
         Text(text = anniversary.name, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.SemiBold, maxLines = 1, overflow = TextOverflow.Ellipsis, color = MaterialTheme.colorScheme.onSurface)
         Spacer(modifier = Modifier.height(4.dp))
@@ -157,20 +197,18 @@ private fun AnniversaryCard(anniversary: Anniversary, onClick: () -> Unit) {
 
 @Composable
 private fun GiftCard(gift: Gift, onClick: () -> Unit) {
-    val directionColor = if (gift.isSent) SignalGreen else SignalSky
-    val directionIcon = if (gift.isSent) Icons.Default.NorthEast else Icons.Default.SouthWest
+    val direction = gift.direction()
     ContentCard(onClick = onClick, icon = Icons.Default.CardGiftcard, iconColor = SignalAmber) {
         Text(text = gift.giftName, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.SemiBold, maxLines = 1, overflow = TextOverflow.Ellipsis, color = MaterialTheme.colorScheme.onSurface)
         Spacer(modifier = Modifier.height(4.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-            Surface(shape = RoundedCornerShape(4.dp), color = directionColor.copy(alpha = 0.1f)) {
+            Surface(shape = RoundedCornerShape(4.dp), color = direction.color.copy(alpha = 0.1f)) {
                 Row(modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(2.dp)) {
-                    Icon(directionIcon, contentDescription = null, tint = directionColor, modifier = Modifier.size(10.dp))
-                    Text(text = if (gift.isSent) "送出" else "收到", style = MaterialTheme.typography.labelSmall, color = directionColor, fontWeight = FontWeight.Medium, fontSize = 10.sp)
+                    Icon(direction.icon, contentDescription = null, tint = direction.color, modifier = Modifier.size(10.dp))
+                    Text(text = direction.label, style = MaterialTheme.typography.labelSmall, color = direction.color, fontWeight = FontWeight.Medium, fontSize = 10.sp)
                 }
             }
             gift.date.let { Text(text = DateUtils.formatDate(it), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant) }
-            gift.amount?.let { Text(text = "¥${String.format(Locale.US, "%.0f", it)}", style = MaterialTheme.typography.labelSmall, color = SignalAmber, fontWeight = FontWeight.Medium, fontSize = 10.sp) }
         }
     }
 }
@@ -223,10 +261,4 @@ private fun ContentCard(onClick: () -> Unit, icon: ImageVector, iconColor: Color
     }
 }
 
-internal fun getEventTypeLabel(type: EventType): String = when (type) {
-    EventType.MEETUP -> AppStrings.EventType.MEETUP
-    EventType.TRAVEL -> "旅行"
-    EventType.CONVERSATION -> "对话"
-    EventType.OTHER -> AppStrings.EventType.OTHER
-    else -> type.displayName
-}
+internal fun getEventTypeLabel(type: EventType): String = type.displayName

@@ -39,17 +39,6 @@ import com.tang.prm.domain.model.ThemeMode
 import com.tang.prm.ui.theme.Dimens
 
 @Composable
-internal fun SectionLabel(title: String) {
-    Text(
-        title,
-        style = MaterialTheme.typography.titleSmall,
-        color = MaterialTheme.colorScheme.primary,
-        fontWeight = FontWeight.Medium,
-        modifier = Modifier.padding(vertical = 8.dp)
-    )
-}
-
-@Composable
 internal fun SettingsCard(content: @Composable () -> Unit) {
     Column(
         modifier = Modifier

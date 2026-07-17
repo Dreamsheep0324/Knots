@@ -244,7 +244,7 @@ private fun ConversationListPane(
 ) {
     Surface(
         modifier = modifier,
-        color = Color.White
+        color = MaterialTheme.colorScheme.surface
     ) {
         Column(modifier = Modifier.fillMaxSize().padding(28.dp)) {
             // 标题行
@@ -290,7 +290,7 @@ private fun ConversationListPane(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(Color.White, RoundedCornerShape(12.dp))
+                    .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(12.dp))
                     .border(
                         1.dp,
                         MaterialTheme.colorScheme.outlineVariant,
@@ -365,29 +365,11 @@ private fun ConversationListItem(
         verticalAlignment = Alignment.CenterVertically
     ) {
         // 圆形头像
-        Box(
-            modifier = Modifier
-                .size(44.dp)
-                .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.surfaceVariant),
-            contentAlignment = Alignment.Center
-        ) {
-            if (conversation.avatar != null) {
-                AsyncImage(
-                    model = conversation.avatar,
-                    contentDescription = conversation.contactName,
-                    modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Crop
-                )
-            } else {
-                Text(
-                    text = conversation.contactName.firstOrNull()?.toString() ?: "?",
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-        }
+        ContactAvatar(
+            avatar = conversation.avatar,
+            name = conversation.contactName,
+            size = 44
+        )
 
         Spacer(Modifier.width(12.dp))
 
@@ -767,7 +749,7 @@ private fun CharacterPane(
 ) {
     Surface(
         modifier = modifier,
-        color = Color.White
+        color = MaterialTheme.colorScheme.surface
     ) {
         val event = uiState.data.event
         val contact = event?.participants?.firstOrNull()
@@ -806,7 +788,7 @@ private fun CharacterPane(
                         modifier = Modifier
                             .size(108.dp)
                             .clip(RoundedCornerShape(6.dp))
-                            .background(Color.White)
+                            .background(MaterialTheme.colorScheme.surface)
                             .border(1.dp, intimacyColor.copy(alpha = 0.3f), RoundedCornerShape(6.dp)),
                         contentAlignment = Alignment.Center
                     ) {
