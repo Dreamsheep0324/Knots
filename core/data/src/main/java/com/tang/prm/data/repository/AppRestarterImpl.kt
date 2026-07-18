@@ -13,29 +13,35 @@ import javax.inject.Inject
 /**
  * [AppRestarter] 的默认实现：通过 AlarmManager 延迟 1 秒拉起启动 Intent，
  * 随后 System.exit(0) 杀死当前进程。
+ *
+ * 当无法获取启动 Intent 时（launcher 被禁用、厂商 ROM 定制等场景），
+ * 放弃 System.exit 并返回 false，让调用方走降级路径，避免应用直接消失无法被拉起。
  */
 class AppRestarterImpl @Inject constructor(
     @ApplicationContext private val context: Context
 ) : AppRestarter {
 
-    override fun restart() {
+    override suspend fun restart(): Boolean {
         Log.i(TAG, "应用即将重启进程：数据库文件已被覆盖，现有连接失效，需要进程级重启以重建连接池")
 
         val intent = context.packageManager.getLaunchIntentForPackage(context.packageName)
-        if (intent != null) {
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-            val pendingIntent = PendingIntent.getActivity(
-                context, 0, intent,
-                PendingIntent.FLAG_ONE_SHOT or PendingIntent.FLAG_IMMUTABLE
-            )
-            val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-            alarmManager.set(
-                AlarmManager.ELAPSED_REALTIME_WAKEUP,
-                SystemClock.elapsedRealtime() + 1000,
-                pendingIntent
-            )
+        if (intent == null) {
+            Log.e(TAG, "无法获取启动 Intent，放弃 System.exit 以避免应用直接消失。调用方应走降级路径（如提示用户手动重启）")
+            return false
         }
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+        val pendingIntent = PendingIntent.getActivity(
+            context, 0, intent,
+            PendingIntent.FLAG_ONE_SHOT or PendingIntent.FLAG_IMMUTABLE
+        )
+        val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        alarmManager.set(
+            AlarmManager.ELAPSED_REALTIME_WAKEUP,
+            SystemClock.elapsedRealtime() + 1000,
+            pendingIntent
+        )
         System.exit(0)
+        return true // 理论上不可达（System.exit 终止 JVM），仅为满足签名
     }
 
     private companion object {

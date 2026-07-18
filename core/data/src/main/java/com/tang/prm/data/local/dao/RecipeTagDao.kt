@@ -17,4 +17,11 @@ interface RecipeTagDao {
 
     @Query("DELETE FROM recipe_tags WHERE id = :id")
     suspend fun deleteTagById(id: Long)
+
+    /**
+     * 按名称批量查询标签：用于菜谱保存/更新时把 tagNames 解析为 tagId，
+     * 进而写入 recipe_tag_cross_ref 表。未匹配的名称返回空（标签需先通过 insertTag 创建）。
+     */
+    @Query("SELECT * FROM recipe_tags WHERE name IN (:names)")
+    suspend fun getTagsByNames(names: List<String>): List<RecipeTagEntity>
 }

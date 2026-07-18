@@ -2,13 +2,17 @@ package com.tang.prm.domain.util
 
 import java.time.Instant
 import java.time.LocalDate
+import java.time.Month
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import java.time.format.TextStyle
+import java.time.DayOfWeek
 import java.util.Locale
 
 object DateUtils {
 
     const val MILLIS_PER_DAY = 86_400_000L
+    const val MILLIS_PER_HOUR = 3_600_000L
 
     private enum class DateFormat(pattern: String) {
         DATE_TIME("yyyy年MM月dd日 HH:mm"),
@@ -109,6 +113,28 @@ object DateUtils {
     fun formatMonthDaySlashTime(timestamp: Long): String = formatWith(timestamp, DateFormat.MONTH_DAY_SLASH_TIME)
 
     fun formatYearMonthDaySlashTime(timestamp: Long): String = formatWith(timestamp, DateFormat.YEAR_MONTH_DAY_SLASH_TIME)
+
+    /**
+     * 返回月份的中文全称，如「七月」（Q-5/C-6）。
+     *
+     * 用 [Month.getDisplayName] 替代硬编码中文数组，单一来源且天然支持 i18n。
+     * TextStyle.FULL 在 Locale.CHINESE 下产生「七月」；切到 Locale.ENGLISH 自动变为「July」。
+     */
+    fun formatMonthName(timestamp: Long): String {
+        val month = Instant.ofEpochMilli(timestamp).atZone(defaultZoneId).month
+        return month.getDisplayName(TextStyle.FULL, Locale.CHINESE)
+    }
+
+    /**
+     * 返回星期的中文短称，如「周一」（Q-5/C-6）。
+     *
+     * 用 [DayOfWeek.getDisplayName] 替代硬编码中文数组，单一来源且天然支持 i18n。
+     * TextStyle.SHORT 在 Locale.CHINESE 下产生「周一」；切到 Locale.ENGLISH 自动变为「Mon」。
+     */
+    fun formatWeekdayShortName(timestamp: Long): String {
+        val dayOfWeek = Instant.ofEpochMilli(timestamp).atZone(defaultZoneId).dayOfWeek
+        return dayOfWeek.getDisplayName(TextStyle.SHORT, Locale.CHINESE)
+    }
 
     fun formatShortDate(timestamp: Long): String = formatWith(timestamp, DateFormat.SHORT_DATE)
 

@@ -1,5 +1,6 @@
 package com.tang.prm.data.repository
 
+import android.content.Context
 import com.tang.prm.data.local.dao.*
 import com.tang.prm.data.local.dao.ContactListItemEntity
 import com.tang.prm.data.local.entity.ContactAttributeEntity
@@ -14,6 +15,7 @@ import com.tang.prm.domain.repository.ContactRepository
 import com.tang.prm.data.util.ImageFileManager
 import com.tang.prm.util.escapeSqlWildcards
 import androidx.room.withTransaction
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
@@ -26,10 +28,8 @@ import javax.inject.Singleton
 class ContactRepositoryImpl @Inject constructor(
     private val contactDao: ContactDao,
     private val contactAttributeDao: ContactAttributeDao,
-    private val giftDao: GiftDao,
-    private val todoDao: TodoDao,
-    private val reminderDao: ReminderDao,
-    private val database: TangDatabase
+    private val database: TangDatabase,
+    @ApplicationContext private val context: Context
 ) : ContactRepository {
     override fun getAllContacts(): Flow<List<Contact>> =
         contactDao.getAllContacts().withAttributes(contactAttributeDao.getAttributesForAllContacts())
@@ -46,9 +46,6 @@ class ContactRepositoryImpl @Inject constructor(
         val escapedKeyword = keyword?.escapeSqlWildcards()
         return contactDao.getFilteredContacts(escapedKeyword, groupId, relationship).withAttributes(contactAttributeDao.getAttributesForAllContacts())
     }
-
-    override fun getRecentContacts(limit: Int): Flow<List<Contact>> =
-        contactDao.getRecentContacts(limit).withAttributes(contactAttributeDao.getAttributesForAllContacts())
 
     override fun getContactCount(): Flow<Int> = contactDao.getContactCount()
 
@@ -76,23 +73,21 @@ class ContactRepositoryImpl @Inject constructor(
             oldContact?.avatar?.takeIf { it != contact.avatar }
         }
         // 事务外删除文件
-        oldAvatar?.let { ImageFileManager.deleteImage(it) }
+        oldAvatar?.let { ImageFileManager.deleteImage(context, it) }
     }
 
     override suspend fun deleteContact(id: Long) {
-        // 先在事务内收集待删除文件路径 + 级联删除关联数据 + 删除联系人
-        val photosToDelete = database.withTransaction {
-            val photos = mutableListOf<String>()
-            giftDao.getGiftsByContactIdOnce(id).forEach { photos.addAll(it.photos) }
-            contactDao.getContactByIdOnce(id)?.avatar?.let { photos.add(it) }
-            // 级联清理关联数据，避免孤儿记录
-            todoDao.deleteTodosByContact(id)
-            reminderDao.deleteRemindersByContact(id)
-            contactDao.deleteContactById(id)
-            photos
+        // REP-A-1/REP-Q-3 修复：移除 giftDao/todoDao/reminderDao 跨聚合注入。
+        // - 礼物照片清理由上层 UseCase 协调 GiftRepository.deleteGiftsByContactId 处理
+        // - todos/reminders/gifts/anniversaries 由 FK CASCADE 自动删除
+        // 此处只负责收集联系人头像 + 删除联系人本身
+        val avatarToDelete = database.withTransaction {
+            val avatar = contactDao.getContactByIdOnce(id)?.avatar
+            contactDao.deleteContactById(id)  // FK CASCADE 自动删除 gifts/todos/reminders/anniversaries
+            avatar
         }
-        // 事务外删除文件（非事务性，失败不影响数据库一致性）
-        ImageFileManager.deleteLocalPhotos(photosToDelete)
+        // 事务外删除头像文件（非事务性，失败不影响数据库一致性）
+        avatarToDelete?.let { ImageFileManager.deleteImage(context, it) }
     }
 
     override suspend fun updateContactInteraction(id: Long, score: Int, interactionTime: Long) =

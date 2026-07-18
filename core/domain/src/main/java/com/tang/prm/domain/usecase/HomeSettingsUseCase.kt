@@ -1,0 +1,28 @@
+package com.tang.prm.domain.usecase
+
+import com.tang.prm.domain.repository.SettingsRepository
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import javax.inject.Inject
+
+/**
+ * 首页相关设置的下沉封装（A-1 修复）。
+ *
+ * 设计目的：
+ * - 让 [HomeViewModel][com.tang.prm.feature.home.HomeViewModel] 不再直接依赖
+ *   [SettingsRepository]，与 feature/events、feature/reflect 等模块的
+ *   "ViewModel 通过 UseCase 访问 Repository" 约定保持一致。
+ * - 仅暴露首页真正需要的设置项（装饰照片路径），屏蔽 SettingsRepository 中
+ *   主题、AI、备份等无关接口，缩小 ViewModel 的可见面。
+ */
+class HomeSettingsUseCase @Inject constructor(
+    private val settingsRepository: SettingsRepository
+) {
+    /** 首页日记装饰卡片照片路径，distinctUntilChanged 避免相同值重复触发下游重组。 */
+    fun getDecorPhotoPath(): Flow<String?> =
+        settingsRepository.homeDecorPhotoPath.distinctUntilChanged()
+
+    /** 更新装饰照片路径。 */
+    suspend fun setDecorPhotoPath(path: String?) =
+        settingsRepository.setHomeDecorPhotoPath(path)
+}

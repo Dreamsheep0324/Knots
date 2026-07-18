@@ -1,6 +1,7 @@
 package com.tang.prm.data.mapper
 
 import com.tang.prm.data.local.entity.RecipeEntity
+import com.tang.prm.data.local.entity.RecipeListItemWithRelations
 import com.tang.prm.data.local.entity.RecipeTagEntity
 import com.tang.prm.data.local.entity.RecipeWithContactsAndTags
 import com.tang.prm.data.local.database.RecipeDataConverter
@@ -60,6 +61,30 @@ fun RecipeWithContactsAndTags.toDomain(): Recipe = recipe.toDomain(
 )
 
 fun List<RecipeWithContactsAndTags>.toRecipeDomainList(): List<Recipe> = map { it.toDomain() }
+
+/**
+ * 列表页轻量投影 → Domain：ingredients/steps/notes 不在列表查询中加载，
+ * 设为空值。列表页 UI 不消费这些字段，详情页通过 [RecipeRepository.getRecipeById] 重新加载完整数据。
+ */
+fun RecipeListItemWithRelations.toDomain(): Recipe = Recipe(
+    id = recipe.id,
+    title = recipe.title,
+    description = recipe.description,
+    cuisine = recipe.cuisine,
+    difficulty = recipe.difficulty.toEnumOrDefault(RecipeDifficulty.EASY),
+    cookingTime = recipe.cookingTime,
+    servings = recipe.servings,
+    ingredients = emptyList(),
+    steps = emptyList(),
+    photos = recipe.photos,
+    notes = null,
+    rating = recipe.rating,
+    isFavorite = recipe.isFavorite,
+    likedByContactIds = contacts.map { it.id },
+    tags = tags.map { it.name },
+    createdAt = recipe.createdAt,
+    updatedAt = 0L
+)
 
 fun RecipeTagEntity.toDomain(): RecipeTag = RecipeTag(
     id = id,

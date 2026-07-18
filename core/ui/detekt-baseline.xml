@@ -50,6 +50,10 @@
     <ID>FunctionNaming:SectionHeader.kt$@Composable fun SimpleSectionLabel( title: String, modifier: Modifier = Modifier )</ID>
     <ID>FunctionNaming:SectionHeader.kt$@Composable fun TerminalSectionHeader( title: String, modifier: Modifier = Modifier )</ID>
     <ID>FunctionNaming:SegmentedToggleButton.kt$@Composable fun &lt;T&gt; SegmentedToggleButton( options: List&lt;SegmentedOption&lt;T&gt;&gt;, selectedKey: T, onSelectionChange: (T) -&gt; Unit, modifier: Modifier = Modifier, showLabel: Boolean = false )</ID>
+    <ID>FunctionNaming:SignalProgress.kt$@Composable fun SignalProgress( value: Int, maxValue: Int, color: Color, modifier: Modifier = Modifier, style: SignalProgressStyle = SignalProgressStyle.Linear, strokeWidth: Float = 3f )</ID>
+    <ID>FunctionNaming:SignalProgress.kt$@Composable private fun DrawBarsProgress(value: Int, maxValue: Int, color: Color, modifier: Modifier)</ID>
+    <ID>FunctionNaming:SignalProgress.kt$@Composable private fun DrawLinearProgress(progress: Float, color: Color, modifier: Modifier)</ID>
+    <ID>FunctionNaming:SignalProgress.kt$@Composable private fun DrawRadialProgress(progress: Float, color: Color, modifier: Modifier, strokeWidth: Float)</ID>
     <ID>FunctionNaming:TabletSearchBar.kt$@Composable fun TabletSearchBar( query: String, onQueryChange: (String) -&gt; Unit, modifier: Modifier = Modifier, placeholder: String = "搜索" )</ID>
     <ID>FunctionNaming:TagSelector.kt$@Composable fun AddTypeDialog( title: String, onDismiss: () -&gt; Unit, onConfirm: (String, String?, String?) -&gt; Unit, showIconPicker: Boolean = false )</ID>
     <ID>FunctionNaming:TagSelector.kt$@Composable fun DeleteTypeDialog( typeName: String, onDismiss: () -&gt; Unit, onConfirm: () -&gt; Unit )</ID>

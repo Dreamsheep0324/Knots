@@ -62,16 +62,6 @@ class FavoriteRepositoryImplTest {
     }
 
     @Test
-    fun insertFavorite_callsDaoWithEntity() = runTest {
-        coEvery { favoriteDao.insertFavorite(any()) } returns 1L
-
-        val result = repository.insertFavorite(domain)
-
-        assertThat(result).isEqualTo(1L)
-        coVerify { favoriteDao.insertFavorite(entity) }
-    }
-
-    @Test
     fun deleteFavoriteBySource_callsDao() = runTest {
         coEvery { favoriteDao.deleteFavoriteBySource("EVENT", 100L) } returns Unit
 

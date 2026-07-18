@@ -7,7 +7,6 @@ import com.tang.prm.domain.model.ContactTag
 import com.tang.prm.domain.repository.ContactTagRepository
 import kotlinx.coroutines.flow.Flow
 import com.tang.prm.data.mapper.mapList
-import com.tang.prm.data.mapper.mapNullable
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -17,9 +16,6 @@ class ContactTagRepositoryImpl @Inject constructor(
 ) : ContactTagRepository {
     override fun getAllTags(): Flow<List<ContactTag>> =
         tagDao.getAllTags().mapList { it.toDomain() }
-
-    override fun getTagById(id: Long): Flow<ContactTag?> =
-        tagDao.getTagById(id).mapNullable { it.toDomain() }
 
     override suspend fun insertTag(tag: ContactTag): Long =
         tagDao.insertTag(tag.toEntity())

@@ -15,7 +15,12 @@ enum class SubscriptionStatus {
 }
 
 private const val WEEKS_PER_MONTH = 52.0 / 12.0
-private const val DEFAULT_TIMEZONE = "Asia/Shanghai"
+
+/**
+ * 订阅时区默认值。Domain 层 [Subscription] 与 Data 层 [com.tang.prm.data.local.entity.SubscriptionEntity]
+ * 共用此常量，避免两层默认值漂移（历史 BUG：MAP-B-4）。
+ */
+const val DEFAULT_SUBSCRIPTION_TIMEZONE = "Asia/Shanghai"
 
 data class Subscription(
     val id: Long = 0,
@@ -32,7 +37,7 @@ data class Subscription(
     val notes: String? = null,
     val createdAt: Long = System.currentTimeMillis(),
     val updatedAt: Long = System.currentTimeMillis(),
-    val timezone: String = DEFAULT_TIMEZONE
+    val timezone: String = DEFAULT_SUBSCRIPTION_TIMEZONE
 )
 
 fun Subscription.computedStatus(): SubscriptionStatus {

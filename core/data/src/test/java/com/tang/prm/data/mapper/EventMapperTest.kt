@@ -2,46 +2,12 @@ package com.tang.prm.data.mapper
 
 import com.google.common.truth.Truth.assertThat
 import com.tang.prm.data.local.entity.EventEntity
+import com.tang.prm.data.local.entity.EventWithParticipants
 import com.tang.prm.domain.model.Event
 import com.tang.prm.domain.model.EventType
 import org.junit.jupiter.api.Test
 
 class EventMapperTest {
-
-    @Test
-    fun eventEntity_toDomain_mapsAllFields() {
-        val entity = EventEntity(
-            id = 1, type = "MEETUP", title = "见面", description = "咖啡厅见面",
-            time = 1000L, endTime = 2000L, location = "星巴克",
-            latitude = 39.9, longitude = 116.4, photos = listOf("photo1.jpg", "photo2.jpg"),
-            emotion = "开心", weather = "晴", amount = 100.0,
-            remarks = "备注", promise = "承诺", conversationSummary = "对话摘要",
-            giftName = "礼物", createdAt = 3000L, updatedAt = 4000L
-        )
-
-        val domain = entity.toDomain(participants = emptyList())
-
-        assertThat(domain.id).isEqualTo(1)
-        assertThat(domain.type).isEqualTo(EventType.MEETUP)
-        assertThat(domain.title).isEqualTo("见面")
-        assertThat(domain.description).isEqualTo("咖啡厅见面")
-        assertThat(domain.time).isEqualTo(1000L)
-        assertThat(domain.endTime).isEqualTo(2000L)
-        assertThat(domain.location).isEqualTo("星巴克")
-        assertThat(domain.latitude).isEqualTo(39.9)
-        assertThat(domain.longitude).isEqualTo(116.4)
-        assertThat(domain.photos).containsExactly("photo1.jpg", "photo2.jpg").inOrder()
-        assertThat(domain.emotion).isEqualTo("开心")
-        assertThat(domain.weather).isEqualTo("晴")
-        assertThat(domain.amount).isEqualTo(100.0)
-        assertThat(domain.remarks).isEqualTo("备注")
-        assertThat(domain.promise).isEqualTo("承诺")
-        assertThat(domain.conversationSummary).isEqualTo("对话摘要")
-        assertThat(domain.giftName).isEqualTo("礼物")
-        assertThat(domain.participants).isEmpty()
-        assertThat(domain.createdAt).isEqualTo(3000L)
-        assertThat(domain.updatedAt).isEqualTo(4000L)
-    }
 
     @Test
     fun event_toEntity_mapsAllFields() {
@@ -79,7 +45,43 @@ class EventMapperTest {
     }
 
     @Test
-    fun eventEntity_roundtrip_preservesEntityFields() {
+    fun eventWithParticipants_toDomain_mapsAllFields() {
+        val entity = EventEntity(
+            id = 1, type = "MEETUP", title = "见面", description = "咖啡厅见面",
+            time = 1000L, endTime = 2000L, location = "星巴克",
+            latitude = 39.9, longitude = 116.4, photos = listOf("photo1.jpg", "photo2.jpg"),
+            emotion = "开心", weather = "晴", amount = 100.0,
+            remarks = "备注", promise = "承诺", conversationSummary = "对话摘要",
+            giftName = "礼物", createdAt = 3000L, updatedAt = 4000L
+        )
+        val withParticipants = EventWithParticipants(event = entity, participants = emptyList())
+
+        val domain = withParticipants.toDomain()
+
+        assertThat(domain.id).isEqualTo(1)
+        assertThat(domain.type).isEqualTo(EventType.MEETUP)
+        assertThat(domain.title).isEqualTo("见面")
+        assertThat(domain.description).isEqualTo("咖啡厅见面")
+        assertThat(domain.time).isEqualTo(1000L)
+        assertThat(domain.endTime).isEqualTo(2000L)
+        assertThat(domain.location).isEqualTo("星巴克")
+        assertThat(domain.latitude).isEqualTo(39.9)
+        assertThat(domain.longitude).isEqualTo(116.4)
+        assertThat(domain.photos).containsExactly("photo1.jpg", "photo2.jpg").inOrder()
+        assertThat(domain.emotion).isEqualTo("开心")
+        assertThat(domain.weather).isEqualTo("晴")
+        assertThat(domain.amount).isEqualTo(100.0)
+        assertThat(domain.remarks).isEqualTo("备注")
+        assertThat(domain.promise).isEqualTo("承诺")
+        assertThat(domain.conversationSummary).isEqualTo("对话摘要")
+        assertThat(domain.giftName).isEqualTo("礼物")
+        assertThat(domain.participants).isEmpty()
+        assertThat(domain.createdAt).isEqualTo(3000L)
+        assertThat(domain.updatedAt).isEqualTo(4000L)
+    }
+
+    @Test
+    fun eventWithParticipants_roundtrip_preservesEntityFields() {
         val original = EventEntity(
             id = 1, type = "CALL", title = "通话", description = "电话沟通",
             time = 1000L, endTime = null, location = null,
@@ -88,19 +90,11 @@ class EventMapperTest {
             remarks = null, promise = null, conversationSummary = null,
             giftName = null, createdAt = 3000L, updatedAt = 4000L
         )
+        val withParticipants = EventWithParticipants(event = original, participants = emptyList())
 
-        val roundtrip = original.toDomain(participants = emptyList()).toEntity()
+        val roundtrip = withParticipants.toDomain().toEntity()
 
         assertThat(roundtrip).isEqualTo(original)
-    }
-
-    @Test
-    fun eventEntity_toDomain_defaultParticipantsIsEmpty() {
-        val entity = EventEntity(id = 1, type = "MEETUP", title = "见面", time = 1000L)
-
-        val domain = entity.toDomain()
-
-        assertThat(domain.participants).isEmpty()
     }
 
     @Test

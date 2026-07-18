@@ -1,11 +1,9 @@
 package com.tang.prm.data.repository
 
+import android.content.Context
 import androidx.room.withTransaction
 import com.google.common.truth.Truth.assertThat
 import com.tang.prm.data.local.dao.EventDao
-import com.tang.prm.data.local.dao.FavoriteDao
-import com.tang.prm.data.local.dao.ReminderDao
-import com.tang.prm.data.local.dao.TodoDao
 import com.tang.prm.data.local.database.TangDatabase
 import com.tang.prm.data.local.entity.EventEntity
 import com.tang.prm.data.local.entity.EventWithParticipants
@@ -14,6 +12,7 @@ import com.tang.prm.data.mapper.toEntity
 import com.tang.prm.domain.model.Event
 import com.tang.prm.domain.model.EventType
 import com.tang.prm.domain.model.SourceTypes
+import com.tang.prm.domain.repository.FavoriteRepository
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -36,16 +35,13 @@ class EventRepositoryImplTest {
     private lateinit var eventDao: EventDao
 
     @MockK
-    private lateinit var todoDao: TodoDao
-
-    @MockK
-    private lateinit var reminderDao: ReminderDao
-
-    @MockK
-    private lateinit var favoriteDao: FavoriteDao
+    private lateinit var favoriteRepository: FavoriteRepository
 
     @MockK
     private lateinit var database: TangDatabase
+
+    @MockK
+    private lateinit var context: Context
 
     private lateinit var repository: EventRepositoryImpl
 
@@ -59,7 +55,9 @@ class EventRepositoryImplTest {
         coEvery { any<androidx.room.RoomDatabase>().withTransaction(any<suspend () -> Any>()) } coAnswers {
             secondArg<suspend () -> Any>().invoke()
         }
-        repository = EventRepositoryImpl(eventDao, todoDao, reminderDao, favoriteDao, database)
+        coEvery { favoriteRepository.deleteFavoriteBySource(any(), any()) } returns Unit
+        every { context.filesDir } returns java.io.File.createTempFile("test", "tmp").parentFile
+        repository = EventRepositoryImpl(eventDao, favoriteRepository, database, context)
     }
 
     @AfterEach
@@ -101,13 +99,22 @@ class EventRepositoryImplTest {
     @Test
     fun deleteEvent_callsDaoDeleteById() = runTest {
         coEvery { eventDao.getEventByIdOnce(1L) } returns null
-        coEvery { favoriteDao.deleteEventFavorites(1L, listOf(SourceTypes.EVENT)) } returns Unit
-        coEvery { todoDao.deleteTodosByEvent(1L) } returns Unit
-        coEvery { reminderDao.deleteRemindersByEvent(1L) } returns Unit
         coEvery { eventDao.deleteEventById(1L) } returns Unit
 
         repository.deleteEvent(1L)
 
+        coVerify { eventDao.deleteEventById(1L) }
+    }
+
+    @Test
+    fun deleteEvent_clearsFavoritesViaFavoriteRepository() = runTest {
+        // REP-A-2 修复后：deleteEvent 通过 favoriteRepository（而非 favoriteDao）清理收藏
+        coEvery { eventDao.getEventByIdOnce(1L) } returns null
+        coEvery { eventDao.deleteEventById(1L) } returns Unit
+
+        repository.deleteEvent(1L)
+
+        coVerify { favoriteRepository.deleteFavoriteBySource(SourceTypes.EVENT, 1L) }
         coVerify { eventDao.deleteEventById(1L) }
     }
 }

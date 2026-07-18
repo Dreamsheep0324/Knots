@@ -32,7 +32,8 @@ class BackupRepositoryImpl @Inject constructor(
 ) : BackupRepositoryInterface {
     companion object {
         private const val TAG = "BackupRepositoryImpl"
-        private const val DB_NAME = "tang_database"
+        // REP-C-1 修复：数据库名统一使用 TangDatabase.DB_NAME 常量，避免 3 处硬编码不同步。
+        private val DB_NAME = TangDatabase.DB_NAME
         private const val DATASTORE_NAME = "settings"
         private const val BACKUP_PREFIX = "tang_backup_"
         private const val BACKUP_EXTENSION = ".zip"
@@ -48,7 +49,7 @@ class BackupRepositoryImpl @Inject constructor(
 
     private val safHelper by lazy { SafDocumentsHelper(context) }
     private val imageReferenceQuery by lazy {
-        ImageReferenceQuery(database.contactDao(), database.giftDao(), database.eventDao())
+        ImageReferenceQuery(database.contactDao(), database.giftDao(), database.eventDao(), database.recipeDao())
     }
 
     // ===== SAF 备份目录管理 =====
@@ -142,8 +143,15 @@ class BackupRepositoryImpl @Inject constructor(
         val result = withContext(Dispatchers.IO) {
             restoreFromUriInternal(docUri)
         }
-        emit(result)
-        appRestarter.restart()
+        // 仅在恢复成功时才 restart；失败时数据库已回滚，进程可继续运行
+        if (result is RestoreResult.Success) {
+            val restarted = appRestarter.restart()
+            if (!restarted) {
+                emit(RestoreResult.FatalError("恢复已完成但无法自动重启，请手动重启应用以重建数据库连接"))
+            }
+        } else {
+            emit(result)
+        }
     }
 
     override suspend fun computeDataFingerprint(): String = withContext(Dispatchers.IO) {
@@ -154,12 +162,16 @@ class BackupRepositoryImpl @Inject constructor(
         val dbSize = if (dbFile.exists()) dbFile.length() else 0L
         val dbModified = if (dbFile.exists()) dbFile.lastModified() else 0L
         val referencedNames = imageReferenceQuery.queryReferencedImageFileNames()
-        val imageCount = imagesDir.listFiles()?.count { it.isFile && it.name in referencedNames } ?: 0
-        val giftPhotoCount = giftPhotosDir.listFiles()?.count { it.isFile } ?: 0
-        val latestImageModified = imagesDir.listFiles()
-            ?.filter { it.isFile && it.name in referencedNames }
-            ?.maxOfOrNull { it.lastModified() } ?: 0L
-        val latestGiftModified = giftPhotosDir.listFiles()?.maxOfOrNull { it.lastModified() } ?: 0L
+
+        // REP-Q-2 修复：缓存 listFiles() 结果，避免对 app_images 目录 4 次遍历（原 4 次 → 1 次）。
+        val imageFiles = imagesDir.listFiles()?.filter { it.isFile } ?: emptyList()
+        val giftFiles = giftPhotosDir.listFiles()?.filter { it.isFile } ?: emptyList()
+
+        val referencedImages = imageFiles.filter { it.name in referencedNames }
+        val imageCount = referencedImages.size
+        val giftPhotoCount = giftFiles.size
+        val latestImageModified = referencedImages.maxOfOrNull { it.lastModified() } ?: 0L
+        val latestGiftModified = giftFiles.maxOfOrNull { it.lastModified() } ?: 0L
 
         "$dbSize:$dbModified:$imageCount:$giftPhotoCount:$latestImageModified:$latestGiftModified"
     }
@@ -241,7 +253,13 @@ class BackupRepositoryImpl @Inject constructor(
             }
         }
         emit(result)
-        appRestarter.restart()
+        // 仅在恢复成功时才 restart；失败时数据库已回滚，进程可继续运行
+        if (result is RestoreResult.Success) {
+            val restarted = appRestarter.restart()
+            if (!restarted) {
+                emit(RestoreResult.FatalError("恢复已完成但无法自动重启，请手动重启应用以重建数据库连接"))
+            }
+        }
     }
 
     override fun deleteLocalImageFile(dir: String, fileName: String): Boolean {
@@ -276,8 +294,15 @@ class BackupRepositoryImpl @Inject constructor(
         val result = withContext(Dispatchers.IO) {
             restoreFromUriInternal(parsedUri)
         }
-        emit(result)
-        appRestarter.restart()
+        // 仅在恢复成功时才 restart；失败时数据库已回滚，进程可继续运行
+        if (result is RestoreResult.Success) {
+            val restarted = appRestarter.restart()
+            if (!restarted) {
+                emit(RestoreResult.FatalError("恢复已完成但无法自动重启，请手动重启应用以重建数据库连接"))
+            }
+        } else {
+            emit(result)
+        }
     }
 
     // ===== 核心备份逻辑 =====
@@ -367,10 +392,20 @@ class BackupRepositoryImpl @Inject constructor(
      */
     private fun rollbackDatabase(dbFile: File, backupSnapshot: File): Boolean {
         if (!backupSnapshot.exists()) return true
+        val walFile = File(dbFile.parent, "$DB_NAME-wal")
+        val shmFile = File(dbFile.parent, "$DB_NAME-shm")
         val copied = try {
             backupSnapshot.copyTo(dbFile, overwrite = true); true
         } catch (e: Exception) {
             Log.e(TAG, "回滚数据库文件失败，数据库可能已损坏", e); false
+        }
+        // 删除 wal/shm 文件：回滚后的 dbFile 与恢复过程中产生的 wal/shm 状态不一致，
+        // 会导致 SQLite 误读 wal 中的脏页，使回滚失效。必须一并删除。
+        if (walFile.exists()) {
+            try { walFile.delete() } catch (e: Exception) { Log.e(TAG, "删除 wal 文件失败", e) }
+        }
+        if (shmFile.exists()) {
+            try { shmFile.delete() } catch (e: Exception) { Log.e(TAG, "删除 shm 文件失败", e) }
         }
         try { backupSnapshot.delete() } catch (e: Exception) { Log.e(TAG, "删除备份快照失败", e) }
         return copied
@@ -402,8 +437,15 @@ class BackupRepositoryImpl @Inject constructor(
             val giftPhotosDir = File(context.filesDir, "gift_photos")
             if (giftPhotosDir.exists() && giftPhotosDir.isDirectory) giftPhotosDir.listFiles()?.forEach { it.delete() }
 
-            appRestarter.restart()
-            ClearDataResult.Success
+            // 数据库已删除，必须重启进程以重建连接池
+            val restarted = appRestarter.restart()
+            // restart 成功时 System.exit 已执行，下面仅在 restart 失败时返回；
+            // restart 失败时进程未死但数据库已被清空，调用方应引导用户手动重启
+            if (restarted) {
+                ClearDataResult.Success // 理论上不可达（System.exit 已终止 JVM），仅为满足签名
+            } else {
+                ClearDataResult.Error("数据已清空但无法自动重启，请手动重启应用以重建数据库")
+            }
         } catch (e: Exception) {
             ClearDataResult.Error("清空数据失败：${e.message}")
         }

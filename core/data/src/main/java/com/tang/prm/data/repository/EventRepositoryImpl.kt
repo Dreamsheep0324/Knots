@@ -1,9 +1,7 @@
 package com.tang.prm.data.repository
 
+import android.content.Context
 import com.tang.prm.data.local.dao.EventDao
-import com.tang.prm.data.local.dao.TodoDao
-import com.tang.prm.data.local.dao.ReminderDao
-import com.tang.prm.data.local.dao.FavoriteDao
 import com.tang.prm.data.local.database.TangDatabase
 import com.tang.prm.data.mapper.mapList
 import com.tang.prm.data.mapper.mapNullable
@@ -14,8 +12,11 @@ import com.tang.prm.domain.model.Event
 import com.tang.prm.domain.model.EventType
 import com.tang.prm.domain.model.SourceTypes
 import com.tang.prm.domain.repository.EventRepository
+import com.tang.prm.domain.repository.FavoriteRepository
 import com.tang.prm.data.util.ImageFileManager
+import com.tang.prm.data.util.computeRemovedPhotos
 import com.tang.prm.util.escapeSqlWildcards
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
@@ -24,10 +25,9 @@ import javax.inject.Singleton
 @Singleton
 class EventRepositoryImpl @Inject constructor(
     private val eventDao: EventDao,
-    private val todoDao: TodoDao,
-    private val reminderDao: ReminderDao,
-    private val favoriteDao: FavoriteDao,
-    private val database: TangDatabase
+    private val favoriteRepository: FavoriteRepository,
+    private val database: TangDatabase,
+    @ApplicationContext private val context: Context
 ) : EventRepository {
 
     override fun getAllEvents(): Flow<List<Event>> =
@@ -68,28 +68,26 @@ class EventRepositoryImpl @Inject constructor(
         // 读+写放在同一事务中，避免竞态导致照片文件误删/漏删
         val removedPhotos = database.withTransaction {
             val oldEntity = eventDao.getEventByIdOnce(event.id)
-            val removed = oldEntity?.let { old ->
-                (old.photos.toSet() - event.photos.toSet()).takeIf { it.isNotEmpty() }
-            }
+            // REP-Q-5 修复：复用 computeRemovedPhotos 统一 photos 差集计算逻辑。
+            val removed = computeRemovedPhotos(oldEntity, event.photos) { it.photos }
             eventDao.updateEvent(event.toEntity())
             removed
         }
         // 事务外删除文件（文件 I/O 不阻塞数据库事务）
-        removedPhotos?.let { deletePhotoFiles(it.toList()) }
+        removedPhotos?.let { ImageFileManager.deleteLocalPhotos(context, it.toList()) }
     }
 
     override suspend fun deleteEvent(id: Long) {
-        // 先在事务内收集待删除文件路径 + 删除数据库记录
+        // REP-A-2 修复：移除 todoDao/reminderDao（FK CASCADE 自动处理），favoriteDao 替换为 favoriteRepository
         val photosToDelete = database.withTransaction {
             val photos = eventDao.getEventByIdOnce(id)?.photos ?: emptyList()
-            favoriteDao.deleteEventFavorites(id, listOf(SourceTypes.EVENT))
-            todoDao.deleteTodosByEvent(id)
-            reminderDao.deleteRemindersByEvent(id)
+            favoriteRepository.deleteFavoriteBySource(SourceTypes.EVENT, id)
+            // todoDao/reminderDao 删除由 FK CASCADE 自动处理
             eventDao.deleteEventById(id)
             photos
         }
         // 事务外删除文件
-        deletePhotoFiles(photosToDelete)
+        ImageFileManager.deleteLocalPhotos(context, photosToDelete)
     }
 
     override suspend fun insertEventParticipant(eventId: Long, contactId: Long) =
@@ -105,7 +103,4 @@ class EventRepositoryImpl @Inject constructor(
     override fun getEventCountWithLocation(): Flow<Int> = eventDao.getEventCountWithLocation()
 
     override fun getPhotoCount(): Flow<Int> = eventDao.getPhotoCount()
-
-    private suspend fun deletePhotoFiles(photos: List<String>) =
-        ImageFileManager.deleteLocalPhotos(photos)
 }

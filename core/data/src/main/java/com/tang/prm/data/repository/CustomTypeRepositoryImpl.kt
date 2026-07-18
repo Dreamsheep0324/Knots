@@ -8,7 +8,6 @@ import com.tang.prm.domain.repository.CustomTypeRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import com.tang.prm.data.mapper.mapList
-import com.tang.prm.data.mapper.mapNullable
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -30,20 +29,12 @@ class CustomTypeRepositoryImpl @Inject constructor(
             .mapList { it.toDomain() }
             .map { types -> types.groupBy { it.category } }
 
-    override fun getTypeById(id: Long): Flow<CustomType?> {
-        return customTypeDao.getTypeById(id).mapNullable { it.toDomain() }
-    }
-
     override suspend fun insertType(type: CustomType): Long {
         return customTypeDao.insertType(type.toEntity())
     }
 
     override suspend fun insertTypes(types: List<CustomType>) {
         customTypeDao.insertTypes(types.map { it.toEntity() })
-    }
-
-    override suspend fun updateType(type: CustomType) {
-        customTypeDao.updateType(type.toEntity())
     }
 
     override suspend fun deleteTypeById(id: Long) {

@@ -26,11 +26,12 @@ import java.io.IOException
 import java.net.SocketTimeoutException
 import java.net.UnknownHostException
 import javax.inject.Inject
+import javax.inject.Named
 import javax.inject.Singleton
 
 @Singleton
 class AiRepositoryImpl @Inject constructor(
-    private val okHttpClient: OkHttpClient,
+    @Named("ai") private val okHttpClient: OkHttpClient,
     private val settingsRepository: SettingsRepository
 ) : AiRepository {
 

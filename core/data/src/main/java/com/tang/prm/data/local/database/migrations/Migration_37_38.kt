@@ -3,23 +3,12 @@ package com.tang.prm.data.local.database.migrations
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 
+/**
+ * DB-D-1 修复：历史上此处重复了 Migration_35_36 的 photos_count 回填逻辑。
+ * 经核查 Migration_35_36 已正确回填，此迁移为 no-op，保留版本号占位以维持迁移链完整。
+ */
 val MIGRATION_37_38 = object : Migration(37, 38) {
     override fun migrate(db: SupportSQLiteDatabase) {
-        // 回填 photos_count：从 photos JSON 数组计算实际长度
-        // 之前 Migration_35_36 添加了列但未回填已有数据，导致首页相册角标显示 0
-        db.execSQL(
-            """UPDATE events SET photos_count = CASE
-                WHEN photos IS NOT NULL AND photos != '' AND photos != '[]'
-                THEN json_array_length(photos)
-                ELSE 0 END
-                WHERE photos_count = 0"""
-        )
-        db.execSQL(
-            """UPDATE gifts SET photos_count = CASE
-                WHEN photos IS NOT NULL AND photos != '' AND photos != '[]'
-                THEN json_array_length(photos)
-                ELSE 0 END
-                WHERE photos_count = 0"""
-        )
+        // no-op
     }
 }

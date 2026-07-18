@@ -1,5 +1,6 @@
 package com.tang.prm.data.repository
 
+import android.content.Context
 import androidx.room.withTransaction
 import com.google.common.truth.Truth.assertThat
 import com.tang.prm.data.local.dao.*
@@ -33,16 +34,10 @@ class ContactRepositoryImplTest {
     private lateinit var contactAttributeDao: ContactAttributeDao
 
     @MockK
-    private lateinit var giftDao: GiftDao
-
-    @MockK
-    private lateinit var todoDao: TodoDao
-
-    @MockK
-    private lateinit var reminderDao: ReminderDao
-
-    @MockK
     private lateinit var database: TangDatabase
+
+    @MockK
+    private lateinit var context: Context
 
     private lateinit var repository: ContactRepositoryImpl
 
@@ -57,8 +52,9 @@ class ContactRepositoryImplTest {
         }
         mockkStatic("com.tang.prm.util.SqlUtilsKt")
         every { any<String>().escapeSqlWildcards() } answers { firstArg() }
+        every { context.filesDir } returns java.io.File.createTempFile("test", "tmp").parentFile
         repository = ContactRepositoryImpl(
-            contactDao, contactAttributeDao, giftDao, todoDao, reminderDao, database
+            contactDao, contactAttributeDao, database, context
         )
     }
 
@@ -91,12 +87,24 @@ class ContactRepositoryImplTest {
 
     @Test
     fun deleteContact_callsDaoDeleteById() = runTest {
-        coEvery { giftDao.getGiftsByContactIdOnce(1L) } returns emptyList()
+        // REP-A-1 修复后：deleteContact 不再依赖 giftDao/todoDao/reminderDao
         coEvery { contactDao.getContactByIdOnce(1L) } returns null
         coEvery { contactDao.deleteContactById(1L) } returns Unit
 
         repository.deleteContact(1L)
 
+        coVerify { contactDao.deleteContactById(1L) }
+    }
+
+    @Test
+    fun deleteContact_cleansUpAvatarWhenPresent() = runTest {
+        val entityWithAvatar = entity.copy(avatar = "/data/app_images/avatar.jpg")
+        coEvery { contactDao.getContactByIdOnce(1L) } returns entityWithAvatar
+        coEvery { contactDao.deleteContactById(1L) } returns Unit
+
+        repository.deleteContact(1L)
+
+        coVerify { contactDao.getContactByIdOnce(1L) }
         coVerify { contactDao.deleteContactById(1L) }
     }
 }

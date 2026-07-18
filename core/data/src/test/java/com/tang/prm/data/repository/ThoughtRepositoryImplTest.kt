@@ -1,12 +1,16 @@
 package com.tang.prm.data.repository
 
+import androidx.room.withTransaction
 import com.google.common.truth.Truth.assertThat
 import com.tang.prm.data.local.dao.ThoughtDao
+import com.tang.prm.data.local.database.TangDatabase
 import com.tang.prm.data.local.entity.ThoughtEntity
 import com.tang.prm.data.mapper.toDomain
 import com.tang.prm.data.mapper.toEntity
+import com.tang.prm.domain.model.SourceTypes
 import com.tang.prm.domain.model.Thought
 import com.tang.prm.domain.model.ThoughtType
+import com.tang.prm.domain.repository.FavoriteRepository
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -28,6 +32,12 @@ class ThoughtRepositoryImplTest {
     @MockK
     private lateinit var thoughtDao: ThoughtDao
 
+    @MockK
+    private lateinit var favoriteRepository: FavoriteRepository
+
+    @MockK
+    private lateinit var database: TangDatabase
+
     private lateinit var repository: ThoughtRepositoryImpl
 
     private val entity = ThoughtEntity(
@@ -41,12 +51,18 @@ class ThoughtRepositoryImplTest {
 
     @BeforeEach
     fun setUp() {
+        mockkStatic("androidx.room.RoomDatabaseKt")
+        coEvery { any<androidx.room.RoomDatabase>().withTransaction(any<suspend () -> Any>()) } coAnswers {
+            secondArg<suspend () -> Any>().invoke()
+        }
+        coEvery { favoriteRepository.deleteFavoriteBySource(any(), any()) } returns Unit
         mockkStatic("com.tang.prm.data.mapper.ThoughtMapperKt")
-        repository = ThoughtRepositoryImpl(thoughtDao)
+        repository = ThoughtRepositoryImpl(thoughtDao, favoriteRepository, database)
     }
 
     @AfterEach
     fun tearDown() {
+        unmockkStatic("androidx.room.RoomDatabaseKt")
         unmockkStatic("com.tang.prm.data.mapper.ThoughtMapperKt")
     }
 
@@ -89,6 +105,16 @@ class ThoughtRepositoryImplTest {
 
         repository.deleteThought(1L)
 
+        coVerify { thoughtDao.deleteThoughtById(1L) }
+    }
+
+    @Test
+    fun deleteThought_clearsFavoritesInTransaction() = runTest {
+        coEvery { thoughtDao.deleteThoughtById(1L) } returns Unit
+
+        repository.deleteThought(1L)
+
+        coVerify { favoriteRepository.deleteFavoriteBySource(SourceTypes.THOUGHT, 1L) }
         coVerify { thoughtDao.deleteThoughtById(1L) }
     }
 }

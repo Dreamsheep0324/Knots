@@ -45,7 +45,9 @@ import java.util.Locale
 internal fun OrbitalCalendar(
     anniversaries: List<Anniversary>,
     events: List<Event>,
-    canvasModifier: Modifier = Modifier.fillMaxWidth().height(242.dp),
+    // N-3 修复：todayDateKey 透传到 rememberOrbitalCalendarData，让 todayCal 跨日时失效重建
+    todayDateKey: String,
+    // Q-9 修复：合并 canvasModifier 和 modifier 为单一 modifier，消除两个 Modifier 参数的语义混淆
     modifier: Modifier = Modifier
 ) {
     val todayCal = Calendar.getInstance()
@@ -60,7 +62,8 @@ internal fun OrbitalCalendar(
         displayMonth = displayMonth,
         displayYear = displayYear,
         events = events,
-        anniversaries = anniversaries
+        anniversaries = anniversaries,
+        todayDateKey = todayDateKey
     )
 
     AppCard(
@@ -92,7 +95,9 @@ internal fun OrbitalCalendar(
                     IconButton(onClick = {
                         val c = Calendar.getInstance().apply { set(displayYear, displayMonth, 1); add(Calendar.MONTH, -1) }
                         displayMonth = c.get(Calendar.MONTH); displayYear = c.get(Calendar.YEAR)
-                    }, modifier = Modifier.size(28.dp)) {
+                    }) {
+                        // U-7 修复：移除外层 size(28.dp)，让 IconButton 保持默认 48dp 触摸区域；
+                        // 仅用 Icon 内部 size(16.dp) 缩小图标视觉尺寸，符合 Material 无障碍最小触摸目标
                         Icon(Icons.Default.ChevronLeft, contentDescription = "上月", tint = TextGray, modifier = Modifier.size(16.dp))
                     }
                     Text("${displayYear}.${String.format(Locale.US, "%02d", displayMonth + 1)}",
@@ -100,7 +105,8 @@ internal fun OrbitalCalendar(
                     IconButton(onClick = {
                         val c = Calendar.getInstance().apply { set(displayYear, displayMonth, 1); add(Calendar.MONTH, 1) }
                         displayMonth = c.get(Calendar.MONTH); displayYear = c.get(Calendar.YEAR)
-                    }, modifier = Modifier.size(28.dp)) {
+                    }) {
+                        // U-7 修复：同上，移除外层 size(28.dp)
                         Icon(Icons.Default.ChevronRight, contentDescription = "下月", tint = TextGray, modifier = Modifier.size(16.dp))
                     }
                 }
@@ -108,7 +114,8 @@ internal fun OrbitalCalendar(
 
             Spacer(modifier = Modifier.height(4.dp))
 
-            OrbitalCalendarCanvas(data = data, todayDay = todayDay, modifier = canvasModifier)
+            // Q-9 修复：canvas 默认尺寸下沉到 OrbitalCalendarCanvas 自身的 modifier 默认值
+            OrbitalCalendarCanvas(data = data, todayDay = todayDay)
 
             OrbitalCalendarEventList(
                 isCurrentMonth = data.isCurrentMonth,

@@ -51,11 +51,13 @@ data class ContactGroup(
     val id: Long = 0,
     val name: String,
     val color: String? = null,
-    val sortOrder: Int = 0
+    val sortOrder: Int = 0,
+    val createdAt: Long = System.currentTimeMillis()
 )
 
 data class ContactTag(
     val id: Long = 0,
     val name: String,
-    val color: String? = null
+    val color: String? = null,
+    val createdAt: Long = System.currentTimeMillis()
 )

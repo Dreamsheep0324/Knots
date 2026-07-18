@@ -36,9 +36,6 @@ interface AnniversaryDao {
     @Query("SELECT COUNT(*) FROM anniversaries")
     fun getAnniversaryCount(): Flow<Int>
 
-    @Query("DELETE FROM anniversaries WHERE contactId = :contactId")
-    suspend fun deleteAnniversariesByContact(contactId: Long)
-
     @Query("SELECT * FROM anniversaries WHERE contactId = :contactId")
     suspend fun getAnniversariesByContactOnce(contactId: Long): List<AnniversaryEntity>
 }

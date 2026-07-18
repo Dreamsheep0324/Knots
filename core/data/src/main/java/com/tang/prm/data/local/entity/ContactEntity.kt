@@ -12,7 +12,8 @@ import androidx.room.PrimaryKey
         Index("lastInteractionTime"),
         Index("groupId"),
         Index("relationship"),
-        Index("name")
+        Index("name"),
+        Index("updatedAt")
     ],
     foreignKeys = [
         ForeignKey(

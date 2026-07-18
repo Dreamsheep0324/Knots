@@ -10,6 +10,7 @@ package com.tang.prm.data.mapper
 // 6. UI forms (AddContactScreen, ContactDetailScreen)
 
 import com.tang.prm.data.local.dao.ContactListItemEntity
+import com.tang.prm.data.local.database.ListStringConverter
 import com.tang.prm.data.local.entity.ContactAttributeEntity
 import com.tang.prm.data.local.entity.ContactEntity
 import com.tang.prm.data.local.entity.ContactGroupEntity
@@ -18,19 +19,6 @@ import com.tang.prm.domain.model.Contact
 import com.tang.prm.domain.model.ContactGroup
 import com.tang.prm.domain.model.ContactTag
 import com.tang.prm.domain.model.Gender
-import org.json.JSONArray
-
-fun ContactEntity.toDomain() = Contact(
-    id = id, name = name, avatar = avatar, nickname = nickname, gender = Gender.fromValue(gender),
-    birthday = birthday, isLunarBirthday = isLunarBirthday, isLeapMonthBirthday = isLeapMonthBirthday, knowingDate = knowingDate,
-    phone = phone, email = email, city = city, address = address, education = education,
-    company = company, jobTitle = jobTitle, industry = industry, hobby = hobby, habit = habit,
-    diet = diet, skill = skill, mbti = mbti, spouseName = spouseName,
-    childrenCount = childrenCount, childrenNames = childrenNames, introducer = introducer,
-    relationshipLevel = relationshipLevel, relationship = relationship, groupId = groupId,
-    intimacyScore = intimacyScore, lastInteractionTime = lastInteractionTime,
-    customFields = customFields, notes = notes, createdAt = createdAt, updatedAt = updatedAt
-)
 
 /** Map lightweight [ContactListItemEntity] to domain [Contact], with unused fields at defaults. */
 fun ContactListItemEntity.toDomain() = Contact(
@@ -63,10 +51,10 @@ fun ContactEntity.toDomainWithAttributes(attributes: List<ContactAttributeEntity
         birthday = birthday, isLunarBirthday = isLunarBirthday, isLeapMonthBirthday = isLeapMonthBirthday, knowingDate = knowingDate,
         phone = phone, email = email, city = city, address = address, education = education,
         company = company, jobTitle = jobTitle, industry = industry,
-        hobby = attrMap["hobby"]?.toJsonString() ?: hobby,
-        habit = attrMap["habit"]?.toJsonString() ?: habit,
-        diet = attrMap["diet"]?.toJsonString() ?: diet,
-        skill = attrMap["skill"]?.toJsonString() ?: skill,
+        hobby = attrMap["hobby"]?.toAttributeValueJson() ?: hobby,
+        habit = attrMap["habit"]?.toAttributeValueJson() ?: habit,
+        diet = attrMap["diet"]?.toAttributeValueJson() ?: diet,
+        skill = attrMap["skill"]?.toAttributeValueJson() ?: skill,
         mbti = mbti, spouseName = spouseName,
         childrenCount = childrenCount, childrenNames = childrenNames, introducer = introducer,
         relationshipLevel = relationshipLevel, relationship = relationship, groupId = groupId,
@@ -75,24 +63,14 @@ fun ContactEntity.toDomainWithAttributes(attributes: List<ContactAttributeEntity
     )
 }
 
-private fun List<ContactAttributeEntity>.toJsonString(): String {
-    val values = this.map { it.value }
-    return values.joinToString(prefix = "[", postfix = "]") { "\"$it\"" }
-}
-
 /**
- * Parse a JSON string like ["篮球","足球"] into a list of string values.
- * Uses JSONArray for robust parsing instead of string splitting.
+ * 复用 Room 的 [ListStringConverter] 把同一类别的多条 [ContactAttributeEntity] 序列化为 JSON 字符串，
+ * 与数据库存储格式保持一致，避免手写 JSON 拼接导致特殊字符（`"`、`\`、控制字符）未转义。
  */
-fun parseJsonList(json: String?): List<String> {
-    if (json.isNullOrBlank() || json == "[]") return emptyList()
-    return try {
-        val arr = JSONArray(json)
-        (0 until arr.length()).map { arr.getString(it) }
-    } catch (e: Exception) {
-        emptyList()
-    }
-}
+private fun List<ContactAttributeEntity>.toAttributeValueJson(): String =
+    LIST_STRING_CONVERTER.fromList(this.map { it.value })
+
+private val LIST_STRING_CONVERTER = ListStringConverter()
 
 /**
  * Convert a contact's hobby/habit/diet/skill JSON strings into ContactAttributeEntity list.
@@ -105,17 +83,17 @@ fun Contact.toAttributeEntities(): List<ContactAttributeEntity> {
         "DIET" to diet,
         "SKILL" to skill
     )) {
-        for (value in parseJsonList(json)) {
+        for (value in LIST_STRING_CONVERTER.fromString(json)) {
             result.add(ContactAttributeEntity(contactId = id, category = category, value = value))
         }
     }
     return result
 }
 
-fun ContactGroupEntity.toDomain() = ContactGroup(id, name, color, sortOrder)
+fun ContactGroupEntity.toDomain() = ContactGroup(id, name, color, sortOrder, createdAt)
 
-fun ContactGroup.toEntity() = ContactGroupEntity(id, name, color, sortOrder)
+fun ContactGroup.toEntity() = ContactGroupEntity(id, name, color, sortOrder, createdAt)
 
-fun ContactTagEntity.toDomain() = ContactTag(id, name, color)
+fun ContactTagEntity.toDomain() = ContactTag(id, name, color, createdAt)
 
-fun ContactTag.toEntity() = ContactTagEntity(id, name, color)
+fun ContactTag.toEntity() = ContactTagEntity(id, name, color, createdAt)

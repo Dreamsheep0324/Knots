@@ -66,7 +66,7 @@ class RecipesViewModel @Inject constructor(
 
     val uiState = combine(
         combine(
-            recipeRepository.getAllRecipes(),
+            recipeRepository.getRecipeListItems(),
             contactRepository.getAllContacts(),
             searchManager.state,
             _selectedTag,

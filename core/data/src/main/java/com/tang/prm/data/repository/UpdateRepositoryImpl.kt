@@ -10,11 +10,12 @@ import kotlinx.serialization.json.jsonPrimitive
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import javax.inject.Inject
+import javax.inject.Named
 import javax.inject.Singleton
 
 @Singleton
 class UpdateRepositoryImpl @Inject constructor(
-    private val okHttpClient: OkHttpClient
+    @Named("ai") private val okHttpClient: OkHttpClient
 ) : UpdateRepository {
 
     private val json = Json { ignoreUnknownKeys = true }

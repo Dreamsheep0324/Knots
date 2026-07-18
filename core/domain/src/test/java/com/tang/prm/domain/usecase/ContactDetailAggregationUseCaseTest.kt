@@ -112,10 +112,13 @@ class ContactDetailAggregationUseCaseTest {
 
     @Test
     fun `deleteContact delegates to repository`() = runTest {
+        // REP-A-1 修复后：UseCase 协调跨聚合操作，先清理礼物（含照片），再删除联系人
         coEvery { contactRepository.deleteContact(any()) } returns Unit
+        coEvery { giftRepository.deleteGiftsByContactId(any()) } returns Unit
 
         useCase.deleteContact(1L)
 
+        coVerify { giftRepository.deleteGiftsByContactId(1L) }
         coVerify { contactRepository.deleteContact(1L) }
     }
 

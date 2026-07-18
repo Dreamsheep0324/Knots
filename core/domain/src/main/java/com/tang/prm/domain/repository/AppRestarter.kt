@@ -11,8 +11,15 @@ package com.tang.prm.domain.repository
  */
 interface AppRestarter {
     /**
-     * 强制重启应用进程。调用后进程将被杀死，1 秒后由 AlarmManager 重新拉起。
-     * 此方法不会返回。
+     * 强制重启应用进程。
+     *
+     * 成功路径：注册 AlarmManager 延迟 1 秒拉起启动 Intent，随后 System.exit(0) 杀死当前进程。
+     * 失败路径：当 [android.content.pm.PackageManager.getLaunchIntentForPackage] 返回 null
+     * （如 launcher activity 被禁用、厂商 ROM 定制、restricted bucket 等）时，
+     * 放弃 System.exit 以避免应用直接消失无法被拉起，返回 false 让调用方走降级路径
+     * （如提示用户手动重启）。
+     *
+     * @return true 表示已成功注册重启 PendingIntent 并 exit；false 表示放弃重启，调用方应降级处理
      */
-    fun restart()
+    suspend fun restart(): Boolean
 }

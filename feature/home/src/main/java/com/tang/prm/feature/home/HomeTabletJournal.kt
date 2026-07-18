@@ -52,6 +52,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -65,8 +67,12 @@ import coil.request.ImageRequest
 import com.tang.prm.domain.model.Anniversary
 import com.tang.prm.domain.model.Event
 import com.tang.prm.domain.model.IntimacyTier
+import com.tang.prm.domain.util.DateUtils
+import com.tang.prm.domain.usecase.HomeStats
 import com.tang.prm.ui.animation.primitives.staggeredAppear
 import com.tang.prm.ui.components.AppCard
+import com.tang.prm.ui.components.SignalProgress
+import com.tang.prm.ui.components.SignalProgressStyle
 import com.tang.prm.ui.components.photo.PhotoPickerConfig
 import com.tang.prm.ui.components.photo.rememberPhotoPickerLauncher
 import com.tang.prm.ui.theme.SignalAmber
@@ -75,8 +81,10 @@ import com.tang.prm.ui.theme.SignalGold
 import com.tang.prm.ui.theme.SignalGreen
 import com.tang.prm.ui.theme.SignalPurple
 import com.tang.prm.ui.theme.SignalSky
+import com.tang.prm.ui.theme.LocalIntimacyColors
 import java.io.File
 import java.util.Calendar
+import java.util.Locale
 import kotlin.math.PI
 import kotlin.math.sin
 
@@ -86,7 +94,6 @@ import kotlin.math.sin
 internal fun JournalTabletHome(
     uiState: HomeUiState,
     channels: List<ChannelDef>,
-    signalStrengths: Map<Any, Int>,
     onChannelClick: (Any) -> Unit,
     onDecorPhotoPathChange: (String?) -> Unit,
     modifier: Modifier = Modifier
@@ -101,9 +108,9 @@ internal fun JournalTabletHome(
     ) {
         // 1. 日期横幅
         JournalDateBanner(
-            greeting = uiState.greeting,
-            pendingTodoCount = uiState.pendingTodos.size,
-            upcomingAnniversaryCount = uiState.upcomingAnniversaries.size,
+            greeting = uiState.data.greeting,
+            pendingTodoCount = uiState.data.pendingTodos.size,
+            upcomingAnniversaryCount = uiState.data.upcomingAnniversaries.size,
             modifier = Modifier.staggeredAppear(index = 0, triggerKey = appearKey)
         )
 
@@ -113,8 +120,8 @@ internal fun JournalTabletHome(
             horizontalArrangement = Arrangement.spacedBy(14.dp)
         ) {
             JournalTimelineCard(
-                recentEvents = uiState.recentEvents,
-                upcomingAnniversaries = uiState.upcomingAnniversaries,
+                recentEvents = uiState.data.recentEvents,
+                upcomingAnniversaries = uiState.data.upcomingAnniversaries,
                 modifier = Modifier.weight(0.5f).fillMaxHeight()
             )
             Column(
@@ -122,8 +129,8 @@ internal fun JournalTabletHome(
                 verticalArrangement = Arrangement.spacedBy(14.dp)
             ) {
                 JournalRelationshipOverview(
-                    tierDistribution = uiState.tierDistribution,
-                    totalContactCount = uiState.contactCount
+                    tierDistribution = uiState.data.stats.tierDistribution,
+                    totalContactCount = uiState.data.stats.contactCount
                 )
                 JournalDecorCard(modifier = Modifier.fillMaxWidth().height(120.dp))
             }
@@ -140,15 +147,11 @@ internal fun JournalTabletHome(
                 modifier = Modifier.weight(0.33f).fillMaxHeight()
             )
             JournalStatsOverview(
-                contactCount = uiState.contactCount,
-                eventCount = uiState.eventCount,
-                giftCount = uiState.giftCount,
-                anniversaryCount = uiState.anniversaryCount,
-                conversationCount = uiState.conversationCount,
+                stats = uiState.data.stats,
                 modifier = Modifier.weight(0.34f).fillMaxHeight()
             )
             JournalPhotoCard(
-                photoPath = uiState.decorPhotoPath,
+                photoPath = uiState.data.decorPhotoPath,
                 onPhotoPathChange = onDecorPhotoPathChange,
                 modifier = Modifier.weight(0.33f).fillMaxHeight()
             )
@@ -167,11 +170,10 @@ private fun JournalDateBanner(
 ) {
     val today = Calendar.getInstance()
     val day = today.get(Calendar.DAY_OF_MONTH)
-    val monthNames = listOf("一月", "二月", "三月", "四月", "五月", "六月",
-        "七月", "八月", "九月", "十月", "十一月", "十二月")
-    val weekNames = listOf("周日", "周一", "周二", "周三", "周四", "周五", "周六")
-    val monthName = monthNames[today.get(Calendar.MONTH)]
-    val weekName = weekNames[today.get(Calendar.DAY_OF_WEEK) - 1]
+    // Q-5/C-6 修复：用 DateUtils.formatMonthName/formatWeekdayShortName 替代硬编码中文数组，
+    // 消除与 DateUtils 的重复，且天然支持 i18n
+    val monthName = remember(today) { DateUtils.formatMonthName(today.timeInMillis) }
+    val weekName = remember(today) { DateUtils.formatWeekdayShortName(today.timeInMillis) }
 
     val accentGradient = Brush.verticalGradient(colors = listOf(SignalGreen, SignalSky))
 
@@ -212,7 +214,8 @@ private fun JournalDateBanner(
                     .height(56.dp)
                     .clip(RoundedCornerShape(2.dp))
                     .background(accentGradient)
-                    .padding(start = 20.dp)
+                // N-9 修复：删除 .padding(start = 20.dp)——在 3dp 宽的 Box 上加 20dp start padding 是死代码，
+                // 内容区被压缩到 0，无视觉效果；下方 Spacer(20.dp) 已提供右侧间距
             )
 
             Spacer(modifier = Modifier.width(20.dp))
@@ -228,7 +231,8 @@ private fun JournalDateBanner(
                     color = MaterialTheme.colorScheme.onSurface
                 )
                 Text(
-                    text = "「但今天只是今天，未来也只是今天的未来」",
+                    // Q-6/C-1 修复：品牌文案统一引用 HOME_TAGLINE 常量
+                    text = "「$HOME_TAGLINE」",
                     fontSize = 13.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
                 )
@@ -280,14 +284,18 @@ private fun JournalTimelineCard(
                             cal.get(Calendar.DAY_OF_YEAR) == now.get(Calendar.DAY_OF_YEAR)
                 }
                 val timeLabel = if (isToday) {
-                    String.format("%02d:%02d", cal.get(Calendar.HOUR_OF_DAY), cal.get(Calendar.MINUTE))
+                    // B-6 修复：显式传 Locale.US，避免 ar/tr 等 Locale 下数字格式异常
+                    String.format(Locale.US, "%02d:%02d", cal.get(Calendar.HOUR_OF_DAY), cal.get(Calendar.MINUTE))
                 } else {
-                    "${((System.currentTimeMillis() - event.time) / 86400000).toInt()}天前"
+                    // Q-8 修复：用 DateUtils.formatRelativeTime 替代魔法数字 86400000 与硬编码"X天前"，
+                    // 自动处理未来时间、跨小时、跨天等边界
+                    DateUtils.formatRelativeTime(event.time)
                 }
                 add(TimelineEntry(
                     timeLabel = timeLabel,
                     title = event.title.ifBlank { event.type.displayName },
-                    subtitle = if (isToday) "今天" else timeLabel,
+                    // N-6 修复：非今日事件 subtitle 改为 event.type.displayName，避免与 timeLabel 重复显示"3天前"
+                    subtitle = if (isToday) "今天" else event.type.displayName,
                     dotColor = SignalSky,
                     badgeText = "事件",
                     badgeColor = SignalGreen
@@ -405,14 +413,13 @@ private fun JournalRelationshipOverview(
     totalContactCount: Int,
     modifier: Modifier = Modifier
 ) {
-    val tierData = remember(tierDistribution) {
-        listOf(
-            TierInfo("至亲", SignalGold, tierDistribution[IntimacyTier.FAMILY] ?: 0),
-            TierInfo("密友", SignalCoral, tierDistribution[IntimacyTier.CLOSE] ?: 0),
-            TierInfo("朋友", SignalPurple, tierDistribution[IntimacyTier.FRIEND] ?: 0),
-            TierInfo("泛交", SignalSky, tierDistribution[IntimacyTier.ACQUAINTANCE] ?: 0),
-            TierInfo("初识", Color(0xFF94A3B8), tierDistribution[IntimacyTier.NEW] ?: 0)
-        )
+    // B-1 修复：颜色统一走 LocalIntimacyColors.current.forTier，与人物卡片/终端卡等所有模块保持一致
+    // 顺序从高到低：FAMILY→CLOSE→FRIEND→ACQUAINTANCE→NEW（enum 声明顺序 reversed）
+    val intimacyColors = LocalIntimacyColors.current
+    val tierData = remember(tierDistribution, intimacyColors) {
+        IntimacyTier.values().reversed().map { tier ->
+            TierInfo(tier.label, intimacyColors.forTier(tier), tierDistribution[tier] ?: 0)
+        }
     }
 
     val maxCount = remember(tierData) { tierData.maxOfOrNull { it.count }?.coerceAtLeast(1) ?: 1 }
@@ -550,29 +557,8 @@ private fun JournalQuickAccess(
                             horizontalAlignment = Alignment.CenterHorizontally,
                             verticalArrangement = Arrangement.Center
                         ) {
-                            // 图标圆
-                            Box(
-                                modifier = Modifier
-                                    .size(34.dp)
-                                    .clip(CircleShape)
-                                    .background(channel.color.copy(alpha = 0.12f)),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                if (channel.textIcon != null) {
-                                    Text(
-                                        text = channel.textIcon,
-                                        fontSize = 16.sp,
-                                        color = channel.color
-                                    )
-                                } else if (channel.icon != null) {
-                                    Icon(
-                                        channel.icon,
-                                        contentDescription = channel.name,
-                                        tint = channel.color,
-                                        modifier = Modifier.size(16.dp)
-                                    )
-                                }
-                            }
+                            // C-5 修复：频道图标圆委托 ChannelIcon 共享组件
+                            ChannelIcon(channel = channel, diameter = 34.dp)
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
                                 text = channel.name,
@@ -601,26 +587,20 @@ private data class StatItem(
     val label: String,
     val count: Int,
     val color: Color,
-    val icon: ImageVector
+    val icon: ImageVector,
+    val max: Int
 )
 
 @Composable
 private fun JournalStatsOverview(
-    contactCount: Int,
-    eventCount: Int,
-    giftCount: Int,
-    anniversaryCount: Int,
-    conversationCount: Int,
+    stats: HomeStats,
     modifier: Modifier = Modifier
 ) {
-    val stats = remember(contactCount, eventCount, giftCount, anniversaryCount, conversationCount) {
-        listOf(
-            StatItem("人物", contactCount, SignalSky, Icons.Default.People),
-            StatItem("事件", eventCount, SignalGreen, Icons.Default.Event),
-            StatItem("礼物", giftCount, SignalCoral, Icons.Default.CardGiftcard),
-            StatItem("纪念日", anniversaryCount, SignalPurple, Icons.Default.Favorite),
-            StatItem("对话", conversationCount, SignalAmber, Icons.Default.Chat)
-        )
+    // C-2 修复：用 HomeStatDef.entries 构造显示列表，label/color/icon/max 全部来自单一来源
+    val statItems = remember(stats) {
+        HomeStatDef.entries.map { def ->
+            StatItem(def.label, def.statProvider(stats), def.color, def.icon, def.max)
+        }
     }
 
     AppCard(modifier = modifier) {
@@ -642,7 +622,7 @@ private fun JournalStatsOverview(
             Spacer(modifier = Modifier.height(12.dp))
 
             // 每行均分高度
-            stats.forEachIndexed { index, stat ->
+            statItems.forEachIndexed { index, stat ->
                 Row(
                     modifier = Modifier
                         .weight(1f)
@@ -690,34 +670,17 @@ private fun JournalStatsOverview(
 
                     Spacer(modifier = Modifier.width(10.dp))
 
-                    // 渐变进度条
-                    val maxRef = listOf(50, 50, 30, 20, 50)
-                    val progress = (stat.count.toFloat() / maxRef[index]).coerceIn(0f, 1f)
-                    Box(
-                        modifier = Modifier
-                            .weight(1f)
-                            .height(4.dp)
-                            .clip(RoundedCornerShape(2.dp))
-                            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f))
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxHeight()
-                                .fillMaxWidth(progress)
-                                .clip(RoundedCornerShape(2.dp))
-                                .background(
-                                    Brush.horizontalGradient(
-                                        colors = listOf(
-                                            stat.color,
-                                            stat.color.copy(alpha = 0.3f)
-                                        )
-                                    )
-                                )
-                        )
-                    }
+                    // C-3 修复：渐变进度条委托 SignalProgress Linear 样式，消除与 HomeChannelList 的重复
+                    SignalProgress(
+                        value = stat.count,
+                        maxValue = stat.max,
+                        color = stat.color,
+                        modifier = Modifier.weight(1f).height(4.dp),
+                        style = SignalProgressStyle.Linear
+                    )
                 }
 
-                if (index < stats.size - 1) {
+                if (index < statItems.size - 1) {
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -875,13 +838,19 @@ private fun JournalPhotoCard(
                     verticalArrangement = Arrangement.Center
                 ) {
                     // 照片区域
+                    // U-8 修复：clickable 容器加 semantics(mergeDescendants=true) 合并子节点语义，
+                    // 读屏点击大块照片区域时作为单一节点播报"更换照片"，避免焦点跳跃
                     Box(
                         modifier = Modifier
                             .weight(1f)
                             .fillMaxWidth()
                             .clip(RoundedCornerShape(4.dp))
-                            .background(Color(0xFFF5F5F5))
+                            // 硬编码颜色修复：用 surfaceVariant 替代 Color(0xFFF5F5F5)，跟随主题
+                            .background(MaterialTheme.colorScheme.surfaceVariant)
                             .clickable { launcher.launch() }
+                            .semantics(mergeDescendants = true) {
+                                contentDescription = "更换照片"
+                            }
                     ) {
                         AsyncImage(
                             model = ImageRequest.Builder(context)
@@ -899,13 +868,15 @@ private fun JournalPhotoCard(
                                 .padding(6.dp)
                                 .size(24.dp)
                                 .clip(CircleShape)
-                                .background(Color.Black.copy(alpha = 0.3f)),
+                                // 硬编码颜色修复：用 onSurface 替代 Color.Black，跟随主题（深色模式自动反色）
+                                .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)),
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
                                 Icons.Default.PhotoCamera,
-                                contentDescription = "更换照片",
-                                tint = Color.White,
+                                contentDescription = null,
+                                // 硬编码颜色修复：用 surface 替代 Color.White，跟随主题
+                                tint = MaterialTheme.colorScheme.surface,
                                 modifier = Modifier.size(14.dp)
                             )
                         }
@@ -923,18 +894,24 @@ private fun JournalPhotoCard(
                     verticalArrangement = Arrangement.Center
                 ) {
                     // 空白照片区域
+                    // U-8 修复：clickable 容器加 semantics 合并语义，读屏作为单一节点播报"添加照片"
                     Box(
                         modifier = Modifier
                             .weight(1f)
                             .fillMaxWidth()
                             .clip(RoundedCornerShape(4.dp))
-                            .background(Color(0xFFF8F8F8))
+                            // 硬编码颜色修复：用 surfaceVariant 替代 Color(0xFFF8F8F8)
+                            .background(MaterialTheme.colorScheme.surfaceVariant)
                             .border(
                                 width = 1.dp,
-                                color = Color(0xFFE8E8E8),
+                                // 硬编码颜色修复：用 outlineVariant 替代 Color(0xFFE8E8E8)
+                                color = MaterialTheme.colorScheme.outlineVariant,
                                 shape = RoundedCornerShape(4.dp)
                             )
-                            .clickable { launcher.launch() },
+                            .clickable { launcher.launch() }
+                            .semantics(mergeDescendants = true) {
+                                contentDescription = "添加照片"
+                            },
                         contentAlignment = Alignment.Center
                     ) {
                         Column(
@@ -943,15 +920,17 @@ private fun JournalPhotoCard(
                         ) {
                             Icon(
                                 Icons.Default.AddAPhoto,
-                                contentDescription = "添加照片",
-                                tint = Color(0xFFBBBBBB),
+                                contentDescription = null,
+                                // 硬编码颜色修复：用 onSurfaceVariant 替代 Color(0xFFBBBBBB)
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
                                 modifier = Modifier.size(36.dp)
                             )
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(
                                 text = "点击添加照片",
                                 fontSize = 12.sp,
-                                color = Color(0xFFBBBBBB)
+                                // 硬编码颜色修复：用 onSurfaceVariant 替代 Color(0xFFBBBBBB)
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
                     }

@@ -8,24 +8,9 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface CircleDao {
-    @Query("SELECT * FROM circles ORDER BY sortOrder ASC")
-    fun getAllCircles(): Flow<List<CircleEntity>>
-
     @Transaction
     @Query("SELECT * FROM circles ORDER BY sortOrder ASC")
     fun getAllCirclesWithMembers(): Flow<List<CircleWithMembers>>
-
-    @Query("SELECT DISTINCT c.* FROM circles c INNER JOIN circle_member_cross_ref cm ON c.id = cm.circleId WHERE cm.contactId = :contactId ORDER BY c.sortOrder ASC")
-    fun getCirclesForContact(contactId: Long): Flow<List<CircleEntity>>
-
-    @Query("SELECT * FROM circles WHERE intimacyThreshold > 0")
-    fun getIntimacyCircles(): Flow<List<CircleEntity>>
-
-    @Query("SELECT * FROM circles WHERE parentCircleId = :parentId ORDER BY sortOrder ASC")
-    fun getChildCircles(parentId: Long): Flow<List<CircleEntity>>
-
-    @Query("SELECT * FROM circles WHERE parentCircleId IS NULL ORDER BY sortOrder ASC")
-    fun getRootCircles(): Flow<List<CircleEntity>>
 
     @Transaction
     @Query("SELECT DISTINCT c.* FROM circles c INNER JOIN circle_member_cross_ref cm ON c.id = cm.circleId WHERE cm.contactId = :contactId ORDER BY c.sortOrder ASC")
@@ -40,21 +25,43 @@ interface CircleDao {
     @Query("DELETE FROM circles WHERE id = :id")
     suspend fun deleteCircleById(id: Long)
 
-    @Query("DELETE FROM circles WHERE parentCircleId = :parentId")
-    suspend fun deleteChildCircles(parentId: Long)
+    /**
+     * 递归收集指定圈及其全部后代（子圈、孙圈、任意深度）的 id。
+     * 使用 SQLite 递归 CTE，避免应用层递归查询。
+     */
+    @Query(
+        """
+        WITH RECURSIVE descendants(id) AS (
+            SELECT id FROM circles WHERE id = :rootId
+            UNION ALL
+            SELECT c.id FROM circles c
+            INNER JOIN descendants d ON c.parentCircleId = d.id
+        )
+        SELECT id FROM descendants
+        """
+    )
+    suspend fun getDescendantCircleIds(rootId: Long): List<Long>
 
+    @Query("DELETE FROM circles WHERE id IN (:ids)")
+    suspend fun deleteCirclesByIds(ids: List<Long>)
+
+    /**
+     * 递归删除指定圈及其全部后代（子圈、孙圈、任意深度）。
+     * 旧实现仅匹配 `id = :id OR parentCircleId = :id`，只删一层，
+     * 孙圈及更深后代因外键 SET_NULL 被孤儿化为根圈。
+     * 现使用递归 CTE 收集全部后代 id 后批量删除。
+     */
     @Transaction
-    @Query("DELETE FROM circles WHERE id = :id OR parentCircleId = :id")
-    suspend fun deleteCircleWithChildren(id: Long)
+    suspend fun deleteCircleWithChildren(id: Long) {
+        val ids = getDescendantCircleIds(id)
+        if (ids.isNotEmpty()) deleteCirclesByIds(ids)
+    }
 
     @Query("SELECT COUNT(*) FROM circles")
     fun getCircleCount(): Flow<Int>
 
     @Query("SELECT contactId FROM circle_member_cross_ref WHERE circleId = :circleId")
     fun getMemberIdsForCircle(circleId: Long): Flow<List<Long>>
-
-    @Query("SELECT contactId FROM circle_member_cross_ref WHERE circleId = :circleId")
-    suspend fun getMemberIdsForCircleOnce(circleId: Long): List<Long>
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertMemberCrossRef(crossRef: CircleMemberCrossRef)
@@ -85,7 +92,4 @@ interface CircleDao {
         })
         return id
     }
-
-    @Query("DELETE FROM circle_member_cross_ref WHERE contactId = :contactId")
-    suspend fun deleteMemberRefsByContact(contactId: Long)
 }

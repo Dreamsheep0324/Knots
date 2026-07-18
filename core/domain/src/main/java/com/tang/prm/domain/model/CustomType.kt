@@ -8,7 +8,8 @@ data class CustomType(
     val color: String? = null,
     val icon: String? = null,
     val sortOrder: Int = 0,
-    val isDefault: Boolean = false
+    val isDefault: Boolean = false,
+    val createdAt: Long = System.currentTimeMillis()
 )
 
 object CustomCategories {

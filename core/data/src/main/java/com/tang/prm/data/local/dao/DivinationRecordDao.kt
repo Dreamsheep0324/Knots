@@ -21,9 +21,6 @@ interface DivinationRecordDao {
     @Delete
     suspend fun delete(record: DivinationRecordEntity)
 
-    @Query("DELETE FROM divination_records WHERE id = :id")
-    suspend fun deleteById(id: Long)
-
     @Query("UPDATE divination_records SET aiAnalysis = :analysis WHERE id = :id")
     suspend fun updateAiAnalysis(id: Long, analysis: String)
 }

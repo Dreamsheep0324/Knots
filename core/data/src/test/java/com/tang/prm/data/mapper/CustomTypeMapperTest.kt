@@ -25,6 +25,7 @@ class CustomTypeMapperTest {
         assertThat(domain.icon).isEqualTo("briefcase")
         assertThat(domain.sortOrder).isEqualTo(3)
         assertThat(domain.isDefault).isTrue()
+        assertThat(domain.createdAt).isEqualTo(1000L)
     }
 
     @Test
@@ -32,7 +33,7 @@ class CustomTypeMapperTest {
         val domain = CustomType(
             id = 1, category = "EMOTION", name = "感动", key = "TOUCHED",
             color = "#00FF00", icon = "heart", sortOrder = 5,
-            isDefault = false
+            isDefault = false, createdAt = 2000L
         )
 
         val entity = domain.toEntity()
@@ -45,6 +46,7 @@ class CustomTypeMapperTest {
         assertThat(entity.icon).isEqualTo("heart")
         assertThat(entity.sortOrder).isEqualTo(5)
         assertThat(entity.isDefault).isFalse()
+        assertThat(entity.createdAt).isEqualTo(2000L)
     }
 
     @Test
@@ -65,6 +67,7 @@ class CustomTypeMapperTest {
         assertThat(roundtrip.icon).isEqualTo(original.icon)
         assertThat(roundtrip.sortOrder).isEqualTo(original.sortOrder)
         assertThat(roundtrip.isDefault).isEqualTo(original.isDefault)
+        assertThat(roundtrip.createdAt).isEqualTo(original.createdAt)
     }
 
     @Test

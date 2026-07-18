@@ -2,7 +2,6 @@ package com.tang.prm.data.repository
 
 import com.tang.prm.data.local.dao.ContactGroupDao
 import com.tang.prm.data.mapper.mapList
-import com.tang.prm.data.mapper.mapNullable
 import com.tang.prm.data.mapper.toDomain
 import com.tang.prm.data.mapper.toEntity
 import com.tang.prm.domain.model.ContactGroup
@@ -17,9 +16,6 @@ class ContactGroupRepositoryImpl @Inject constructor(
 ) : ContactGroupRepository {
     override fun getAllGroups(): Flow<List<ContactGroup>> =
         groupDao.getAllGroups().mapList { it.toDomain() }
-
-    override fun getGroupById(id: Long): Flow<ContactGroup?> =
-        groupDao.getGroupById(id).mapNullable { it.toDomain() }
 
     override suspend fun insertGroup(group: ContactGroup): Long =
         groupDao.insertGroup(group.toEntity())

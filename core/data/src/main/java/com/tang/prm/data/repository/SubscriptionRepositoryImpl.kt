@@ -19,9 +19,6 @@ class SubscriptionRepositoryImpl @Inject constructor(
     override fun getAllSubscriptions(): Flow<List<Subscription>> =
         subscriptionDao.getAllSubscriptions().mapList { it.toDomain() }
 
-    override fun getActiveSubscriptions(): Flow<List<Subscription>> =
-        subscriptionDao.getActiveSubscriptions().mapList { it.toDomain() }
-
     override fun searchSubscriptions(keyword: String?): Flow<List<Subscription>> {
         val escapedKeyword = keyword?.escapeSqlWildcards()
         return subscriptionDao.searchSubscriptions(escapedKeyword).mapList { it.toDomain() }

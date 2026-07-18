@@ -4,7 +4,6 @@ import androidx.room.*
 import com.tang.prm.data.local.entity.ContactEntity
 import com.tang.prm.data.local.entity.ContactGroupEntity
 import com.tang.prm.data.local.entity.ContactTagEntity
-import com.tang.prm.data.local.entity.ContactTagCrossRef
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -32,9 +31,6 @@ interface ContactDao {
     @Query("SELECT * FROM contacts WHERE (:keyword IS NULL OR name LIKE '%' || :keyword || '%' ESCAPE '\\' OR nickname LIKE '%' || :keyword || '%' ESCAPE '\\' OR phone LIKE '%' || :keyword || '%' ESCAPE '\\') AND (:groupId IS NULL OR groupId = :groupId) AND (:relationship IS NULL OR relationship = :relationship) ORDER BY intimacyScore DESC")
     fun getFilteredContacts(keyword: String?, groupId: Long?, relationship: String?): Flow<List<ContactEntity>>
 
-    @Query("SELECT * FROM contacts ORDER BY lastInteractionTime DESC LIMIT :limit")
-    fun getRecentContacts(limit: Int): Flow<List<ContactEntity>>
-
     @Query("SELECT COUNT(*) FROM contacts")
     fun getContactCount(): Flow<Int>
 
@@ -53,24 +49,9 @@ interface ContactDao {
     @Query("SELECT * FROM contacts WHERE id IN (:ids)")
     fun getContactsByIds(ids: List<Long>): Flow<List<ContactEntity>>
 
-    @Query("DELETE FROM contact_tag_cross_ref WHERE contactId = :contactId")
-    suspend fun deleteCrossRefsByContact(contactId: Long)
-
     /** 仅查询引用了头像的联系人头像路径，用于清理孤儿图片时避免全表扫描 */
     @Query("SELECT avatar FROM contacts WHERE avatar IS NOT NULL AND avatar != ''")
     suspend fun getReferencedAvatarPaths(): List<String>
-
-    /** Callers MUST escape the [value] parameter with [com.tang.prm.util.escapeSqlWildcards] before passing it, otherwise `%`, `_`, `\` will be treated as SQL wildcards. */
-    @Query("SELECT id, hobby, habit, diet, skill FROM contacts WHERE hobby LIKE '%' || :value || '%' ESCAPE '\\' OR habit LIKE '%' || :value || '%' ESCAPE '\\' OR diet LIKE '%' || :value || '%' ESCAPE '\\' OR skill LIKE '%' || :value || '%' ESCAPE '\\'")
-    suspend fun getContactsWithListFieldValue(value: String): List<ListFieldData>
-
-    data class ListFieldData(
-        val id: Long,
-        val hobby: String?,
-        val habit: String?,
-        val diet: String?,
-        val skill: String?
-    )
 }
 
 /**
@@ -96,9 +77,6 @@ interface ContactGroupDao {
     @Query("SELECT * FROM contact_groups ORDER BY sortOrder ASC")
     fun getAllGroups(): Flow<List<ContactGroupEntity>>
 
-    @Query("SELECT * FROM contact_groups WHERE id = :id")
-    fun getGroupById(id: Long): Flow<ContactGroupEntity?>
-
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertGroup(group: ContactGroupEntity): Long
 
@@ -114,9 +92,6 @@ interface ContactTagDao {
     @Query("SELECT * FROM contact_tags ORDER BY name ASC")
     fun getAllTags(): Flow<List<ContactTagEntity>>
 
-    @Query("SELECT * FROM contact_tags WHERE id = :id")
-    fun getTagById(id: Long): Flow<ContactTagEntity?>
-
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertTag(tag: ContactTagEntity): Long
 
@@ -125,10 +100,4 @@ interface ContactTagDao {
 
     @Query("DELETE FROM contact_tags WHERE id = :id")
     suspend fun deleteTagById(id: Long)
-
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertContactTagCrossRef(crossRef: ContactTagCrossRef)
-
-    @Query("SELECT * FROM contact_tag_cross_ref WHERE contactId = :contactId")
-    fun getTagsForContact(contactId: Long): Flow<List<ContactTagCrossRef>>
 }

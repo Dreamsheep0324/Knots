@@ -14,13 +14,13 @@ fun DivinationRecordEntity.toDomain(): DivinationRecord {
     )
 }
 
-fun DivinationRecord.toEntity(): DivinationRecordEntity {
-    return DivinationRecordEntity(
-        id = if (id > 0) id else 0,
-        method = method,
-        question = question,
-        resultJson = resultJson,
-        createdAt = createdAt,
-        aiAnalysis = aiAnalysis
-    )
-}
+// MAP-Q-4 修复：移除冗余的 `if (id > 0) id else 0` 防御性归零——域模型 id 默认 0，
+// DB 自增从 1 起，负数 id 无合法来源；归零会掩盖上游 bug。与其它 Mapper 一致直接赋值。
+fun DivinationRecord.toEntity(): DivinationRecordEntity = DivinationRecordEntity(
+    id = id,
+    method = method,
+    question = question,
+    resultJson = resultJson,
+    createdAt = createdAt,
+    aiAnalysis = aiAnalysis
+)

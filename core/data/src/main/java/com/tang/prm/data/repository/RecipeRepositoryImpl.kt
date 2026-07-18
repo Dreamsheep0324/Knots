@@ -14,6 +14,7 @@ import com.tang.prm.data.mapper.toDomain
 import com.tang.prm.data.mapper.toEntity
 import com.tang.prm.data.mapper.toRecipeDomainList
 import com.tang.prm.data.util.ImageFileManager
+import com.tang.prm.data.util.computeRemovedPhotos
 import com.tang.prm.domain.model.Recipe
 import com.tang.prm.domain.model.RecipeTag
 import com.tang.prm.domain.repository.RecipeRepository
@@ -36,6 +37,9 @@ class RecipeRepositoryImpl @Inject constructor(
     override fun getAllRecipes(): Flow<List<Recipe>> =
         recipeDao.getAllRecipes().mapList { it.toDomain() }
 
+    override fun getRecipeListItems(): Flow<List<Recipe>> =
+        recipeDao.getRecipeListItems().mapList { it.toDomain() }
+
     override fun getRecipeById(id: Long): Flow<Recipe?> =
         recipeDao.getRecipeById(id).mapNullable { it.toDomain() }
 
@@ -47,28 +51,31 @@ class RecipeRepositoryImpl @Inject constructor(
         return entity.toDomain()
     }
 
-    override suspend fun insertRecipe(recipe: Recipe): Long =
-        recipeDao.insertRecipe(recipe.toEntity())
+    override suspend fun insertRecipe(recipe: Recipe): Long {
+        val recipeId = database.withTransaction {
+            val id = recipeDao.insertRecipe(recipe.toEntity())
+            if (id > 0) {
+                insertContactCrossRefs(id, recipe.likedByContactIds)
+                insertTagCrossRefs(id, recipe.tags)
+            }
+            id
+        }
+        return recipeId
+    }
 
     override suspend fun updateRecipe(recipe: Recipe) {
         val removedPhotos = database.withTransaction {
             val oldEntity = recipeDao.getRecipeByIdOnce(recipe.id)
-            val removed = oldEntity?.let { old ->
-                (old.photos.toSet() - recipe.photos.toSet()).takeIf { it.isNotEmpty() }
-            }
+            // REP-Q-5 修复：复用 computeRemovedPhotos 统一 photos 差集计算逻辑。
+            val removed = computeRemovedPhotos(oldEntity, recipe.photos) { it.photos }
             recipeDao.updateRecipe(recipe.toEntity())
             recipeDao.deleteRecipeContactCrossRefs(recipe.id)
             recipeDao.deleteRecipeTagCrossRefs(recipe.id)
-            if (recipe.likedByContactIds.isNotEmpty()) {
-                recipeDao.insertRecipeContactCrossRefs(
-                    recipe.likedByContactIds.map { contactId ->
-                        RecipeContactCrossRef(recipeId = recipe.id, contactId = contactId)
-                    }
-                )
-            }
+            insertContactCrossRefs(recipe.id, recipe.likedByContactIds)
+            insertTagCrossRefs(recipe.id, recipe.tags)
             removed
         }
-        removedPhotos?.let { deletePhotoFiles(it.toList()) }
+        removedPhotos?.let { ImageFileManager.deleteLocalPhotos(context, it.toList()) }
     }
 
     override suspend fun deleteRecipe(id: Long) {
@@ -77,7 +84,7 @@ class RecipeRepositoryImpl @Inject constructor(
             recipeDao.deleteRecipeById(id)
             photos
         }
-        deletePhotoFiles(photosToDelete)
+        ImageFileManager.deleteLocalPhotos(context, photosToDelete)
     }
 
     override suspend fun saveRecipeWithPhotos(
@@ -104,12 +111,9 @@ class RecipeRepositoryImpl @Inject constructor(
         )
         val id = database.withTransaction {
             val recipeId = recipeDao.insertRecipe(newRecipe.toEntity())
-            if (recipeId > 0 && recipe.likedByContactIds.isNotEmpty()) {
-                recipeDao.insertRecipeContactCrossRefs(
-                    recipe.likedByContactIds.map { contactId ->
-                        RecipeContactCrossRef(recipeId = recipeId, contactId = contactId)
-                    }
-                )
+            if (recipeId > 0) {
+                insertContactCrossRefs(recipeId, recipe.likedByContactIds)
+                insertTagCrossRefs(recipeId, recipe.tags)
             }
             recipeId
         }
@@ -117,8 +121,6 @@ class RecipeRepositoryImpl @Inject constructor(
     }
 
     override fun getRecipeCount(): Flow<Int> = recipeDao.getRecipeCount()
-
-    override fun getPhotoCount(): Flow<Int> = recipeDao.getPhotoCount()
 
     override fun getAllTags(): Flow<List<RecipeTag>> =
         recipeTagDao.getAllTags().mapList { it.toDomain() }
@@ -128,9 +130,34 @@ class RecipeRepositoryImpl @Inject constructor(
 
     override suspend fun deleteTag(id: Long) = recipeTagDao.deleteTagById(id)
 
-    override suspend fun getReferencedPhotoPaths(): List<String> =
-        recipeDao.getReferencedPhotoPaths()
+    /**
+     * 写入菜谱-联系人交叉引用。空列表时跳过，避免无意义 DELETE+INSERT。
+     * 调用前需确保 recipeId 已落库。
+     */
+    private suspend fun insertContactCrossRefs(recipeId: Long, contactIds: List<Long>) {
+        if (contactIds.isEmpty()) return
+        recipeDao.insertRecipeContactCrossRefs(
+            contactIds.map { contactId ->
+                RecipeContactCrossRef(recipeId = recipeId, contactId = contactId)
+            }
+        )
+    }
 
-    private suspend fun deletePhotoFiles(photos: List<String>) =
-        ImageFileManager.deleteLocalPhotos(photos)
+    /**
+     * 写入菜谱-标签交叉引用。空列表时跳过。
+     *
+     * Recipe.tags 是 List<String>（标签名称），需先通过 RecipeTagDao.getTagsByNames
+     * 解析为 tagId 再写入 cross_ref 表。未匹配名称的标签会被静默跳过——
+     * 标签应先通过 insertTag 创建，再在菜谱中引用。
+     */
+    private suspend fun insertTagCrossRefs(recipeId: Long, tagNames: List<String>) {
+        if (tagNames.isEmpty()) return
+        val tagEntities = recipeTagDao.getTagsByNames(tagNames)
+        if (tagEntities.isEmpty()) return
+        recipeDao.insertRecipeTagCrossRefs(
+            tagEntities.map { tag ->
+                RecipeTagCrossRef(recipeId = recipeId, tagId = tag.id)
+            }
+        )
+    }
 }

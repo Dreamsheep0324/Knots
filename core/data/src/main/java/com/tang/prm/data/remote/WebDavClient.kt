@@ -25,13 +25,15 @@ import java.net.URLEncoder
 import java.security.SecureRandom
 import java.security.cert.X509Certificate
 import com.tang.prm.domain.util.DateUtils
+import com.tang.prm.domain.util.EncryptionStatus
 import javax.inject.Inject
+import javax.inject.Named
 import javax.net.ssl.SSLContext
 import javax.net.ssl.TrustManager
 import javax.net.ssl.X509TrustManager
 
 class WebDavClient @Inject constructor(
-    private val okHttpClient: OkHttpClient
+    @Named("webdav") private val okHttpClient: OkHttpClient
 ) {
 
     companion object {
@@ -51,10 +53,14 @@ class WebDavClient @Inject constructor(
 
     /**
      * 根据 config 返回合适的 OkHttpClient。
-     * trustAllCertificates=true 时跳过 SSL 证书校验和主机名验证。
+     *
+     * REM-B-4 修复：trustAllCertificates=true 时仍跳过 SSL 证书校验（保留对自签证书 NAS 的兼容），
+     * 但会标记加密降级 + 输出警告日志，UI 层可据此提示用户风险。
      */
     private fun clientFor(config: WebDavConfig): OkHttpClient {
         if (!config.trustAllCertificates) return okHttpClient
+        Log.w(TAG, "trustAllCertificates 已启用 — 存在 MITM 风险，请仅在可信网络环境下使用")
+        EncryptionStatus.markDegraded()
         return okHttpClient.newBuilder()
             .sslSocketFactory(TRUST_ALL_SSL_CONTEXT.socketFactory, TRUST_ALL_MANAGER)
             .hostnameVerifier { _, _ -> true }
@@ -82,36 +88,31 @@ class WebDavClient @Inject constructor(
                     else -> ConnectionTestResult.Error("连接失败 (${response.code})")
                 }
             }
-        } catch (e: SocketTimeoutException) {
-            ConnectionTestResult.Error("连接超时，请检查网络")
-        } catch (e: UnknownHostException) {
-            ConnectionTestResult.Error("无法连接到服务器，请检查地址")
-        } catch (e: IOException) {
-            ConnectionTestResult.Error("网络连接失败：${e.message}")
         } catch (e: Exception) {
-            ConnectionTestResult.Error("操作失败：${e.message}")
+            // REM-C-1 修复：统一异常→消息映射，消除 4 个 catch 块的重复。
+            ConnectionTestResult.Error(e.toWebDavErrorMessage())
         }
     }
 
     /**
      * 确保远程目录存在：MKCOL
+     *
+     * REM-Q-1 修复：不再吞没所有异常。MKCOL 405（目录已存在）视为成功，
+     * 其他失败（网络/SSL/401/500 等）向上抛出由调用方处理，避免掩盖真实故障。
      */
     suspend fun ensureRemoteDir(config: WebDavConfig) = withContext(Dispatchers.IO) {
-        try {
-            val url = buildRemoteUrl(config, "")
-            val request = Request.Builder()
-                .url(url)
-                .header("Authorization", buildBasicAuth(config.username, config.password))
-                .method("MKCOL", null)
-                .build()
+        val url = buildRemoteUrl(config, "")
+        val request = Request.Builder()
+            .url(url)
+            .header("Authorization", buildBasicAuth(config.username, config.password))
+            .method("MKCOL", null)
+            .build()
 
-            clientFor(config).newCall(request).execute().use { response ->
-                if (!response.isSuccessful && response.code != 405) {
-                    throw Exception("创建远程目录失败 (${response.code})")
-                }
+        clientFor(config).newCall(request).execute().use { response ->
+            // 405 Method Not Allowed = 目录已存在，视为成功
+            if (!response.isSuccessful && response.code != 405) {
+                throw Exception("创建远程目录失败 (${response.code})")
             }
-        } catch (e: Exception) {
-            // 目录可能已存在，忽略错误
         }
     }
 
@@ -191,12 +192,9 @@ class WebDavClient @Inject constructor(
             clientFor(config).newCall(request).execute().use { response ->
                 response.isSuccessful || response.code == 204
             }
-        } catch (e: SocketTimeoutException) {
-            throw Exception("连接超时，请检查网络")
-        } catch (e: UnknownHostException) {
-            throw Exception("无法连接到服务器，请检查地址")
         } catch (e: IOException) {
-            throw Exception("网络连接失败：${e.message}")
+            // REM-C-1 修复：网络异常统一映射并向上抛出，由调用方处理。
+            throw Exception(e.toWebDavErrorMessage())
         } catch (e: Exception) {
             false
         }
@@ -394,7 +392,7 @@ class WebDavClient @Inject constructor(
                 parseFileSizeFromPropfind(body, fileName)
             }
         } catch (e: Exception) {
-            Log.w("WebDavClient", "获取远端文件大小失败", e)
+            Log.w(TAG, "获取远端文件大小失败", e)
             0L
         }
     }
@@ -443,12 +441,26 @@ class WebDavClient @Inject constructor(
                 eventType = parser.next()
             }
         } catch (e: Exception) {
-            Log.w("WebDavClient", "解析文件大小 XML 失败", e)
+            Log.w(TAG, "解析文件大小 XML 失败", e)
         }
         return 0L
     }
 
     // ===== 工具方法 =====
+
+    /**
+     * 将网络异常映射为统一的用户可读错误消息。
+     *
+     * REM-C-1 修复：消除 testConnection / listFiles / deleteFile 三处 catch 块中的
+     * 异常→消息映射重复。SocketTimeoutException / UnknownHostException 均为
+     * IOException 子类，按精度从高到低匹配。
+     */
+    private fun Throwable.toWebDavErrorMessage(): String = when (this) {
+        is SocketTimeoutException -> "连接超时，请检查网络"
+        is UnknownHostException -> "无法连接到服务器，请检查地址"
+        is IOException -> "网络连接失败：$message"
+        else -> "操作失败：$message"
+    }
 
     private fun buildBasicAuth(username: String, password: String): String {
         val credentials = "$username:$password"
@@ -565,7 +577,7 @@ class WebDavClient @Inject constructor(
                 eventType = parser.next()
             }
         } catch (e: Exception) {
-            Log.w("WebDavClient", "解析 PROPFIND 响应 XML 失败", e)
+            Log.w(TAG, "解析 PROPFIND 响应 XML 失败", e)
         }
 
         return versions.sortedByDescending { it.displayName }

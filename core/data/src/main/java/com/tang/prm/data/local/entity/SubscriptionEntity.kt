@@ -4,6 +4,7 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.Index
 import androidx.room.PrimaryKey
+import com.tang.prm.domain.model.DEFAULT_SUBSCRIPTION_TIMEZONE
 
 @Entity(tableName = "subscriptions", indices = [Index("nextBillingDate"), Index("status")])
 data class SubscriptionEntity(
@@ -21,6 +22,6 @@ data class SubscriptionEntity(
     val notes: String? = null,
     val createdAt: Long = System.currentTimeMillis(),
     val updatedAt: Long = System.currentTimeMillis(),
-    @ColumnInfo(name = "timezone", defaultValue = "UTC")
-    val timezone: String = "UTC"
+    @ColumnInfo(name = "timezone", defaultValue = "Asia/Shanghai")
+    val timezone: String = DEFAULT_SUBSCRIPTION_TIMEZONE
 )

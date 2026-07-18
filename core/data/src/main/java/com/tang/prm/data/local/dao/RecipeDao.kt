@@ -9,6 +9,7 @@ import androidx.room.Transaction
 import androidx.room.Update
 import com.tang.prm.data.local.entity.RecipeContactCrossRef
 import com.tang.prm.data.local.entity.RecipeEntity
+import com.tang.prm.data.local.entity.RecipeListItemWithRelations
 import com.tang.prm.data.local.entity.RecipeTagCrossRef
 import com.tang.prm.data.local.entity.RecipeWithContactsAndTags
 import kotlinx.coroutines.flow.Flow
@@ -18,6 +19,20 @@ interface RecipeDao {
     @Transaction
     @Query("SELECT * FROM recipes ORDER BY createdAt DESC")
     fun getAllRecipes(): Flow<List<RecipeWithContactsAndTags>>
+
+    /**
+     * 菜谱列表页轻量投影：仅查询列表展示所需列，跳过 ingredients/steps/notes 等大 TEXT 列。
+     * 关联的 contacts 也投影为 [com.tang.prm.data.local.dao.ContactListItemEntity]。
+     */
+    @Transaction
+    @Query(
+        """
+        SELECT id, title, description, cuisine, difficulty, cookingTime, servings,
+               photos, photos_count, rating, isFavorite, createdAt
+        FROM recipes ORDER BY createdAt DESC
+        """
+    )
+    fun getRecipeListItems(): Flow<List<RecipeListItemWithRelations>>
 
     @Transaction
     @Query("SELECT * FROM recipes WHERE id = :id")
@@ -45,9 +60,7 @@ interface RecipeDao {
     @Query("DELETE FROM recipes WHERE id = :id")
     suspend fun deleteRecipeById(id: Long)
 
-    @Insert(onConflict = OnConflictStrategy.IGNORE)
-    suspend fun insertRecipeContactCrossRef(crossRef: RecipeContactCrossRef)
-
+    // DAO-D-7 修复：移除零调用的 singular insertRecipeContactCrossRef，统一使用 plural 版本。
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertRecipeContactCrossRefs(crossRefs: List<RecipeContactCrossRef>)
 

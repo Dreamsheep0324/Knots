@@ -1,19 +1,14 @@
-package com.tang.prm.ui.home
+package com.tang.prm.feature.home
 
 import androidx.lifecycle.viewModelScope
 import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat
 import com.tang.prm.domain.model.*
-import com.tang.prm.domain.repository.ReminderRepository
-import com.tang.prm.domain.repository.SettingsRepository
-import com.tang.prm.domain.repository.TodoRepository
 import com.tang.prm.domain.usecase.HomeAggregateData
 import com.tang.prm.domain.usecase.HomeDataAggregationUseCase
+import com.tang.prm.domain.usecase.HomeSettingsUseCase
 import com.tang.prm.domain.usecase.HomeStats
 import com.tang.prm.domain.usecase.HomeStatsUseCase
-import com.tang.prm.feature.home.HomeViewModel
-import io.mockk.coEvery
-import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
@@ -39,24 +34,15 @@ class HomeViewModelTest {
     private lateinit var homeStatsUseCase: HomeStatsUseCase
 
     @MockK
-    private lateinit var settingsRepository: SettingsRepository
-
-    @MockK
-    private lateinit var todoRepository: TodoRepository
-
-    @MockK
-    private lateinit var reminderRepository: ReminderRepository
+    private lateinit var homeSettingsUseCase: HomeSettingsUseCase
 
     private lateinit var viewModel: HomeViewModel
 
+    // D-2~D-5 修复：HomeAggregateData 仅保留 recentEvents/upcomingAnniversaries/pendingTodos
     private val emptyHomeData = HomeAggregateData(
-        frequentContacts = emptyList(),
         recentEvents = emptyList(),
-        allEvents = emptyList(),
         upcomingAnniversaries = emptyList(),
-        allAnniversaries = emptyList(),
-        pendingTodos = emptyList(),
-        todayReminders = emptyList()
+        pendingTodos = emptyList()
     )
 
     @BeforeEach
@@ -65,15 +51,13 @@ class HomeViewModelTest {
 
         every { homeDataUseCase.getAggregateData() } returns flowOf(emptyHomeData)
         every { homeStatsUseCase.getStats() } returns flowOf(HomeStats())
-        every { settingsRepository.userName } returns flowOf("测试用户")
-        every { settingsRepository.homeDecorPhotoPath } returns flowOf(null)
+        every { homeSettingsUseCase.getDecorPhotoPath() } returns flowOf(null)
 
+        // A-1 修复：ViewModel 通过 HomeSettingsUseCase 访问 Repository，不再直接依赖 Repository
         viewModel = HomeViewModel(
             homeDataUseCase,
             homeStatsUseCase,
-            settingsRepository,
-            todoRepository,
-            reminderRepository
+            homeSettingsUseCase
         )
     }
 
@@ -91,39 +75,21 @@ class HomeViewModelTest {
         every { homeStatsUseCase.getStats() } returns flowOf(stats)
 
         val freshViewModel = HomeViewModel(
-            homeDataUseCase, homeStatsUseCase, settingsRepository,
-            todoRepository, reminderRepository
+            homeDataUseCase, homeStatsUseCase, homeSettingsUseCase
         )
 
         freshViewModel.uiState.test {
             // UnconfinedTestDispatcher 下首个 item 可能是 initial 或 combined
             var state = awaitItem()
-            if (state.isLoading) {
+            // A-2 修复：isLoading 嵌套在 data 中，stats 嵌套在 data.stats 中
+            if (state.data.isLoading) {
                 state = awaitItem()
             }
-            assertThat(state.giftCount).isEqualTo(5)
-            assertThat(state.contactCount).isEqualTo(10)
+            assertThat(state.data.stats.giftCount).isEqualTo(5)
+            assertThat(state.data.stats.contactCount).isEqualTo(10)
             cancelAndIgnoreRemainingEvents()
         }
         // 清理 freshViewModel 的协程，避免 greetingFlow 在 Default 调度器上泄漏
         freshViewModel.viewModelScope.cancel()
-    }
-
-    @Test
-    fun toggleTodoCompletion_callsRepository() = runTest {
-        coEvery { todoRepository.updateTodoCompletion(1L, true) } returns Unit
-
-        viewModel.toggleTodoCompletion(1L, true)
-
-        coVerify { todoRepository.updateTodoCompletion(1L, true) }
-    }
-
-    @Test
-    fun completeReminder_callsRepository() = runTest {
-        coEvery { reminderRepository.markReminderCompleted(1L) } returns Unit
-
-        viewModel.completeReminder(1L)
-
-        coVerify { reminderRepository.markReminderCompleted(1L) }
     }
 }

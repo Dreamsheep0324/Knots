@@ -10,17 +10,23 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -31,12 +37,10 @@ import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.Stable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -45,41 +49,10 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.tang.prm.ui.navigation.SettingsRoute
-import com.tang.prm.ui.navigation.GiftsRoute
 import com.tang.prm.ui.navigation.ContactListRoute
-import com.tang.prm.ui.navigation.PhotoAlbumRoute
-import com.tang.prm.ui.navigation.FootprintsRoute
-import com.tang.prm.ui.navigation.ThoughtsRoute
-import com.tang.prm.ui.navigation.FavoritesRoute
-import com.tang.prm.ui.navigation.DivinationRoute
-import com.tang.prm.ui.navigation.SubscriptionsRoute
-import com.tang.prm.ui.navigation.RecipesRoute
 import com.tang.prm.ui.theme.*
 import com.tang.prm.domain.util.DateUtils
-
-private val TerminalGreen = SignalGreen
-
-@Stable
-internal data class ChannelDef(
-    val name: String,
-    val color: Color,
-    val route: Any,
-    val desc: String,
-    val icon: ImageVector? = null,
-    val textIcon: String? = null,
-)
-
-internal val channels = listOf(
-    ChannelDef("礼物", SignalCoral, GiftsRoute, "收送记录与心愿单", Icons.Default.CardGiftcard),
-    ChannelDef("圈子", SignalPurple, ContactListRoute, "社交分组与关系管理", Icons.Default.Hub),
-    ChannelDef("相册", SignalSky, PhotoAlbumRoute.default(), "共享回忆与时光轴", Icons.Default.Image),
-    ChannelDef("足迹", SignalGreen, FootprintsRoute, "共同地点与旅行轨迹", Icons.Default.Map),
-    ChannelDef("想法", SignalAmber, ThoughtsRoute, "灵感笔记与待办事项", Icons.Default.Lightbulb),
-    ChannelDef("收藏", SignalGold, FavoritesRoute, "珍藏回忆与重要内容", Icons.Default.Star),
-    ChannelDef("占卜", SignalElectric, DivinationRoute, "梅花易数 · 六爻纳甲", textIcon = "☯"),
-    ChannelDef("订阅", SignalSky, SubscriptionsRoute, "会员订阅与到期提醒", Icons.Default.CreditCard),
-    ChannelDef("菜谱", SignalElectric, RecipesRoute, "一起做过的菜与味道", Icons.Default.Restaurant),
-)
+import com.tang.prm.ui.animation.core.rememberIsResumed
 
 @Composable
 fun HomeScreen(
@@ -89,62 +62,209 @@ fun HomeScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    // dateStr 仅在跨日时才变化：每分钟检查一次，仅当格式化日期不同时更新 state，避免无谓重组
+    // P-6 修复：dateStr 跨日检查用 rememberIsResumed + pausableDelay，App 切后台时暂停轮询，
+    // 不再每分钟做无意义的 DateUtils.format 调用
+    // N-1 修复：isResumed 以 lambda 传入，确保 pausableDelay 执行期间切后台能立即暂停
     var dateStr by remember { mutableStateOf(DateUtils.formatYearMonthDay(System.currentTimeMillis())) }
+    val isResumed by rememberIsResumed()
     LaunchedEffect(Unit) {
         while (true) {
-            kotlinx.coroutines.delay(60_000L)
+            pausableDelay(60_000L) { isResumed }
             val newDateStr = DateUtils.formatYearMonthDay(System.currentTimeMillis())
             if (newDateStr != dateStr) dateStr = newDateStr
         }
     }
 
-    val signalStrengths = remember(uiState) {
-        mapOf(
-            GiftsRoute to uiState.giftCount,
-            ContactListRoute to uiState.circleCount,
-            PhotoAlbumRoute.default() to uiState.photoCount,
-            FootprintsRoute to uiState.footprintCount,
-            ThoughtsRoute to uiState.thoughtCount,
-            FavoritesRoute to uiState.favoriteCount,
-            DivinationRoute to 0,
-            SubscriptionsRoute to uiState.subscriptionCount,
-            RecipesRoute to uiState.recipeCount
-        )
-    }
+    // C-7 修复：signalStrengths 直接从 uiState.data.stats 派生，channels 与 stats 通过
+    // ChannelDef.signalProvider 关联，新增频道只需改 HomeConstants.kt 一处
+    // N-5 修复：计算下沉到手机分支内，平板模式不再为 JournalTabletHome 计算无人读取的 map
     val onChannelClick = remember(navController) { { route: Any -> navController.navigate(route) } }
     val onSettingsClick = remember(navController) { { navController.navigate(SettingsRoute) } }
+    // Q-14/P-4 修复：方法引用用 remember 包裹，避免每重组创建新对象引发下游不必要重组
+    val onDecorPhotoPathChange = remember(viewModel) { { path: String? -> viewModel.setDecorPhotoPath(path) } }
+
+    // B-7 修复：transientError 触发 Snackbar，显示后立即 consume
+    val snackbarHostState = remember { SnackbarHostState() }
+    LaunchedEffect(uiState.dialog.transientError) {
+        uiState.dialog.transientError?.let {
+            snackbarHostState.showSnackbar(
+                message = "操作失败，请稍后重试",
+                withDismissAction = true
+            )
+            viewModel.consumeTransientError()
+        }
+    }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.surface)
     ) {
-        if (isTabletLayout) {
-            HomeTopBar(
-                showSettings = false,
-                onSettingsClick = onSettingsClick
-            )
+        // N-7 + U-10 修复：平板模式不显示秒级时间，避免与 JournalDateBanner 日级时间语义冲突
+        HomeTopBar(
+            showSettings = true,
+            showTime = !isTabletLayout,
+            isResumedProvider = { isResumed },
+            onSettingsClick = onSettingsClick
+        )
 
-            JournalTabletHome(
+        when {
+            // U-1 修复：加载中显示骨架屏，而非全 0 空数据
+            uiState.data.isLoading -> HomeLoadingSkeleton()
+            // U-2 修复：错误状态显示重试入口，而非卡死在 loading
+            uiState.data.error != null -> HomeErrorState(
+                onRetry = { viewModel.retry() }
+            )
+            // U-3 修复：全新用户（无联系人无事件无纪念日）显示引导卡片，而非全 0 空首页
+            uiState.data.stats.contactCount == 0 && uiState.data.stats.eventCount == 0 && uiState.data.stats.anniversaryCount == 0 -> {
+                HomeEmptyGuide(onChannelClick = onChannelClick)
+            }
+            isTabletLayout -> JournalTabletHome(
                 uiState = uiState,
                 channels = channels,
-                signalStrengths = signalStrengths,
                 onChannelClick = onChannelClick,
-                onDecorPhotoPathChange = viewModel::setDecorPhotoPath
+                onDecorPhotoPathChange = onDecorPhotoPathChange
             )
-        } else {
-            HomeTopBar(
-                showSettings = true,
-                onSettingsClick = onSettingsClick
+            else -> {
+                // N-5 修复：signalStrengths 仅在手机分支内计算，平板分支不浪费 CPU 重建 map
+                val signalStrengths = remember(uiState.data.stats) {
+                    channels.associate { it.route to it.signalProvider(uiState.data.stats) }
+                }
+                PhoneHomeContent(
+                    dateStr = dateStr,
+                    uiState = uiState,
+                    channels = channels,
+                    signalStrengths = signalStrengths,
+                    onChannelClick = onChannelClick
+                )
+            }
+        }
+    }
+
+    // B-7 修复：Snackbar 宿主
+    SnackbarHost(
+        hostState = snackbarHostState,
+        modifier = Modifier.fillMaxWidth()
+    )
+}
+
+// U-1 修复：加载骨架屏——用淡色占位块替代全 0 空数据，避免"加载中显示空首页"的误导
+@Composable
+private fun HomeLoadingSkeleton() {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        // 问候语占位
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(28.dp)
+                .clip(RoundedCornerShape(6.dp))
+                .background(MaterialTheme.colorScheme.surfaceVariant)
+        )
+        // 信号卡占位
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(120.dp)
+                .clip(RoundedCornerShape(12.dp))
+                .background(MaterialTheme.colorScheme.surfaceVariant)
+        )
+        // 频道卡片占位
+        // N-11 修复：占位数与 channels 列表长度一致（9），避免加载完成后从 3 个跳到 9 个的 layout shift
+        repeat(channels.size) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(72.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(MaterialTheme.colorScheme.surfaceVariant)
             )
-            PhoneHomeContent(
-                dateStr = dateStr,
-                uiState = uiState,
-                channels = channels,
-                signalStrengths = signalStrengths,
-                onChannelClick = onChannelClick
+        }
+    }
+}
+
+// U-2 修复：错误状态——显示错误提示与重试按钮，而非卡死在 loading
+@Composable
+private fun HomeErrorState(onRetry: () -> Unit) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(32.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Icon(
+            imageVector = Icons.Default.CloudOff,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.size(48.dp)
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+        Text(
+            text = "加载失败",
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.onSurface
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        Text(
+            text = "首页数据暂时无法加载，请检查后重试",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        Spacer(modifier = Modifier.height(24.dp))
+        FilledTonalButton(onClick = onRetry) {
+            Icon(
+                imageVector = Icons.Default.Refresh,
+                contentDescription = null,
+                modifier = Modifier.size(18.dp)
             )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text("重试")
+        }
+    }
+}
+
+// U-3 修复：全新用户引导卡片——替代"全 0 空首页"，引导用户去添加第一个人/事件
+@Composable
+private fun HomeEmptyGuide(onChannelClick: (Any) -> Unit) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(32.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Icon(
+            imageVector = Icons.Default.AutoAwesome,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.size(48.dp)
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+        Text(
+            text = "开始记录你的第一份记忆",
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.onSurface
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        Text(
+            text = "添加联系人、事件或纪念日，让这里亮起信号",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        Spacer(modifier = Modifier.height(24.dp))
+        FilledTonalButton(onClick = { onChannelClick(ContactListRoute) }) {
+            Icon(
+                imageVector = Icons.Default.PersonAdd,
+                contentDescription = null,
+                modifier = Modifier.size(18.dp)
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text("添加联系人")
         }
     }
 }
@@ -152,13 +272,19 @@ fun HomeScreen(
 @Composable
 private fun HomeTopBar(
     showSettings: Boolean = true,
+    // N-7 + U-10 修复：平板模式传 false 不显示秒级时间，交给 JournalDateBanner 统一呈现日级时间
+    showTime: Boolean = true,
+    // N-4 修复：isResumed 通过 lambda 传入，让 pausableDelay 每秒读取最新 State.value
+    isResumedProvider: () -> Boolean = { true },
     onSettingsClick: () -> Unit
 ) {
     // 秒级时钟状态下沉到 TopBar 内部，避免每秒触发整个 HomeScreen 重组
     var currentTime by remember { mutableLongStateOf(System.currentTimeMillis()) }
+    // N-4 修复：用 pausableDelay 替代裸 delay(1000)，App 切后台时暂停秒级 tick，
+    // 与 HomeScreen 的 dateStr 60s 轮询和 HomeSignalCard 打字机保持一致暂停语义
     LaunchedEffect(Unit) {
         while (true) {
-            kotlinx.coroutines.delay(1000)
+            pausableDelay(1000L, isResumedProvider)
             currentTime = System.currentTimeMillis()
         }
     }
@@ -171,7 +297,7 @@ private fun HomeTopBar(
                     modifier = Modifier
                         .size(6.dp)
                         .clip(CircleShape)
-                        .background(TerminalGreen)
+                        .background(SignalGreen)
                 )
                 Spacer(modifier = Modifier.width(6.dp))
                 Text(
@@ -181,14 +307,16 @@ private fun HomeTopBar(
                     fontSize = 20.sp,
                     color = MaterialTheme.colorScheme.onSurface
                 )
-                Spacer(modifier = Modifier.width(12.dp))
-                Text(
-                    timeStr,
-                    fontFamily = FontFamily.Monospace,
-                    fontSize = 13.sp,
-                    color = MaterialTheme.colorScheme.primary,
-                    fontWeight = FontWeight.Medium
-                )
+                if (showTime) {
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Text(
+                        timeStr,
+                        fontFamily = FontFamily.Monospace,
+                        fontSize = 13.sp,
+                        color = MaterialTheme.colorScheme.primary,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
             }
         },
         actions = {
@@ -227,23 +355,22 @@ private fun PhoneHomeContent(
         item(key = "signal_card", contentType = "signal") {
             IncomingSignalCard(
                 dateStr = dateStr,
-                contactCount = uiState.contactCount,
-                eventCount = uiState.eventCount,
-                giftCount = uiState.giftCount,
-                anniversaryCount = uiState.anniversaryCount,
-                conversationCount = uiState.conversationCount
+                stats = uiState.data.stats
             )
         }
 
         item(key = "orbital_calendar", contentType = "calendar") {
             OrbitalCalendar(
-                anniversaries = uiState.upcomingAnniversaries,
-                events = uiState.recentEvents
+                anniversaries = uiState.data.upcomingAnniversaries,
+                events = uiState.data.recentEvents,
+                // N-3 修复：dateStr 作为 todayDateKey，跨日时 OrbitalCalendar 内部 todayCal 失效重建
+                todayDateKey = dateStr
             )
         }
 
         item(key = "channel_grid", contentType = "grid") {
-            ChannelGrid(
+            // Q-1 修复：函数从 ChannelGrid 重命名为 ChannelList，反映其单列纵向列表实现
+            ChannelList(
                 channels = channels,
                 signalStrengths = signalStrengths,
                 onChannelClick = onChannelClick

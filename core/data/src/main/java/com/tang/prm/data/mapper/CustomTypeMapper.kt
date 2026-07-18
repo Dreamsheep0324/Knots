@@ -11,7 +11,8 @@ fun CustomTypeEntity.toDomain() = CustomType(
     color = color,
     icon = icon,
     sortOrder = sortOrder,
-    isDefault = isDefault
+    isDefault = isDefault,
+    createdAt = createdAt
 )
 
 fun CustomType.toEntity() = CustomTypeEntity(
@@ -22,5 +23,6 @@ fun CustomType.toEntity() = CustomTypeEntity(
     color = color,
     icon = icon,
     sortOrder = sortOrder,
-    isDefault = isDefault
+    isDefault = isDefault,
+    createdAt = createdAt
 )

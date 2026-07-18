@@ -18,61 +18,47 @@ import org.junit.jupiter.api.extension.ExtendWith
 @ExtendWith(MockKExtension::class)
 class HomeDataAggregationUseCaseTest {
 
-    @MockK private lateinit var contactRepository: ContactRepository
     @MockK private lateinit var eventRepository: EventRepository
     @MockK private lateinit var anniversaryRepository: AnniversaryRepository
     @MockK private lateinit var todoRepository: TodoRepository
-    @MockK private lateinit var reminderRepository: ReminderRepository
 
     private lateinit var useCase: HomeDataAggregationUseCase
 
     @BeforeEach
     fun setUp() {
         useCase = HomeDataAggregationUseCase(
-            contactRepository, eventRepository, anniversaryRepository,
-            todoRepository, reminderRepository
+            eventRepository, anniversaryRepository, todoRepository
         )
     }
 
     private fun setupMocks(
-        contacts: List<Contact> = emptyList(),
         events: List<Event> = emptyList(),
         upcomingAnniversaries: List<Anniversary> = emptyList(),
-        allAnniversaries: List<Anniversary> = emptyList(),
-        todos: List<TodoItem> = emptyList(),
-        reminders: List<Reminder> = emptyList()
+        todos: List<TodoItem> = emptyList()
     ) {
-        every { contactRepository.getRecentContacts(5) } returns flowOf(contacts)
         every { eventRepository.getAllEvents() } returns flowOf(events)
         every { anniversaryRepository.getUpcomingAnniversaries(10) } returns flowOf(upcomingAnniversaries)
-        every { anniversaryRepository.getAllAnniversaries() } returns flowOf(allAnniversaries)
         every { todoRepository.getActiveTodos() } returns flowOf(todos)
-        every { reminderRepository.getActiveReminders() } returns flowOf(reminders)
     }
 
     @Test
     fun aggregatesAllData() = runTest {
-        val contacts = listOf(Contact(id = 1L, name = "Alice"))
         val events = listOf(Event(id = 1, title = "Meetup", type = EventType.MEETUP, time = 1000L))
         val anniversaries = listOf(
             Anniversary(id = 1, name = "Birthday", type = AnniversaryType.BIRTHDAY, date = 1000L, isRepeat = true)
         )
         val todos = listOf(TodoItem(id = 1L, title = "Task"))
-        val reminders = listOf(Reminder(id = 1L, type = "event", title = "Remind", content = "", time = System.currentTimeMillis()))
 
         setupMocks(
-            contacts = contacts, events = events,
-            upcomingAnniversaries = anniversaries, allAnniversaries = anniversaries,
-            todos = todos, reminders = reminders
+            events = events,
+            upcomingAnniversaries = anniversaries,
+            todos = todos
         )
 
         useCase.getAggregateData().test {
             val data = awaitItem()
-            assertThat(data.frequentContacts).hasSize(1)
-            assertThat(data.allEvents).hasSize(1)
             assertThat(data.recentEvents).hasSize(1)
             assertThat(data.upcomingAnniversaries).hasSize(1)
-            assertThat(data.allAnniversaries).hasSize(1)
             assertThat(data.pendingTodos).hasSize(1)
             cancelAndIgnoreRemainingEvents()
         }
@@ -92,29 +78,6 @@ class HomeDataAggregationUseCaseTest {
             useCase.getAggregateData().test {
                 val data = awaitItem()
                 assertThat(data.recentEvents).hasSize(5)
-                assertThat(data.allEvents).hasSize(8)
-                cancelAndIgnoreRemainingEvents()
-            }
-        }
-    }
-
-    @Nested
-    @DisplayName("todayReminders 筛选")
-    inner class TodayRemindersTest {
-
-        @Test
-        fun filtersRemindersForToday() = runTest {
-            val today = System.currentTimeMillis()
-            val reminders = listOf(
-                Reminder(id = 1L, type = "event", title = "Today", content = "", time = today),
-                Reminder(id = 2L, type = "event", title = "Tomorrow", content = "", time = today + 86_400_000L)
-            )
-            setupMocks(reminders = reminders)
-
-            useCase.getAggregateData().test {
-                val data = awaitItem()
-                assertThat(data.todayReminders).hasSize(1)
-                assertThat(data.todayReminders[0].title).isEqualTo("Today")
                 cancelAndIgnoreRemainingEvents()
             }
         }
@@ -126,8 +89,7 @@ class HomeDataAggregationUseCaseTest {
 
         useCase.getAggregateData().test {
             val data = awaitItem()
-            assertThat(data.frequentContacts).isEmpty()
-            assertThat(data.allEvents).isEmpty()
+            assertThat(data.recentEvents).isEmpty()
             assertThat(data.pendingTodos).isEmpty()
             cancelAndIgnoreRemainingEvents()
         }

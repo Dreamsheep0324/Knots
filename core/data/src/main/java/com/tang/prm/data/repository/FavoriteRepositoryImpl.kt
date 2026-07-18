@@ -50,20 +50,8 @@ class FavoriteRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun insertFavorite(favorite: Favorite): Long {
-        return favoriteDao.insertFavorite(favorite.toEntity())
-    }
-
     override suspend fun deleteFavoriteBySource(type: String, sourceId: Long) {
         favoriteDao.deleteFavoriteBySource(type, sourceId)
-    }
-
-    override fun getCountByType(type: String): Flow<Int> {
-        return favoriteDao.getCountByType(type)
-    }
-
-    override fun getTotalCount(): Flow<Int> {
-        return favoriteDao.getTotalCount()
     }
 
     override fun getFavoriteCount(): Flow<Int> = favoriteDao.getTotalCount()

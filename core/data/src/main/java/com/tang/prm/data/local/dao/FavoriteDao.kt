@@ -24,12 +24,8 @@ interface FavoriteDao {
     @Query("DELETE FROM favorites WHERE sourceType = :type AND sourceId = :sourceId")
     suspend fun deleteFavoriteBySource(type: String, sourceId: Long)
 
-    @Query("SELECT COUNT(*) FROM favorites WHERE sourceType = :type")
-    fun getCountByType(type: String): Flow<Int>
-
     @Query("SELECT COUNT(*) FROM favorites")
     fun getTotalCount(): Flow<Int>
 
-    @Query("DELETE FROM favorites WHERE sourceId = :eventId AND sourceType IN (:types)")
-    suspend fun deleteEventFavorites(eventId: Long, types: List<String>)
+    // DAO-Q-2 修复：删除 deleteEventFavorites——参数名 eventId 实为通用 sourceId 且已被 deleteFavoriteBySource 取代，零调用。
 }

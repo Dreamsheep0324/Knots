@@ -73,10 +73,6 @@ interface EventDao {
     @Query("SELECT COUNT(*) FROM events WHERE location IS NOT NULL AND location != ''")
     fun getEventCountWithLocation(): Flow<Int>
 
-    @Transaction
-    @Query("SELECT * FROM events WHERE location IS NOT NULL AND location != '' ORDER BY time DESC")
-    fun getEventsWithLocation(): Flow<List<EventWithParticipants>>
-
     /**
      * Lightweight projection of events with location, for footprint aggregation.
      * Avoids reading photos JSON, remarks, promise, conversationSummary, giftName,

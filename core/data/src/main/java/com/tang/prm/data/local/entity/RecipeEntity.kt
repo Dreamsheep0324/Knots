@@ -8,6 +8,7 @@ import androidx.room.Index
 import androidx.room.Junction
 import androidx.room.PrimaryKey
 import androidx.room.Relation
+import com.tang.prm.data.local.dao.ContactListItemEntity
 
 @Entity(
     tableName = "recipes",
@@ -108,6 +109,54 @@ data class RecipeWithContactsAndTags(
         entityColumn = "id",
         associateBy = Junction(
             RecipeTagCrossRef::class,
+            parentColumn = "recipeId",
+            entityColumn = "tagId"
+        )
+    )
+    val tags: List<RecipeTagEntity>
+)
+
+/**
+ * 菜谱列表页轻量投影，避免加载 ingredients/steps/notes 等大 TEXT 列。
+ * 参照 [EventLocationItemEntity] / [ContactListItemEntity] 的投影模式。
+ */
+data class RecipeListItemEntity(
+    val id: Long,
+    val title: String,
+    val description: String?,
+    val cuisine: String?,
+    val difficulty: String,
+    val cookingTime: Int?,
+    val servings: Int?,
+    val photos: List<String> = emptyList(),
+    @ColumnInfo(name = "photos_count") val photosCount: Int = 0,
+    val rating: Int = 0,
+    val isFavorite: Boolean = false,
+    val createdAt: Long = System.currentTimeMillis()
+)
+
+/**
+ * [RecipeListItemEntity] with lightweight contact projection ([ContactListItemEntity]),
+ * avoiding full [ContactEntity] load (notes, customFields, hobby, habit, etc.).
+ */
+data class RecipeListItemWithRelations(
+    @Embedded val recipe: RecipeListItemEntity,
+    @Relation(
+        parentColumn = "id",
+        entityColumn = "id",
+        entity = ContactEntity::class,
+        associateBy = Junction(
+            value = RecipeContactCrossRef::class,
+            parentColumn = "recipeId",
+            entityColumn = "contactId"
+        )
+    )
+    val contacts: List<ContactListItemEntity>,
+    @Relation(
+        parentColumn = "id",
+        entityColumn = "id",
+        associateBy = Junction(
+            value = RecipeTagCrossRef::class,
             parentColumn = "recipeId",
             entityColumn = "tagId"
         )

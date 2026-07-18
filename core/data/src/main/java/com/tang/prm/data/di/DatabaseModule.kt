@@ -24,6 +24,7 @@ import com.tang.prm.data.local.database.migrations.MIGRATION_37_38
 import com.tang.prm.data.local.database.migrations.MIGRATION_38_39
 import com.tang.prm.data.local.database.migrations.MIGRATION_39_40
 import com.tang.prm.data.local.database.migrations.MIGRATION_40_41
+import com.tang.prm.data.local.database.migrations.MIGRATION_41_42
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -44,7 +45,7 @@ object DatabaseModule {
         return Room.databaseBuilder(
             context,
             TangDatabase::class.java,
-            "tang_database"
+            TangDatabase.DB_NAME
         )
             // 迁移策略说明：
             // v1-v23 已无用户，由 MIGRATION_1_32 一次性聚合
@@ -55,7 +56,7 @@ object DatabaseModule {
                 MIGRATION_31_33, MIGRATION_32_33,
                 MIGRATION_33_34, MIGRATION_34_35, MIGRATION_35_36,
                 MIGRATION_36_37, MIGRATION_37_38, MIGRATION_38_39,
-                MIGRATION_39_40, MIGRATION_40_41
+                MIGRATION_39_40, MIGRATION_40_41, MIGRATION_41_42
             )
             .build()
     }
@@ -115,50 +116,35 @@ object DatabaseModule {
     @Singleton
     fun provideDataStore(@ApplicationContext context: Context): DataStore<Preferences> = context.dataStore
 
-    @Provides
-    @Singleton
-    fun provideEncryptedSharedPreferences(@ApplicationContext context: Context): SharedPreferences {
+    // DI-Q-1 修复：抽取公共方法消除两个 EncryptedSharedPreferences @Provides 的代码重复。
+    // DB-B-3 修复：加密失败时标记降级并抛异常，不回退明文。
+    private fun createEncryptedPrefs(context: Context, fileName: String): SharedPreferences {
         return try {
             val masterKey = MasterKey.Builder(context)
                 .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
                 .build()
             EncryptedSharedPreferences.create(
                 context,
-                "secret_settings",
+                fileName,
                 masterKey,
                 EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
                 EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
             )
         } catch (e: Exception) {
-            Log.e("DatabaseModule", "EncryptedSharedPreferences unavailable! Sensitive data will NOT be encrypted.", e)
+            Log.e("DatabaseModule", "EncryptedSharedPreferences($fileName) 不可用，敏感数据将不会被保存", e)
             com.tang.prm.domain.util.EncryptionStatus.markDegraded()
-            context.getSharedPreferences("secret_settings_fallback", Context.MODE_PRIVATE).edit()
-                .putBoolean("encryption_degraded", true).apply()
-            context.getSharedPreferences("secret_settings_fallback", Context.MODE_PRIVATE)
+            throw e
         }
     }
 
     @Provides
     @Singleton
+    fun provideEncryptedSharedPreferences(@ApplicationContext context: Context): SharedPreferences =
+        createEncryptedPrefs(context, "secret_settings")
+
+    @Provides
+    @Singleton
     @Named("webdav")
-    fun provideWebDavEncryptedPrefs(@ApplicationContext context: Context): SharedPreferences {
-        return try {
-            val masterKey = MasterKey.Builder(context)
-                .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
-                .build()
-            EncryptedSharedPreferences.create(
-                context,
-                "webdav_secret",
-                masterKey,
-                EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
-                EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
-            )
-        } catch (e: Exception) {
-            Log.e("DatabaseModule", "EncryptedSharedPreferences unavailable! Sensitive data will NOT be encrypted.", e)
-            com.tang.prm.domain.util.EncryptionStatus.markDegraded()
-            context.getSharedPreferences("webdav_secret_fallback", Context.MODE_PRIVATE).edit()
-                .putBoolean("encryption_degraded", true).apply()
-            context.getSharedPreferences("webdav_secret_fallback", Context.MODE_PRIVATE)
-        }
-    }
+    fun provideWebDavEncryptedPrefs(@ApplicationContext context: Context): SharedPreferences =
+        createEncryptedPrefs(context, "webdav_secret")
 }

@@ -10,6 +10,8 @@ import com.tang.prm.data.mapper.toDomain
 import com.tang.prm.data.mapper.toEntity
 import com.tang.prm.domain.model.Gift
 import com.tang.prm.domain.model.GiftType
+import com.tang.prm.domain.model.SourceTypes
+import com.tang.prm.domain.repository.FavoriteRepository
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -30,6 +32,9 @@ class GiftRepositoryImplTest {
 
     @MockK
     private lateinit var giftDao: GiftDao
+
+    @MockK
+    private lateinit var favoriteRepository: FavoriteRepository
 
     @MockK
     private lateinit var database: TangDatabase
@@ -56,8 +61,10 @@ class GiftRepositoryImplTest {
         coEvery { any<androidx.room.RoomDatabase>().withTransaction(any<suspend () -> Any>()) } coAnswers {
             secondArg<suspend () -> Any>().invoke()
         }
+        coEvery { favoriteRepository.deleteFavoriteBySource(any(), any()) } returns Unit
+        every { context.filesDir } returns java.io.File.createTempFile("test", "tmp").parentFile
         mockkStatic("com.tang.prm.data.mapper.GiftMapperKt")
-        repository = GiftRepositoryImpl(giftDao, database, context)
+        repository = GiftRepositoryImpl(giftDao, favoriteRepository, database, context)
     }
 
     @AfterEach
@@ -131,5 +138,41 @@ class GiftRepositoryImplTest {
 
         coVerify { giftDao.getGiftsByContactIdOnce(10L) }
         coVerify { giftDao.deleteGiftsByContactId(10L) }
+    }
+
+    @Test
+    fun deleteGiftById_clearsFavoritesInTransaction() = runTest {
+        coEvery { giftDao.getGiftByIdOnce(1L) } returns entity
+        coEvery { giftDao.deleteGiftById(1L) } returns Unit
+
+        repository.deleteGiftById(1L)
+
+        coVerify { favoriteRepository.deleteFavoriteBySource(SourceTypes.GIFT, 1L) }
+        coVerify { giftDao.deleteGiftById(1L) }
+    }
+
+    @Test
+    fun deleteGiftsByContactId_clearsFavoritesForEachGift() = runTest {
+        val entity1 = entity.copy(id = 1, photos = listOf("/p1.jpg"))
+        val entity2 = entity.copy(id = 2, photos = listOf("/p2.jpg"))
+        coEvery { giftDao.getGiftsByContactIdOnce(10L) } returns listOf(entity1, entity2)
+        coEvery { giftDao.deleteGiftsByContactId(10L) } returns Unit
+
+        repository.deleteGiftsByContactId(10L)
+
+        coVerify { favoriteRepository.deleteFavoriteBySource(SourceTypes.GIFT, 1L) }
+        coVerify { favoriteRepository.deleteFavoriteBySource(SourceTypes.GIFT, 2L) }
+    }
+
+    @Test
+    fun updateGift_wrapsReadAndUpdateInTransaction() = runTest {
+        coEvery { giftDao.getGiftByIdOnce(1L) } returns entity
+        coEvery { giftDao.updateGift(any()) } returns Unit
+        every { domain.toEntity() } returns entity
+
+        repository.updateGift(domain)
+
+        coVerify { giftDao.getGiftByIdOnce(1L) }
+        coVerify { giftDao.updateGift(entity) }
     }
 }

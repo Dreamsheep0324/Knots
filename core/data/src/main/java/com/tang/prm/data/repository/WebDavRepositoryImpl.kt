@@ -3,6 +3,7 @@ package com.tang.prm.data.repository
 import android.content.Context
 import android.net.Uri
 import android.util.Log
+import com.tang.prm.data.local.database.TangDatabase
 import com.tang.prm.data.remote.WebDavClient
 import com.tang.prm.domain.model.CloudBackupVersion
 import com.tang.prm.domain.model.ConnectionTestResult
@@ -173,7 +174,7 @@ class WebDavRepositoryImpl @Inject constructor(
                 webDavClient.uploadImageFile(config, "images", entry.name, file)
                 uploadedImageEntries[entry.name] = entry.copy(uploadedAt = uploadStartTime)
             } catch (e: Exception) {
-                android.util.Log.w("WebDavRepository", "图片上传失败: ${entry.name}", e)
+                android.util.Log.w(TAG, "图片上传失败: ${entry.name}", e)
                 uploadFailures++
             }
         }
@@ -188,7 +189,7 @@ class WebDavRepositoryImpl @Inject constructor(
                 webDavClient.uploadImageFile(config, "gift_photos", entry.name, file)
                 uploadedGiftEntries[entry.name] = entry.copy(uploadedAt = uploadStartTime)
             } catch (e: Exception) {
-                android.util.Log.w("WebDavRepository", "礼物照片上传失败: ${entry.name}", e)
+                android.util.Log.w(TAG, "礼物照片上传失败: ${entry.name}", e)
                 uploadFailures++
             }
         }
@@ -209,11 +210,16 @@ class WebDavRepositoryImpl @Inject constructor(
         currentStep++
         emit(SyncResult.UploadProgress("上传清单", currentStep, totalSteps, "正在更新同步清单..."))
         val now = System.currentTimeMillis()
-        // 未上传的图片保留远端旧条目（若存在），避免 manifest 丢失已上传文件记录
-        val imageEntries = (remoteManifest?.images ?: emptyMap()).toMutableMap()
-        imageEntries.putAll(uploadedImageEntries)
-        val giftEntries = (remoteManifest?.giftPhotos ?: emptyMap()).toMutableMap()
-        giftEntries.putAll(uploadedGiftEntries)
+        // 未上传的图片保留远端旧条目（若存在），避免 manifest 丢失已上传文件记录；
+        // 同时排除已删除的远端文件，避免 manifest 残留孤儿条目导致下次同步误判
+        val imageEntries = (remoteManifest?.images ?: emptyMap())
+            .filterKeys { it !in imagesToDeleteRemote }
+            .toMutableMap()
+            .apply { putAll(uploadedImageEntries) }
+        val giftEntries = (remoteManifest?.giftPhotos ?: emptyMap())
+            .filterKeys { it !in giftToDeleteRemote }
+            .toMutableMap()
+            .apply { putAll(uploadedGiftEntries) }
 
         val newManifest = SyncManifest(
             version = 1,
@@ -308,7 +314,7 @@ class WebDavRepositoryImpl @Inject constructor(
             try {
                 webDavClient.downloadImageFile(config, "images", entry.name, targetFile)
             } catch (e: Exception) {
-                android.util.Log.w("WebDavRepository", "图片下载失败: ${entry.name}", e)
+                android.util.Log.w(TAG, "图片下载失败: ${entry.name}", e)
                 downloadFailures++
             }
         }
@@ -321,7 +327,7 @@ class WebDavRepositoryImpl @Inject constructor(
             try {
                 webDavClient.downloadImageFile(config, "gift_photos", entry.name, targetFile)
             } catch (e: Exception) {
-                android.util.Log.w("WebDavRepository", "礼物照片下载失败: ${entry.name}", e)
+                android.util.Log.w(TAG, "礼物照片下载失败: ${entry.name}", e)
                 downloadFailures++
             }
         }
@@ -416,8 +422,9 @@ class WebDavRepositoryImpl @Inject constructor(
 
     private fun isDbChanged(remoteManifest: SyncManifest?): Boolean {
         if (remoteManifest == null) return true
-        val dbFile = context.getDatabasePath("tang_database")
-        val walFile = File(dbFile.parent, "tang_database-wal")
+        // REP-C-1 修复：使用 TangDatabase.DB_NAME 常量替代字符串字面量。
+        val dbFile = context.getDatabasePath(TangDatabase.DB_NAME)
+        val walFile = File(dbFile.parent, "${TangDatabase.DB_NAME}-wal")
         val localDbModified = maxOf(
             if (dbFile.exists()) dbFile.lastModified() else 0L,
             if (walFile.exists()) walFile.lastModified() else 0L

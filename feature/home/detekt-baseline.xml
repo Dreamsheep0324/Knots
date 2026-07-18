@@ -2,46 +2,45 @@
 <SmellBaseline>
   <ManuallySuppressedIssues></ManuallySuppressedIssues>
   <CurrentIssues>
-    <ID>CyclomaticComplexMethod:OrbitalCalendarCanvas.kt$@Composable internal fun OrbitalCalendarCanvas( data: OrbitalCalendarData, todayDay: Int, modifier: Modifier = Modifier.fillMaxWidth().height(242.dp) )</ID>
-    <ID>CyclomaticComplexMethod:OrbitalCalendarState.kt$@Composable internal fun rememberOrbitalCalendarData( displayMonth: Int, displayYear: Int, events: List&lt;Event&gt;, anniversaries: List&lt;Anniversary&gt; ): OrbitalCalendarData</ID>
-    <ID>FunctionNaming:HomeChannelGrid.kt$@Composable internal fun ChannelGrid( channels: List&lt;ChannelDef&gt;, signalStrengths: Map&lt;Any, Int&gt;, onChannelClick: (Any) -&gt; Unit )</ID>
-    <ID>FunctionNaming:HomeChannelGrid.kt$@Composable private fun GlassChannelItem( channel: ChannelDef, signalStrength: Int, onClick: () -&gt; Unit )</ID>
-    <ID>FunctionNaming:HomeOrbitalCalendar.kt$@Composable internal fun OrbitalCalendar( anniversaries: List&lt;Anniversary&gt;, events: List&lt;Event&gt;, canvasModifier: Modifier = Modifier.fillMaxWidth().height(242.dp), modifier: Modifier = Modifier )</ID>
+    <ID>CyclomaticComplexMethod:OrbitalCalendarState.kt$@Composable internal fun rememberOrbitalCalendarData( displayMonth: Int, displayYear: Int, events: List&lt;Event&gt;, anniversaries: List&lt;Anniversary&gt;, // N-3 修复：todayDateKey 让 todayCal 跨日时失效重建，避免 P-5 remember 缓存导致的 staleness // 调用方传入 "yyyy-MM-dd" 字符串（来自 HomeScreen.dateStr 60s 轮询），跨日时自动刷新 todayDateKey: String ): OrbitalCalendarData</ID>
+    <ID>FunctionNaming:HomeChannelList.kt$@Composable internal fun ChannelIcon( channel: ChannelDef, modifier: Modifier = Modifier, diameter: Dp = 42.dp, withShimmer: Boolean = false, breathAlpha: Float = 1f, shimmerPhase: Float = 0f )</ID>
+    <ID>FunctionNaming:HomeChannelList.kt$@Composable internal fun ChannelList( channels: List&lt;ChannelDef&gt;, signalStrengths: Map&lt;Any, Int&gt;, onChannelClick: (Any) -&gt; Unit )</ID>
+    <ID>FunctionNaming:HomeChannelList.kt$@Composable private fun ChannelProgressBar(channel: ChannelDef, signalStrength: Int)</ID>
+    <ID>FunctionNaming:HomeChannelList.kt$@Composable private fun ChannelSignalBars(channel: ChannelDef, signalStrength: Int)</ID>
+    <ID>FunctionNaming:HomeChannelList.kt$@Composable private fun GlassChannelItem( channel: ChannelDef, signalStrength: Int, onClick: () -&gt; Unit )</ID>
+    <ID>FunctionNaming:HomeOrbitalCalendar.kt$@Composable internal fun OrbitalCalendar( anniversaries: List&lt;Anniversary&gt;, events: List&lt;Event&gt;, // N-3 修复：todayDateKey 透传到 rememberOrbitalCalendarData，让 todayCal 跨日时失效重建 todayDateKey: String, // Q-9 修复：合并 canvasModifier 和 modifier 为单一 modifier，消除两个 Modifier 参数的语义混淆 modifier: Modifier = Modifier )</ID>
     <ID>FunctionNaming:HomeScreen.kt$@Composable fun HomeScreen( navController: NavController, isTabletLayout: Boolean = false, viewModel: HomeViewModel = hiltViewModel() )</ID>
-    <ID>FunctionNaming:HomeScreen.kt$@Composable private fun HomeTopBar( showSettings: Boolean = true, onSettingsClick: () -&gt; Unit )</ID>
+    <ID>FunctionNaming:HomeScreen.kt$@Composable private fun HomeEmptyGuide(onChannelClick: (Any) -&gt; Unit)</ID>
+    <ID>FunctionNaming:HomeScreen.kt$@Composable private fun HomeErrorState(onRetry: () -&gt; Unit)</ID>
+    <ID>FunctionNaming:HomeScreen.kt$@Composable private fun HomeLoadingSkeleton()</ID>
+    <ID>FunctionNaming:HomeScreen.kt$@Composable private fun HomeTopBar( showSettings: Boolean = true, // N-7 + U-10 修复：平板模式传 false 不显示秒级时间，交给 JournalDateBanner 统一呈现日级时间 showTime: Boolean = true, // N-4 修复：isResumed 通过 lambda 传入，让 pausableDelay 每秒读取最新 State.value isResumedProvider: () -&gt; Boolean = { true }, onSettingsClick: () -&gt; Unit )</ID>
     <ID>FunctionNaming:HomeScreen.kt$@Composable private fun PhoneHomeContent( dateStr: String, uiState: HomeUiState, channels: List&lt;ChannelDef&gt;, signalStrengths: Map&lt;Any, Int&gt;, onChannelClick: (Any) -&gt; Unit )</ID>
-    <ID>FunctionNaming:HomeSignalCard.kt$@Composable internal fun IncomingSignalCard( dateStr: String, contactCount: Int, eventCount: Int, giftCount: Int, anniversaryCount: Int, conversationCount: Int )</ID>
+    <ID>FunctionNaming:HomeSignalCard.kt$@Composable internal fun IncomingSignalCard( dateStr: String, // C-2 修复：用 HomeStats 替代 5 个独立 count 参数，与 HomeStatDef 配合消除配置重复 stats: HomeStats )</ID>
     <ID>FunctionNaming:HomeSignalCard.kt$@Composable private fun StatGauge(value: Int, label: String, color: Color, icon: ImageVector)</ID>
-    <ID>FunctionNaming:HomeTabletJournal.kt$@Composable internal fun JournalTabletHome( uiState: HomeUiState, channels: List&lt;ChannelDef&gt;, signalStrengths: Map&lt;Any, Int&gt;, onChannelClick: (Any) -&gt; Unit, onDecorPhotoPathChange: (String?) -&gt; Unit, modifier: Modifier = Modifier )</ID>
+    <ID>FunctionNaming:HomeTabletJournal.kt$@Composable internal fun JournalTabletHome( uiState: HomeUiState, channels: List&lt;ChannelDef&gt;, onChannelClick: (Any) -&gt; Unit, onDecorPhotoPathChange: (String?) -&gt; Unit, modifier: Modifier = Modifier )</ID>
     <ID>FunctionNaming:HomeTabletJournal.kt$@Composable private fun JournalDateBanner( greeting: String, pendingTodoCount: Int, upcomingAnniversaryCount: Int, modifier: Modifier = Modifier )</ID>
     <ID>FunctionNaming:HomeTabletJournal.kt$@Composable private fun JournalDecorCard( modifier: Modifier = Modifier )</ID>
     <ID>FunctionNaming:HomeTabletJournal.kt$@Composable private fun JournalPhotoCard( photoPath: String?, onPhotoPathChange: (String?) -&gt; Unit, modifier: Modifier = Modifier )</ID>
     <ID>FunctionNaming:HomeTabletJournal.kt$@Composable private fun JournalQuickAccess( channels: List&lt;ChannelDef&gt;, onChannelClick: (Any) -&gt; Unit, modifier: Modifier = Modifier )</ID>
     <ID>FunctionNaming:HomeTabletJournal.kt$@Composable private fun JournalRelationshipOverview( tierDistribution: Map&lt;IntimacyTier, Int&gt;, totalContactCount: Int, modifier: Modifier = Modifier )</ID>
-    <ID>FunctionNaming:HomeTabletJournal.kt$@Composable private fun JournalStatsOverview( contactCount: Int, eventCount: Int, giftCount: Int, anniversaryCount: Int, conversationCount: Int, modifier: Modifier = Modifier )</ID>
+    <ID>FunctionNaming:HomeTabletJournal.kt$@Composable private fun JournalStatsOverview( stats: HomeStats, modifier: Modifier = Modifier )</ID>
     <ID>FunctionNaming:HomeTabletJournal.kt$@Composable private fun JournalTimelineCard( recentEvents: List&lt;Event&gt;, upcomingAnniversaries: List&lt;Anniversary&gt;, modifier: Modifier = Modifier )</ID>
     <ID>FunctionNaming:OrbitalCalendarCanvas.kt$@Composable internal fun OrbitalCalendarCanvas( data: OrbitalCalendarData, todayDay: Int, modifier: Modifier = Modifier.fillMaxWidth().height(242.dp) )</ID>
     <ID>FunctionNaming:OrbitalCalendarInfo.kt$@Composable internal fun OrbitalCalendarEventList( isCurrentMonth: Boolean, todayEvents: List&lt;String&gt;, upcomingEvents: List&lt;Pair&lt;String, String&gt;&gt;, nextEventCountdown: Pair&lt;String, Pair&lt;Int, Int&gt;&gt;? )</ID>
     <ID>FunctionNaming:OrbitalCalendarInfo.kt$@Composable internal fun OrbitalCalendarLegend()</ID>
-    <ID>ImplicitDefaultLocale:HomeTabletJournal.kt$String.format("%02d:%02d", cal.get(Calendar.HOUR_OF_DAY), cal.get(Calendar.MINUTE))</ID>
-    <ID>LongMethod:HomeChannelGrid.kt$@Composable private fun GlassChannelItem( channel: ChannelDef, signalStrength: Int, onClick: () -&gt; Unit )</ID>
-    <ID>LongMethod:HomeSignalCard.kt$@Composable internal fun IncomingSignalCard( dateStr: String, contactCount: Int, eventCount: Int, giftCount: Int, anniversaryCount: Int, conversationCount: Int )</ID>
-    <ID>LongMethod:HomeTabletJournal.kt$@Composable private fun JournalDateBanner( greeting: String, pendingTodoCount: Int, upcomingAnniversaryCount: Int, modifier: Modifier = Modifier )</ID>
+    <ID>LongMethod:HomeChannelList.kt$@Composable private fun GlassChannelItem( channel: ChannelDef, signalStrength: Int, onClick: () -&gt; Unit )</ID>
+    <ID>LongMethod:HomeSignalCard.kt$@Composable internal fun IncomingSignalCard( dateStr: String, // C-2 修复：用 HomeStats 替代 5 个独立 count 参数，与 HomeStatDef 配合消除配置重复 stats: HomeStats )</ID>
     <ID>LongMethod:HomeTabletJournal.kt$@Composable private fun JournalDecorCard( modifier: Modifier = Modifier )</ID>
     <ID>LongMethod:HomeTabletJournal.kt$@Composable private fun JournalPhotoCard( photoPath: String?, onPhotoPathChange: (String?) -&gt; Unit, modifier: Modifier = Modifier )</ID>
-    <ID>LongMethod:HomeTabletJournal.kt$@Composable private fun JournalQuickAccess( channels: List&lt;ChannelDef&gt;, onChannelClick: (Any) -&gt; Unit, modifier: Modifier = Modifier )</ID>
     <ID>LongMethod:HomeTabletJournal.kt$@Composable private fun JournalRelationshipOverview( tierDistribution: Map&lt;IntimacyTier, Int&gt;, totalContactCount: Int, modifier: Modifier = Modifier )</ID>
-    <ID>LongMethod:HomeTabletJournal.kt$@Composable private fun JournalStatsOverview( contactCount: Int, eventCount: Int, giftCount: Int, anniversaryCount: Int, conversationCount: Int, modifier: Modifier = Modifier )</ID>
     <ID>LongMethod:HomeTabletJournal.kt$@Composable private fun JournalTimelineCard( recentEvents: List&lt;Event&gt;, upcomingAnniversaries: List&lt;Anniversary&gt;, modifier: Modifier = Modifier )</ID>
     <ID>LongMethod:OrbitalCalendarCanvas.kt$@Composable internal fun OrbitalCalendarCanvas( data: OrbitalCalendarData, todayDay: Int, modifier: Modifier = Modifier.fillMaxWidth().height(242.dp) )</ID>
-    <ID>MatchingDeclarationName:OrbitalCalendarState.kt$OrbitalCalendarData</ID>
     <ID>MaxLineLength:HomeOrbitalCalendar.kt$fontFamily = FontFamily.Monospace</ID>
     <ID>MaxLineLength:HomeSignalCard.kt$Text("信号接收中", fontFamily = FontFamily.Monospace, fontSize = 9.sp, fontWeight = FontWeight.Bold, color = SignalGreen, letterSpacing = 1.sp)</ID>
     <ID>MaxLineLength:HomeSignalCard.kt$Text(dateStr, fontFamily = FontFamily.Monospace, fontSize = 9.sp, color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = AnimationTokens.Alpha.visible))</ID>
     <ID>MaxLineLength:HomeSignalCard.kt$Text(label, fontFamily = FontFamily.Monospace, fontSize = 8.sp, color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f), letterSpacing = 0.5.sp)</ID>
     <ID>MaxLineLength:HomeSignalCard.kt$Text(value.toString(), fontFamily = FontFamily.Monospace, fontSize = 14.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)</ID>
     <ID>MaxLineLength:HomeSignalCard.kt$drawLine(color = SignalElectric.copy(alpha = 0.15f), start = Offset(0f, centerH), end = Offset(size.width, centerH), strokeWidth = 0.5f)</ID>
-    <ID>MaxLineLength:HomeSignalCard.kt$val animatedProgress by animateFloatAsState(targetValue = progress, animationSpec = tween(AnimationTokens.Duration.dramatic), label = "gaugeProgress")</ID>
     <ID>MaxLineLength:OrbitalCalendarCanvas.kt$drawArc</ID>
     <ID>MaxLineLength:OrbitalCalendarCanvas.kt$drawCircle(color = SignalElectric.copy(alpha = breathAlpha), radius = outerR2, center = center, style = Stroke(width = 2f, pathEffect = dashPathEffect))</ID>
     <ID>MaxLineLength:OrbitalCalendarCanvas.kt$drawCircle(color = SignalGreen.copy(alpha = rippleAlpha), radius = rippleR - mainR + 10f, center = Offset(todayX, todayY), style = Stroke(width = 1.5f))</ID>
@@ -56,6 +55,5 @@
     <ID>MaxLineLength:OrbitalCalendarInfo.kt$Text("周末", fontFamily = FontFamily.Monospace, fontSize = 7.sp, color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f))</ID>
     <ID>MaxLineLength:OrbitalCalendarInfo.kt$Text(date, fontFamily = FontFamily.Monospace, fontSize = 9.sp, color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f))</ID>
     <ID>MaxLineLength:OrbitalCalendarInfo.kt$Text(title, fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurface, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f))</ID>
-    <ID>UnusedParameter:HomeTabletJournal.kt$signalStrengths: Map&lt;Any, Int&gt;</ID>
   </CurrentIssues>
 </SmellBaseline>

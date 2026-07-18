@@ -113,4 +113,38 @@ class DateUtilsTest {
         val dayMs = 24 * 60 * 60 * 1000L
         assertThat(System.currentTimeMillis() - todayStart).isLessThan(dayMs)
     }
+
+    // Q-5/C-6：新增 DateUtils.formatMonthName / formatWeekdayShortName 测试
+
+    @Test
+    fun formatMonthName_returnsChineseFullName() {
+        // 2026-07-15 00:00（系统时区），月名应为「七月」
+        val ts = java.time.LocalDate.of(2026, 7, 15)
+            .atStartOfDay(java.time.ZoneId.systemDefault())
+            .toInstant().toEpochMilli()
+        val result = DateUtils.formatMonthName(ts)
+        assertThat(result).isEqualTo("七月")
+    }
+
+    @Test
+    fun formatMonthName_nonNullNonEmpty() {
+        val result = DateUtils.formatMonthName(System.currentTimeMillis())
+        assertThat(result).isNotEmpty()
+    }
+
+    @Test
+    fun formatWeekdayShortName_returnsChineseShortName() {
+        // 2026-07-15 是周三
+        val ts = java.time.LocalDate.of(2026, 7, 15)
+            .atStartOfDay(java.time.ZoneId.systemDefault())
+            .toInstant().toEpochMilli()
+        val result = DateUtils.formatWeekdayShortName(ts)
+        assertThat(result).isEqualTo("周三")
+    }
+
+    @Test
+    fun formatWeekdayShortName_nonNullNonEmpty() {
+        val result = DateUtils.formatWeekdayShortName(System.currentTimeMillis())
+        assertThat(result).isNotEmpty()
+    }
 }

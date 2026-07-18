@@ -91,8 +91,18 @@ class ContactDetailAggregationUseCase @Inject constructor(
         val thoughts: List<Thought>
     )
 
-    /** 代理写操作，使 VM 无需直接注入 Repository */
-    suspend fun deleteContact(contactId: Long) = contactRepository.deleteContact(contactId)
+    /**
+     * 删除联系人及其关联数据。
+     *
+     * REP-A-1 修复：跨聚合操作由 UseCase 协调，避免 ContactRepositoryImpl 注入跨聚合 DAO。
+     * - 礼物照片清理：通过 GiftRepository.deleteGiftsByContactId（含照片文件删除 + 收藏清理）
+     * - 联系人头像清理 + 联系人删除：由 ContactRepository.deleteContact 处理
+     * - todos/reminders/anniversaries：由 FK CASCADE 自动删除
+     */
+    suspend fun deleteContact(contactId: Long) {
+        giftRepository.deleteGiftsByContactId(contactId)
+        contactRepository.deleteContact(contactId)
+    }
 
     suspend fun updateThought(thought: Thought) = thoughtRepository.updateThought(thought)
 

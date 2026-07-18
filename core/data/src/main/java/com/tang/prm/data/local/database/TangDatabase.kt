@@ -31,10 +31,12 @@ import com.tang.prm.data.local.entity.*
         RecipeContactCrossRef::class,
         RecipeTagCrossRef::class
     ],
-    version = 41,
+    version = 42,
     exportSchema = true
 )
-@TypeConverters(ListStringConverter::class, RecipeDataConverter::class)
+// DB-Q-1 修复：移除 RecipeDataConverter 注册——RecipeEntity.ingredients/steps 字段类型为 String，
+// Room 不会触发该 converter；实际调用全部在 RecipeMapper 中手动执行。保留注册只会误导维护者。
+@TypeConverters(ListStringConverter::class)
 abstract class TangDatabase : RoomDatabase() {
     abstract fun contactDao(): ContactDao
     abstract fun contactGroupDao(): ContactGroupDao
@@ -57,5 +59,10 @@ abstract class TangDatabase : RoomDatabase() {
     suspend fun checkpoint() {
         val db = openHelper.writableDatabase
         db.query("PRAGMA wal_checkpoint(TRUNCATE)").close()
+    }
+
+    companion object {
+        /** REP-C-1 修复：数据库名单一真相源，所有引用方使用此常量。 */
+        const val DB_NAME = "tang_database"
     }
 }
