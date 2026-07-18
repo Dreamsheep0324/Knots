@@ -194,7 +194,8 @@ class WebDavClient @Inject constructor(
             }
         } catch (e: IOException) {
             // REM-C-1 修复：网络异常统一映射并向上抛出，由调用方处理。
-            throw Exception(e.toWebDavErrorMessage())
+            // 抛 IOException 子类（而非通用 Exception）既保留网络错误语义又满足 detekt 规则。
+            throw IOException(e.toWebDavErrorMessage())
         } catch (e: Exception) {
             false
         }

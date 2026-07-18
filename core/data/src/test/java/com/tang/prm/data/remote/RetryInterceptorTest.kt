@@ -193,7 +193,7 @@ class RetryInterceptorTest {
             var callCount = 0
             val chain = buildChain(buildRequest()) {
                 callCount++
-                throw RuntimeException("unexpected")
+                error("unexpected")
             }
 
             try {

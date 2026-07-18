@@ -5,9 +5,6 @@ import com.google.common.truth.Truth.assertThat
 import com.tang.prm.data.local.dao.FavoriteDao
 import com.tang.prm.data.local.database.TangDatabase
 import com.tang.prm.data.local.entity.FavoriteEntity
-import com.tang.prm.data.mapper.toDomain
-import com.tang.prm.data.mapper.toEntity
-import com.tang.prm.domain.model.Favorite
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -35,7 +32,6 @@ class FavoriteRepositoryImplTest {
     private lateinit var repository: FavoriteRepositoryImpl
 
     private val entity = FavoriteEntity(id = 1, sourceType = "EVENT", sourceId = 100, title = "Fav", createdAt = 0)
-    private val domain = Favorite(id = 1, sourceType = "EVENT", sourceId = 100, title = "Fav", createdAt = 0)
 
     @BeforeEach
     fun setUp() {
