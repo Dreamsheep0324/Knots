@@ -15,7 +15,7 @@ class EventMapperTest {
             id = 1, type = EventType.DINING, title = "聚餐", description = "火锅",
             time = 1000L, endTime = 2000L, location = "海底捞",
             latitude = 31.2, longitude = 121.5, photos = listOf("p1.jpg"),
-            emotion = "兴奋", weather = "阴", amount = 200.0,
+            emotion = "兴奋", weather = "阴",
             remarks = "AA制", promise = "下次请客", conversationSummary = "聊了很多",
             giftName = null, participants = emptyList(),
             createdAt = 3000L, updatedAt = 4000L
@@ -35,7 +35,6 @@ class EventMapperTest {
         assertThat(entity.photos).containsExactly("p1.jpg").inOrder()
         assertThat(entity.emotion).isEqualTo("兴奋")
         assertThat(entity.weather).isEqualTo("阴")
-        assertThat(entity.amount).isEqualTo(200.0)
         assertThat(entity.remarks).isEqualTo("AA制")
         assertThat(entity.promise).isEqualTo("下次请客")
         assertThat(entity.conversationSummary).isEqualTo("聊了很多")
@@ -50,7 +49,7 @@ class EventMapperTest {
             id = 1, type = "MEETUP", title = "见面", description = "咖啡厅见面",
             time = 1000L, endTime = 2000L, location = "星巴克",
             latitude = 39.9, longitude = 116.4, photos = listOf("photo1.jpg", "photo2.jpg"),
-            emotion = "开心", weather = "晴", amount = 100.0,
+            emotion = "开心", weather = "晴",
             remarks = "备注", promise = "承诺", conversationSummary = "对话摘要",
             giftName = "礼物", createdAt = 3000L, updatedAt = 4000L
         )
@@ -70,7 +69,6 @@ class EventMapperTest {
         assertThat(domain.photos).containsExactly("photo1.jpg", "photo2.jpg").inOrder()
         assertThat(domain.emotion).isEqualTo("开心")
         assertThat(domain.weather).isEqualTo("晴")
-        assertThat(domain.amount).isEqualTo(100.0)
         assertThat(domain.remarks).isEqualTo("备注")
         assertThat(domain.promise).isEqualTo("承诺")
         assertThat(domain.conversationSummary).isEqualTo("对话摘要")
@@ -86,7 +84,7 @@ class EventMapperTest {
             id = 1, type = "CALL", title = "通话", description = "电话沟通",
             time = 1000L, endTime = null, location = null,
             latitude = null, longitude = null, photos = emptyList(),
-            emotion = null, weather = null, amount = null,
+            emotion = null, weather = null,
             remarks = null, promise = null, conversationSummary = null,
             giftName = null, createdAt = 3000L, updatedAt = 4000L
         )

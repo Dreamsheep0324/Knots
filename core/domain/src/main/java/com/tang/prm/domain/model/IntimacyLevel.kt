@@ -7,10 +7,13 @@ package com.tang.prm.domain.model
  * 朋友区间最宽（35 分），符合社交关系"多数人为普通朋友"的实际分布。
  *
  * 颜色统一使用 CardRarity 配色：UR 金 / SSR 红 / SR 紫 / R 蓝 / N 灰
- * 所有 UI 层、Domain 层、UseCase 必须委托到此 enum，禁止再写 when 分支。
+ * 所有 UI 层、Domain 层、UseCase 必须委托到此 enum，禁止再写 when 分支或独立色板常量。
  *
- * 注意：[colorValue] 使用 ARGB Long 格式（如 0xFF94A3B8），UI 层通过
- * [com.tang.prm.ui.theme.IntimacyColors] 转换为 Compose Color。
+ * - [colorValue]：浅色模式色值（ARGB Long，如 0xFF94A3B8）
+ * - [darkColorValue]：深色模式色值（同 ARGB Long，亮度高于浅色版以适应暗色背景）
+ *
+ * UI 层通过 [com.tang.prm.ui.theme.IntimacyColors] 转换为 Compose Color，
+ * 浅/深色板均从本 enum 派生，禁止在 UI 层硬编码色值。
  */
 enum class IntimacyTier(
     val label: String,
@@ -18,13 +21,14 @@ enum class IntimacyTier(
     val minScore: Int,
     val maxScore: Int,
     val colorValue: Long,
+    val darkColorValue: Long,
     val stars: Int
 ) {
-    NEW("初识", "N", 0, 14, 0xFF94A3B8, 1),
-    ACQUAINTANCE("泛交", "R", 15, 39, 0xFF3B82F6, 2),
-    FRIEND("朋友", "SR", 40, 74, 0xFF8B5CF6, 3),
-    CLOSE("密友", "SSR", 75, 89, 0xFFEF4444, 4),
-    FAMILY("至亲", "UR", 90, 100, 0xFFF59E0B, 5);
+    NEW("初识", "N", 0, 14, 0xFF94A3B8, 0xFFB0BEC5, 1),
+    ACQUAINTANCE("泛交", "R", 15, 39, 0xFF3B82F6, 0xFF60A5FA, 2),
+    FRIEND("朋友", "SR", 40, 74, 0xFF8B5CF6, 0xFFA78BFA, 3),
+    CLOSE("密友", "SSR", 75, 89, 0xFFEF4444, 0xFFF87171, 4),
+    FAMILY("至亲", "UR", 90, 100, 0xFFF59E0B, 0xFFFBBF24, 5);
 
     companion object {
         fun of(score: Int): IntimacyTier {

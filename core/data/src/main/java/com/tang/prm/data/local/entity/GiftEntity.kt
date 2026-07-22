@@ -26,7 +26,6 @@ data class GiftEntity(
     val giftType: String,
     val date: Long,
     val isSent: Boolean,
-    val amount: Double?,
     val occasion: String?,
     val description: String?,
     val location: String?,

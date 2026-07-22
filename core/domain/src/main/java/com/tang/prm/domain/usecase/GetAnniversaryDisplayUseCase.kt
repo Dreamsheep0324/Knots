@@ -11,6 +11,16 @@ data class AnniversaryDisplayInfo(
     val daysUntil: Int
 )
 
+/**
+ * Q-4 修复：categorizeAnniversaries 返回值由 [Triple] 改为命名 data class，
+ * 避免调用方 `(all, upcoming, past)` 解构时语义混淆（Triple 三位类型相同易调换顺序）。
+ */
+data class CategorizedAnniversaries(
+    val all: List<Anniversary>,
+    val upcoming: List<Anniversary>,
+    val past: List<Anniversary>
+)
+
 class GetAnniversaryDisplayUseCase @Inject constructor() {
     operator fun invoke(anniversary: Anniversary): AnniversaryDisplayInfo {
         val effectiveDate = when {
@@ -22,7 +32,7 @@ class GetAnniversaryDisplayUseCase @Inject constructor() {
         return AnniversaryDisplayInfo(anniversary, effectiveDate, daysInfo.daysUntil)
     }
 
-    fun categorizeAnniversaries(anniversaries: List<Anniversary>): Triple<List<Anniversary>, List<Anniversary>, List<Anniversary>> {
+    fun categorizeAnniversaries(anniversaries: List<Anniversary>): CategorizedAnniversaries {
         val today = DateCalcUtils.getTodayStart()
         val withEffectiveDate = anniversaries.map { ann ->
             ann to invoke(ann).effectiveDate
@@ -30,6 +40,6 @@ class GetAnniversaryDisplayUseCase @Inject constructor() {
         val all = withEffectiveDate.sortedBy { it.second }.map { it.first }
         val upcoming = withEffectiveDate.filter { it.second >= today }.sortedBy { it.second }.map { it.first }
         val past = withEffectiveDate.filter { it.second < today }.sortedByDescending { it.second }.map { it.first }
-        return Triple(all, upcoming, past)
+        return CategorizedAnniversaries(all, upcoming, past)
     }
 }

@@ -10,6 +10,8 @@ import com.tang.prm.data.mapper.toDomain
 import com.tang.prm.data.mapper.toDomainWithAttributes
 import com.tang.prm.data.mapper.toEntity
 import com.tang.prm.data.mapper.toAttributeEntities
+import com.tang.prm.data.mapper.toEntity as anniversaryToEntity
+import com.tang.prm.domain.model.Anniversary
 import com.tang.prm.domain.model.Contact
 import com.tang.prm.domain.repository.ContactRepository
 import com.tang.prm.data.util.ImageFileManager
@@ -28,6 +30,7 @@ import javax.inject.Singleton
 class ContactRepositoryImpl @Inject constructor(
     private val contactDao: ContactDao,
     private val contactAttributeDao: ContactAttributeDao,
+    private val anniversaryDao: AnniversaryDao,
     private val database: TangDatabase,
     @ApplicationContext private val context: Context
 ) : ContactRepository {
@@ -92,6 +95,39 @@ class ContactRepositoryImpl @Inject constructor(
 
     override suspend fun updateContactInteraction(id: Long, score: Int, interactionTime: Long) =
         contactDao.updateContactInteraction(id, score, interactionTime)
+
+    override suspend fun insertContactWithAnniversaries(
+        contact: Contact,
+        anniversaries: List<Anniversary>
+    ): Long = database.withTransaction {
+        // A-8 修复：单一事务包裹跨聚合写入，任一失败回滚
+        val newId = contactDao.insertContact(contact.toEntity())
+        val attributes = contact.copy(id = newId).toAttributeEntities()
+        if (attributes.isNotEmpty()) {
+            contactAttributeDao.insertAll(attributes)
+        }
+        anniversaries.forEach { anniversary ->
+            // 自动填充新联系人 ID
+            anniversaryDao.insertAnniversary(anniversary.copy(contactId = newId).anniversaryToEntity())
+        }
+        newId
+    }
+
+    override suspend fun updateContacts(contacts: List<Contact>) {
+        if (contacts.isEmpty()) return
+        // P-5 修复：单一事务包裹批量更新，避免 N 次独立事务 + N 次 SQL 往返
+        // 注意：批量场景下不收集头像文件（调用方需自行处理头像清理，CleanCustomType 场景不涉及头像）
+        database.withTransaction {
+            contacts.forEach { contact ->
+                contactDao.updateContact(contact.toEntity())
+                contactAttributeDao.deleteAllForContact(contact.id)
+                val attributes = contact.toAttributeEntities()
+                if (attributes.isNotEmpty()) {
+                    contactAttributeDao.insertAll(attributes)
+                }
+            }
+        }
+    }
 }
 
 private fun Flow<List<ContactEntity>>.withAttributes(

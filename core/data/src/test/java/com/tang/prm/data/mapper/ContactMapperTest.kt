@@ -16,13 +16,13 @@ class ContactMapperTest {
     fun contact_toEntity_mapsAllFields() {
         val domain = Contact(
             id = 1, name = "张三", avatar = "avatar.png", nickname = "小三",
-            gender = Gender.MALE, birthday = 1000L, isLunarBirthday = true, knowingDate = 2000L,
+            gender = Gender.MALE, birthday = 1000L, knowingDate = 2000L,
             phone = "13800138000", email = "zhangsan@test.com", city = "北京",
             address = "朝阳区", education = "本科", company = "科技公司",
             jobTitle = "工程师", industry = "互联网", hobby = "篮球",
             habit = "早起", diet = "素食", skill = "编程", mbti = "INTJ",
             spouseName = "李四", childrenCount = 2, childrenNames = "张小一;张小二",
-            introducer = "王五", relationshipLevel = 5, relationship = "朋友",
+            introducer = "王五", relationship = "朋友",
             groupId = 10L, intimacyScore = 80, lastInteractionTime = 3000L,
             customFields = """{"key":"value"}""", notes = "重要客户",
             createdAt = 4000L, updatedAt = 5000L
@@ -36,7 +36,6 @@ class ContactMapperTest {
         assertThat(entity.nickname).isEqualTo("小三")
         assertThat(entity.gender).isEqualTo(1)
         assertThat(entity.birthday).isEqualTo(1000L)
-        assertThat(entity.isLunarBirthday).isTrue()
         assertThat(entity.knowingDate).isEqualTo(2000L)
         assertThat(entity.phone).isEqualTo("13800138000")
         assertThat(entity.email).isEqualTo("zhangsan@test.com")
@@ -55,7 +54,6 @@ class ContactMapperTest {
         assertThat(entity.childrenCount).isEqualTo(2)
         assertThat(entity.childrenNames).isEqualTo("张小一;张小二")
         assertThat(entity.introducer).isEqualTo("王五")
-        assertThat(entity.relationshipLevel).isEqualTo(5)
         assertThat(entity.relationship).isEqualTo("朋友")
         assertThat(entity.groupId).isEqualTo(10L)
         assertThat(entity.intimacyScore).isEqualTo(80)
@@ -84,13 +82,13 @@ class ContactMapperTest {
     fun contactEntity_toDomainWithAttributes_mapsCoreFields() {
         val entity = ContactEntity(
             id = 1, name = "张三", avatar = "avatar.png", nickname = "小三",
-            gender = 1, birthday = 1000L, isLunarBirthday = true, knowingDate = 2000L,
+            gender = 1, birthday = 1000L, knowingDate = 2000L,
             phone = "13800138000", email = "zhangsan@test.com", city = "北京",
             address = "朝阳区", education = "本科", company = "科技公司",
             jobTitle = "工程师", industry = "互联网", hobby = "篮球",
             habit = "早起", diet = "素食", skill = "编程", mbti = "INTJ",
             spouseName = "李四", childrenCount = 2, childrenNames = "张小一;张小二",
-            introducer = "王五", relationshipLevel = 5, relationship = "朋友",
+            introducer = "王五", relationship = "朋友",
             groupId = 10L, intimacyScore = 80, lastInteractionTime = 3000L,
             customFields = """{"key":"value"}""", notes = "重要客户",
             createdAt = 4000L, updatedAt = 5000L

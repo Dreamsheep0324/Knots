@@ -1,16 +1,17 @@
 package com.tang.prm.domain.model
 
+/**
+ * 全局 UI 文案常量。
+ *
+ * Q-6 + D-7 + C-7 修复：原 [EventType] 子对象（MEETUP/CONVERSATION/OTHER）与
+ * [EventType] enum 的 displayName 重复且无引用，已删除。事件类型文案统一从
+ * `EventType.MEETUP.displayName` 等获取，单一来源。
+ */
 object AppStrings {
     object Tabs {
         const val ALL = "全部"
         const val UPCOMING = "即将到来"
         const val PAST = "已过期"
-    }
-
-    object EventType {
-        const val MEETUP = "见面"
-        const val CONVERSATION = "对话记录"
-        const val OTHER = "其他"
     }
 
     object ContactDetail {

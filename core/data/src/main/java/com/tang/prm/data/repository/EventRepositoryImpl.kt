@@ -47,11 +47,6 @@ class EventRepositoryImpl @Inject constructor(
         return eventDao.searchNonConversationEvents(escapedKeyword).mapList { it.toDomain() }
     }
 
-    override fun searchEventsByType(type: String, keyword: String?): Flow<List<Event>> {
-        val escapedKeyword = keyword?.escapeSqlWildcards()
-        return eventDao.searchEventsByTypeWithParticipants(type, escapedKeyword).mapList { it.toDomain() }
-    }
-
     override fun getEventsWithLocation(): Flow<List<Event>> =
         eventDao.getEventLocationItemsWithParticipants().mapList { it.toDomain() }
 
@@ -95,6 +90,48 @@ class EventRepositoryImpl @Inject constructor(
 
     override suspend fun deleteEventParticipant(eventId: Long, contactId: Long) =
         eventDao.deleteEventParticipant(com.tang.prm.data.local.entity.EventParticipantCrossRef(eventId, contactId))
+
+    override suspend fun insertEventWithParticipants(
+        event: Event,
+        participantIds: List<Long>
+    ): Long = database.withTransaction {
+        // B-8 修复：单一事务包裹事件插入 + 参与者批量插入
+        val eventId = eventDao.insertEvent(event.toEntity())
+        participantIds.forEach { contactId ->
+            eventDao.insertEventParticipant(
+                com.tang.prm.data.local.entity.EventParticipantCrossRef(eventId, contactId)
+            )
+        }
+        eventId
+    }
+
+    override suspend fun updateEventWithParticipants(
+        event: Event,
+        participantIds: List<Long>
+    ) {
+        // B-8 修复：单一事务包裹事件更新 + 参与者 diff
+        val removedPhotos = database.withTransaction {
+            val oldEntity = eventDao.getEventByIdOnce(event.id)
+            val removed = computeRemovedPhotos(oldEntity, event.photos) { it.photos }
+            eventDao.updateEvent(event.toEntity())
+            val currentParticipants = eventDao.getParticipantIdsForEventOnce(event.id)
+            val toAdd = participantIds - currentParticipants.toSet()
+            val toRemove = currentParticipants - participantIds.toSet()
+            toAdd.forEach { contactId ->
+                eventDao.insertEventParticipant(
+                    com.tang.prm.data.local.entity.EventParticipantCrossRef(event.id, contactId)
+                )
+            }
+            toRemove.forEach { contactId ->
+                eventDao.deleteEventParticipant(
+                    com.tang.prm.data.local.entity.EventParticipantCrossRef(event.id, contactId)
+                )
+            }
+            removed
+        }
+        // 事务外删除文件
+        removedPhotos?.let { ImageFileManager.deleteLocalPhotos(context, it.toList()) }
+    }
 
     override fun getEventCount(): Flow<Int> = eventDao.getEventCount()
 

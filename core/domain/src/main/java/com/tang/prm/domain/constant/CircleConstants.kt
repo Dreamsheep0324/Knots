@@ -1,7 +1,18 @@
 package com.tang.prm.domain.constant
 
 object CircleConstants {
+
+    /**
+     * B-17 修复：[Circle.color] 默认值的唯一来源。
+     *
+     * 历史问题：[com.tang.prm.domain.model.Circle] 默认色 `#6366F1` 与 [PresetColors] 第一项 `#2196F3`
+     * 不一致，新建 Circle 不传色得到 indigo，用户从调色板点第一项得到 blue，两套「默认」语义冲突。
+     * 提取常量后，[com.tang.prm.domain.model.Circle] 与 [PresetColors] 都从此处派生，保证一致。
+     */
+    const val DEFAULT_CIRCLE_COLOR = "#6366F1"
+
     val PresetColors = listOf(
+        DEFAULT_CIRCLE_COLOR to "靛紫",
         "#2196F3" to "科技蓝",
         "#00BCD4" to "青蓝",
         "#3F51B5" to "靛蓝",

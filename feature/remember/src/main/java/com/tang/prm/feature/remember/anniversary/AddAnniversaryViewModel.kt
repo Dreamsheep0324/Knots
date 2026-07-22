@@ -71,8 +71,6 @@ class AddAnniversaryViewModel @Inject constructor(
                         selectedIcon = ann.icon ?: "Cake",
                         date = ann.date,
                         dateText = DateUtils.formatDate(ann.date),
-                        isLunar = ann.isLunar,
-                        isLeapMonth = ann.isLeapMonth,
                         isRepeat = ann.isRepeat,
                         remarks = ann.remarks ?: "",
                         isEditing = true,
@@ -94,8 +92,6 @@ class AddAnniversaryViewModel @Inject constructor(
         val dateText = DateUtils.formatDate(millis)
         _uiState.update { it.copy(date = millis, dateText = dateText, hasUnsavedChanges = true) }
     }
-    fun updateIsLunar(value: Boolean) = _uiState.update { it.copy(isLunar = value, isLeapMonth = if (!value) false else it.isLeapMonth, hasUnsavedChanges = true) }
-    fun updateIsLeapMonth(value: Boolean) = _uiState.update { it.copy(isLeapMonth = value, hasUnsavedChanges = true) }
     fun updateIsRepeat(value: Boolean) = _uiState.update { it.copy(isRepeat = value, hasUnsavedChanges = true) }
     fun updateRemarks(value: String) = _uiState.update { it.copy(remarks = value, hasUnsavedChanges = true) }
 
@@ -127,10 +123,8 @@ class AddAnniversaryViewModel @Inject constructor(
                 contactId = state.contactId,
                 type = state.selectedType,
                 date = state.date,
-                isLunar = state.isLunar,
-                isLeapMonth = state.isLeapMonth,
                 isRepeat = state.isRepeat,
-                reminderDays = 1,
+                reminderDays = Anniversary.DEFAULT_ANNIVERSARY_REMINDER_DAYS,
                 remarks = state.remarks.ifBlank { null },
                 contactName = state.contactName,
                 icon = state.selectedIcon,

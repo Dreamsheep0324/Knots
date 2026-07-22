@@ -8,6 +8,7 @@ import com.tang.prm.domain.model.EventType
 import com.tang.prm.domain.model.SourceTypes
 import com.tang.prm.domain.repository.EventRepository
 import com.tang.prm.domain.usecase.FavoriteToggleUseCase
+import com.tang.prm.domain.usecase.ObserveFavoritesUseCase
 import androidx.lifecycle.SavedStateHandle
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -36,6 +37,9 @@ class ChatDetailViewModelTest {
     @MockK
     private lateinit var favoriteToggleUseCase: FavoriteToggleUseCase
 
+    @MockK
+    private lateinit var observeFavoritesUseCase: ObserveFavoritesUseCase
+
     private val testContact = Contact(id = 1, name = "李四", avatar = "/avatar.png")
     private val testEvent = Event(
         id = 10L,
@@ -60,9 +64,9 @@ class ChatDetailViewModelTest {
     private fun createViewModel(eventId: Long): ChatDetailViewModel {
         val savedStateHandle = SavedStateHandle(mapOf("eventId" to eventId))
         every { eventRepository.getEventById(eventId) } returns flowOf(testEvent.copy(id = eventId))
-        every { favoriteToggleUseCase.isFavorite(SourceTypes.DIALOG, eventId) } returns flowOf(false)
+        every { observeFavoritesUseCase.isFavorite(SourceTypes.DIALOG, eventId) } returns flowOf(false)
         coEvery { favoriteToggleUseCase(any(), any(), any(), any()) } returns true
-        return ChatDetailViewModel(savedStateHandle, eventRepository, favoriteToggleUseCase)
+        return ChatDetailViewModel(savedStateHandle, eventRepository, favoriteToggleUseCase, observeFavoritesUseCase)
     }
 
     @Test
@@ -83,9 +87,9 @@ class ChatDetailViewModelTest {
     fun `isFavorite reflects favorite state`() = runTest {
         val savedStateHandle = SavedStateHandle(mapOf("eventId" to 10L))
         every { eventRepository.getEventById(10L) } returns flowOf(testEvent)
-        every { favoriteToggleUseCase.isFavorite(SourceTypes.DIALOG, 10L) } returns flowOf(true)
+        every { observeFavoritesUseCase.isFavorite(SourceTypes.DIALOG, 10L) } returns flowOf(true)
 
-        val viewModel = ChatDetailViewModel(savedStateHandle, eventRepository, favoriteToggleUseCase)
+        val viewModel = ChatDetailViewModel(savedStateHandle, eventRepository, favoriteToggleUseCase, observeFavoritesUseCase)
 
         viewModel.uiState.test {
             val state = awaitItem()
@@ -99,10 +103,10 @@ class ChatDetailViewModelTest {
         val savedStateHandle = SavedStateHandle(mapOf("eventId" to 10L))
         every { eventRepository.getEventById(10L) } returns flowOf(testEvent)
         every { eventRepository.getEventById(20L) } returns flowOf(testEvent.copy(id = 20L, title = "新对话"))
-        every { favoriteToggleUseCase.isFavorite(SourceTypes.DIALOG, 10L) } returns flowOf(false)
-        every { favoriteToggleUseCase.isFavorite(SourceTypes.DIALOG, 20L) } returns flowOf(false)
+        every { observeFavoritesUseCase.isFavorite(SourceTypes.DIALOG, 10L) } returns flowOf(false)
+        every { observeFavoritesUseCase.isFavorite(SourceTypes.DIALOG, 20L) } returns flowOf(false)
 
-        val viewModel = ChatDetailViewModel(savedStateHandle, eventRepository, favoriteToggleUseCase)
+        val viewModel = ChatDetailViewModel(savedStateHandle, eventRepository, favoriteToggleUseCase, observeFavoritesUseCase)
 
         viewModel.uiState.test {
             // 初始事件

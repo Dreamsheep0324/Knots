@@ -18,7 +18,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Notes
-import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Repeat
@@ -51,15 +50,10 @@ import com.tang.prm.ui.theme.getAnniversaryIconBackground
 import com.tang.prm.ui.theme.getAnniversaryIconTint
 import com.tang.prm.domain.util.DateCalcUtils
 import com.tang.prm.domain.util.DateUtils
-import com.tang.prm.domain.util.LunarDateUtils
 
 @Composable
 internal fun AnniversaryHeader(anniversary: Anniversary) {
-    val daysInfo = if (anniversary.isLunar) {
-        LunarDateUtils.calculateLunarDaysInfo(anniversary.date)
-    } else {
-        DateCalcUtils.calculateDaysInfo(anniversary.date)
-    }
+    val daysInfo = DateCalcUtils.calculateDaysInfo(anniversary.date)
     val iconName = anniversary.icon ?: "Cake"
 
     Surface(
@@ -296,40 +290,6 @@ internal fun DateInfoSection(anniversary: Anniversary) {
                 }
             }
 
-            if (anniversary.isLunar) {
-                Spacer(modifier = Modifier.height(16.dp))
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Box(
-                        modifier = Modifier
-                            .size(40.dp)
-                            .clip(CircleShape)
-                            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            Icons.Default.CalendarMonth,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(20.dp)
-                        )
-                    }
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Column {
-                        Text(
-                            text = "农历日期",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = TextGray
-                        )
-                        Text(
-                            text = LunarDateUtils.formatLunarDateShort(anniversary.date),
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                    }
-                }
-            }
-
             if (anniversary.isRepeat) {
                 Spacer(modifier = Modifier.height(16.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -355,7 +315,7 @@ internal fun DateInfoSection(anniversary: Anniversary) {
                             color = TextGray
                         )
                         Text(
-                            text = if (anniversary.isLunar) "每年农历重复" else "每年重复",
+                            text = "每年重复",
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
                             color = SignalGreen

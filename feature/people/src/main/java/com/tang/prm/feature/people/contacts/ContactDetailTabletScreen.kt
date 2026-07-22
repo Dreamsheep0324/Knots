@@ -32,6 +32,7 @@ import com.tang.prm.feature.people.contacts.tablet.GalleryTopBar
 import com.tang.prm.ui.components.DeleteConfirmDialog
 import com.tang.prm.ui.navigation.AnniversaryDetailRoute
 import com.tang.prm.ui.navigation.ChatDetailRoute
+import com.tang.prm.ui.navigation.ContactDetailRoute
 import com.tang.prm.ui.navigation.EditContactRoute
 import com.tang.prm.ui.navigation.EventDetailRoute
 import com.tang.prm.ui.navigation.GiftDetailRoute
@@ -145,12 +146,15 @@ fun ContactDetailTabletScreen(
                     gifts = uiState.data.gifts,
                     thoughts = uiState.data.thoughts,
                     eventTypes = uiState.data.eventTypes,
+                    personRelations = uiState.data.personRelations,
+                    personRelationTypes = uiState.data.personRelationTypes,
                     clicks = GalleryClicks(
                         onEventClick = { id -> navController.navigate(EventDetailRoute(id)) },
                         onAnniversaryClick = { id -> navController.navigate(AnniversaryDetailRoute(id)) },
                         onGiftClick = { id -> navController.navigate(GiftDetailRoute(id)) },
                         onThoughtClick = { id -> detailThoughtId = id },
-                        onConversationClick = { id -> navController.navigate(ChatDetailRoute(id)) }
+                        onConversationClick = { id -> navController.navigate(ChatDetailRoute(id)) },
+                        onPersonRelationClick = { id -> navController.navigate(ContactDetailRoute(id)) }
                     )
                 )
             }

@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tang.prm.domain.model.*
+import com.tang.prm.domain.repository.HomeOrbitalMode
 import com.tang.prm.domain.usecase.HomeAggregateData
 import com.tang.prm.domain.usecase.HomeDataAggregationUseCase
 import com.tang.prm.domain.usecase.HomeSettingsUseCase
@@ -34,6 +35,7 @@ data class HomeDataState(
     val pendingTodos: List<TodoItem> = emptyList(),
     val stats: HomeStats = HomeStats(),
     val decorPhotoPath: String? = null,
+    val homeOrbitalMode: HomeOrbitalMode = HomeOrbitalMode.ORBITAL,
     val isLoading: Boolean = true,
     // B-2/A-5 修复：combine 上游异常时承载错误状态，UI 据此渲染错误态与重试入口
     val error: Throwable? = null
@@ -109,9 +111,10 @@ class HomeViewModel @Inject constructor(
                 greetingFlow,
                 homeDataUseCase.getAggregateData().distinctUntilChanged(),
                 homeStatsUseCase.getStats().distinctUntilChanged(),
-                homeSettingsUseCase.getDecorPhotoPath()
-            ) { greeting, data: HomeAggregateData, stats: HomeStats, decorPhotoPath: String? ->
-                // 第一阶段：组合 4 个数据源，输出基础 data state（不含瞬时错误）
+                homeSettingsUseCase.getDecorPhotoPath(),
+                homeSettingsUseCase.getHomeOrbitalMode()
+            ) { greeting, data: HomeAggregateData, stats: HomeStats, decorPhotoPath: String?, orbitalMode: HomeOrbitalMode ->
+                // 第一阶段：组合 5 个数据源，输出基础 data state（不含瞬时错误）
                 // D-1 修复：移除 userName flow 订阅，UI 从不读取
                 // A-2 修复：统计字段直接复用 HomeStats，不再展开 13 个字段
                 HomeUiState(
@@ -122,7 +125,8 @@ class HomeViewModel @Inject constructor(
                         pendingTodos = data.pendingTodos,
                         stats = stats,
                         isLoading = false,
-                        decorPhotoPath = decorPhotoPath
+                        decorPhotoPath = decorPhotoPath,
+                        homeOrbitalMode = orbitalMode
                     )
                 )
             }

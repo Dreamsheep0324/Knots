@@ -24,7 +24,7 @@ class ContactDetailAggregationUseCaseTest {
     private lateinit var giftRepository: GiftRepository
     private lateinit var thoughtRepository: ThoughtRepository
     private lateinit var customTypeRepository: CustomTypeRepository
-    private lateinit var favoriteToggleUseCase: FavoriteToggleUseCase
+    private lateinit var observeFavoritesUseCase: ObserveFavoritesUseCase
     private lateinit var useCase: ContactDetailAggregationUseCase
 
     private val testContact = Contact(id = 1, name = "测试联系人", phone = "13800138000")
@@ -43,7 +43,7 @@ class ContactDetailAggregationUseCaseTest {
         giftRepository = mockk()
         thoughtRepository = mockk()
         customTypeRepository = mockk()
-        favoriteToggleUseCase = mockk()
+        observeFavoritesUseCase = mockk()
 
         every { contactRepository.getContactById(any()) } returns flowOf(testContact)
         every { eventRepository.getEventsByContact(any()) } returns flowOf(listOf(testEvent, testConversation))
@@ -53,11 +53,11 @@ class ContactDetailAggregationUseCaseTest {
         every { customTypeRepository.getAllTypesGroupedByCategory() } returns flowOf(
             mapOf(CustomCategories.HOBBY to listOf(testCustomType))
         )
-        every { favoriteToggleUseCase.getFavoriteIds(SourceTypes.THOUGHT) } returns flowOf(setOf(1L))
+        every { observeFavoritesUseCase.getFavoriteIds(SourceTypes.THOUGHT) } returns flowOf(setOf(1L))
 
         useCase = ContactDetailAggregationUseCase(
             contactRepository, eventRepository, anniversaryRepository,
-            giftRepository, thoughtRepository, customTypeRepository, favoriteToggleUseCase
+            giftRepository, thoughtRepository, customTypeRepository, observeFavoritesUseCase
         )
     }
 
@@ -120,23 +120,5 @@ class ContactDetailAggregationUseCaseTest {
 
         coVerify { giftRepository.deleteGiftsByContactId(1L) }
         coVerify { contactRepository.deleteContact(1L) }
-    }
-
-    @Test
-    fun `updateThought delegates to repository`() = runTest {
-        coEvery { thoughtRepository.updateThought(any()) } returns Unit
-
-        useCase.updateThought(testThought)
-
-        coVerify { thoughtRepository.updateThought(testThought) }
-    }
-
-    @Test
-    fun `deleteThought delegates to repository`() = runTest {
-        coEvery { thoughtRepository.deleteThought(any()) } returns Unit
-
-        useCase.deleteThought(1L)
-
-        coVerify { thoughtRepository.deleteThought(1L) }
     }
 }

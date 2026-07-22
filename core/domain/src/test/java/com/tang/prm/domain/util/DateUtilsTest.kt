@@ -73,24 +73,10 @@ class DateUtilsTest {
     }
 
     @Test
-    fun calculateDaysUntil_futureDate_returnsPositiveDays() {
-        val future = System.currentTimeMillis() + 10L * 24 * 60 * 60 * 1000
-        val result = DateCalcUtils.calculateDaysUntil(future)
-        assertThat(result).isGreaterThan(0)
-    }
-
-    @Test
     fun calculateDaysInfo_futureDate_isPastFalse() {
         val future = System.currentTimeMillis() + 10L * 24 * 60 * 60 * 1000
         val result = DateCalcUtils.calculateDaysInfo(future)
         assertThat(result.isPast).isFalse()
-    }
-
-    @Test
-    fun calculateBirthdayInfo_returnsNonEmptyFields() {
-        val birthday = System.currentTimeMillis() - 30L * 365 * 24 * 60 * 60 * 1000
-        val result = DateCalcUtils.calculateBirthdayInfo(birthday)
-        assertThat(result.toString()).isNotEmpty()
     }
 
     @Test

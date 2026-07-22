@@ -24,8 +24,8 @@ import java.io.StringReader
 import java.net.URLEncoder
 import java.security.SecureRandom
 import java.security.cert.X509Certificate
+import com.tang.prm.domain.repository.EncryptionStatusProvider
 import com.tang.prm.domain.util.DateUtils
-import com.tang.prm.domain.util.EncryptionStatus
 import javax.inject.Inject
 import javax.inject.Named
 import javax.net.ssl.SSLContext
@@ -33,7 +33,9 @@ import javax.net.ssl.TrustManager
 import javax.net.ssl.X509TrustManager
 
 class WebDavClient @Inject constructor(
-    @Named("webdav") private val okHttpClient: OkHttpClient
+    @Named("webdav") private val okHttpClient: OkHttpClient,
+    // A-2 修复：注入 EncryptionStatusProvider 替代 domain 层全局单例
+    private val encryptionStatusProvider: EncryptionStatusProvider
 ) {
 
     companion object {
@@ -60,7 +62,7 @@ class WebDavClient @Inject constructor(
     private fun clientFor(config: WebDavConfig): OkHttpClient {
         if (!config.trustAllCertificates) return okHttpClient
         Log.w(TAG, "trustAllCertificates 已启用 — 存在 MITM 风险，请仅在可信网络环境下使用")
-        EncryptionStatus.markDegraded()
+        encryptionStatusProvider.markDegraded()
         return okHttpClient.newBuilder()
             .sslSocketFactory(TRUST_ALL_SSL_CONTEXT.socketFactory, TRUST_ALL_MANAGER)
             .hostnameVerifier { _, _ -> true }

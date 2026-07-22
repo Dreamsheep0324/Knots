@@ -7,7 +7,6 @@ data class Gift(
     val giftType: GiftType = GiftType.OTHER,
     val date: Long,
     val isSent: Boolean,
-    val amount: Double? = null,
     val occasion: String? = null,
     val description: String? = null,
     val location: String? = null,

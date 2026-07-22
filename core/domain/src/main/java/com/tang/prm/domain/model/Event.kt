@@ -7,8 +7,6 @@ enum class EventType(val displayName: String) {
     CALL("通话"),
     GIFT_SENT("送礼"),
     GIFT_RECEIVED("收礼"),
-    MONEY_LEND("借出"),
-    MONEY_BORROW("借入"),
     CONVERSATION("对话记录"),
     OTHER("其他")
 }
@@ -28,7 +26,6 @@ data class Event(
     val photosCount: Int = 0,
     val emotion: String? = null,
     val weather: String? = null,
-    val amount: Double? = null,
     val remarks: String? = null,
     val promise: String? = null,
     val conversationSummary: String? = null,

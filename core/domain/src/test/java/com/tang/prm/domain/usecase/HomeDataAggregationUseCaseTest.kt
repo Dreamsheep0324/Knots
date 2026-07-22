@@ -36,8 +36,9 @@ class HomeDataAggregationUseCaseTest {
         upcomingAnniversaries: List<Anniversary> = emptyList(),
         todos: List<TodoItem> = emptyList()
     ) {
-        every { eventRepository.getAllEvents() } returns flowOf(events)
-        every { anniversaryRepository.getUpcomingAnniversaries(10) } returns flowOf(upcomingAnniversaries)
+        // P-2 修复后：UseCase 改用 getRecentEvents(5) 替代 getAllEvents()
+        every { eventRepository.getRecentEvents(any()) } returns flowOf(events)
+        every { anniversaryRepository.getUpcomingAnniversaries(any()) } returns flowOf(upcomingAnniversaries)
         every { todoRepository.getActiveTodos() } returns flowOf(todos)
     }
 
@@ -65,12 +66,13 @@ class HomeDataAggregationUseCaseTest {
     }
 
     @Nested
-    @DisplayName("recentEvents 取前5条")
+    @DisplayName("recentEvents 透传 getRecentEvents 结果")
     inner class RecentEventsTest {
 
         @Test
-        fun takesFirst5Events() = runTest {
-            val events = (1..8).map {
+        fun passesThroughRecentEventsFromRepository() = runTest {
+            // P-2 修复后：LIMIT 在 SQL 层完成，UseCase 直接透传 Repository 返回的事件列表
+            val events = (1..5).map {
                 Event(id = it.toLong(), title = "E$it", type = EventType.OTHER, time = it.toLong())
             }
             setupMocks(events = events)
@@ -78,6 +80,7 @@ class HomeDataAggregationUseCaseTest {
             useCase.getAggregateData().test {
                 val data = awaitItem()
                 assertThat(data.recentEvents).hasSize(5)
+                assertThat(data.recentEvents.map { it.id }).containsExactly(1L, 2L, 3L, 4L, 5L).inOrder()
                 cancelAndIgnoreRemainingEvents()
             }
         }

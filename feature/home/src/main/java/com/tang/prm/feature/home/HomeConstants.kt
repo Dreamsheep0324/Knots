@@ -12,6 +12,7 @@ import androidx.compose.material.icons.filled.Lightbulb
 import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.People
 import androidx.compose.material.icons.filled.Restaurant
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -21,6 +22,7 @@ import com.tang.prm.ui.navigation.DivinationRoute
 import com.tang.prm.ui.navigation.FavoritesRoute
 import com.tang.prm.ui.navigation.FootprintsRoute
 import com.tang.prm.ui.navigation.GiftsRoute
+import com.tang.prm.ui.navigation.GraphRoute
 import com.tang.prm.ui.navigation.PhotoAlbumRoute
 import com.tang.prm.ui.navigation.RecipesRoute
 import com.tang.prm.ui.navigation.SubscriptionsRoute
@@ -135,5 +137,6 @@ internal val channels = listOf(
     ChannelDef("收藏", SignalGold, FavoritesRoute, "珍藏回忆与重要内容", Icons.Default.Star) { it.favoriteCount },
     ChannelDef("占卜", SignalElectric, DivinationRoute, "梅花易数 · 六爻纳甲", textIcon = "☯"),
     ChannelDef("订阅", SignalSky, SubscriptionsRoute, "会员订阅与到期提醒", Icons.Default.CreditCard) { it.subscriptionCount },
-    ChannelDef("菜谱", SignalElectric, RecipesRoute, "一起做过的菜与味道", Icons.Default.Restaurant) { it.recipeCount }
+    ChannelDef("菜谱", SignalElectric, RecipesRoute, "一起做过的菜与味道", Icons.Default.Restaurant) { it.recipeCount },
+    ChannelDef("图谱", SignalPurple, GraphRoute, "关系网络可视化", Icons.Default.Share) { it.relationCount }
 )

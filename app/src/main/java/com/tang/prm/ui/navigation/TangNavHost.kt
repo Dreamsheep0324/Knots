@@ -50,6 +50,7 @@ import com.tang.prm.feature.circle.navigation.circleGraph
 import com.tang.prm.feature.divination.navigation.divinationGraph
 import com.tang.prm.feature.events.navigation.eventsGraph
 import com.tang.prm.feature.gifts.navigation.giftsGraph
+import com.tang.prm.feature.graph.navigation.graphGraph
 import com.tang.prm.feature.home.navigation.homeGraph
 import com.tang.prm.feature.people.navigation.peopleGraph
 import com.tang.prm.feature.profile.navigation.profileGraph
@@ -200,6 +201,7 @@ fun TangNavHost(
                     eventsGraph(navController, isTabletLayout)
                     chatGraph(navController, isTabletLayout)
                     recipesGraph(navController)
+                    graphGraph(navController)
                 }
             }
         }
@@ -226,6 +228,7 @@ fun TangNavHost(
                 eventsGraph(navController)
                 chatGraph(navController)
                 recipesGraph(navController)
+                graphGraph(navController)
             }
 
             if (showBottomBar && !overlayVisible) {

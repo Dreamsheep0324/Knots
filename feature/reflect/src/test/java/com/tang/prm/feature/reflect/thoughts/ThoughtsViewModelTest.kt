@@ -10,6 +10,7 @@ import com.tang.prm.domain.repository.ContactRepository
 import com.tang.prm.domain.repository.FavoriteRepository
 import com.tang.prm.domain.repository.ThoughtRepository
 import com.tang.prm.domain.usecase.FavoriteToggleUseCase
+import com.tang.prm.domain.usecase.ObserveFavoritesUseCase
 import com.tang.prm.domain.usecase.ThoughtGamificationUseCase
 import com.tang.prm.domain.usecase.ThoughtListUseCase
 import com.tang.prm.domain.usecase.ThoughtWriteUseCase
@@ -42,6 +43,7 @@ class ThoughtsViewModelTest {
     private lateinit var favoriteRepository: FavoriteRepository
 
     private lateinit var favoriteToggleUseCase: FavoriteToggleUseCase
+    private lateinit var observeFavoritesUseCase: ObserveFavoritesUseCase
     private lateinit var thoughtListUseCase: ThoughtListUseCase
     private lateinit var thoughtWriteUseCase: ThoughtWriteUseCase
     private lateinit var viewModel: ThoughtsViewModel
@@ -61,10 +63,11 @@ class ThoughtsViewModelTest {
         every { favoriteRepository.isFavorite(any<String>(), any()) } returns flowOf(false)
 
         favoriteToggleUseCase = FavoriteToggleUseCase(favoriteRepository)
+        observeFavoritesUseCase = ObserveFavoritesUseCase(favoriteRepository)
         thoughtListUseCase = ThoughtListUseCase(thoughtRepository, contactRepository, ThoughtGamificationUseCase())
         thoughtWriteUseCase = ThoughtWriteUseCase(thoughtRepository)
 
-        viewModel = ThoughtsViewModel(thoughtWriteUseCase, favoriteToggleUseCase, thoughtListUseCase)
+        viewModel = ThoughtsViewModel(thoughtWriteUseCase, favoriteToggleUseCase, observeFavoritesUseCase, thoughtListUseCase)
     }
 
     @AfterEach

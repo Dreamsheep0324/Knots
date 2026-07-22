@@ -7,9 +7,13 @@ import androidx.lifecycle.viewModelScope
 import com.tang.prm.domain.model.Contact
 import com.tang.prm.domain.model.CustomCategories
 import com.tang.prm.domain.model.CustomType
+import com.tang.prm.domain.model.PersonRelation
+import com.tang.prm.domain.repository.ContactRepository
+import com.tang.prm.domain.repository.PersonRelationRepository
 import com.tang.prm.domain.usecase.CreateContactUseCase
 import com.tang.prm.domain.usecase.GetContactForEditUseCase
 import com.tang.prm.domain.usecase.ObserveContactFormReferenceDataUseCase
+import com.tang.prm.feature.people.contacts.components.PersonRelationDraft
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -26,8 +30,6 @@ data class AddContactUiState(
     val company: String? = null,
     val jobTitle: String? = null,
     val birthday: String? = null,
-    val isLunarBirthday: Boolean = false,
-    val isLeapMonthBirthday: Boolean = false,
     val knowingDate: String? = null,
     val nickname: String? = null,
     val relationship: String? = null,
@@ -48,6 +50,9 @@ data class AddContactUiState(
     val habitOptions: List<CustomType> = emptyList(),
     val dietOptions: List<CustomType> = emptyList(),
     val skillOptions: List<CustomType> = emptyList(),
+    val personRelationTypes: List<CustomType> = emptyList(),
+    val personRelations: List<PersonRelation> = emptyList(),
+    val availableContacts: List<Contact> = emptyList(),
     val isEditing: Boolean = false,
     val hasUnsavedChanges: Boolean = false,
     val isSaved: Boolean = false,
@@ -62,6 +67,8 @@ class AddContactViewModel @Inject constructor(
     private val getContactForEditUseCase: GetContactForEditUseCase,
     private val observeReferenceDataUseCase: ObserveContactFormReferenceDataUseCase,
     private val contactFormHelper: ContactFormHelper,
+    private val personRelationRepository: PersonRelationRepository,
+    private val contactRepository: ContactRepository,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
@@ -71,13 +78,20 @@ class AddContactViewModel @Inject constructor(
 
     private val contactId: Long = savedStateHandle.get<Long>("contactId") ?: 0L
 
+    /**
+     * 新建模式下人物关系尚未持久化，使用负数临时 ID 区分；保存主表单后回写真实 ID。
+     */
+    private var personRelationTempIdSeq = -1L
+
     private val _uiState = MutableStateFlow(AddContactUiState())
     val uiState: StateFlow<AddContactUiState> = _uiState.asStateFlow()
 
     init {
         loadReferenceData()
+        loadAvailableContacts()
         if (contactId != 0L) {
             loadContact(contactId)
+            observePersonRelations(contactId)
         }
     }
 
@@ -91,9 +105,34 @@ class AddContactViewModel @Inject constructor(
                         hobbyOptions = data.hobbies,
                         habitOptions = data.habits,
                         dietOptions = data.diets,
-                        skillOptions = data.skills
+                        skillOptions = data.skills,
+                        personRelationTypes = data.personRelationTypes
                     )
                 }
+            }
+        }
+    }
+
+    private fun loadAvailableContacts() {
+        viewModelScope.launch {
+            contactRepository.getAllContacts().collect { contacts ->
+                _uiState.update { state ->
+                    state.copy(
+                        availableContacts = if (state.isEditing) {
+                            contacts.filterNot { it.id == state.id }
+                        } else {
+                            contacts
+                        }
+                    )
+                }
+            }
+        }
+    }
+
+    private fun observePersonRelations(ownerId: Long) {
+        viewModelScope.launch {
+            personRelationRepository.observeRelations(ownerId).collect { relations ->
+                _uiState.update { it.copy(personRelations = relations) }
             }
         }
     }
@@ -131,8 +170,7 @@ class AddContactViewModel @Inject constructor(
                         },
                         isEditing = true,
                         createdAt = it.createdAt,
-                        isLunarBirthday = it.isLunarBirthday,
-                        isLeapMonthBirthday = it.isLeapMonthBirthday
+                        availableContacts = state.availableContacts.filterNot { c -> c.id == it.id }
                     )
                 }
             }
@@ -163,6 +201,81 @@ class AddContactViewModel @Inject constructor(
     fun updateNotes(value: String) = updateField { it.copy(notes = value.ifBlank { null }) }
     fun updateIntimacyScore(value: Int) = updateField { it.copy(intimacyScore = value.coerceIn(0, 100)) }
 
+    /**
+     * 添加人物关系。
+     * - 编辑模式：立即写入数据库，由 [observePersonRelations] 流刷新 UI
+     * - 新建模式：暂存到内存（使用负数 ID），保存主表单时批量持久化
+     */
+    fun addPersonRelation(draft: PersonRelationDraft) {
+        val now = System.currentTimeMillis()
+        val relation = PersonRelation(
+            id = 0L,
+            ownerContactId = contactId,
+            targetContactId = if (draft.isExternal) null else draft.selectedContact?.id,
+            targetName = if (draft.isExternal) {
+                draft.externalName
+            } else {
+                draft.selectedContact?.name
+            },
+            targetAvatar = if (draft.isExternal) {
+                draft.externalAvatar
+            } else {
+                draft.selectedContact?.avatar
+            },
+            relationTypeId = draft.selectedTypeId,
+            customLabel = draft.customLabel,
+            note = draft.note,
+            createdAt = now,
+            updatedAt = now
+        )
+
+        if (contactId != 0L) {
+            viewModelScope.launch {
+                runCatching { personRelationRepository.insert(relation) }
+                    .onFailure { Log.e(TAG, "添加人物关系失败", it) }
+            }
+        } else {
+            val tempRelation = relation.copy(id = personRelationTempIdSeq--)
+            updateField { it.copy(personRelations = it.personRelations + tempRelation) }
+        }
+    }
+
+    /**
+     * 删除人物关系。
+     * - 编辑模式：立即从数据库删除
+     * - 新建模式：从内存暂存列表中移除
+     */
+    fun removePersonRelation(relation: PersonRelation) {
+        if (contactId != 0L) {
+            viewModelScope.launch {
+                runCatching { personRelationRepository.deleteById(relation.id) }
+                    .onFailure { Log.e(TAG, "删除人物关系失败", it) }
+            }
+        } else {
+            updateField { it.copy(personRelations = it.personRelations.filterNot { r -> r.id == relation.id }) }
+        }
+    }
+
+    /**
+     * 新建模式下保存主表单成功后，批量持久化内存中暂存的人物关系。
+     */
+    private suspend fun persistPersonRelations(ownerId: Long) {
+        val pending = _uiState.value.personRelations
+        if (pending.isEmpty()) return
+        val now = System.currentTimeMillis()
+        pending.forEach { relation ->
+            runCatching {
+                personRelationRepository.insert(
+                    relation.copy(
+                        id = 0L,
+                        ownerContactId = ownerId,
+                        updatedAt = now
+                    )
+                )
+            }.onFailure { Log.e(TAG, "持久化人物关系失败: ${relation.targetName}", it) }
+        }
+    }
+
     fun saveContact() {
         val state = _uiState.value
         if (state.name.isBlank() || state.isSaving) return
@@ -175,21 +288,20 @@ class AddContactViewModel @Inject constructor(
                 if (state.isEditing) {
                     createContactUseCase.updateContact(
                         contact = contact,
-                        isLunarBirthday = state.isLunarBirthday,
-                        isLeapMonthBirthday = state.isLeapMonthBirthday,
                         contactName = state.name,
                         contactAvatar = state.avatar
                     )
+                    _uiState.update { it.copy(isSaving = false, isSaved = true) }
                 } else {
-                    createContactUseCase.createContact(
+                    val newId = createContactUseCase.createContact(
                         contact = contact,
-                        isLunarBirthday = state.isLunarBirthday,
                         contactName = state.name,
                         contactAvatar = state.avatar
                     )
+                    // 新建模式下批量持久化人物关系
+                    persistPersonRelations(newId)
+                    _uiState.update { it.copy(isSaving = false, isSaved = true) }
                 }
-
-                _uiState.update { it.copy(isSaving = false, isSaved = true) }
             } catch (e: Exception) {
                 Log.e(TAG, "保存联系人失败", e)
                 _uiState.update { it.copy(isSaving = false, saveError = "保存失败：${e.message ?: "未知错误"}") }
@@ -225,8 +337,6 @@ class AddContactViewModel @Inject constructor(
             intimacyScore = state.intimacyScore,
             groupId = state.groupId,
             birthday = birthdayLong,
-            isLunarBirthday = state.isLunarBirthday,
-            isLeapMonthBirthday = state.isLeapMonthBirthday,
             knowingDate = knowingDateLong,
             createdAt = if (state.isEditing) state.createdAt else System.currentTimeMillis(),
             updatedAt = System.currentTimeMillis()
@@ -242,6 +352,7 @@ class AddContactViewModel @Inject constructor(
                 CustomCategories.HABIT -> _uiState.value.habitOptions
                 CustomCategories.DIET -> _uiState.value.dietOptions
                 CustomCategories.SKILL -> _uiState.value.skillOptions
+                CustomCategories.PERSON_RELATION -> _uiState.value.personRelationTypes
                 else -> emptyList()
             }
             contactFormHelper.addCustomType(category, name, currentList.size, color, icon)
@@ -279,6 +390,10 @@ class AddContactViewModel @Inject constructor(
                             CustomCategories.SKILL -> updateField { it.copy(skills = updated) }
                         }
                     }
+                }
+                CustomCategories.PERSON_RELATION -> {
+                    // 类型被删除时由 FK SET NULL，关系记录保留，关系词降级到 customLabel 或"其他"
+                    // 无需在 UI 状态中处理，observeRelations 流会自动刷新
                 }
             }
         }

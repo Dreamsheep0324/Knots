@@ -19,8 +19,8 @@ android {
 
     defaultConfig {
         applicationId = "com.tang.prm"
-        versionCode = 10502
-        versionName = "1.5.2"
+        versionCode = 10600
+        versionName = "1.6.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -95,6 +95,7 @@ dependencies {
     implementation(project(":feature:circle"))
     implementation(project(":feature:home"))
     implementation(project(":feature:recipes"))
+    implementation(project(":feature:graph"))
 
     // Baseline Profile — release 构建自动集成 AOT 优化
     baselineProfile(project(":baselineprofile"))

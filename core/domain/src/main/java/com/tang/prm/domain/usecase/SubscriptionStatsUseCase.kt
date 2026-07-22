@@ -36,8 +36,11 @@ class SubscriptionStatsUseCase @Inject constructor(
                     .mapValues { (_, list) -> list.sumOf { it.yearlyEquivalent() } }
                 val byCategorySubscriptions = active.groupBy { it.category ?: "未分类" }
                 val expiringSoon = subs.filter {
+                    // B-10 修复：加下界 >= 0，排除「已过期但 status 还是 ACTIVE 的窗口期」订阅
+                    // （这些订阅应归类为已过期，不应显示在「即将到期」列表中）
+                    val diff = it.nextBillingDate - System.currentTimeMillis()
                     it.computedStatus() == SubscriptionStatus.ACTIVE &&
-                    it.nextBillingDate - System.currentTimeMillis() < 7.days.inWholeMilliseconds
+                    diff in 0..7.days.inWholeMilliseconds
                 }
                 SubscriptionStats(monthlyTotal, yearlyTotal, byCategory, byCategorySubscriptions, expiringSoon, active, active.size)
             }

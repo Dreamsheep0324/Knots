@@ -8,6 +8,7 @@ import com.tang.prm.domain.model.Thought
 import com.tang.prm.domain.model.ThoughtType
 import com.tang.prm.domain.usecase.ContactThoughts
 import com.tang.prm.domain.usecase.FavoriteToggleUseCase
+import com.tang.prm.domain.usecase.ObserveFavoritesUseCase
 import com.tang.prm.domain.usecase.GamificationState
 import com.tang.prm.domain.usecase.ThoughtListUseCase
 import com.tang.prm.domain.usecase.ThoughtWriteUseCase
@@ -51,6 +52,7 @@ private data class FilterState(
 class ThoughtsViewModel @Inject constructor(
     private val thoughtWriteUseCase: ThoughtWriteUseCase,
     private val favoriteToggleUseCase: FavoriteToggleUseCase,
+    private val observeFavoritesUseCase: ObserveFavoritesUseCase,
     private val thoughtListUseCase: ThoughtListUseCase
 ) : ViewModel() {
 
@@ -63,7 +65,7 @@ class ThoughtsViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            favoriteToggleUseCase.getFavoriteIds(SourceTypes.THOUGHT).collect { ids ->
+            observeFavoritesUseCase.getFavoriteIds(SourceTypes.THOUGHT).collect { ids ->
                 _favoriteIds.value = ids
             }
         }

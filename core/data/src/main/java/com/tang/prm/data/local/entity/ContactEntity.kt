@@ -32,8 +32,6 @@ data class ContactEntity(
     val nickname: String? = null,
     val gender: Int = 0, // 0=未知, 1=男, 2=女
     val birthday: Long? = null,
-    val isLunarBirthday: Boolean = false,
-    val isLeapMonthBirthday: Boolean = false,
     val knowingDate: Long? = null,
     val phone: String? = null,
     val email: String? = null,
@@ -52,7 +50,6 @@ data class ContactEntity(
     val childrenCount: Int = 0,
     val childrenNames: String? = null,
     val introducer: String? = null,
-    val relationshipLevel: Int = 0,
     val relationship: String? = null,
     val groupId: Long? = null,
     val intimacyScore: Int = 50,

@@ -4,6 +4,7 @@ import androidx.lifecycle.viewModelScope
 import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat
 import com.tang.prm.domain.model.*
+import com.tang.prm.domain.repository.HomeOrbitalMode
 import com.tang.prm.domain.usecase.HomeAggregateData
 import com.tang.prm.domain.usecase.HomeDataAggregationUseCase
 import com.tang.prm.domain.usecase.HomeSettingsUseCase
@@ -52,6 +53,7 @@ class HomeViewModelTest {
         every { homeDataUseCase.getAggregateData() } returns flowOf(emptyHomeData)
         every { homeStatsUseCase.getStats() } returns flowOf(HomeStats())
         every { homeSettingsUseCase.getDecorPhotoPath() } returns flowOf(null)
+        every { homeSettingsUseCase.getHomeOrbitalMode() } returns flowOf(HomeOrbitalMode.ORBITAL)
 
         // A-1 修复：ViewModel 通过 HomeSettingsUseCase 访问 Repository，不再直接依赖 Repository
         viewModel = HomeViewModel(

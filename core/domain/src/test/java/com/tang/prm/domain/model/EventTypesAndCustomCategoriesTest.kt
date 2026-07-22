@@ -7,8 +7,8 @@ import java.lang.reflect.Modifier
 class EventTypesAndCustomCategoriesTest {
 
     @Test
-    fun eventType_has10Entries() {
-        assertThat(EventType.entries).hasSize(10)
+    fun eventType_has8Entries() {
+        assertThat(EventType.entries).hasSize(8)
     }
 
     @Test

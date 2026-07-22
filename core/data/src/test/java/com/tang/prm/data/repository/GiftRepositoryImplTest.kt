@@ -46,12 +46,12 @@ class GiftRepositoryImplTest {
 
     private val entity = GiftEntity(
         id = 1, contactId = 10, giftName = "Book", giftType = "BOOKS",
-        date = 1000L, isSent = true, amount = null,
+        date = 1000L, isSent = true,
         occasion = null, description = null, location = null
     )
     private val domain = Gift(
         id = 1, contactId = 10, giftName = "Book", giftType = GiftType.BOOKS,
-        date = 1000L, isSent = true, amount = null,
+        date = 1000L, isSent = true,
         occasion = null, description = null, location = null
     )
 

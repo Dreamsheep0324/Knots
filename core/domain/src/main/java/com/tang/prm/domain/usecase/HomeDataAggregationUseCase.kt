@@ -31,24 +31,28 @@ class HomeDataAggregationUseCase @Inject constructor(
     private val todoRepository: TodoRepository
 ) {
     fun getAggregateData(): Flow<HomeAggregateData> {
-        // D-5 修复：移除 frequentContacts（getRecentContacts）订阅，UI 从不读取
-        // D-4 修复：allEvents 字段移除，但 eventsFlow 仍需订阅以派生 recentEvents
-        // D-3 修复：移除 allAnniversariesFlow 订阅，upcomingAnniversaries 由独立 flow 计算
-        // D-2 修复：移除 remindersFlow 订阅与 todayReminders filter 计算，UI 从不读取
-        val eventsFlow = eventRepository.getAllEvents().distinctUntilChanged()
-        val upcomingAnniversariesFlow = anniversaryRepository.getUpcomingAnniversaries(10).distinctUntilChanged()
+        // P-2 修复：改用 getRecentEvents(RECENT_EVENT_LIMIT) 让 SQL 层 LIMIT 5，
+        // 避免全量加载 N 条事件再内存取前 5
+        val eventsFlow = eventRepository.getRecentEvents(RECENT_EVENT_LIMIT).distinctUntilChanged()
+        val upcomingAnniversariesFlow = anniversaryRepository.getUpcomingAnniversaries(UPCOMING_ANNIVERSARY_LIMIT).distinctUntilChanged()
         val todosFlow = todoRepository.getActiveTodos().distinctUntilChanged()
 
         return combine(
             eventsFlow,
             upcomingAnniversariesFlow,
             todosFlow
-        ) { allEvents, upcomingAnniversaries, todos ->
+        ) { recentEvents, upcomingAnniversaries, todos ->
             HomeAggregateData(
-                recentEvents = allEvents.take(5),
+                recentEvents = recentEvents,
                 upcomingAnniversaries = upcomingAnniversaries,
                 pendingTodos = todos
             )
         }
+    }
+
+    companion object {
+        // Q-5 修复：首页 UI 容量约束提取为常量，避免魔法数字
+        private const val RECENT_EVENT_LIMIT = 5
+        private const val UPCOMING_ANNIVERSARY_LIMIT = 10
     }
 }

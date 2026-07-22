@@ -280,14 +280,6 @@ internal fun GalleryAnniversaryCard(
                             modifier = Modifier.size(11.dp)
                         )
                     }
-                    if (anniversary.isLunar) {
-                        Text(
-                            text = "农历",
-                            fontSize = 10.sp,
-                            color = accentColor,
-                            fontWeight = FontWeight.Medium
-                        )
-                    }
                 }
             }
             // 类型徽章
@@ -374,7 +366,7 @@ internal fun GalleryGiftCard(
                     }
                 }
             }
-            // 方向徽章 + 金额
+            // 方向徽章
             Column(horizontalAlignment = Alignment.End) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -386,15 +378,6 @@ internal fun GalleryGiftCard(
                         fontSize = 10.sp,
                         color = directionColor,
                         fontWeight = FontWeight.Bold
-                    )
-                }
-                gift.amount?.let {
-                    Text(
-                        text = "¥${String.format(java.util.Locale.US, "%.0f", it)}",
-                        fontSize = 11.sp,
-                        color = SignalAmber,
-                        fontWeight = FontWeight.Black,
-                        modifier = Modifier.padding(top = 2.dp)
                     )
                 }
             }

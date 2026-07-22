@@ -6,7 +6,7 @@ import com.tang.prm.domain.model.CloudBackupVersion
 import com.tang.prm.domain.model.ConnectionTestResult
 import com.tang.prm.domain.model.SyncResult
 import com.tang.prm.domain.model.WebDavConfig
-import com.tang.prm.domain.repository.BackupRepositoryInterface
+import com.tang.prm.domain.repository.ImageOrphanCleaner
 import com.tang.prm.domain.repository.WebDavRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -36,7 +36,8 @@ data class WebDavUiState(
 @HiltViewModel
 class WebDavSyncViewModel @Inject constructor(
     private val webDavRepository: WebDavRepository,
-    private val backupRepository: BackupRepositoryInterface
+    // A-9 修复：本 ViewModel 只用 cleanOrphanedImages，依赖 ImageOrphanCleaner 子接口而非聚合接口
+    private val imageOrphanCleaner: ImageOrphanCleaner
 ) : ViewModel() {
 
     private val _cloudVersions = MutableStateFlow<List<CloudBackupVersion>>(emptyList())
@@ -159,7 +160,7 @@ class WebDavSyncViewModel @Inject constructor(
     fun cleanOrphanedImages() {
         viewModelScope.launch {
             _cleanResult.value = CleanResult.Cleaning
-            val count = backupRepository.cleanOrphanedImages()
+            val count = imageOrphanCleaner.cleanOrphanedImages()
             _cleanResult.value = CleanResult.Done(count)
         }
     }

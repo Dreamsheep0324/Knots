@@ -89,8 +89,6 @@ val EventLightPurple: Color
     @Composable @ReadOnlyComposable get() = if (isSystemInDarkTheme()) Color(0xFF2A1E4A) else Color(0xFFEDE9FE)
 val EventLightRed: Color
     @Composable @ReadOnlyComposable get() = if (isSystemInDarkTheme()) Color(0xFF3A1A1A) else Color(0xFFFEE2E2)
-val EventLightTeal: Color
-    @Composable @ReadOnlyComposable get() = if (isSystemInDarkTheme()) Color(0xFF1A3A3A) else Color(0xFFCCFBF1)
 val EventLightIndigo: Color
     @Composable @ReadOnlyComposable get() = if (isSystemInDarkTheme()) Color(0xFF1A2340) else Color(0xFFEEF2FF)
 
@@ -150,13 +148,8 @@ val DarkTagRedBg = Color(0x1AFF7B72)
 val DarkTagRedText = Color(0xFFFF7B72)
 
 // ── 亲密度等级颜色 ────────────────────────────────────────────────
-// 顶层 val 为浅色模式色值；深色模式请使用 LocalIntimacyColors.current
-/** 亲密度等级颜色（与 IntimacyTier.colorValue 保持一致） */
-val IntimacyNew = Color(0xFF94A3B8)         // N 灰
-val IntimacyAcquaintance = Color(0xFF3B82F6) // R 蓝
-val IntimacyFriend = Color(0xFF8B5CF6)       // SR 紫
-val IntimacyClose = Color(0xFFEF4444)        // SSR 红
-val IntimacyFamily = Color(0xFFF59E0B)       // UR 金
+// 色值统一由 com.tang.prm.domain.model.IntimacyTier 派生（SSOT），
+// 禁止在此处定义独立色板常量。浅色用 colorValue，深色用 darkColorValue。
 
 /** 亲密度等级颜色方案，支持深色模式覆盖 */
 data class IntimacyColors(
@@ -179,20 +172,22 @@ data class IntimacyColors(
     fun forScore(score: Int): Color = forTier(com.tang.prm.domain.model.IntimacyTier.of(score))
 }
 
+/** 浅色模式亲密度色板：派生自 [com.tang.prm.domain.model.IntimacyTier.colorValue] */
 val LightIntimacyColors = IntimacyColors(
-    new = Color(0xFF94A3B8),
-    acquaintance = Color(0xFF3B82F6),
-    friend = Color(0xFF8B5CF6),
-    close = Color(0xFFEF4444),
-    family = Color(0xFFF59E0B)
+    new = Color(com.tang.prm.domain.model.IntimacyTier.NEW.colorValue),
+    acquaintance = Color(com.tang.prm.domain.model.IntimacyTier.ACQUAINTANCE.colorValue),
+    friend = Color(com.tang.prm.domain.model.IntimacyTier.FRIEND.colorValue),
+    close = Color(com.tang.prm.domain.model.IntimacyTier.CLOSE.colorValue),
+    family = Color(com.tang.prm.domain.model.IntimacyTier.FAMILY.colorValue)
 )
 
+/** 深色模式亲密度色板：派生自 [com.tang.prm.domain.model.IntimacyTier.darkColorValue] */
 val DarkIntimacyColors = IntimacyColors(
-    new = Color(0xFFB0BEC5),
-    acquaintance = Color(0xFF60A5FA),
-    friend = Color(0xFFA78BFA),
-    close = Color(0xFFF87171),
-    family = Color(0xFFFBBF24)
+    new = Color(com.tang.prm.domain.model.IntimacyTier.NEW.darkColorValue),
+    acquaintance = Color(com.tang.prm.domain.model.IntimacyTier.ACQUAINTANCE.darkColorValue),
+    friend = Color(com.tang.prm.domain.model.IntimacyTier.FRIEND.darkColorValue),
+    close = Color(com.tang.prm.domain.model.IntimacyTier.CLOSE.darkColorValue),
+    family = Color(com.tang.prm.domain.model.IntimacyTier.FAMILY.darkColorValue)
 )
 
 val LocalIntimacyColors = staticCompositionLocalOf { LightIntimacyColors }

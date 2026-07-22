@@ -65,15 +65,6 @@ class AddAnniversaryViewModelTest {
     }
 
     @Test
-    fun updateIsLunarChangesState() = runTest {
-        viewModel.updateIsLunar(true)
-        viewModel.uiState.test {
-            val state = awaitItem()
-            assertThat(state.isLunar).isTrue()
-        }
-    }
-
-    @Test
     fun saveAnniversaryWithBlankNameDoesNotCallInsert() = runTest {
         viewModel.saveAnniversary()
         coVerify(exactly = 0) { anniversaryRepository.insertAnniversary(any()) }

@@ -12,7 +12,8 @@ import com.tang.prm.domain.model.RestoreResult
 import com.tang.prm.domain.model.SyncManifest
 import com.tang.prm.domain.model.SyncResult
 import com.tang.prm.domain.model.WebDavConfig
-import com.tang.prm.domain.repository.BackupRepositoryInterface
+import com.tang.prm.domain.repository.BackupRepository
+import com.tang.prm.domain.repository.ImageOrphanCleaner
 import com.tang.prm.domain.repository.WebDavRepository
 import com.tang.prm.domain.util.DateUtils
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -29,7 +30,10 @@ import javax.inject.Singleton
 class WebDavRepositoryImpl @Inject constructor(
     @ApplicationContext private val context: Context,
     private val webDavClient: WebDavClient,
-    private val backupRepository: BackupRepositoryInterface,
+    // A-9 修复：按需依赖子接口而非聚合接口。本类只用图片文件操作 + DB 备份恢复，
+    // 不需要目录管理能力，因此依赖 ImageOrphanCleaner + BackupRepository 两个子接口。
+    private val imageOrphanCleaner: ImageOrphanCleaner,
+    private val backupRepository: BackupRepository,
     private val configStore: WebDavConfigStore,
     private val fileDiffCalculator: SyncFileDiffCalculator
 ) : WebDavRepository {
@@ -118,10 +122,10 @@ class WebDavRepositoryImpl @Inject constructor(
         val remoteManifest = readRemoteManifest()
 
         // 2. 扫描本地文件（只包含数据库引用的图片，过滤孤立文件）
-        val referencedNames = backupRepository.getReferencedImageFileNames()
-        val localImages = backupRepository.listLocalImageFiles("app_images")
+        val referencedNames = imageOrphanCleaner.getReferencedImageFileNames()
+        val localImages = imageOrphanCleaner.listLocalImageFiles("app_images")
             .filter { it.name in referencedNames }
-        val localGiftPhotos = backupRepository.listLocalImageFiles("gift_photos")
+        val localGiftPhotos = imageOrphanCleaner.listLocalImageFiles("gift_photos")
 
         // 3. 计算差异
         val (imagesToUpload, imagesToDeleteRemote) = fileDiffCalculator.computeUploadDiff(localImages, remoteManifest?.images ?: emptyMap())
@@ -169,7 +173,7 @@ class WebDavRepositoryImpl @Inject constructor(
             currentStep++
             emit(SyncResult.UploadProgress("上传图片", currentStep, totalSteps,
                 "正在上传图片 ${index + 1}/${imagesToUpload.size}"))
-            val file = backupRepository.getLocalImageFile("app_images", entry.name) ?: continue
+            val file = imageOrphanCleaner.getLocalImageFile("app_images", entry.name) ?: continue
             try {
                 webDavClient.uploadImageFile(config, "images", entry.name, file)
                 uploadedImageEntries[entry.name] = entry.copy(uploadedAt = uploadStartTime)
@@ -184,7 +188,7 @@ class WebDavRepositoryImpl @Inject constructor(
             currentStep++
             emit(SyncResult.UploadProgress("上传图片", currentStep, totalSteps,
                 "正在上传礼物照片 ${index + 1}/${giftToUpload.size}"))
-            val file = backupRepository.getLocalImageFile("gift_photos", entry.name) ?: continue
+            val file = imageOrphanCleaner.getLocalImageFile("gift_photos", entry.name) ?: continue
             try {
                 webDavClient.uploadImageFile(config, "gift_photos", entry.name, file)
                 uploadedGiftEntries[entry.name] = entry.copy(uploadedAt = uploadStartTime)
@@ -285,10 +289,10 @@ class WebDavRepositoryImpl @Inject constructor(
         }
 
         // 2. 扫描本地文件（只包含数据库引用的图片，过滤孤立文件）
-        val referencedNames = backupRepository.getReferencedImageFileNames()
-        val localImages = backupRepository.listLocalImageFiles("app_images")
+        val referencedNames = imageOrphanCleaner.getReferencedImageFileNames()
+        val localImages = imageOrphanCleaner.listLocalImageFiles("app_images")
             .filter { it.name in referencedNames }
-        val localGiftPhotos = backupRepository.listLocalImageFiles("gift_photos")
+        val localGiftPhotos = imageOrphanCleaner.listLocalImageFiles("gift_photos")
 
         // 3. 计算差异
         val (imagesToDownload, imagesToDeleteLocal) = fileDiffCalculator.computeDownloadDiff(
@@ -336,12 +340,12 @@ class WebDavRepositoryImpl @Inject constructor(
         for (name in imagesToDeleteLocal) {
             currentStep++
             emit(SyncResult.DownloadProgress("清理", currentStep, totalSteps, "正在清理本地文件..."))
-            backupRepository.deleteLocalImageFile("app_images", name)
+            imageOrphanCleaner.deleteLocalImageFile("app_images", name)
         }
         for (name in giftToDeleteLocal) {
             currentStep++
             emit(SyncResult.DownloadProgress("清理", currentStep, totalSteps, "正在清理本地文件..."))
-            backupRepository.deleteLocalImageFile("gift_photos", name)
+            imageOrphanCleaner.deleteLocalImageFile("gift_photos", name)
         }
 
         // 6. 最后恢复数据库（会重启进程，必须放在所有操作之后）

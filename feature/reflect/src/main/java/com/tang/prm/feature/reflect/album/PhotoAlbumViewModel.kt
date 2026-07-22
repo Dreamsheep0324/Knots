@@ -6,6 +6,7 @@ import com.tang.prm.domain.model.AlbumPhoto
 import com.tang.prm.domain.model.Contact
 import com.tang.prm.domain.model.SourceTypes
 import com.tang.prm.domain.usecase.FavoriteToggleUseCase
+import com.tang.prm.domain.usecase.ObserveFavoritesUseCase
 import com.tang.prm.domain.usecase.filterBy
 import com.tang.prm.domain.usecase.PhotoAlbumAggregationUseCase
 import com.tang.prm.domain.usecase.PhotoAlbumAggregateData
@@ -33,7 +34,8 @@ data class PhotoAlbumUiState(
 @HiltViewModel
 class PhotoAlbumViewModel @Inject constructor(
     private val photoAlbumAggregationUseCase: PhotoAlbumAggregationUseCase,
-    private val favoriteToggleUseCase: FavoriteToggleUseCase
+    private val favoriteToggleUseCase: FavoriteToggleUseCase,
+    private val observeFavoritesUseCase: ObserveFavoritesUseCase
 ) : ViewModel() {
 
     private val _selectedContactId = MutableStateFlow<Long?>(null)
@@ -46,7 +48,7 @@ class PhotoAlbumViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            favoriteToggleUseCase.getFavoriteIds(SourceTypes.PHOTO).collect { ids ->
+            observeFavoritesUseCase.getFavoriteIds(SourceTypes.PHOTO).collect { ids ->
                 _favoritePhotoIds.value = ids
             }
         }

@@ -29,9 +29,11 @@ import com.tang.prm.data.local.entity.*
         RecipeEntity::class,
         RecipeTagEntity::class,
         RecipeContactCrossRef::class,
-        RecipeTagCrossRef::class
+        RecipeTagCrossRef::class,
+        ContactRelationEntity::class,
+        PersonRelationEntity::class
     ],
-    version = 42,
+    version = 49,
     exportSchema = true
 )
 // DB-Q-1 修复：移除 RecipeDataConverter 注册——RecipeEntity.ingredients/steps 字段类型为 String，
@@ -55,6 +57,8 @@ abstract class TangDatabase : RoomDatabase() {
     abstract fun subscriptionDao(): SubscriptionDao
     abstract fun recipeDao(): RecipeDao
     abstract fun recipeTagDao(): RecipeTagDao
+    abstract fun contactRelationDao(): ContactRelationDao
+    abstract fun personRelationDao(): PersonRelationDao
 
     suspend fun checkpoint() {
         val db = openHelper.writableDatabase

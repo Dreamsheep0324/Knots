@@ -53,21 +53,21 @@ class GetAnniversaryDisplayUseCaseTest {
     inner class CategorizeTest {
 
         @Test
-        fun returnsTripleOfLists() {
+        fun returnsCategorizedLists() {
             val anns = listOf(
                 Anniversary(id = 1, name = "A", type = AnniversaryType.BIRTHDAY,
                     date = dateMillis(1990, 1, 1), isRepeat = true)
             )
-            val (all, upcoming, past) = useCase.categorizeAnniversaries(anns)
-            assertThat(all.size + upcoming.size + past.size).isAtLeast(1)
+            val result = useCase.categorizeAnniversaries(anns)
+            assertThat(result.all.size + result.upcoming.size + result.past.size).isAtLeast(1)
         }
 
         @Test
-        fun emptyList_returnsEmptyTriple() {
-            val (all, upcoming, past) = useCase.categorizeAnniversaries(emptyList())
-            assertThat(all).isEmpty()
-            assertThat(upcoming).isEmpty()
-            assertThat(past).isEmpty()
+        fun emptyList_returnsEmptyCategories() {
+            val result = useCase.categorizeAnniversaries(emptyList())
+            assertThat(result.all).isEmpty()
+            assertThat(result.upcoming).isEmpty()
+            assertThat(result.past).isEmpty()
         }
 
         @Test
@@ -78,8 +78,8 @@ class GetAnniversaryDisplayUseCaseTest {
                 Anniversary(id = 2, name = "B", type = AnniversaryType.ANNIVERSARY,
                     date = dateMillis(2020, 6, 15), isRepeat = true)
             )
-            val (all, _, _) = useCase.categorizeAnniversaries(anns)
-            assertThat(all).hasSize(2)
+            val result = useCase.categorizeAnniversaries(anns)
+            assertThat(result.all).hasSize(2)
         }
     }
 }

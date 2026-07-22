@@ -8,6 +8,7 @@ import com.tang.prm.domain.model.EventType
 import com.tang.prm.domain.model.SourceTypes
 import com.tang.prm.domain.repository.EventRepository
 import com.tang.prm.domain.usecase.FavoriteToggleUseCase
+import com.tang.prm.domain.usecase.ObserveFavoritesUseCase
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -29,6 +30,7 @@ class EventDetailViewModelTest {
 
     private lateinit var eventRepository: EventRepository
     private lateinit var favoriteToggleUseCase: FavoriteToggleUseCase
+    private lateinit var observeFavoritesUseCase: ObserveFavoritesUseCase
     private lateinit var viewModel: EventDetailViewModel
 
     private val testEvent = Event(id = 1, title = "测试事件", type = EventType.MEETUP, time = 1000L)
@@ -38,15 +40,16 @@ class EventDetailViewModelTest {
         Dispatchers.setMain(UnconfinedTestDispatcher())
         eventRepository = mockk()
         favoriteToggleUseCase = mockk()
+        observeFavoritesUseCase = mockk()
 
         every { eventRepository.getEventById(1L) } returns flowOf(testEvent)
-        every { favoriteToggleUseCase.isFavorite(SourceTypes.EVENT, 1L) } returns flowOf(false)
+        every { observeFavoritesUseCase.isFavorite(SourceTypes.EVENT, 1L) } returns flowOf(false)
         coEvery { favoriteToggleUseCase(any(), any(), any(), any()) } returns true
         coEvery { eventRepository.updateEvent(any()) } returns Unit
         coEvery { eventRepository.deleteEvent(any()) } returns Unit
 
         val savedStateHandle = SavedStateHandle(mapOf("eventId" to 1L))
-        viewModel = EventDetailViewModel(savedStateHandle, eventRepository, favoriteToggleUseCase)
+        viewModel = EventDetailViewModel(savedStateHandle, eventRepository, favoriteToggleUseCase, observeFavoritesUseCase)
     }
 
     @AfterEach
@@ -128,7 +131,7 @@ class EventDetailViewModelTest {
     @Test
     fun `invalid eventId shows loading state`() = runTest {
         val savedStateHandle = SavedStateHandle(mapOf("eventId" to 0L))
-        val vm = EventDetailViewModel(savedStateHandle, eventRepository, favoriteToggleUseCase)
+        val vm = EventDetailViewModel(savedStateHandle, eventRepository, favoriteToggleUseCase, observeFavoritesUseCase)
         vm.uiState.test {
             val state = awaitItem()
             assertThat(state.data.event).isNull()
@@ -141,10 +144,10 @@ class EventDetailViewModelTest {
     fun `eventId valid but event not found shows not found state`() = runTest {
         // 模拟事件已被删除：getEventById 返回 null
         every { eventRepository.getEventById(999L) } returns flowOf(null)
-        every { favoriteToggleUseCase.isFavorite(SourceTypes.EVENT, 999L) } returns flowOf(false)
+        every { observeFavoritesUseCase.isFavorite(SourceTypes.EVENT, 999L) } returns flowOf(false)
 
         val savedStateHandle = SavedStateHandle(mapOf("eventId" to 999L))
-        val vm = EventDetailViewModel(savedStateHandle, eventRepository, favoriteToggleUseCase)
+        val vm = EventDetailViewModel(savedStateHandle, eventRepository, favoriteToggleUseCase, observeFavoritesUseCase)
         vm.uiState.test {
             val state = awaitItem()
             assertThat(state.data.event).isNull()

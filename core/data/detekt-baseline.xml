@@ -7,6 +7,8 @@
     <ID>LargeClass:BackupRepositoryImpl.kt$BackupRepositoryImpl : BackupRepositoryInterface</ID>
     <ID>LargeClass:WebDavClient.kt$WebDavClient</ID>
     <ID>LargeClass:WebDavRepositoryImpl.kt$WebDavRepositoryImpl : WebDavRepository</ID>
+    <ID>LongMethod:MIGRATION_42_43.kt$&lt;no name provided&gt;$override fun migrate(db: SupportSQLiteDatabase)</ID>
+    <ID>LongMethod:MIGRATION_43_44.kt$&lt;no name provided&gt;$override fun migrate(db: SupportSQLiteDatabase)</ID>
     <ID>LongMethod:Migration_1_32.kt$&lt;no name provided&gt;$override fun migrate(db: SupportSQLiteDatabase)</ID>
     <ID>LongMethod:Migration_39_40.kt$&lt;no name provided&gt;$override fun migrate(db: SupportSQLiteDatabase)</ID>
     <ID>LongMethod:WebDavRepositoryImpl.kt$WebDavRepositoryImpl$override suspend fun downloadBackup(fileName: String): Flow&lt;SyncResult&gt;</ID>

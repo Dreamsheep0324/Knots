@@ -1,0 +1,32 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues></ManuallySuppressedIssues>
+  <CurrentIssues>
+    <ID>FunctionNaming:GraphAppBar.kt$@Composable fun GraphAppBar( onBack: () -&gt; Unit, isEditMode: Boolean, onResetLayout: () -&gt; Unit, onToggleEditMode: () -&gt; Unit )</ID>
+    <ID>FunctionNaming:GraphCanvas.kt$@Suppress("LongParameterList") @Composable fun GraphCanvas( nodes: List&lt;GraphNode&gt;, edges: List&lt;GraphEdge&gt;, viewport: GraphViewport, renderer: GraphRenderer, simulator: ForceSimulator, avatars: Map&lt;Long, ImageBitmap&gt;, canvasSize: IntSize, isEditMode: Boolean, selectedNodeId: Long?, dimmedNodeIds: Set&lt;Long&gt;, externalRedrawTrigger: Long, onCanvasReady: () -&gt; Unit, onNodeClick: (Long) -&gt; Unit, onNodeLongPress: (Long) -&gt; Unit, onNodeDrag: (Long, Float, Float) -&gt; Unit, onNodeDragEnd: (Long) -&gt; Unit, onCanvasPan: (Float, Float) -&gt; Unit, onCanvasZoom: (Float, Float, Float) -&gt; Unit, onEdgeLongPress: (Long) -&gt; Unit, modifier: Modifier = Modifier )</ID>
+    <ID>FunctionNaming:GraphEditBanner.kt$@Composable fun GraphEditBanner(modifier: Modifier = Modifier)</ID>
+    <ID>FunctionNaming:GraphFilterChips.kt$@Composable fun GraphFilterChips( relationTypes: List&lt;CustomType&gt;, activeFilter: RelationFilter, showAutoEdges: Boolean, onSelectFilter: (RelationFilter) -&gt; Unit, onToggleAutoEdges: () -&gt; Unit, modifier: Modifier = Modifier )</ID>
+    <ID>FunctionNaming:GraphFilterChips.kt$@Composable private fun AutoEdgeChip( enabled: Boolean, onClick: () -&gt; Unit )</ID>
+    <ID>FunctionNaming:GraphFilterChips.kt$@Composable private fun FilterChip( label: String, selected: Boolean, color: Color, onClick: () -&gt; Unit )</ID>
+    <ID>FunctionNaming:GraphLegend.kt$@Composable fun GraphLegend(modifier: Modifier = Modifier)</ID>
+    <ID>FunctionNaming:GraphLegend.kt$@Composable private fun LegendItem(tier: IntimacyTier)</ID>
+    <ID>FunctionNaming:GraphScreen.kt$@Composable fun GraphScreen( onBack: () -&gt; Unit, onContactClick: (Long) -&gt; Unit, viewModel: GraphViewModel = hiltViewModel() )</ID>
+    <ID>FunctionNaming:GraphScreen.kt$@Composable private fun ErrorState(message: String)</ID>
+    <ID>FunctionNaming:GraphScreen.kt$@Composable private fun GraphContent( uiState: GraphUiState, redrawTrigger: Long, canvasSize: IntSize, viewModel: GraphViewModel, onContactClick: (Long) -&gt; Unit )</ID>
+    <ID>FunctionNaming:GraphScreen.kt$@Composable private fun LoadingState()</ID>
+    <ID>FunctionNaming:GraphStatsBar.kt$@Composable fun GraphStatsBar(stats: GraphStats)</ID>
+    <ID>FunctionNaming:GraphStatsBar.kt$@Composable private fun StatDivider()</ID>
+    <ID>FunctionNaming:GraphStatsBar.kt$@Composable private fun StatItem(label: String, value: Int)</ID>
+    <ID>FunctionNaming:GraphZoomControls.kt$@Composable fun GraphZoomControls( onZoomIn: () -&gt; Unit, onZoomOut: () -&gt; Unit, onCenter: () -&gt; Unit, modifier: Modifier = Modifier )</ID>
+    <ID>FunctionNaming:GraphZoomControls.kt$@Composable private fun ZoomButton( icon: androidx.compose.ui.graphics.vector.ImageVector, contentDescription: String, onClick: () -&gt; Unit, tint: Color = MaterialTheme.colorScheme.onSurface )</ID>
+    <ID>FunctionNaming:NodeInfoCard.kt$@Composable fun NodeInfoCard( info: SelectedNodeInfo?, onNavigateDetail: (Long) -&gt; Unit, onDismiss: () -&gt; Unit, modifier: Modifier = Modifier )</ID>
+    <ID>FunctionNaming:NodeInfoCard.kt$@Composable private fun NeighborRow(rel: NeighborRelation)</ID>
+    <ID>FunctionNaming:RelationTypeSheet.kt$@Composable fun RelationTypeSheet( state: RelationSheetState, relationTypes: List&lt;CustomType&gt;, onSelectType: (Long) -&gt; Unit, onDismiss: () -&gt; Unit )</ID>
+    <ID>FunctionNaming:RelationTypeSheet.kt$@Composable private fun RelationTypeOption( type: CustomType, selected: Boolean, onClick: () -&gt; Unit )</ID>
+    <ID>LargeClass:GraphViewModel.kt$GraphViewModel : ViewModel</ID>
+    <ID>LongMethod:GraphCanvas.kt$@Suppress("LongParameterList") @Composable fun GraphCanvas( nodes: List&lt;GraphNode&gt;, edges: List&lt;GraphEdge&gt;, viewport: GraphViewport, renderer: GraphRenderer, simulator: ForceSimulator, avatars: Map&lt;Long, ImageBitmap&gt;, canvasSize: IntSize, isEditMode: Boolean, selectedNodeId: Long?, dimmedNodeIds: Set&lt;Long&gt;, externalRedrawTrigger: Long, onCanvasReady: () -&gt; Unit, onNodeClick: (Long) -&gt; Unit, onNodeLongPress: (Long) -&gt; Unit, onNodeDrag: (Long, Float, Float) -&gt; Unit, onNodeDragEnd: (Long) -&gt; Unit, onCanvasPan: (Float, Float) -&gt; Unit, onCanvasZoom: (Float, Float, Float) -&gt; Unit, onEdgeLongPress: (Long) -&gt; Unit, modifier: Modifier = Modifier )</ID>
+    <ID>LongMethod:GraphScreen.kt$@Composable private fun GraphContent( uiState: GraphUiState, redrawTrigger: Long, canvasSize: IntSize, viewModel: GraphViewModel, onContactClick: (Long) -&gt; Unit )</ID>
+    <ID>LongMethod:NodeInfoCard.kt$@Composable fun NodeInfoCard( info: SelectedNodeInfo?, onNavigateDetail: (Long) -&gt; Unit, onDismiss: () -&gt; Unit, modifier: Modifier = Modifier )</ID>
+    <ID>LongParameterList:GraphRenderer.kt$GraphRenderer$( nodes: List&lt;GraphNode&gt;, viewport: GraphViewport, avatars: Map&lt;Long, ImageBitmap&gt;, viewWidth: Float, viewHeight: Float, selectedNodeId: Long?, dimmedNodeIds: Set&lt;Long&gt;, isEditMode: Boolean )</ID>
+  </CurrentIssues>
+</SmellBaseline>

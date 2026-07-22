@@ -9,6 +9,7 @@ import com.tang.prm.domain.model.SourceTypes
 import com.tang.prm.domain.repository.ContactRepository
 import com.tang.prm.domain.repository.GiftRepository
 import com.tang.prm.domain.usecase.FavoriteToggleUseCase
+import com.tang.prm.domain.usecase.ObserveFavoritesUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -25,7 +26,6 @@ data class GiftRecord(
     val giftType: GiftType get() = gift.giftType
     val date get() = gift.date
     val isSent get() = gift.isSent
-    val amount get() = gift.amount
     val occasion get() = gift.occasion
     val description get() = gift.description
     val location get() = gift.location
@@ -55,7 +55,8 @@ data class GiftsUiState(
 class GiftsViewModel @Inject constructor(
     private val giftRepository: GiftRepository,
     private val contactRepository: ContactRepository,
-    private val favoriteToggleUseCase: FavoriteToggleUseCase
+    private val favoriteToggleUseCase: FavoriteToggleUseCase,
+    private val observeFavoritesUseCase: ObserveFavoritesUseCase
 ) : ViewModel() {
 
     private val _filterType = MutableStateFlow("all")
@@ -66,7 +67,7 @@ class GiftsViewModel @Inject constructor(
         combine(
             contactRepository.getAllContacts(),
             giftRepository.getAllGifts(),
-            favoriteToggleUseCase.getFavoriteIds("GIFT"),
+            observeFavoritesUseCase.getFavoriteIds("GIFT"),
             _filterType,
             _selectedContactId
         ) { contacts, giftList, favoriteIds, filterType, selectedContactId ->

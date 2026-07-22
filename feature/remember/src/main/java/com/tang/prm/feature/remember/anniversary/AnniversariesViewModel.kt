@@ -58,8 +58,7 @@ class AnniversariesViewModel @Inject constructor(
     val uiState: StateFlow<AnniversariesUiState> = combine(
         anniversaryRepository.getAllAnniversaries()
             .map { allList ->
-                val (all, upcoming, past) = getAnniversaryDisplayUseCase.categorizeAnniversaries(allList)
-                CategorizedAnniversaries(all, upcoming, past)
+                getAnniversaryDisplayUseCase.categorizeAnniversaries(allList)
             },
         _selectedTab,
         searchManager.state

@@ -316,12 +316,8 @@ internal fun AnniversaryContactSection(
 @Composable
 internal fun AnniversaryDateSection(
     dateText: String,
-    isLunar: Boolean,
-    isLeapMonth: Boolean,
     isRepeat: Boolean,
     onDateClick: () -> Unit,
-    onLunarChange: (Boolean) -> Unit,
-    onLeapMonthChange: (Boolean) -> Unit,
     onRepeatChange: (Boolean) -> Unit
 ) {
     Surface(
@@ -347,46 +343,6 @@ internal fun AnniversaryDateSection(
                 },
                 shape = RoundedCornerShape(16.dp)
             )
-            Spacer(modifier = Modifier.height(12.dp))
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text("农历日期", style = MaterialTheme.typography.bodyMedium)
-                Switch(
-                    checked = isLunar,
-                    onCheckedChange = onLunarChange,
-                    colors = SwitchDefaults.colors(
-                        checkedThumbColor = OnPrimary,
-                        checkedTrackColor = MaterialTheme.colorScheme.primary,
-                        uncheckedThumbColor = MaterialTheme.colorScheme.onSurface,
-                        uncheckedTrackColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f),
-                        uncheckedBorderColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
-                    )
-                )
-            }
-            if (isLunar) {
-                Spacer(modifier = Modifier.height(8.dp))
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text("闰月", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    Switch(
-                        checked = isLeapMonth,
-                        onCheckedChange = onLeapMonthChange,
-                        colors = SwitchDefaults.colors(
-                            checkedThumbColor = OnPrimary,
-                            checkedTrackColor = MaterialTheme.colorScheme.primary,
-                            uncheckedThumbColor = MaterialTheme.colorScheme.onSurface,
-                            uncheckedTrackColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f),
-                            uncheckedBorderColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
-                        )
-                    )
-                }
-            }
             Spacer(modifier = Modifier.height(12.dp))
             Row(
                 modifier = Modifier.fillMaxWidth(),

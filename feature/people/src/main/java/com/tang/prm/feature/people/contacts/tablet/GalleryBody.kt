@@ -31,8 +31,13 @@ import androidx.compose.ui.unit.sp
 import com.tang.prm.domain.model.Contact
 import com.tang.prm.domain.model.CustomType
 import com.tang.prm.domain.model.Event
+import com.tang.prm.domain.model.PersonRelation
 import com.tang.prm.domain.util.DateUtils
 import com.tang.prm.domain.util.parseListField
+import com.tang.prm.feature.people.contacts.components.PersonRelationRow
+import com.tang.prm.feature.people.contacts.components.PersonRelationRowMode
+import com.tang.prm.feature.people.contacts.components.PersonRelationTypeInfo
+import com.tang.prm.ui.theme.toComposeColor
 
 // ═══════════════════════════════════════════════════════════════
 // 三栏内容区 — 档案 / 时光 / 心绪
@@ -40,14 +45,15 @@ import com.tang.prm.domain.util.parseListField
 
 /**
  * 平板详情页四栏内容区所需的回调集合。
- * 将 5 个 onClick 打包，避免 GalleryBody 参数列表过长。
+ * 将 6 个 onClick 打包，避免 GalleryBody 参数列表过长。
  */
 internal data class GalleryClicks(
     val onEventClick: (Long) -> Unit,
     val onAnniversaryClick: (Long) -> Unit,
     val onGiftClick: (Long) -> Unit,
     val onThoughtClick: (Long) -> Unit,
-    val onConversationClick: (Long) -> Unit
+    val onConversationClick: (Long) -> Unit,
+    val onPersonRelationClick: (Long) -> Unit = {}
 )
 
 @Composable
@@ -60,6 +66,8 @@ internal fun GalleryBody(
     gifts: List<com.tang.prm.domain.model.Gift>,
     thoughts: List<com.tang.prm.domain.model.Thought>,
     eventTypes: List<CustomType>,
+    personRelations: List<PersonRelation>,
+    personRelationTypes: List<CustomType>,
     clicks: GalleryClicks
 ) {
     Row(
@@ -88,11 +96,7 @@ internal fun GalleryBody(
             if (contact.birthday != null || contact.knowingDate != null || contact.lastInteractionTime != null) {
                 GalleryInfoCard(title = "DATES · 重要日期") {
                     contact.birthday?.let {
-                        GalleryInfoRow(key = "生日", value = buildString {
-                            append(DateUtils.formatYearMonthDayChineseFull(it))
-                            if (contact.isLunarBirthday) append(" · 农历")
-                            if (contact.isLeapMonthBirthday) append(" · 闰月")
-                        })
+                        GalleryInfoRow(key = "生日", value = DateUtils.formatYearMonthDayChineseFull(it))
                     }
                     contact.knowingDate?.let {
                         GalleryInfoRow(key = "认识日", value = DateUtils.formatYearMonthDayChineseFull(it))
@@ -140,6 +144,29 @@ internal fun GalleryBody(
                     }
                     contact.childrenNames?.takeIf { it.isNotBlank() }?.let { GalleryInfoRow(key = "子女姓名", value = it, maxLines = 2) }
                     contact.introducer?.takeIf { it.isNotBlank() }?.let { GalleryInfoRow(key = "介绍人", value = it) }
+                }
+            }
+
+            // 人物关系（方案B 极简行式）
+            if (personRelations.isNotEmpty()) {
+                val typeInfoMap = personRelationTypes.associate { type ->
+                    type.id to PersonRelationTypeInfo(
+                        name = type.name,
+                        color = type.color?.toComposeColor(tierColor)
+                    )
+                }
+                GalleryInfoCard(title = "RELATIONS · 人物关系") {
+                    personRelations.forEach { relation ->
+                        val info = relation.relationTypeId?.let { typeInfoMap[it] }
+                        PersonRelationRow(
+                            relation = relation,
+                            typeName = info?.name,
+                            typeColor = info?.color,
+                            mode = PersonRelationRowMode.VIEWER,
+                            onClick = { relation.targetContactId?.let { id -> clicks.onPersonRelationClick(id) } },
+                            onDelete = {}
+                        )
+                    }
                 }
             }
         }

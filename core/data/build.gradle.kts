@@ -46,9 +46,6 @@ dependencies {
     implementation(libs.kotlinx.coroutines.core)
     implementation(libs.kotlinx.coroutines.android)
 
-    // Lunar calendar
-    implementation(libs.lunar)
-
     testImplementation(libs.json)
     androidTestImplementation(libs.room.testing)
 }

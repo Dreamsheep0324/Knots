@@ -121,7 +121,6 @@ fun AddGiftScreen(
                         giftType = giftType,
                         date = selectedDate,
                         isSent = isSent,
-                        amount = null,
                         occasion = occasion.ifBlank { null },
                         description = description.ifBlank { null },
                         location = null,

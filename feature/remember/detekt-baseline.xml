@@ -4,7 +4,7 @@
   <CurrentIssues>
     <ID>ExplicitItLambdaParameter:AnniversariesScreen.kt${ _, it -&gt; it.id }</ID>
     <ID>FunctionNaming:AddAnniversaryComponents.kt$@Composable internal fun AnniversaryContactSection( contactName: String?, onClick: () -&gt; Unit )</ID>
-    <ID>FunctionNaming:AddAnniversaryComponents.kt$@Composable internal fun AnniversaryDateSection( dateText: String, isLunar: Boolean, isLeapMonth: Boolean, isRepeat: Boolean, onDateClick: () -&gt; Unit, onLunarChange: (Boolean) -&gt; Unit, onLeapMonthChange: (Boolean) -&gt; Unit, onRepeatChange: (Boolean) -&gt; Unit )</ID>
+    <ID>FunctionNaming:AddAnniversaryComponents.kt$@Composable internal fun AnniversaryDateSection( dateText: String, isRepeat: Boolean, onDateClick: () -&gt; Unit, onRepeatChange: (Boolean) -&gt; Unit )</ID>
     <ID>FunctionNaming:AddAnniversaryComponents.kt$@Composable internal fun AnniversaryNameSection( selectedIcon: String, name: String, onNameChange: (String) -&gt; Unit, onIconClick: () -&gt; Unit, nameFocusRequester: FocusRequester )</ID>
     <ID>FunctionNaming:AddAnniversaryComponents.kt$@Composable internal fun AnniversaryRemarksSection( remarks: String, onRemarksChange: (String) -&gt; Unit )</ID>
     <ID>FunctionNaming:AddAnniversaryComponents.kt$@Composable internal fun AnniversaryTypeSection( selectedType: AnniversaryType, onTypeSelected: (AnniversaryType) -&gt; Unit )</ID>
@@ -31,7 +31,7 @@
     <ID>FunctionNaming:AnniversaryTabletScreen.kt$@Composable private fun TypeColumn( type: AnniversaryType, anniversaries: List&lt;Anniversary&gt;, modifier: Modifier = Modifier )</ID>
     <ID>FunctionNaming:AnniversaryTabletScreen.kt$@Composable private fun UpcomingHeroCard( anniversary: Anniversary, typeColor: Color )</ID>
     <ID>FunctionNaming:AnniversaryTabletScreen.kt$@Composable private fun YearTimelineSection( anniversaries: List&lt;Anniversary&gt;, modifier: Modifier = Modifier )</ID>
-    <ID>LongMethod:AddAnniversaryComponents.kt$@Composable internal fun AnniversaryDateSection( dateText: String, isLunar: Boolean, isLeapMonth: Boolean, isRepeat: Boolean, onDateClick: () -&gt; Unit, onLunarChange: (Boolean) -&gt; Unit, onLeapMonthChange: (Boolean) -&gt; Unit, onRepeatChange: (Boolean) -&gt; Unit )</ID>
+    <ID>LongMethod:AddAnniversaryComponents.kt$@Composable internal fun AnniversaryDateSection( dateText: String, isRepeat: Boolean, onDateClick: () -&gt; Unit, onRepeatChange: (Boolean) -&gt; Unit )</ID>
     <ID>LongMethod:AddAnniversaryScreen.kt$@Composable fun AddAnniversaryScreen( contactId: Long? = null, navController: NavController, viewModel: AddAnniversaryViewModel = hiltViewModel() )</ID>
     <ID>LongMethod:AnniversariesComponents.kt$@Composable internal fun AnniversaryCard( anniversary: Anniversary, onClick: () -&gt; Unit, modifier: Modifier = Modifier )</ID>
     <ID>LongMethod:AnniversariesScreen.kt$@OptIn(ExperimentalMaterial3Api::class) @Composable fun AnniversariesScreen( navController: NavController, isTabletLayout: Boolean = false, viewModel: AnniversariesViewModel = hiltViewModel() )</ID>
@@ -40,11 +40,10 @@
     <ID>LongMethod:AnniversaryTabletScreen.kt$@Composable private fun TimelineMonthColumn( month: Int, anniversaries: List&lt;Anniversary&gt;, isCurrent: Boolean, modifier: Modifier = Modifier )</ID>
     <ID>LongMethod:AnniversaryTabletScreen.kt$@Composable private fun TypeCard( anniversary: Anniversary, typeColor: Color )</ID>
     <ID>LongMethod:AnniversaryTabletScreen.kt$@Composable private fun UpcomingHeroCard( anniversary: Anniversary, typeColor: Color )</ID>
-    <ID>LongParameterList:AddAnniversaryComponents.kt$( dateText: String, isLunar: Boolean, isLeapMonth: Boolean, isRepeat: Boolean, onDateClick: () -&gt; Unit, onLunarChange: (Boolean) -&gt; Unit, onLeapMonthChange: (Boolean) -&gt; Unit, onRepeatChange: (Boolean) -&gt; Unit )</ID>
+    <ID>LongParameterList:AddAnniversaryComponents.kt$( dateText: String, isRepeat: Boolean, onDateClick: () -&gt; Unit, onRepeatChange: (Boolean) -&gt; Unit )</ID>
     <ID>MatchingDeclarationName:AddAnniversaryComponents.kt$AnniversaryTypeOption</ID>
     <ID>MaxLineLength:AddAnniversaryComponents.kt$color = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = AnimationTokens.Alpha.visible)</ID>
     <ID>MaxLineLength:AddAnniversaryComponents.kt$tint = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = AnimationTokens.Alpha.visible)</ID>
-    <ID>MaxLineLength:AddAnniversaryViewModel.kt$AddAnniversaryViewModel$fun updateIsLunar(value: Boolean)</ID>
     <ID>MaxLineLength:AnniversaryDetailComponents.kt$color = if (daysInfo.isPast) MaterialTheme.colorScheme.outline.copy(alpha = 0.15f) else MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)</ID>
     <ID>MaxLineLength:AnniversaryTabletScreen.kt$color = if (isCurrent) MaterialTheme.colorScheme.primary else if (hasEvents) accentColor.copy(alpha = 0.3f) else MaterialTheme.colorScheme.outline.copy(alpha = 0.4f)</ID>
   </CurrentIssues>

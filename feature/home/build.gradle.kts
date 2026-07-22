@@ -9,6 +9,7 @@ android {
 dependencies {
     implementation(project(":core:domain"))
     implementation(project(":core:ui"))
+    implementation(project(":feature:graph"))
 
     implementation(libs.coil.compose)
 }

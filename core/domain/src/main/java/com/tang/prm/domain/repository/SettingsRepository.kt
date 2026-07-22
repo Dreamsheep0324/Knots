@@ -36,4 +36,11 @@ interface SettingsRepository {
     /** 首页日记装饰卡片照片路径 */
     val homeDecorPhotoPath: Flow<String?>
     suspend fun setHomeDecorPhotoPath(path: String?)
+
+    /** 首页轨道模块显示模式：轨道罗盘 / 力导向图 */
+    val homeOrbitalMode: Flow<HomeOrbitalMode>
+    suspend fun setHomeOrbitalMode(mode: HomeOrbitalMode)
 }
+
+/** 首页轨道模块显示模式。 */
+enum class HomeOrbitalMode { ORBITAL, FORCE_GRAPH }

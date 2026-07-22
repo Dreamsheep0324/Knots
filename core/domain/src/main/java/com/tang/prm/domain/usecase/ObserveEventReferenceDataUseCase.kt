@@ -7,6 +7,7 @@ import com.tang.prm.domain.repository.ContactRepository
 import com.tang.prm.domain.repository.CustomTypeRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import javax.inject.Inject
 
 /**
@@ -41,10 +42,11 @@ class ObserveEventReferenceDataUseCase @Inject constructor(
     private val customTypeRepository: CustomTypeRepository
 ) {
     fun invoke(): Flow<EventReferenceData> = combine(
-        contactRepository.getAllContacts(),
-        customTypeRepository.getTypesByCategory(CustomCategories.EVENT_TYPE),
-        customTypeRepository.getTypesByCategory(CustomCategories.EMOTION),
-        customTypeRepository.getTypesByCategory(CustomCategories.WEATHER)
+        // C-5 修复：统一约定在 UseCase 层对 combine 上游加 distinctUntilChanged
+        contactRepository.getAllContacts().distinctUntilChanged(),
+        customTypeRepository.getTypesByCategory(CustomCategories.EVENT_TYPE).distinctUntilChanged(),
+        customTypeRepository.getTypesByCategory(CustomCategories.EMOTION).distinctUntilChanged(),
+        customTypeRepository.getTypesByCategory(CustomCategories.WEATHER).distinctUntilChanged()
     ) { contacts, eventTypes, emotions, weathers ->
         EventReferenceData(contacts, eventTypes, emotions, weathers)
     }

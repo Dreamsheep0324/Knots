@@ -13,6 +13,7 @@ object DateUtils {
 
     const val MILLIS_PER_DAY = 86_400_000L
     const val MILLIS_PER_HOUR = 3_600_000L
+    const val MILLIS_PER_MINUTE = 60_000L
 
     private enum class DateFormat(pattern: String) {
         DATE_TIME("yyyy年MM月dd日 HH:mm"),
@@ -46,22 +47,35 @@ object DateUtils {
     private fun formatWith(timestamp: Long, format: DateFormat): String =
         Instant.ofEpochMilli(timestamp).atZone(defaultZoneId).format(format.formatter)
 
+    /**
+     * 格式化为相对时间（"刚刚"/"X分钟前"/"X小时后" 等）。
+     *
+     * Q-2 修复：原实现嵌套 when + 重复 `diff >= 0` 条件 4 次 + 魔法数字 `60 * 1000` / `60 * 60 * 1000`。
+     * 重构为「过去/未来」两大分支，各自内联 when；魔法数字复用 [MILLIS_PER_MINUTE] / [MILLIS_PER_HOUR] / [MILLIS_PER_DAY] 常量。
+     */
     fun formatRelativeTime(timestamp: Long): String {
-        val now = System.currentTimeMillis()
-        val diff = now - timestamp
-        val minutes = diff / (60 * 1000)
-        val hours = diff / (60 * 60 * 1000)
-        val days = diff / MILLIS_PER_DAY
+        val diff = System.currentTimeMillis() - timestamp
 
         return when {
-            minutes < 1 && diff >= 0 -> "刚刚"
-            minutes < 60 && diff >= 0 -> "${minutes}分钟前"
-            hours < 24 && diff >= 0 -> "${hours}小时前"
-            days < 7 && diff >= 0 -> "${days}天前"
-            diff < 0 -> {
-                val futureMinutes = -diff / (60 * 1000)
-                val futureHours = -diff / (60 * 60 * 1000)
-                val futureDays = -diff / MILLIS_PER_DAY
+            diff >= 0 -> {
+                // 过去时间
+                val minutes = diff / MILLIS_PER_MINUTE
+                val hours = diff / MILLIS_PER_HOUR
+                val days = diff / MILLIS_PER_DAY
+                when {
+                    minutes < 1 -> "刚刚"
+                    minutes < 60 -> "${minutes}分钟前"
+                    hours < 24 -> "${hours}小时前"
+                    days < 7 -> "${days}天前"
+                    else -> formatYearMonthDayChinese(timestamp)
+                }
+            }
+            else -> {
+                // 未来时间
+                val futureDiff = -diff
+                val futureMinutes = futureDiff / MILLIS_PER_MINUTE
+                val futureHours = futureDiff / MILLIS_PER_HOUR
+                val futureDays = futureDiff / MILLIS_PER_DAY
                 when {
                     futureMinutes < 1 -> "即将"
                     futureHours < 1 -> "${futureMinutes}分钟后"
@@ -70,7 +84,6 @@ object DateUtils {
                     else -> formatYearMonthDayChinese(timestamp)
                 }
             }
-            else -> formatYearMonthDayChinese(timestamp)
         }
     }
 

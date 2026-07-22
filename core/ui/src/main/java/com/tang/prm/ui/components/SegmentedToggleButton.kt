@@ -49,7 +49,7 @@ fun <T> SegmentedToggleButton(
                     .size(Dimens.iconLarge)
                     .background(
                         if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
-                        RoundedCornerShape(Dimens.cornerMedium)
+                        RoundedCornerShape(Dimens.cornerSmall)
                     )
                     .clickable { onSelectionChange(option.key) },
                 contentAlignment = Alignment.Center

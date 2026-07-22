@@ -22,7 +22,41 @@ data class HomeStats(
     val footprintCount: Int = 0,
     val subscriptionCount: Int = 0,
     val recipeCount: Int = 0,
+    val relationCount: Int = 0,
     val tierDistribution: Map<IntimacyTier, Int> = emptyMap()
+)
+
+/**
+ * 第一组：礼物/想法/联系人/收藏/圈子 计数（5 路）。
+ */
+private data class CountStatsA(
+    val gift: Int,
+    val thought: Int,
+    val contact: Int,
+    val favorite: Int,
+    val circle: Int
+)
+
+/**
+ * 第二组：纪念日/事件/订阅/食谱/关系 计数（5 路）。
+ */
+private data class CountStatsB(
+    val anniversary: Int,
+    val event: Int,
+    val subscription: Int,
+    val recipe: Int,
+    val relation: Int
+)
+
+/**
+ * 第三组：事件细分 + 亲密度分布（5 路）。
+ * photoCount = eventPhoto + giftPhoto 在此层计算，避免跨组相加。
+ */
+private data class EventBreakdown(
+    val conversation: Int,
+    val footprint: Int,
+    val photoCount: Int,
+    val tierDistribution: Map<IntimacyTier, Int>
 )
 
 class HomeStatsUseCase @Inject constructor(
@@ -34,52 +68,56 @@ class HomeStatsUseCase @Inject constructor(
     private val anniversaryRepository: AnniversaryRepository,
     private val eventRepository: EventRepository,
     private val subscriptionRepository: SubscriptionRepository,
-    private val recipeRepository: RecipeRepository
+    private val recipeRepository: RecipeRepository,
+    private val contactRelationRepository: ContactRelationRepository
 ) {
-    fun getStats(): Flow<HomeStats> = combine(
-        giftRepository.getGiftCount().distinctUntilChanged(),
-        thoughtRepository.getThoughtCount().distinctUntilChanged(),
-        contactRepository.getContactCount().distinctUntilChanged(),
-        favoriteRepository.getFavoriteCount().distinctUntilChanged(),
-        circleRepository.getCircleCount().distinctUntilChanged(),
-        anniversaryRepository.getAnniversaryCount().distinctUntilChanged(),
-        eventRepository.getEventCount().distinctUntilChanged(),
-        eventRepository.getEventCountByType(EventType.CONVERSATION.name).distinctUntilChanged(),
-        eventRepository.getEventCountWithLocation().distinctUntilChanged(),
-        eventRepository.getPhotoCount().distinctUntilChanged(),
-        giftRepository.getPhotoCount().distinctUntilChanged(),
-        subscriptionRepository.getSubscriptionCount().distinctUntilChanged(),
-        recipeRepository.getRecipeCount().distinctUntilChanged(),
-        contactRepository.getAllIntimacyScores()
-            .map { scores ->
-                scores.groupingBy { IntimacyTier.of(it) }.eachCount()
-            }
-            .distinctUntilChanged()
-    ) { args: Array<Any> ->
-        // combine 变长参数返回 Array<Any>，类型由调用方保证；
-        // 使用安全转换 as? 防御上游 DAO 返回类型变更导致的 ClassCastException。
-        HomeStats(
-            giftCount = args.intAt(0),
-            thoughtCount = args.intAt(1),
-            contactCount = args.intAt(2),
-            favoriteCount = args.intAt(3),
-            circleCount = args.intAt(4),
-            anniversaryCount = args.intAt(5),
-            eventCount = args.intAt(6),
-            conversationCount = args.intAt(7),
-            footprintCount = args.intAt(8),
-            photoCount = args.intAt(9) + args.intAt(10),
-            subscriptionCount = args.intAt(11),
-            recipeCount = args.intAt(12),
-            tierDistribution = args.intimacyMapAt(13)
-        )
+    fun getStats(): Flow<HomeStats> {
+        val statsA: Flow<CountStatsA> = combine(
+            giftRepository.getGiftCount().distinctUntilChanged(),
+            thoughtRepository.getThoughtCount().distinctUntilChanged(),
+            contactRepository.getContactCount().distinctUntilChanged(),
+            favoriteRepository.getFavoriteCount().distinctUntilChanged(),
+            circleRepository.getCircleCount().distinctUntilChanged()
+        ) { gift, thought, contact, favorite, circle ->
+            CountStatsA(gift, thought, contact, favorite, circle)
+        }
+        val statsB: Flow<CountStatsB> = combine(
+            anniversaryRepository.getAnniversaryCount().distinctUntilChanged(),
+            eventRepository.getEventCount().distinctUntilChanged(),
+            subscriptionRepository.getSubscriptionCount().distinctUntilChanged(),
+            recipeRepository.getRecipeCount().distinctUntilChanged(),
+            contactRelationRepository.getRelationCount().distinctUntilChanged()
+        ) { anniversary, event, subscription, recipe, relation ->
+            CountStatsB(anniversary, event, subscription, recipe, relation)
+        }
+        val breakdown: Flow<EventBreakdown> = combine(
+            eventRepository.getEventCountByType(EventType.CONVERSATION.name).distinctUntilChanged(),
+            eventRepository.getEventCountWithLocation().distinctUntilChanged(),
+            eventRepository.getPhotoCount().distinctUntilChanged(),
+            giftRepository.getPhotoCount().distinctUntilChanged(),
+            contactRepository.getAllIntimacyScores()
+                .map { scores -> scores.groupingBy { IntimacyTier.of(it) }.eachCount() }
+                .distinctUntilChanged()
+        ) { conversation, footprint, eventPhoto, giftPhoto, tierDistribution ->
+            EventBreakdown(conversation, footprint, eventPhoto + giftPhoto, tierDistribution)
+        }
+        return combine(statsA, statsB, breakdown) { a, b, c ->
+            HomeStats(
+                giftCount = a.gift,
+                thoughtCount = a.thought,
+                contactCount = a.contact,
+                favoriteCount = a.favorite,
+                circleCount = a.circle,
+                anniversaryCount = b.anniversary,
+                eventCount = b.event,
+                conversationCount = c.conversation,
+                photoCount = c.photoCount,
+                footprintCount = c.footprint,
+                subscriptionCount = b.subscription,
+                recipeCount = b.recipe,
+                relationCount = b.relation,
+                tierDistribution = c.tierDistribution
+            )
+        }
     }
-
-    /** 安全提取 Int，类型不匹配时返回 0 而非抛出 ClassCastException。 */
-    private fun Array<Any>.intAt(index: Int): Int = this[index] as? Int ?: 0
-
-    /** 安全提取亲密度分布 Map，类型不匹配时返回空 Map。 */
-    @Suppress("UNCHECKED_CAST")
-    private fun Array<Any>.intimacyMapAt(index: Int): Map<IntimacyTier, Int> =
-        this[index] as? Map<IntimacyTier, Int> ?: emptyMap()
 }

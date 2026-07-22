@@ -121,10 +121,21 @@ class SubscriptionTest {
         }
 
         @Test
-        fun expiredStatus_returnsExpired() {
+        fun expiredWithFutureBilling_revivesToActive() {
+            // B-15 修复：status=EXPIRED 但 nextBillingDate 已被续期到未来 → 复活为 ACTIVE
             val sub = testSubscription(
                 status = SubscriptionStatus.EXPIRED,
                 nextBillingDate = System.currentTimeMillis() + 86_400_000L
+            )
+            assertThat(sub.computedStatus()).isEqualTo(SubscriptionStatus.ACTIVE)
+        }
+
+        @Test
+        fun expiredWithPastBilling_remainsExpired() {
+            // B-15 修复：status=EXPIRED 且 nextBillingDate 仍过期 → 保持 EXPIRED
+            val sub = testSubscription(
+                status = SubscriptionStatus.EXPIRED,
+                nextBillingDate = System.currentTimeMillis() - 86_400_000L
             )
             assertThat(sub.computedStatus()).isEqualTo(SubscriptionStatus.EXPIRED)
         }

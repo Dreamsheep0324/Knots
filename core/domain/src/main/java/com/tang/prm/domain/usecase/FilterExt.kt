@@ -11,7 +11,8 @@ import com.tang.prm.domain.model.SubscriptionStatus
 import com.tang.prm.domain.model.Thought
 import com.tang.prm.domain.model.ThoughtType
 import com.tang.prm.domain.model.computedStatus
-import java.util.Calendar
+import java.time.Instant
+import java.time.ZoneId
 
 // region Intimacy utilities
 
@@ -123,6 +124,10 @@ fun List<Thought>.filterBy(
 
 /**
  * Filter footprints by contact, event type, and/or year.
+ *
+ * P-4 修复：原实现每个 item 都 new 一个 [java.util.Calendar] 实例做年份匹配，
+ * N 条足迹 = N 次 Calendar 分配。改用 [java.time.Instant.atZone] + [java.time.ZonedDateTime.getYear]
+ * 零分配，且固定北京时区避免跨时区年份漂移（与项目硬约束一致）。
  */
 fun List<FootprintItem>.filterBy(
     selectedContactId: Long? = null,
@@ -137,9 +142,9 @@ fun List<FootprintItem>.filterBy(
         filtered = filtered.filter { it.eventType == filterEventType }
     }
     if (selectedYear != null) {
+        val beijingZone = ZoneId.of("Asia/Shanghai")
         filtered = filtered.filter {
-            val calendar = Calendar.getInstance().apply { timeInMillis = it.date }
-            calendar.get(Calendar.YEAR) == selectedYear
+            Instant.ofEpochMilli(it.date).atZone(beijingZone).year == selectedYear
         }
     }
     return filtered

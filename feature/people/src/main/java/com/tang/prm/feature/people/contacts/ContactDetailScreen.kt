@@ -25,6 +25,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.tang.prm.domain.model.AppStrings
 import com.tang.prm.ui.components.DeleteConfirmDialog
+import com.tang.prm.ui.navigation.ContactDetailRoute
 import com.tang.prm.ui.navigation.EditContactRoute
 import com.tang.prm.ui.navigation.EventDetailRoute
 import com.tang.prm.ui.navigation.AnniversaryDetailRoute
@@ -83,7 +84,11 @@ fun ContactDetailScreen(
                 }
                 item {
                     when (uiState.dialog.selectedTab) {
-                        0 -> ProfileContent(contact = it, uiState = uiState)
+                        0 -> ProfileContent(
+                            contact = it,
+                            uiState = uiState,
+                            onNavigateToContactDetail = { targetId -> navController.navigate(ContactDetailRoute(targetId)) }
+                        )
                         1 -> EventsContent(events = uiState.data.events, eventTypes = uiState.data.eventTypes, onEventClick = { id -> navController.navigate(EventDetailRoute(id)) })
                         2 -> AnniversariesContent(anniversaries = uiState.data.anniversaries, onAnniversaryClick = { id -> navController.navigate(AnniversaryDetailRoute(id)) })
                         3 -> GiftsContent(gifts = uiState.data.gifts, onGiftClick = { id -> navController.navigate(GiftDetailRoute(id)) })

@@ -49,7 +49,7 @@ internal fun rememberOrbitalCalendarData(
                 }
             }
             anniversaries.forEach { ann ->
-                // B-5 修复：用 effectiveDate() 替代 ann.date，农历纪念日按公历生效日期显示信号点
+                // 用 effectiveDate() 替代 ann.date，按下次生效日期显示信号点
                 val cal = Calendar.getInstance().apply { timeInMillis = ann.effectiveDate() }
                 if (cal.get(Calendar.YEAR) == displayYear || ann.isRepeat) {
                     if (cal.get(Calendar.MONTH) == displayMonth) {
@@ -77,7 +77,7 @@ internal fun rememberOrbitalCalendarData(
             val cal = Calendar.getInstance().apply { timeInMillis = it.time }
             cal.get(Calendar.YEAR) == todayYear && cal.get(Calendar.DAY_OF_YEAR) == todayCal.get(Calendar.DAY_OF_YEAR)
         }
-        // B-5 修复：今日纪念日判断也用 effectiveDate()，农历纪念日才能在正确的公历日显示
+        // 今日纪念日判断也用 effectiveDate()，每年重复纪念日才能在正确的公历日显示
         val anns = anniversaries.filter {
             val cal = Calendar.getInstance().apply { timeInMillis = it.effectiveDate() }
             cal.get(Calendar.MONTH) == todayMonth && cal.get(Calendar.DAY_OF_MONTH) == todayDay

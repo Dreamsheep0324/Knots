@@ -2,6 +2,7 @@ package com.tang.prm.domain.usecase
 
 import com.google.common.truth.Truth.assertThat
 import com.tang.prm.domain.model.Contact
+import com.tang.prm.domain.model.CustomCategories
 import com.tang.prm.domain.repository.ContactRepository
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -28,6 +29,15 @@ class CleanCustomTypeUseCaseTest {
         useCase = CleanCustomTypeUseCase(contactRepository)
     }
 
+    /**
+     * 辅助：捕获传入 updateContacts 的列表
+     */
+    private fun mockUpdateContacts(): MutableList<List<Contact>> {
+        val captured = mutableListOf<List<Contact>>()
+        coEvery { contactRepository.updateContacts(capture(captured)) } returns Unit
+        return captured
+    }
+
     @Nested
     @DisplayName("removeFromListFieldAll")
     inner class RemoveFromListFieldAllTest {
@@ -36,51 +46,48 @@ class CleanCustomTypeUseCaseTest {
         fun removesValueFromHobbyJsonArray() = runTest {
             val contact = Contact(id = 1L, name = "Alice", hobby = """["阅读","游泳","音乐"]""")
             coEvery { contactRepository.getAllContacts() } returns flowOf(listOf(contact))
-            coEvery { contactRepository.updateContact(any()) } returns Unit
+            val captured = mockUpdateContacts()
 
-            useCase.removeFromListFieldAll("hobby", "游泳")
+            useCase.removeFromListFieldAll(CustomCategories.HOBBY, "游泳")
 
-            coVerify {
-                contactRepository.updateContact(match { c ->
-                    c.hobby != null && !c.hobby!!.contains("游泳") && c.hobby!!.contains("阅读")
-                })
-            }
+            val updated = captured.single().single()
+            assertThat(updated.hobby).isNotNull()
+            assertThat(updated.hobby).contains("阅读")
+            assertThat(updated.hobby).doesNotContain("游泳")
         }
 
         @Test
         fun removesLastItem_returnsNull() = runTest {
             val contact = Contact(id = 1L, name = "Alice", hobby = """["阅读"]""")
             coEvery { contactRepository.getAllContacts() } returns flowOf(listOf(contact))
-            coEvery { contactRepository.updateContact(any()) } returns Unit
+            val captured = mockUpdateContacts()
 
-            useCase.removeFromListFieldAll("hobby", "阅读")
+            useCase.removeFromListFieldAll(CustomCategories.HOBBY, "阅读")
 
-            coVerify {
-                contactRepository.updateContact(match { c -> c.hobby == null })
-            }
+            assertThat(captured.single().single().hobby).isNull()
         }
 
         @Test
         fun valueNotInArray_noUpdate() = runTest {
             val contact = Contact(id = 1L, name = "Alice", hobby = """["阅读","音乐"]""")
             coEvery { contactRepository.getAllContacts() } returns flowOf(listOf(contact))
-            coEvery { contactRepository.updateContact(any()) } returns Unit
+            mockUpdateContacts()
 
-            useCase.removeFromListFieldAll("hobby", "游泳")
+            useCase.removeFromListFieldAll(CustomCategories.HOBBY, "游泳")
 
-            // Should not call updateContact since nothing changed
-            coVerify(exactly = 0) { contactRepository.updateContact(any()) }
+            // 无变更，不应调用 updateContacts
+            coVerify(exactly = 0) { contactRepository.updateContacts(any()) }
         }
 
         @Test
         fun nullFields_notUpdated() = runTest {
             val contact = Contact(id = 1L, name = "Alice", hobby = null, habit = null, diet = null, skill = null)
             coEvery { contactRepository.getAllContacts() } returns flowOf(listOf(contact))
-            coEvery { contactRepository.updateContact(any()) } returns Unit
+            mockUpdateContacts()
 
-            useCase.removeFromListFieldAll("hobby", "阅读")
+            useCase.removeFromListFieldAll(CustomCategories.HOBBY, "阅读")
 
-            coVerify(exactly = 0) { contactRepository.updateContact(any()) }
+            coVerify(exactly = 0) { contactRepository.updateContacts(any()) }
         }
 
         @Test
@@ -88,27 +95,131 @@ class CleanCustomTypeUseCaseTest {
             // Non-JSON format: comma-separated
             val contact = Contact(id = 1L, name = "Alice", hobby = "阅读,游泳,音乐")
             coEvery { contactRepository.getAllContacts() } returns flowOf(listOf(contact))
-            coEvery { contactRepository.updateContact(any()) } returns Unit
+            val captured = mockUpdateContacts()
 
-            useCase.removeFromListFieldAll("hobby", "游泳")
+            useCase.removeFromListFieldAll(CustomCategories.HOBBY, "游泳")
 
-            coVerify {
-                contactRepository.updateContact(match { c ->
-                    c.hobby != null && !c.hobby!!.contains("游泳")
-                })
-            }
+            val updated = captured.single().single()
+            assertThat(updated.hobby).isNotNull()
+            assertThat(updated.hobby).doesNotContain("游泳")
         }
 
         @Test
-        fun multipleContacts_updatedIndependently() = runTest {
+        fun multipleContacts_updatedInBatch() = runTest {
+            // P-5 修复后：多个联系人变更通过一次 updateContacts 调用提交
             val contact1 = Contact(id = 1L, name = "Alice", hobby = """["阅读","游泳"]""")
             val contact2 = Contact(id = 2L, name = "Bob", hobby = """["游泳","音乐"]""")
             coEvery { contactRepository.getAllContacts() } returns flowOf(listOf(contact1, contact2))
-            coEvery { contactRepository.updateContact(any()) } returns Unit
+            val captured = mockUpdateContacts()
 
-            useCase.removeFromListFieldAll("hobby", "游泳")
+            useCase.removeFromListFieldAll(CustomCategories.HOBBY, "游泳")
 
-            coVerify(exactly = 2) { contactRepository.updateContact(any()) }
+            assertThat(captured.single()).hasSize(2)
+            assertThat(captured.single().map { it.id }).containsExactly(1L, 2L)
+        }
+
+        @Test
+        fun doesNotPolluteOtherFieldsWhenRemovingHobby() = runTest {
+            // T-9 回归测试：删除 HOBBY 类别的"音乐"，不应影响 skill 字段
+            val contact = Contact(
+                id = 1L,
+                name = "Alice",
+                hobby = """["阅读","音乐"]""",
+                skill = """["音乐","编程"]"""
+            )
+            coEvery { contactRepository.getAllContacts() } returns flowOf(listOf(contact))
+            val captured = mockUpdateContacts()
+
+            useCase.removeFromListFieldAll(CustomCategories.HOBBY, "音乐")
+
+            val updated = captured.single().single()
+            assertThat(updated.hobby).contains("阅读")
+            assertThat(updated.hobby).doesNotContain("音乐")
+            // skill 字段不应被污染
+            assertThat(updated.skill).contains("音乐")
+            assertThat(updated.skill).contains("编程")
+        }
+
+        @Test
+        fun doesNotPolluteOtherFieldsWhenRemovingSkill() = runTest {
+            // T-9 回归测试：删除 SKILL 类别的"音乐"，不应影响 hobby 字段
+            val contact = Contact(
+                id = 1L,
+                name = "Alice",
+                hobby = """["阅读","音乐"]""",
+                skill = """["音乐","编程"]"""
+            )
+            coEvery { contactRepository.getAllContacts() } returns flowOf(listOf(contact))
+            val captured = mockUpdateContacts()
+
+            useCase.removeFromListFieldAll(CustomCategories.SKILL, "音乐")
+
+            val updated = captured.single().single()
+            assertThat(updated.skill).contains("编程")
+            assertThat(updated.skill).doesNotContain("音乐")
+            // hobby 字段不应被污染
+            assertThat(updated.hobby).contains("音乐")
+            assertThat(updated.hobby).contains("阅读")
+        }
+
+        @Test
+        fun doesNotPolluteOtherFieldsWhenRemovingDiet() = runTest {
+            // T-9 回归测试：删除 DIET 类别的"咖啡"，不应影响 hobby/habit/skill
+            val contact = Contact(
+                id = 1L,
+                name = "Alice",
+                hobby = """["咖啡品鉴"]""",
+                habit = """["喝咖啡"]""",
+                diet = """["咖啡","辣"]""",
+                skill = """["拉花"]"""
+            )
+            coEvery { contactRepository.getAllContacts() } returns flowOf(listOf(contact))
+            val captured = mockUpdateContacts()
+
+            useCase.removeFromListFieldAll(CustomCategories.DIET, "咖啡")
+
+            val updated = captured.single().single()
+            assertThat(updated.diet).contains("辣")
+            assertThat(updated.diet).doesNotContain("咖啡")
+            assertThat(updated.hobby).isEqualTo("""["咖啡品鉴"]""")
+            assertThat(updated.habit).isEqualTo("""["喝咖啡"]""")
+            assertThat(updated.skill).isEqualTo("""["拉花"]""")
+        }
+
+        @Test
+        fun doesNotPolluteOtherFieldsWhenRemovingHabit() = runTest {
+            // T-9 回归测试：删除 HABIT 类别的"游泳"，不应影响 hobby/diet/skill
+            val contact = Contact(
+                id = 1L,
+                name = "Alice",
+                hobby = """["游泳"]""",
+                habit = """["游泳","早起"]""",
+                diet = """["清淡"]""",
+                skill = """["游泳救生"]"""
+            )
+            coEvery { contactRepository.getAllContacts() } returns flowOf(listOf(contact))
+            val captured = mockUpdateContacts()
+
+            useCase.removeFromListFieldAll(CustomCategories.HABIT, "游泳")
+
+            val updated = captured.single().single()
+            assertThat(updated.habit).contains("早起")
+            assertThat(updated.habit).doesNotContain("游泳")
+            assertThat(updated.hobby).isEqualTo("""["游泳"]""")
+            assertThat(updated.diet).isEqualTo("""["清淡"]""")
+            assertThat(updated.skill).isEqualTo("""["游泳救生"]""")
+        }
+
+        @Test
+        fun unknownField_noUpdate() = runTest {
+            // 传入未知 field 应直接返回，不更新任何联系人
+            val contact = Contact(id = 1L, name = "Alice", hobby = """["阅读"]""")
+            coEvery { contactRepository.getAllContacts() } returns flowOf(listOf(contact))
+            mockUpdateContacts()
+
+            useCase.removeFromListFieldAll("UNKNOWN_CATEGORY", "阅读")
+
+            coVerify(exactly = 0) { contactRepository.updateContacts(any()) }
         }
     }
 }

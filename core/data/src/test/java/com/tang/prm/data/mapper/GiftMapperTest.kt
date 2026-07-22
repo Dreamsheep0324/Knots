@@ -12,7 +12,7 @@ class GiftMapperTest {
     fun giftEntity_toDomain_mapsAllFields() {
         val entity = GiftEntity(
             id = 1, contactId = 10, giftName = "手表", giftType = "LUXURY",
-            date = 1000L, isSent = true, amount = 5000.0,
+            date = 1000L, isSent = true,
             occasion = "生日", description = "精工手表",
             location = "商场", photos = listOf("watch1.jpg", "watch2.jpg"),
             createdAt = 2000L, updatedAt = 3000L
@@ -26,7 +26,6 @@ class GiftMapperTest {
         assertThat(domain.giftType).isEqualTo(GiftType.OTHER)
         assertThat(domain.date).isEqualTo(1000L)
         assertThat(domain.isSent).isTrue()
-        assertThat(domain.amount).isEqualTo(5000.0)
         assertThat(domain.occasion).isEqualTo("生日")
         assertThat(domain.description).isEqualTo("精工手表")
         assertThat(domain.location).isEqualTo("商场")
@@ -39,7 +38,7 @@ class GiftMapperTest {
     fun gift_toEntity_mapsAllFields() {
         val domain = Gift(
             id = 1, contactId = 10, giftName = "手表", giftType = GiftType.OTHER,
-            date = 1000L, isSent = true, amount = 5000.0,
+            date = 1000L, isSent = true,
             occasion = "生日", description = "精工手表",
             location = "商场", photos = listOf("watch1.jpg"),
             createdAt = 2000L, updatedAt = 3000L
@@ -53,7 +52,6 @@ class GiftMapperTest {
         assertThat(entity.giftType).isEqualTo("OTHER")
         assertThat(entity.date).isEqualTo(1000L)
         assertThat(entity.isSent).isTrue()
-        assertThat(entity.amount).isEqualTo(5000.0)
         assertThat(entity.occasion).isEqualTo("生日")
         assertThat(entity.description).isEqualTo("精工手表")
         assertThat(entity.location).isEqualTo("商场")
@@ -66,7 +64,7 @@ class GiftMapperTest {
     fun giftEntity_roundtrip_preservesAllFields() {
         val original = GiftEntity(
             id = 1, contactId = 10, giftName = "书", giftType = "BOOKS",
-            date = 1000L, isSent = false, amount = null,
+            date = 1000L, isSent = false,
             occasion = null, description = null,
             location = null, photos = emptyList(),
             createdAt = 2000L, updatedAt = 3000L
@@ -81,7 +79,7 @@ class GiftMapperTest {
     fun giftEntity_isSent_preserved() {
         val entity = GiftEntity(
             id = 1, contactId = 10, giftName = "花", giftType = "OTHER",
-            date = 1000L, isSent = true, amount = null,
+            date = 1000L, isSent = true,
             occasion = null, description = null,
             location = null, photos = emptyList()
         )
@@ -97,7 +95,7 @@ class GiftMapperTest {
     fun giftEntity_isSent_false_preserved() {
         val entity = GiftEntity(
             id = 1, contactId = 10, giftName = "花", giftType = "OTHER",
-            date = 1000L, isSent = false, amount = null,
+            date = 1000L, isSent = false,
             occasion = null, description = null,
             location = null, photos = emptyList()
         )

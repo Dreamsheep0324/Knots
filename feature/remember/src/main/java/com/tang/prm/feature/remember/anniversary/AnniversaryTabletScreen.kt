@@ -57,7 +57,6 @@ import androidx.navigation.NavController
 import com.tang.prm.domain.model.Anniversary
 import com.tang.prm.domain.model.AnniversaryType
 import com.tang.prm.domain.util.DateCalcUtils
-import com.tang.prm.domain.util.LunarDateUtils
 import com.tang.prm.ui.animation.primitives.staggeredAppear
 import com.tang.prm.ui.components.TabletSearchBar
 import com.tang.prm.ui.navigation.AddAnniversaryRoute
@@ -246,14 +245,12 @@ private fun UpcomingHeroCard(
     anniversary: Anniversary,
     typeColor: Color
 ) {
-    val daysInfo = remember(anniversary.id, anniversary.date, anniversary.isLunar) {
-        if (anniversary.isLunar) LunarDateUtils.calculateLunarDaysInfo(anniversary.date)
-        else DateCalcUtils.calculateDaysInfo(anniversary.date)
+    val daysInfo = remember(anniversary.id, anniversary.date) {
+        DateCalcUtils.calculateDaysInfo(anniversary.date)
     }
     val date = remember(anniversary.date) {
         Instant.ofEpochMilli(anniversary.date).atZone(ZoneId.systemDefault()).toLocalDate()
     }
-    val lunarText = if (anniversary.isLunar) LunarDateUtils.formatLunarDateShort(anniversary.date) else null
 
     Surface(
         modifier = Modifier
@@ -357,7 +354,6 @@ private fun UpcomingHeroCard(
                     Text(
                         text = buildString {
                             append("${date.monthValue}月${date.dayOfMonth}日")
-                            lunarText?.let { append(" · $it") }
                             if (anniversary.isRepeat) append(" · 每年")
                         },
                         fontSize = 13.sp,
@@ -819,9 +815,8 @@ private fun TypeCard(
     anniversary: Anniversary,
     typeColor: Color
 ) {
-    val daysInfo = remember(anniversary.id, anniversary.date, anniversary.isLunar) {
-        if (anniversary.isLunar) LunarDateUtils.calculateLunarDaysInfo(anniversary.date)
-        else DateCalcUtils.calculateDaysInfo(anniversary.date)
+    val daysInfo = remember(anniversary.id, anniversary.date) {
+        DateCalcUtils.calculateDaysInfo(anniversary.date)
     }
     val date = remember(anniversary.date) {
         Instant.ofEpochMilli(anniversary.date).atZone(ZoneId.systemDefault()).toLocalDate()
@@ -903,12 +898,11 @@ private fun TypeCard(
                     }
                     Text(
                         text = buildString {
-                            if (anniversary.isLunar) append("农历")
                             if (anniversary.isRepeat) {
-                                if (isNotEmpty()) append(" · ")
                                 append("每年")
+                            } else {
+                                append("单次")
                             }
-                            if (isEmpty()) append("单次")
                         },
                         fontSize = 11.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant

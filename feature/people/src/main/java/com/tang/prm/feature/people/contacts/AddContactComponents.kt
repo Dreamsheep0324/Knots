@@ -68,6 +68,7 @@ internal data class SectionStyle(val icon: ImageVector, val color: Color)
 internal val sectionStyles = mapOf(
     "基本信息" to SectionStyle(Icons.Default.Person, Color(0xFF42A5F5)),
     "关系" to SectionStyle(Icons.Default.FavoriteBorder, Color(0xFFE65100)),
+    "人物关系" to SectionStyle(Icons.Default.People, Color(0xFF0F766E)),
     "重要日期" to SectionStyle(Icons.Default.CalendarToday, Color(0xFF66BB6A)),
     "联系方式" to SectionStyle(Icons.Default.Phone, Color(0xFF4DD0E1)),
     "位置信息" to SectionStyle(Icons.Default.LocationOn, Color(0xFF9575CD)),

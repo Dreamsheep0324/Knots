@@ -9,6 +9,7 @@ import com.tang.prm.domain.model.SourceTypes
 import com.tang.prm.domain.repository.ContactRepository
 import com.tang.prm.domain.repository.GiftRepository
 import com.tang.prm.domain.usecase.FavoriteToggleUseCase
+import com.tang.prm.domain.usecase.ObserveFavoritesUseCase
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -43,12 +44,15 @@ class GiftsViewModelTest {
     @MockK
     private lateinit var favoriteToggleUseCase: FavoriteToggleUseCase
 
+    @MockK
+    private lateinit var observeFavoritesUseCase: ObserveFavoritesUseCase
+
     private lateinit var viewModel: GiftsViewModel
 
     private val contact = Contact(id = 1L, name = "Alice", avatar = "avatar.jpg")
     private val gift = Gift(
         id = 10L, contactId = 1L, giftName = "巧克力", giftType = GiftType.FOOD,
-        date = 2000L, isSent = true, amount = 100.0
+        date = 2000L, isSent = true
     )
 
     @BeforeEach
@@ -57,10 +61,10 @@ class GiftsViewModelTest {
 
         every { contactRepository.getAllContacts() } returns flowOf(listOf(contact))
         every { giftRepository.getAllGifts() } returns flowOf(listOf(gift))
-        every { favoriteToggleUseCase.getFavoriteIds("GIFT") } returns flowOf(emptySet())
+        every { observeFavoritesUseCase.getFavoriteIds("GIFT") } returns flowOf(emptySet())
         coEvery { favoriteToggleUseCase(any(), any(), any(), any()) } returns true
 
-        viewModel = GiftsViewModel(giftRepository, contactRepository, favoriteToggleUseCase)
+        viewModel = GiftsViewModel(giftRepository, contactRepository, favoriteToggleUseCase, observeFavoritesUseCase)
     }
 
     @AfterEach
@@ -88,7 +92,7 @@ class GiftsViewModelTest {
             val giftWithUnknownContact = gift.copy(contactId = 999L)
             every { giftRepository.getAllGifts() } returns flowOf(listOf(giftWithUnknownContact))
 
-            val vm = GiftsViewModel(giftRepository, contactRepository, favoriteToggleUseCase)
+            val vm = GiftsViewModel(giftRepository, contactRepository, favoriteToggleUseCase, observeFavoritesUseCase)
 
             vm.uiState.test {
                 val state = awaitItem()
@@ -153,14 +157,14 @@ class GiftsViewModelTest {
         @Test
         fun toggleFavorite_addsToFavoriteSet() = runTest {
             val favoriteIds = MutableStateFlow(emptySet<Long>())
-            every { favoriteToggleUseCase.getFavoriteIds("GIFT") } returns favoriteIds
+            every { observeFavoritesUseCase.getFavoriteIds("GIFT") } returns favoriteIds
             coEvery { favoriteToggleUseCase(any(), any(), any(), any()) } answers {
                 val sourceId = secondArg<Long>()
                 favoriteIds.value = favoriteIds.value + sourceId
                 true
             }
             // 重新创建 viewModel 以使用新的 favoriteIds flow
-            viewModel = GiftsViewModel(giftRepository, contactRepository, favoriteToggleUseCase)
+            viewModel = GiftsViewModel(giftRepository, contactRepository, favoriteToggleUseCase, observeFavoritesUseCase)
             val job = launch { viewModel.uiState.collect { } }
             advanceUntilIdle()
             viewModel.toggleFavorite(10L, "巧克力", "Alice")

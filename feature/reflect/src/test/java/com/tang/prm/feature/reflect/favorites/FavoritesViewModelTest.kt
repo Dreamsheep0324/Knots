@@ -39,6 +39,10 @@ class FavoritesViewModelTest {
         Dispatchers.setMain(UnconfinedTestDispatcher())
 
         every { favoriteRepository.getAllFavorites() } returns flowOf(testFavorites)
+        every { favoriteRepository.getFavoritesByType(any()) } answers {
+            val type = firstArg<String>()
+            flowOf(testFavorites.filter { it.sourceType == type })
+        }
 
         observeFavoritesUseCase = ObserveFavoritesUseCase(favoriteRepository)
         viewModel = FavoritesViewModel(observeFavoritesUseCase)

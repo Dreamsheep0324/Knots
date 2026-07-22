@@ -23,4 +23,13 @@ interface CustomTypeDao {
 
     @Query("SELECT COUNT(*) FROM custom_types WHERE category = :category")
     suspend fun getTypeCountByCategory(category: String): Int
+
+    /**
+     * 按名称 + 分类精确查找预设类型。
+     *
+     * 用于 ContactRelationRepositoryImpl 解析预设关系类型 ID（如"朋友"），
+     * 避免在内存中维护字符串与 ID 的映射。
+     */
+    @Query("SELECT * FROM custom_types WHERE category = :category AND name = :name LIMIT 1")
+    suspend fun getByNameAndCategory(name: String, category: String): CustomTypeEntity?
 }

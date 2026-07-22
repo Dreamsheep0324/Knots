@@ -6,7 +6,7 @@ import com.tang.prm.domain.model.CloudBackupVersion
 import com.tang.prm.domain.model.ConnectionTestResult
 import com.tang.prm.domain.model.SyncResult
 import com.tang.prm.domain.model.WebDavConfig
-import com.tang.prm.domain.repository.BackupRepositoryInterface
+import com.tang.prm.domain.repository.ImageOrphanCleaner
 import com.tang.prm.domain.repository.WebDavRepository
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -35,7 +35,7 @@ class WebDavSyncViewModelTest {
     private lateinit var webDavRepository: WebDavRepository
 
     @MockK
-    private lateinit var backupRepository: BackupRepositoryInterface
+    private lateinit var imageOrphanCleaner: ImageOrphanCleaner
 
     private lateinit var viewModel: WebDavSyncViewModel
 
@@ -54,7 +54,7 @@ class WebDavSyncViewModelTest {
         coEvery { webDavRepository.testConnection() } returns ConnectionTestResult.Success
         coEvery { webDavRepository.listRemoteBackups() } returns emptyList()
 
-        viewModel = WebDavSyncViewModel(webDavRepository, backupRepository)
+        viewModel = WebDavSyncViewModel(webDavRepository, imageOrphanCleaner)
     }
 
     @AfterEach
@@ -296,7 +296,7 @@ class WebDavSyncViewModelTest {
         @Test
         fun setsCleaningThenDone() = runTest {
             backgroundScope.launch { viewModel.uiState.collect { } }
-            coEvery { backupRepository.cleanOrphanedImages() } returns 5
+            coEvery { imageOrphanCleaner.cleanOrphanedImages() } returns 5
             viewModel.cleanOrphanedImages()
 
             advanceUntilIdle()

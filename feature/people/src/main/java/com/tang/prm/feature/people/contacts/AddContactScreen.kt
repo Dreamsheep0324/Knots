@@ -15,7 +15,6 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -31,12 +30,18 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.tang.prm.domain.model.CustomCategories
+import com.tang.prm.feature.people.contacts.components.PersonRelationDialog
+import com.tang.prm.feature.people.contacts.components.PersonRelationDraft
+import com.tang.prm.feature.people.contacts.components.PersonRelationTypeInfo
+import com.tang.prm.feature.people.contacts.components.PersonRelationsMode
+import com.tang.prm.feature.people.contacts.components.PersonRelationsSection
 import com.tang.prm.ui.components.AppDatePicker
 import com.tang.prm.ui.components.DiscardEditDialog
 import com.tang.prm.ui.components.FormScreenScaffold
 import com.tang.prm.ui.components.TagSelector
 import com.tang.prm.ui.components.TagSelectorMode
 import com.tang.prm.domain.util.DateUtils
+import com.tang.prm.ui.theme.toComposeColor
 import androidx.hilt.navigation.compose.hiltViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -144,6 +149,53 @@ fun AddContactScreen(
                         showHeader = false,
                         showAddDialog = showAddRelationshipDialog,
                         onAddDialogDismiss = { showAddRelationshipDialog = false }
+                    )
+                }
+            }
+
+            item {
+                var showAddPersonRelationDialog by remember { mutableStateOf(false) }
+                FormSection(
+                    title = "人物关系",
+                    action = {
+                        TextButton(onClick = { showAddPersonRelationDialog = true }, contentPadding = PaddingValues(horizontal = 8.dp, vertical = 2.dp)) {
+                            Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(14.dp))
+                            Spacer(modifier = Modifier.width(2.dp))
+                            Text("新增", style = MaterialTheme.typography.labelMedium)
+                        }
+                    }
+                ) {
+                    val fallbackColor = MaterialTheme.colorScheme.primary
+                    val typeInfoMap = remember(uiState.personRelationTypes, fallbackColor) {
+                        uiState.personRelationTypes.associate { type ->
+                            type.id to PersonRelationTypeInfo(
+                                name = type.name,
+                                color = type.color?.toComposeColor(fallbackColor)
+                            )
+                        }
+                    }
+                    PersonRelationsSection(
+                        relations = uiState.personRelations,
+                        typeInfoMap = typeInfoMap,
+                        mode = PersonRelationsMode.EDITOR,
+                        onRelationClick = {},
+                        onRelationDelete = { viewModel.removePersonRelation(it) }
+                    )
+                }
+
+                if (showAddPersonRelationDialog) {
+                    PersonRelationDialog(
+                        onDismiss = { showAddPersonRelationDialog = false },
+                        onConfirm = { draft ->
+                            viewModel.addPersonRelation(draft)
+                            showAddPersonRelationDialog = false
+                        },
+                        relationTypes = uiState.personRelationTypes,
+                        availableContacts = uiState.availableContacts,
+                        onAddType = { name, color, icon ->
+                            viewModel.addCustomType(CustomCategories.PERSON_RELATION, name, color, icon)
+                        },
+                        ownerId = uiState.id.toLong()
                     )
                 }
             }

@@ -28,7 +28,7 @@ class AnniversaryMapperTest {
     fun anniversaryEntity_toDomain_mapsAllFields() {
         val entity = AnniversaryEntity(
             id = 1, contactId = 10, name = "生日", type = "BIRTHDAY",
-            date = 1000L, isLunar = true, isRepeat = true, reminderDays = 3,
+            date = 1000L, isRepeat = true, reminderDays = 3,
             remarks = "备注", icon = "cake", createdAt = 2000L, updatedAt = 3000L
         )
 
@@ -39,7 +39,6 @@ class AnniversaryMapperTest {
         assertThat(domain.name).isEqualTo("生日")
         assertThat(domain.type).isEqualTo(AnniversaryType.BIRTHDAY)
         assertThat(domain.date).isEqualTo(1000L)
-        assertThat(domain.isLunar).isTrue()
         assertThat(domain.isRepeat).isTrue()
         assertThat(domain.reminderDays).isEqualTo(3)
         assertThat(domain.remarks).isEqualTo("备注")
@@ -81,7 +80,7 @@ class AnniversaryMapperTest {
     fun anniversary_toEntity_mapsAllFields() {
         val domain = Anniversary(
             id = 1, contactId = 10, name = "生日", type = AnniversaryType.BIRTHDAY,
-            date = 1000L, isLunar = true, isRepeat = true, reminderDays = 3,
+            date = 1000L, isRepeat = true, reminderDays = 3,
             remarks = "备注", contactName = "张三", contactAvatar = "avatar.png",
             icon = "cake", createdAt = 2000L, updatedAt = 3000L
         )
@@ -93,7 +92,6 @@ class AnniversaryMapperTest {
         assertThat(entity.name).isEqualTo("生日")
         assertThat(entity.type).isEqualTo("BIRTHDAY")
         assertThat(entity.date).isEqualTo(1000L)
-        assertThat(entity.isLunar).isTrue()
         assertThat(entity.isRepeat).isTrue()
         assertThat(entity.reminderDays).isEqualTo(3)
         assertThat(entity.remarks).isEqualTo("备注")
@@ -127,23 +125,12 @@ class AnniversaryMapperTest {
     fun anniversaryEntity_roundtrip_preservesEntityFields() {
         val original = AnniversaryEntity(
             id = 1, contactId = 10, name = "生日", type = "BIRTHDAY",
-            date = 1000L, isLunar = true, isRepeat = false, reminderDays = 7,
+            date = 1000L, isRepeat = false, reminderDays = 7,
             remarks = "备注", icon = "gift", createdAt = 2000L, updatedAt = 3000L
         )
 
         val roundtrip = original.toDomain(contactName = null, contactAvatar = null).toEntity()
 
         assertThat(roundtrip).isEqualTo(original)
-    }
-
-    @Test
-    fun anniversaryEntity_isLunar_preserved() {
-        val entity = AnniversaryEntity(id = 1, contactId = 10, name = "生日", type = "BIRTHDAY", date = 1000L, isLunar = true)
-
-        val domain = entity.toDomain(contactName = null, contactAvatar = null)
-        val roundtrip = domain.toEntity()
-
-        assertThat(domain.isLunar).isTrue()
-        assertThat(roundtrip.isLunar).isTrue()
     }
 }

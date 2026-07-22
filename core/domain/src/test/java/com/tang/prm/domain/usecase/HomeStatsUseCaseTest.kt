@@ -2,8 +2,8 @@ package com.tang.prm.domain.usecase
 
 import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat
-import com.tang.prm.domain.model.Contact
 import com.tang.prm.domain.model.EventType
+import com.tang.prm.domain.model.IntimacyTier
 import com.tang.prm.domain.repository.*
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
@@ -45,7 +45,8 @@ class HomeStatsUseCaseTest {
         favoriteCount: Int = 0, circleCount: Int = 0, anniversaryCount: Int = 0,
         eventCount: Int = 0, conversationCount: Int = 0,
         footprintCount: Int = 0, eventPhotoCount: Int = 0, giftPhotoCount: Int = 0,
-        subscriptionCount: Int = 0
+        subscriptionCount: Int = 0,
+        intimacyScores: List<Int> = emptyList()
     ) {
         every { giftRepository.getGiftCount() } returns flowOf(giftCount)
         every { thoughtRepository.getThoughtCount() } returns flowOf(thoughtCount)
@@ -54,18 +55,14 @@ class HomeStatsUseCaseTest {
         every { circleRepository.getCircleCount() } returns flowOf(circleCount)
         every { anniversaryRepository.getAnniversaryCount() } returns flowOf(anniversaryCount)
         every { eventRepository.getEventCount() } returns flowOf(eventCount)
-        every { eventRepository.getEventsByType(EventType.CONVERSATION.name) } returns flowOf(List(conversationCount) { mockEvent() })
-        every { eventRepository.getEventsWithLocation() } returns flowOf(List(footprintCount) { mockEvent() })
+        every { eventRepository.getEventCountByType(EventType.CONVERSATION.name) } returns flowOf(conversationCount)
+        every { eventRepository.getEventCountWithLocation() } returns flowOf(footprintCount)
         every { eventRepository.getPhotoCount() } returns flowOf(eventPhotoCount)
         every { giftRepository.getPhotoCount() } returns flowOf(giftPhotoCount)
         every { subscriptionRepository.getSubscriptionCount() } returns flowOf(subscriptionCount)
         every { recipeRepository.getRecipeCount() } returns flowOf(0)
-        every { contactRepository.getAllContacts() } returns flowOf(emptyList())
+        every { contactRepository.getAllIntimacyScores() } returns flowOf(intimacyScores)
     }
-
-    private fun mockEvent() = com.tang.prm.domain.model.Event(
-        id = 0, title = "mock", type = EventType.OTHER, time = 0L
-    )
 
     @Test
     fun allZeroCounts() = runTest {
@@ -117,6 +114,38 @@ class HomeStatsUseCaseTest {
             useCase.getStats().test {
                 val stats = awaitItem()
                 assertThat(stats.photoCount).isEqualTo(42)
+                cancelAndIgnoreRemainingEvents()
+            }
+        }
+    }
+
+    @Nested
+    @DisplayName("tierDistribution")
+    inner class TierDistributionTest {
+
+        @Test
+        fun tierDistribution_aggregatedCorrectly() = runTest {
+            // 亲密分数 10/50/90 → NEW/ACQUAINTANCE/CLOSE（具体 Tier 由 IntimacyTier.of 决定）
+            setupCountMocks(intimacyScores = listOf(10, 50, 90, 10))
+
+            useCase.getStats().test {
+                val stats = awaitItem()
+                // 10 出现两次，50 一次，90 一次
+                assertThat(stats.tierDistribution).isNotEmpty()
+                assertThat(stats.tierDistribution[IntimacyTier.of(10)]).isEqualTo(2)
+                assertThat(stats.tierDistribution[IntimacyTier.of(50)]).isEqualTo(1)
+                assertThat(stats.tierDistribution[IntimacyTier.of(90)]).isEqualTo(1)
+                cancelAndIgnoreRemainingEvents()
+            }
+        }
+
+        @Test
+        fun tierDistribution_emptyWhenNoContacts() = runTest {
+            setupCountMocks(intimacyScores = emptyList())
+
+            useCase.getStats().test {
+                val stats = awaitItem()
+                assertThat(stats.tierDistribution).isEmpty()
                 cancelAndIgnoreRemainingEvents()
             }
         }

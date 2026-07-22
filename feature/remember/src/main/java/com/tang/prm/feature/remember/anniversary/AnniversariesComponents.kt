@@ -41,7 +41,6 @@ import com.tang.prm.ui.theme.getAnniversaryIconBackground
 import com.tang.prm.ui.theme.getAnniversaryIconTint
 import com.tang.prm.domain.util.DateCalcUtils
 import com.tang.prm.domain.util.DateUtils
-import com.tang.prm.domain.util.LunarDateUtils
 
 internal fun getTypeColor(type: AnniversaryType): Color {
     return when (type) {
@@ -57,11 +56,7 @@ internal fun AnniversaryCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val daysInfo = if (anniversary.isLunar) {
-        LunarDateUtils.calculateLunarDaysInfo(anniversary.date)
-    } else {
-        DateCalcUtils.calculateDaysInfo(anniversary.date)
-    }
+    val daysInfo = DateCalcUtils.calculateDaysInfo(anniversary.date)
     val isToday = daysInfo.daysUntil == 0
     val iconName = anniversary.icon ?: "Cake"
     val typeColor = getTypeColor(anniversary.type)
@@ -161,20 +156,6 @@ internal fun AnniversaryCard(
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
-                    if (anniversary.isLunar) {
-                        Surface(
-                            shape = RoundedCornerShape(4.dp),
-                            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
-                        ) {
-                            Text(
-                                text = LunarDateUtils.formatLunarDateShort(anniversary.date),
-                                modifier = Modifier.padding(horizontal = 4.dp, vertical = 1.dp),
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.primary,
-                                fontWeight = FontWeight.SemiBold
-                            )
-                        }
-                    }
                 }
             }
 

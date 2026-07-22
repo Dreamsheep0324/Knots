@@ -30,12 +30,12 @@ fun ContactListItemEntity.toDomain() = Contact(
 
 fun Contact.toEntity() = ContactEntity(
     id = id, name = name, avatar = avatar, nickname = nickname, gender = gender.value,
-    birthday = birthday, isLunarBirthday = isLunarBirthday, isLeapMonthBirthday = isLeapMonthBirthday, knowingDate = knowingDate,
+    birthday = birthday, knowingDate = knowingDate,
     phone = phone, email = email, city = city, address = address, education = education,
     company = company, jobTitle = jobTitle, industry = industry, hobby = hobby, habit = habit,
     diet = diet, skill = skill, mbti = mbti, spouseName = spouseName,
     childrenCount = childrenCount, childrenNames = childrenNames, introducer = introducer,
-    relationshipLevel = relationshipLevel, relationship = relationship, groupId = groupId,
+    relationship = relationship, groupId = groupId,
     intimacyScore = intimacyScore, lastInteractionTime = lastInteractionTime,
     customFields = customFields, notes = notes, createdAt = createdAt, updatedAt = updatedAt
 )
@@ -48,7 +48,7 @@ fun ContactEntity.toDomainWithAttributes(attributes: List<ContactAttributeEntity
     val attrMap = attributes.groupBy { it.category.lowercase() }
     return Contact(
         id = id, name = name, avatar = avatar, nickname = nickname, gender = Gender.fromValue(gender),
-        birthday = birthday, isLunarBirthday = isLunarBirthday, isLeapMonthBirthday = isLeapMonthBirthday, knowingDate = knowingDate,
+        birthday = birthday, knowingDate = knowingDate,
         phone = phone, email = email, city = city, address = address, education = education,
         company = company, jobTitle = jobTitle, industry = industry,
         hobby = attrMap["hobby"]?.toAttributeValueJson() ?: hobby,
@@ -57,7 +57,7 @@ fun ContactEntity.toDomainWithAttributes(attributes: List<ContactAttributeEntity
         skill = attrMap["skill"]?.toAttributeValueJson() ?: skill,
         mbti = mbti, spouseName = spouseName,
         childrenCount = childrenCount, childrenNames = childrenNames, introducer = introducer,
-        relationshipLevel = relationshipLevel, relationship = relationship, groupId = groupId,
+        relationship = relationship, groupId = groupId,
         intimacyScore = intimacyScore, lastInteractionTime = lastInteractionTime,
         customFields = customFields, notes = notes, createdAt = createdAt, updatedAt = updatedAt
     )

@@ -47,7 +47,6 @@ class GiftDaoTest {
             giftType = "physical",
             date = 1000L,
             isSent = true,
-            amount = null,
             occasion = null,
             description = null,
             location = null
@@ -60,7 +59,7 @@ class GiftDaoTest {
 
     @Test
     fun getByContactId() = runBlocking {
-        dao.insertGift(GiftEntity(contactId = contactId, giftName = "礼物", giftType = "physical", date = 1000L, isSent = true, amount = null, occasion = null, description = null, location = null))
+        dao.insertGift(GiftEntity(contactId = contactId, giftName = "礼物", giftType = "physical", date = 1000L, isSent = true, occasion = null, description = null, location = null))
         val result = dao.getGiftsByContactId(contactId).first()
         assertThat(result).hasSize(1)
         assertThat(result[0].giftName).isEqualTo("礼物")
@@ -68,7 +67,7 @@ class GiftDaoTest {
 
     @Test
     fun getGiftByIdOnce() = runBlocking {
-        val id = dao.insertGift(GiftEntity(contactId = contactId, giftName = "礼物", giftType = "physical", date = 1000L, isSent = true, amount = null, occasion = null, description = null, location = null))
+        val id = dao.insertGift(GiftEntity(contactId = contactId, giftName = "礼物", giftType = "physical", date = 1000L, isSent = true, occasion = null, description = null, location = null))
         val result = dao.getGiftByIdOnce(id)
         assertThat(result).isNotNull()
         assertThat(result!!.giftName).isEqualTo("礼物")
@@ -82,15 +81,15 @@ class GiftDaoTest {
 
     @Test
     fun getGiftsByContactIdOnce() = runBlocking {
-        dao.insertGift(GiftEntity(contactId = contactId, giftName = "礼物1", giftType = "physical", date = 1000L, isSent = true, amount = null, occasion = null, description = null, location = null))
-        dao.insertGift(GiftEntity(contactId = contactId, giftName = "礼物2", giftType = "physical", date = 2000L, isSent = false, amount = null, occasion = null, description = null, location = null))
+        dao.insertGift(GiftEntity(contactId = contactId, giftName = "礼物1", giftType = "physical", date = 1000L, isSent = true, occasion = null, description = null, location = null))
+        dao.insertGift(GiftEntity(contactId = contactId, giftName = "礼物2", giftType = "physical", date = 2000L, isSent = false, occasion = null, description = null, location = null))
         val result = dao.getGiftsByContactIdOnce(contactId)
         assertThat(result).hasSize(2)
     }
 
     @Test
     fun deleteGift() = runBlocking {
-        val id = dao.insertGift(GiftEntity(contactId = contactId, giftName = "礼物", giftType = "physical", date = 1000L, isSent = true, amount = null, occasion = null, description = null, location = null))
+        val id = dao.insertGift(GiftEntity(contactId = contactId, giftName = "礼物", giftType = "physical", date = 1000L, isSent = true, occasion = null, description = null, location = null))
         dao.deleteGiftById(id)
         val result = dao.getAllGifts().first()
         assertThat(result).isEmpty()
@@ -98,7 +97,7 @@ class GiftDaoTest {
 
     @Test
     fun deleteGiftsByContactId() = runBlocking {
-        dao.insertGift(GiftEntity(contactId = contactId, giftName = "礼物", giftType = "physical", date = 1000L, isSent = true, amount = null, occasion = null, description = null, location = null))
+        dao.insertGift(GiftEntity(contactId = contactId, giftName = "礼物", giftType = "physical", date = 1000L, isSent = true, occasion = null, description = null, location = null))
         dao.deleteGiftsByContactId(contactId)
         val result = dao.getAllGifts().first()
         assertThat(result).isEmpty()

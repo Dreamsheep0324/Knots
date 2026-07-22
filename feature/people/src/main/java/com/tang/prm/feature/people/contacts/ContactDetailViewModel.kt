@@ -7,6 +7,7 @@ import androidx.lifecycle.viewModelScope
 import com.tang.prm.domain.model.*
 import com.tang.prm.domain.usecase.ContactDetailAggregationUseCase
 import com.tang.prm.domain.usecase.FavoriteToggleUseCase
+import com.tang.prm.domain.usecase.ThoughtWriteUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.*
@@ -28,7 +29,9 @@ data class ContactDetailDataState(
     val dietOptions: List<CustomType> = emptyList(),
     val skillOptions: List<CustomType> = emptyList(),
     val eventTypes: List<CustomType> = emptyList(),
-    val relationshipTypes: List<CustomType> = emptyList()
+    val relationshipTypes: List<CustomType> = emptyList(),
+    val personRelations: List<PersonRelation> = emptyList(),
+    val personRelationTypes: List<CustomType> = emptyList()
 )
 
 data class ContactDetailDialogState(
@@ -50,6 +53,7 @@ sealed class ContactDetailEvent {
 class ContactDetailViewModel @Inject constructor(
     private val aggregationUseCase: ContactDetailAggregationUseCase,
     private val favoriteToggleUseCase: FavoriteToggleUseCase,
+    private val thoughtWriteUseCase: ThoughtWriteUseCase,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
@@ -78,7 +82,9 @@ class ContactDetailViewModel @Inject constructor(
                         dietOptions = data.dietOptions,
                         skillOptions = data.skillOptions,
                         eventTypes = data.eventTypes,
-                        relationshipTypes = data.relationshipTypes
+                        relationshipTypes = data.relationshipTypes,
+                        personRelations = data.personRelations,
+                        personRelationTypes = data.personRelationTypes
                     )
                 }
                 .onStart { emit(ContactDetailDataState(isLoading = true)) }
@@ -143,10 +149,8 @@ class ContactDetailViewModel @Inject constructor(
     fun toggleTodoDone(thought: Thought) {
         viewModelScope.launch {
             runCatching {
-                aggregationUseCase.updateThought(thought.copy(
-                    isDone = !thought.isDone,
-                    updatedAt = System.currentTimeMillis()
-                ))
+                // A-4 修复：thought 写操作下沉到 ThoughtWriteUseCase
+                thoughtWriteUseCase.toggleDone(thought)
             }.onFailure { Log.e(TAG, "更新待办状态失败", it) }
         }
     }
@@ -154,7 +158,8 @@ class ContactDetailViewModel @Inject constructor(
     fun deleteThought(id: Long) {
         viewModelScope.launch {
             runCatching {
-                aggregationUseCase.deleteThought(id)
+                // A-4 修复：thought 写操作下沉到 ThoughtWriteUseCase
+                thoughtWriteUseCase.delete(id)
             }.onFailure { Log.e(TAG, "删除想法失败", it) }
         }
     }

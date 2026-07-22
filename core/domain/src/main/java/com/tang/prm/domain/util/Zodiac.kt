@@ -23,5 +23,10 @@ enum class Zodiac(
     PISCES("pisces", "双鱼座", 0xFF06B6D4, 2, 19, 3, 20);
 
     val tagColorValue: Long
-        get() = colorValue and 0x00FFFFFF or 0x1F000000.toLong()
+        // Q-1 修复：0x1F = 31 ≈ 12% alpha，用于 tag 背景淡化
+        get() = colorValue and 0x00FFFFFF or (TAG_ALPHA.toLong() shl 24)
+
+    companion object {
+        private const val TAG_ALPHA = 0x1F
+    }
 }

@@ -7,6 +7,7 @@ import com.tang.prm.domain.model.SourceTypes
 import com.tang.prm.domain.usecase.PhotoAlbumAggregationUseCase
 import com.tang.prm.domain.usecase.PhotoAlbumAggregateData
 import com.tang.prm.domain.usecase.FavoriteToggleUseCase
+import com.tang.prm.domain.usecase.ObserveFavoritesUseCase
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
@@ -31,6 +32,9 @@ class PhotoAlbumViewModelTest {
     @MockK
     private lateinit var favoriteToggleUseCase: FavoriteToggleUseCase
 
+    @MockK
+    private lateinit var observeFavoritesUseCase: ObserveFavoritesUseCase
+
     private lateinit var viewModel: PhotoAlbumViewModel
 
     private val testPhoto = AlbumPhoto(
@@ -50,10 +54,10 @@ class PhotoAlbumViewModelTest {
         Dispatchers.setMain(UnconfinedTestDispatcher())
 
         every { photoAlbumUseCase.getAggregateData() } returns flowOf(testAggregateData)
-        every { favoriteToggleUseCase.getFavoriteIds(SourceTypes.PHOTO) } returns flowOf(emptySet<Long>())
+        every { observeFavoritesUseCase.getFavoriteIds(SourceTypes.PHOTO) } returns flowOf(emptySet<Long>())
         coEvery { favoriteToggleUseCase(any(), any(), any(), any()) } returns true
 
-        viewModel = PhotoAlbumViewModel(photoAlbumUseCase, favoriteToggleUseCase)
+        viewModel = PhotoAlbumViewModel(photoAlbumUseCase, favoriteToggleUseCase, observeFavoritesUseCase)
     }
 
     @AfterEach

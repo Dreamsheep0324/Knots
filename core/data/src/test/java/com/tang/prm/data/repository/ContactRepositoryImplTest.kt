@@ -34,6 +34,9 @@ class ContactRepositoryImplTest {
     private lateinit var contactAttributeDao: ContactAttributeDao
 
     @MockK
+    private lateinit var anniversaryDao: AnniversaryDao
+
+    @MockK
     private lateinit var database: TangDatabase
 
     @MockK
@@ -54,7 +57,7 @@ class ContactRepositoryImplTest {
         every { any<String>().escapeSqlWildcards() } answers { firstArg() }
         every { context.filesDir } returns java.io.File.createTempFile("test", "tmp").parentFile
         repository = ContactRepositoryImpl(
-            contactDao, contactAttributeDao, database, context
+            contactDao, contactAttributeDao, anniversaryDao, database, context
         )
     }
 
@@ -106,5 +109,64 @@ class ContactRepositoryImplTest {
 
         coVerify { contactDao.getContactByIdOnce(1L) }
         coVerify { contactDao.deleteContactById(1L) }
+    }
+
+    @Test
+    fun insertContactWithAnniversaries_insertsContactThenAnniversariesWithNewId() = runTest {
+        // A-8 修复：跨聚合事务化写入
+        val newId = 42L
+        coEvery { contactDao.insertContact(any()) } returns newId
+        coEvery { contactAttributeDao.insertAll(any()) } returns Unit
+        coEvery { anniversaryDao.insertAnniversary(any()) } returns 1L
+
+        val anniversary = com.tang.prm.domain.model.Anniversary(
+            contactId = 0L, // 由 Repository 填充
+            name = "生日",
+            type = com.tang.prm.domain.model.AnniversaryType.BIRTHDAY,
+            date = 1000L
+        )
+        val result = repository.insertContactWithAnniversaries(domain, listOf(anniversary))
+
+        assertThat(result).isEqualTo(newId)
+        // 验证 anniversary 的 contactId 被自动填充为新联系人 ID
+        coVerify {
+            anniversaryDao.insertAnniversary(match { it.contactId == newId })
+        }
+    }
+
+    @Test
+    fun insertContactWithAnniversaries_emptyAnniversaries_onlyInsertsContact() = runTest {
+        coEvery { contactDao.insertContact(any()) } returns 1L
+        coEvery { contactAttributeDao.insertAll(any()) } returns Unit
+
+        val result = repository.insertContactWithAnniversaries(domain, emptyList())
+
+        assertThat(result).isEqualTo(1L)
+        coVerify(exactly = 0) { anniversaryDao.insertAnniversary(any()) }
+    }
+
+    @Test
+    fun updateContacts_emptyList_noOp() = runTest {
+        // P-5 修复：空列表直接返回，不开启事务
+        repository.updateContacts(emptyList())
+
+        coVerify(exactly = 0) { contactDao.updateContact(any()) }
+    }
+
+    @Test
+    fun updateContacts_multipleContacts_allUpdatedInTransaction() = runTest {
+        // P-5 修复：批量事务化更新
+        val contacts = listOf(
+            domain.copy(id = 1L, hobby = """["阅读"]"""),
+            domain.copy(id = 2L, hobby = null)
+        )
+        coEvery { contactDao.updateContact(any()) } returns Unit
+        coEvery { contactAttributeDao.deleteAllForContact(any()) } returns Unit
+        coEvery { contactAttributeDao.insertAll(any()) } returns Unit
+
+        repository.updateContacts(contacts)
+
+        coVerify(exactly = 2) { contactDao.updateContact(any()) }
+        coVerify(exactly = 2) { contactAttributeDao.deleteAllForContact(any()) }
     }
 }

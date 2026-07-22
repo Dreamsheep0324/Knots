@@ -14,6 +14,13 @@ data class AlbumPhoto(
     val date: Long,
     val location: String?
 ) {
+    /**
+     * 用作收藏键 [favoritePhotoIds: Set<Long>] 的稳定标识。
+     *
+     * B-14 修复：原实现 `fold(0L) { acc, c -> acc * 31L + c.code.toLong() }`
+     * 在 id 较长（15+ 字符）时累乘溢出 Long 范围，且与 Java String.hashCode()
+     * 行为不一致。改用标准库 `id.hashCode().toLong()`，行为文档化、零溢出风险。
+     */
     val stableId: Long
-        get() = id.toList().fold(0L) { acc, c -> acc * 31L + c.code.toLong() }
+        get() = id.hashCode().toLong()
 }

@@ -48,7 +48,9 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
+import com.tang.prm.domain.repository.HomeOrbitalMode
 import com.tang.prm.ui.navigation.SettingsRoute
+import com.tang.prm.ui.navigation.ContactDetailRoute
 import com.tang.prm.ui.navigation.ContactListRoute
 import com.tang.prm.ui.theme.*
 import com.tang.prm.domain.util.DateUtils
@@ -80,6 +82,8 @@ fun HomeScreen(
     // N-5 修复：计算下沉到手机分支内，平板模式不再为 JournalTabletHome 计算无人读取的 map
     val onChannelClick = remember(navController) { { route: Any -> navController.navigate(route) } }
     val onSettingsClick = remember(navController) { { navController.navigate(SettingsRoute) } }
+    // 首页力导向图预览：点击联系人节点跳转人物详情
+    val onContactClick = remember(navController) { { contactId: Long -> navController.navigate(ContactDetailRoute(contactId)) } }
     // Q-14/P-4 修复：方法引用用 remember 包裹，避免每重组创建新对象引发下游不必要重组
     val onDecorPhotoPathChange = remember(viewModel) { { path: String? -> viewModel.setDecorPhotoPath(path) } }
 
@@ -135,7 +139,8 @@ fun HomeScreen(
                     uiState = uiState,
                     channels = channels,
                     signalStrengths = signalStrengths,
-                    onChannelClick = onChannelClick
+                    onChannelClick = onChannelClick,
+                    onContactClick = onContactClick
                 )
             }
         }
@@ -343,7 +348,8 @@ private fun PhoneHomeContent(
     uiState: HomeUiState,
     channels: List<ChannelDef>,
     signalStrengths: Map<Any, Int>,
-    onChannelClick: (Any) -> Unit
+    onChannelClick: (Any) -> Unit,
+    onContactClick: (Long) -> Unit
 ) {
     LazyColumn(
         modifier = Modifier
@@ -360,12 +366,17 @@ private fun PhoneHomeContent(
         }
 
         item(key = "orbital_calendar", contentType = "calendar") {
-            OrbitalCalendar(
-                anniversaries = uiState.data.upcomingAnniversaries,
-                events = uiState.data.recentEvents,
-                // N-3 修复：dateStr 作为 todayDateKey，跨日时 OrbitalCalendar 内部 todayCal 失效重建
-                todayDateKey = dateStr
-            )
+            when (uiState.data.homeOrbitalMode) {
+                HomeOrbitalMode.ORBITAL -> OrbitalCalendar(
+                    anniversaries = uiState.data.upcomingAnniversaries,
+                    events = uiState.data.recentEvents,
+                    // N-3 修复：dateStr 作为 todayDateKey，跨日时 OrbitalCalendar 内部 todayCal 失效重建
+                    todayDateKey = dateStr
+                )
+                HomeOrbitalMode.FORCE_GRAPH -> HomeForceGraphPreview(
+                    onContactClick = onContactClick
+                )
+            }
         }
 
         item(key = "channel_grid", contentType = "grid") {

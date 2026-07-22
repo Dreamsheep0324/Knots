@@ -22,6 +22,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CloudSync
 import androidx.compose.material.icons.filled.CloudUpload
 import androidx.compose.material.icons.filled.DarkMode
+import androidx.compose.material.icons.filled.AccountTree
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material.icons.filled.SettingsBrightness
@@ -48,6 +49,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.tang.prm.domain.model.ThemeMode
+import com.tang.prm.domain.repository.HomeOrbitalMode
 import com.tang.prm.ui.navigation.ThemeSettingsRoute
 import com.tang.prm.ui.navigation.AiConfigRoute
 import com.tang.prm.ui.navigation.BackupRestoreRoute
@@ -67,6 +69,7 @@ fun SettingsScreen(
 ) {
     val themeMode by viewModel.themeMode.collectAsStateWithLifecycle()
     val tabletModeEnabled by viewModel.tabletModeEnabled.collectAsStateWithLifecycle()
+    val homeOrbitalMode by viewModel.homeOrbitalMode.collectAsStateWithLifecycle()
     val encryptionDegraded by viewModel.encryptionDegraded.collectAsStateWithLifecycle()
 
     Scaffold(
@@ -105,6 +108,18 @@ fun SettingsScreen(
                         subtitle = "在大屏设备上启用侧边栏与双栏布局",
                         checked = tabletModeEnabled,
                         onCheckedChange = { viewModel.setTabletModeEnabled(it) }
+                    )
+                    SettingsToggleItem(
+                        icon = Icons.Default.AccountTree,
+                        iconTint = MaterialTheme.colorScheme.primary,
+                        title = "首页力导向图",
+                        subtitle = "用关系图谱替代首页轨道罗盘",
+                        checked = homeOrbitalMode == HomeOrbitalMode.FORCE_GRAPH,
+                        onCheckedChange = {
+                            viewModel.setHomeOrbitalMode(
+                                if (it) HomeOrbitalMode.FORCE_GRAPH else HomeOrbitalMode.ORBITAL
+                            )
+                        }
                     )
                 }
             }

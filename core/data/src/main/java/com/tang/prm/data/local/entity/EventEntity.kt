@@ -27,7 +27,6 @@ data class EventEntity(
     val photosCount: Int = 0,
     val emotion: String? = null,
     val weather: String? = null,
-    val amount: Double? = null,
     val remarks: String? = null,
     val promise: String? = null,
     val conversationSummary: String? = null,

@@ -121,7 +121,7 @@ internal fun ScriptHeader(event: Event, contact: Contact?, intimacyColor: Color)
 
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = contact?.name ?: com.tang.prm.domain.model.AppStrings.EventType.CONVERSATION,
+                    text = contact?.name ?: com.tang.prm.domain.model.EventType.CONVERSATION.displayName,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface

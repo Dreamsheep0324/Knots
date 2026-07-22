@@ -4,9 +4,17 @@ import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
 
+/**
+ * 日期计算工具。
+ *
+ * T-5 修复：时区固定为北京时区（[ZoneId.of]），替代原 [ZoneId.systemDefault]。
+ * 原实现在跨时区 CI（如 GitHub Actions 美东时区）上 [LocalDate.now] 与开发者本机不同，
+ * 导致 `calculateDaysUntil` 在生日跨日边界给出不同值，测试 flaky。
+ * 项目硬约束要求所有时间使用北京时区，统一后避免时区漂移。
+ */
 object DateCalcUtils {
 
-    private val defaultZoneId = ZoneId.systemDefault()
+    private val defaultZoneId = ZoneId.of("Asia/Shanghai")
 
     fun safeDate(year: Int, month: Int, day: Int): LocalDate {
         if (month == 2 && day == 29 && !java.time.Year.isLeap(year.toLong())) {
@@ -21,30 +29,8 @@ object DateCalcUtils {
         val isPast: Boolean
     )
 
-    data class BirthdayInfo(
-        val thisYearDate: String,
-        val daysUntil: Int,
-        val isPast: Boolean,
-        val displayText: String
-    )
-
     fun getTodayStart(): Long =
         LocalDate.now(defaultZoneId).atStartOfDay(defaultZoneId).toInstant().toEpochMilli()
-
-    fun calculateDaysUntil(targetMillis: Long): Int {
-        val today = LocalDate.now(defaultZoneId)
-        val targetDate = Instant.ofEpochMilli(targetMillis).atZone(defaultZoneId).toLocalDate()
-        val targetMonth = targetDate.monthValue
-        val targetDay = targetDate.dayOfMonth
-        val currentYear = today.year
-
-        var nextDate = safeDate(currentYear, targetMonth, targetDay)
-        if (nextDate.isBefore(today)) {
-            nextDate = safeDate(currentYear + 1, targetMonth, targetDay)
-        }
-
-        return java.time.temporal.ChronoUnit.DAYS.between(today, nextDate).toInt()
-    }
 
     fun calculateDaysInfo(targetMillis: Long): DaysInfo {
         val today = LocalDate.now(defaultZoneId)
@@ -64,11 +50,8 @@ object DateCalcUtils {
 
         val daysPassed = java.time.temporal.ChronoUnit.DAYS.between(lastAnniversary, today).toInt()
 
-        val nextAnniversary = if (isPast) {
-            safeDate(currentYear + 1, targetMonth, targetDay)
-        } else {
-            thisYearAnniversary
-        }
+        // C-4 修复：复用 nextAnnualOccurrence 模板
+        val nextAnniversary = nextAnnualOccurrence(targetMillis, today)
 
         val daysUntil = java.time.temporal.ChronoUnit.DAYS.between(today, nextAnniversary).toInt()
 
@@ -79,64 +62,47 @@ object DateCalcUtils {
         )
     }
 
-    fun calculateBirthdayInfo(birthdayMillis: Long): BirthdayInfo {
-        val today = LocalDate.now(defaultZoneId)
-        val birthDate = Instant.ofEpochMilli(birthdayMillis).atZone(defaultZoneId).toLocalDate()
-        val birthMonth = birthDate.monthValue
-        val birthDay = birthDate.dayOfMonth
-        val thisYear = today.year
-
-        var thisYearBirthday = safeDate(thisYear, birthMonth, birthDay)
-        if (thisYearBirthday.isBefore(today)) {
-            thisYearBirthday = safeDate(thisYear + 1, birthMonth, birthDay)
-        }
-
-        val daysUntil = java.time.temporal.ChronoUnit.DAYS.between(today, thisYearBirthday).toInt()
-        val thisYearDate = thisYearBirthday.atStartOfDay(defaultZoneId).toInstant().toEpochMilli()
-            .let { DateUtils.formatShortDate(it) }
-
-        val displayText = when {
-            daysUntil == 0 -> "今天"
-            daysUntil == 1 -> "明天"
-            daysUntil <= 7 -> "${daysUntil}天后"
-            else -> "${daysUntil}天"
-        }
-
-        return BirthdayInfo(
-            thisYearDate = thisYearDate,
-            daysUntil = daysUntil,
-            isPast = thisYearBirthday.isBefore(today),
-            displayText = displayText
-        )
-    }
-
     fun getNextBirthdayDate(birthdayMillis: Long): Long {
         val today = LocalDate.now(defaultZoneId)
-        val birthDate = Instant.ofEpochMilli(birthdayMillis).atZone(defaultZoneId).toLocalDate()
-        val birthMonth = birthDate.monthValue
-        val birthDay = birthDate.dayOfMonth
-        val thisYear = today.year
-
-        var nextBirthday = safeDate(thisYear, birthMonth, birthDay)
-        if (nextBirthday.isBefore(today)) {
-            nextBirthday = safeDate(thisYear + 1, birthMonth, birthDay)
-        }
-
-        return nextBirthday.atStartOfDay(defaultZoneId).toInstant().toEpochMilli()
+        // C-4 修复：复用 nextAnnualOccurrence 模板
+        return nextAnnualOccurrence(birthdayMillis, today)
+            .atStartOfDay(defaultZoneId)
+            .toInstant()
+            .toEpochMilli()
     }
 
     fun getNextRepeatDate(originalMillis: Long): Long {
         val today = LocalDate.now(defaultZoneId)
-        val origDate = Instant.ofEpochMilli(originalMillis).atZone(defaultZoneId).toLocalDate()
-        val origMonth = origDate.monthValue
-        val origDay = origDate.dayOfMonth
-        val thisYear = today.year
+        // C-4 修复：复用 nextAnnualOccurrence 模板
+        return nextAnnualOccurrence(originalMillis, today)
+            .atStartOfDay(defaultZoneId)
+            .toInstant()
+            .toEpochMilli()
+    }
 
-        var thisYearDate = safeDate(thisYear, origMonth, origDay)
-        if (thisYearDate.isBefore(today)) {
-            thisYearDate = safeDate(thisYear + 1, origMonth, origDay)
+    /**
+     * C-4 修复：抽取"extract month/day → safeDate → roll to next year"模板。
+     *
+     * 原 5 个函数（calculateDaysUntil/calculateDaysInfo/getNextBirthdayDate/getNextRepeatDate
+     * + 已删除的 calculateBirthdayInfo）都重复此模板。现统一为私有 helper，
+     * 若 safeDate 行为变更只需修改一处。
+     *
+     * D-3 修复：calculateDaysUntil 已删除（无生产调用方，calculateDaysInfo 已覆盖此场景）。
+     *
+     * @param targetMillis 目标时间戳
+     * @param today 当前日期（传入避免重复构造）
+     * @return 从今天起算的下一个年度日期（今年未过则今年，已过则明年）
+     */
+    private fun nextAnnualOccurrence(targetMillis: Long, today: LocalDate): LocalDate {
+        val targetDate = Instant.ofEpochMilli(targetMillis).atZone(defaultZoneId).toLocalDate()
+        val targetMonth = targetDate.monthValue
+        val targetDay = targetDate.dayOfMonth
+        val currentYear = today.year
+
+        var nextDate = safeDate(currentYear, targetMonth, targetDay)
+        if (nextDate.isBefore(today)) {
+            nextDate = safeDate(currentYear + 1, targetMonth, targetDay)
         }
-
-        return thisYearDate.atStartOfDay(defaultZoneId).toInstant().toEpochMilli()
+        return nextDate
     }
 }

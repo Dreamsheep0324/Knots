@@ -4,6 +4,8 @@ import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat
 import com.tang.prm.domain.model.ThemeMode
 import com.tang.prm.domain.repository.AiRepository
+import com.tang.prm.domain.repository.EncryptionStatusProvider
+import com.tang.prm.domain.repository.HomeOrbitalMode
 import com.tang.prm.domain.repository.SettingsRepository
 import com.tang.prm.feature.profile.SettingsViewModel
 import com.tang.prm.feature.profile.TestConnectionState
@@ -33,6 +35,15 @@ private class FakeAiRepository(
     override suspend fun testConnection(): Result<String> = testConnectionResult
 }
 
+/** Fake EncryptionStatusProvider，默认非降级模式 */
+private class FakeEncryptionStatusProvider(
+    private val degraded: Boolean = false
+) : EncryptionStatusProvider {
+    override val isDegraded: kotlinx.coroutines.flow.StateFlow<Boolean> =
+        kotlinx.coroutines.flow.MutableStateFlow(degraded)
+    override fun markDegraded() = Unit
+}
+
 @ExtendWith(MockKExtension::class)
 class SettingsViewModelTest {
 
@@ -47,6 +58,7 @@ class SettingsViewModelTest {
 
         every { settingsRepository.themeMode } returns flowOf(ThemeMode.SYSTEM)
         every { settingsRepository.tabletModeEnabled } returns flowOf(false)
+        every { settingsRepository.homeOrbitalMode } returns flowOf(HomeOrbitalMode.ORBITAL)
         every { settingsRepository.aiApiKey } returns flowOf("")
         every { settingsRepository.aiBaseUrl } returns flowOf("https://api.deepseek.com")
         every { settingsRepository.aiModel } returns flowOf("deepseek-v4-flash")
@@ -56,7 +68,7 @@ class SettingsViewModelTest {
         coEvery { settingsRepository.setAiBaseUrl(any()) } returns Unit
         coEvery { settingsRepository.setAiModel(any()) } returns Unit
 
-        viewModel = SettingsViewModel(settingsRepository, FakeAiRepository())
+        viewModel = SettingsViewModel(settingsRepository, FakeAiRepository(), FakeEncryptionStatusProvider())
     }
 
     @AfterEach
@@ -79,7 +91,7 @@ class SettingsViewModelTest {
 
     @Test
     fun testConnectionSuccess() = runTest {
-        val vm = SettingsViewModel(settingsRepository, FakeAiRepository(Result.success("OK")))
+        val vm = SettingsViewModel(settingsRepository, FakeAiRepository(Result.success("OK")), FakeEncryptionStatusProvider())
         vm.testConnection()
         advanceUntilIdle()
         assertThat(vm.testState.value).isInstanceOf(TestConnectionState.Success::class.java)
@@ -87,7 +99,7 @@ class SettingsViewModelTest {
 
     @Test
     fun testConnectionError() = runTest {
-        val vm = SettingsViewModel(settingsRepository, FakeAiRepository(Result.failure(Exception("fail"))))
+        val vm = SettingsViewModel(settingsRepository, FakeAiRepository(Result.failure(Exception("fail"))), FakeEncryptionStatusProvider())
         vm.testConnection()
         advanceUntilIdle()
         assertThat(vm.testState.value).isInstanceOf(TestConnectionState.Error::class.java)

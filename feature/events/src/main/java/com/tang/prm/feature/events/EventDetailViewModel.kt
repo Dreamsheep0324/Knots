@@ -7,6 +7,7 @@ import com.tang.prm.domain.model.Event
 import com.tang.prm.domain.model.SourceTypes
 import com.tang.prm.domain.repository.EventRepository
 import com.tang.prm.domain.usecase.FavoriteToggleUseCase
+import com.tang.prm.domain.usecase.ObserveFavoritesUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -40,7 +41,8 @@ data class EventDetailUiState(
 class EventDetailViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val eventRepository: EventRepository,
-    private val favoriteToggleUseCase: FavoriteToggleUseCase
+    private val favoriteToggleUseCase: FavoriteToggleUseCase,
+    private val observeFavoritesUseCase: ObserveFavoritesUseCase
 ) : ViewModel() {
 
     private val _eventIdFlow = MutableStateFlow(savedStateHandle["eventId"] ?: 0L)
@@ -54,7 +56,7 @@ class EventDetailViewModel @Inject constructor(
         } else {
             combine(
                 eventRepository.getEventById(eventId),
-                favoriteToggleUseCase.isFavorite(SourceTypes.EVENT, eventId),
+                observeFavoritesUseCase.isFavorite(SourceTypes.EVENT, eventId),
                 _dialogState
             ) { event, isFavorite, dialog ->
                 EventDetailUiState(

@@ -10,7 +10,8 @@ import java.time.temporal.ChronoUnit
 
 class DateCalcUtilsTest {
 
-    private val zoneId = ZoneId.systemDefault()
+    // T-5 修复：与 DateCalcUtils 内部时区保持一致（北京时区），避免 CI 跨时区 flaky
+    private val zoneId = ZoneId.of("Asia/Shanghai")
 
     @Nested
     @DisplayName("safeDate")
@@ -42,31 +43,36 @@ class DateCalcUtilsTest {
     }
 
     @Nested
-    @DisplayName("calculateDaysUntil")
-    inner class CalculateDaysUntilTest {
+    @DisplayName("safeDate 非法输入（T-6 修复）")
+    inner class SafeDateInvalidInputTest {
 
         @Test
-        fun futureDateThisYear_returnsCorrectDays() {
-            val today = LocalDate.now(zoneId)
-            val target = today.plusDays(30)
-            val targetMillis = target.atStartOfDay(zoneId).toInstant().toEpochMilli()
-            assertThat(DateCalcUtils.calculateDaysUntil(targetMillis)).isEqualTo(30)
+        fun month13_throwsException() {
+            // safeDate 透传给 LocalDate.of，非法月份抛 DateTimeException
+            org.junit.jupiter.api.assertThrows<java.time.DateTimeException> {
+                DateCalcUtils.safeDate(2024, 13, 1)
+            }
         }
 
         @Test
-        fun pastDateThisYear_rollsToNextYear() {
-            val today = LocalDate.now(zoneId)
-            val target = today.minusDays(10)
-            val targetMillis = target.atStartOfDay(zoneId).toInstant().toEpochMilli()
-            val expected = ChronoUnit.DAYS.between(today, target.plusYears(1)).toInt()
-            assertThat(DateCalcUtils.calculateDaysUntil(targetMillis)).isEqualTo(expected)
+        fun month0_throwsException() {
+            org.junit.jupiter.api.assertThrows<java.time.DateTimeException> {
+                DateCalcUtils.safeDate(2024, 0, 1)
+            }
         }
 
         @Test
-        fun today_returns0() {
-            val todayMillis = LocalDate.now(zoneId)
-                .atStartOfDay(zoneId).toInstant().toEpochMilli()
-            assertThat(DateCalcUtils.calculateDaysUntil(todayMillis)).isEqualTo(0)
+        fun day32_throwsException() {
+            org.junit.jupiter.api.assertThrows<java.time.DateTimeException> {
+                DateCalcUtils.safeDate(2024, 1, 32)
+            }
+        }
+
+        @Test
+        fun day0_throwsException() {
+            org.junit.jupiter.api.assertThrows<java.time.DateTimeException> {
+                DateCalcUtils.safeDate(2024, 1, 0)
+            }
         }
     }
 
@@ -92,48 +98,6 @@ class DateCalcUtilsTest {
             val info = DateCalcUtils.calculateDaysInfo(targetMillis)
             assertThat(info.isPast).isTrue()
             assertThat(info.daysPassed).isGreaterThan(0)
-        }
-    }
-
-    @Nested
-    @DisplayName("calculateBirthdayInfo")
-    inner class CalculateBirthdayInfoTest {
-
-        @Test
-        fun birthdayToday_displayTextIsToday() {
-            val today = LocalDate.now(zoneId)
-            val birthMillis = today.atStartOfDay(zoneId).toInstant().toEpochMilli()
-            val info = DateCalcUtils.calculateBirthdayInfo(birthMillis)
-            assertThat(info.daysUntil).isEqualTo(0)
-            assertThat(info.displayText).isEqualTo("今天")
-        }
-
-        @Test
-        fun birthdayTomorrow_displayTextIsTomorrow() {
-            val today = LocalDate.now(zoneId)
-            val tomorrow = today.plusDays(1)
-            val birthMillis = tomorrow.atStartOfDay(zoneId).toInstant().toEpochMilli()
-            val info = DateCalcUtils.calculateBirthdayInfo(birthMillis)
-            assertThat(info.daysUntil).isEqualTo(1)
-            assertThat(info.displayText).isEqualTo("明天")
-        }
-
-        @Test
-        fun birthdayIn3Days_displayTextContainsDays() {
-            val today = LocalDate.now(zoneId)
-            val target = today.plusDays(3)
-            val birthMillis = target.atStartOfDay(zoneId).toInstant().toEpochMilli()
-            val info = DateCalcUtils.calculateBirthdayInfo(birthMillis)
-            assertThat(info.displayText).isEqualTo("3天后")
-        }
-
-        @Test
-        fun birthdayIn10Days_displayTextIsDaysOnly() {
-            val today = LocalDate.now(zoneId)
-            val target = today.plusDays(10)
-            val birthMillis = target.atStartOfDay(zoneId).toInstant().toEpochMilli()
-            val info = DateCalcUtils.calculateBirthdayInfo(birthMillis)
-            assertThat(info.displayText).isEqualTo("10天")
         }
     }
 

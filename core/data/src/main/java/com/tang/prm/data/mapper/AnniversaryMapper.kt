@@ -18,13 +18,13 @@ import com.tang.prm.domain.model.AnniversaryType
 fun AnniversaryEntity.toDomain(contactName: String?, contactAvatar: String?) = Anniversary(
     id = id, contactId = contactId, name = name,
     type = type.toEnumOrDefault(AnniversaryType.BIRTHDAY),
-    date = date, isLunar = isLunar, isLeapMonth = isLeapMonth, isRepeat = isRepeat, reminderDays = reminderDays,
+    date = date, isRepeat = isRepeat, reminderDays = reminderDays,
     remarks = remarks, contactName = contactName, contactAvatar = contactAvatar,
     icon = icon, createdAt = createdAt, updatedAt = updatedAt
 )
 
 fun Anniversary.toEntity() = AnniversaryEntity(
     id = id, contactId = contactId, name = name, type = type.name,
-    date = date, isLunar = isLunar, isLeapMonth = isLeapMonth, isRepeat = isRepeat, reminderDays = reminderDays,
+    date = date, isRepeat = isRepeat, reminderDays = reminderDays,
     remarks = remarks, icon = icon, createdAt = createdAt, updatedAt = updatedAt
 )

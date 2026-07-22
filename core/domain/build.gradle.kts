@@ -15,7 +15,6 @@ kotlin {
 }
 
 dependencies {
-    implementation(libs.lunar)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.kotlinx.coroutines.core)
     implementation(libs.javax.inject)

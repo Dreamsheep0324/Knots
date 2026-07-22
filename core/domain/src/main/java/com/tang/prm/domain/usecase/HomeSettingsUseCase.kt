@@ -1,5 +1,6 @@
 package com.tang.prm.domain.usecase
 
+import com.tang.prm.domain.repository.HomeOrbitalMode
 import com.tang.prm.domain.repository.SettingsRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -12,7 +13,7 @@ import javax.inject.Inject
  * - 让 [HomeViewModel][com.tang.prm.feature.home.HomeViewModel] 不再直接依赖
  *   [SettingsRepository]，与 feature/events、feature/reflect 等模块的
  *   "ViewModel 通过 UseCase 访问 Repository" 约定保持一致。
- * - 仅暴露首页真正需要的设置项（装饰照片路径），屏蔽 SettingsRepository 中
+ * - 仅暴露首页真正需要的设置项（装饰照片路径、轨道模块模式），屏蔽 SettingsRepository 中
  *   主题、AI、备份等无关接口，缩小 ViewModel 的可见面。
  */
 class HomeSettingsUseCase @Inject constructor(
@@ -25,4 +26,8 @@ class HomeSettingsUseCase @Inject constructor(
     /** 更新装饰照片路径。 */
     suspend fun setDecorPhotoPath(path: String?) =
         settingsRepository.setHomeDecorPhotoPath(path)
+
+    /** 首页轨道模块显示模式（轨道罗盘 / 力导向图）。 */
+    fun getHomeOrbitalMode(): Flow<HomeOrbitalMode> =
+        settingsRepository.homeOrbitalMode.distinctUntilChanged()
 }

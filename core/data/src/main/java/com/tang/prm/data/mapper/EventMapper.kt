@@ -11,7 +11,7 @@ fun Event.toEntity() = EventEntity(
     customTypeName = customTypeName,
     time = time, endTime = endTime, location = location, latitude = latitude, longitude = longitude,
     photos = photos, photosCount = photos.size,
-    emotion = emotion, weather = weather, amount = amount, remarks = remarks,
+    emotion = emotion, weather = weather, remarks = remarks,
     promise = promise, conversationSummary = conversationSummary, giftName = giftName,
     createdAt = createdAt, updatedAt = updatedAt
 )
@@ -43,7 +43,6 @@ fun EventWithParticipants.toDomain(): Event {
         photos = event.photos, photosCount = event.photosCount,
         emotion = event.emotion,
         weather = event.weather,
-        amount = event.amount,
         remarks = event.remarks,
         promise = event.promise,
         conversationSummary = event.conversationSummary,

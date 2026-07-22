@@ -8,6 +8,7 @@ import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import com.tang.prm.domain.model.BackupImageQuality
 import com.tang.prm.domain.model.ThemeMode
+import com.tang.prm.domain.repository.HomeOrbitalMode
 import com.tang.prm.domain.repository.SettingsRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.awaitClose
@@ -35,6 +36,7 @@ class SettingsRepositoryImpl @Inject constructor(
         val KEY_AUTO_BACKUP_ENABLED = booleanPreferencesKey("auto_backup_enabled")
         val KEY_TABLET_MODE_ENABLED = booleanPreferencesKey("tablet_mode_enabled")
         val KEY_HOME_DECOR_PHOTO_PATH = stringPreferencesKey("home_decor_photo_path")
+        val KEY_HOME_ORBITAL_MODE = stringPreferencesKey("home_orbital_mode")
 
         private const val ENC_KEY_API_KEY = "ai_api_key"
         private const val ENC_KEY_BASE_URL = "ai_base_url"
@@ -155,6 +157,17 @@ class SettingsRepositoryImpl @Inject constructor(
         dataStore.edit { prefs ->
             if (path == null) prefs.remove(KEY_HOME_DECOR_PHOTO_PATH)
             else prefs[KEY_HOME_DECOR_PHOTO_PATH] = path
+        }
+    }
+
+    override val homeOrbitalMode: Flow<HomeOrbitalMode> = dataStore.data.map { prefs ->
+        val name = prefs[KEY_HOME_ORBITAL_MODE] ?: HomeOrbitalMode.ORBITAL.name
+        runCatching { HomeOrbitalMode.valueOf(name) }.getOrDefault(HomeOrbitalMode.ORBITAL)
+    }
+
+    override suspend fun setHomeOrbitalMode(mode: HomeOrbitalMode) {
+        dataStore.edit { prefs ->
+            prefs[KEY_HOME_ORBITAL_MODE] = mode.name
         }
     }
 

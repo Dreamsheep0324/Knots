@@ -1,8 +1,7 @@
 package com.tang.prm.domain.repository
 
+import com.tang.prm.domain.model.Anniversary
 import com.tang.prm.domain.model.Contact
-import com.tang.prm.domain.model.ContactGroup
-import com.tang.prm.domain.model.ContactTag
 import kotlinx.coroutines.flow.Flow
 
 interface ContactRepository {
@@ -17,18 +16,24 @@ interface ContactRepository {
     suspend fun updateContact(contact: Contact)
     suspend fun deleteContact(id: Long)
     suspend fun updateContactInteraction(id: Long, score: Int, interactionTime: Long)
-}
 
-interface ContactGroupRepository {
-    fun getAllGroups(): Flow<List<ContactGroup>>
-    suspend fun insertGroup(group: ContactGroup): Long
-    suspend fun updateGroup(group: ContactGroup)
-    suspend fun deleteGroupById(id: Long)
-}
+    /**
+     * A-8 修复：跨 Contact/Anniversary 聚合的事务化写入。
+     *
+     * 在单一 Room 事务中插入联系人及其关联纪念日，任一失败回滚，
+     * 避免出现"联系人已落库但生日纪念日丢失"的半残状态。
+     *
+     * @param contact 待插入的联系人（id 通常为 0，由 DB 自增）
+     * @param anniversaries 关联纪念日列表（contactId 会被自动填充为新联系人 ID）
+     * @return 新联系人 ID
+     */
+    suspend fun insertContactWithAnniversaries(contact: Contact, anniversaries: List<Anniversary>): Long
 
-interface ContactTagRepository {
-    fun getAllTags(): Flow<List<ContactTag>>
-    suspend fun insertTag(tag: ContactTag): Long
-    suspend fun updateTag(tag: ContactTag)
-    suspend fun deleteTagById(id: Long)
+    /**
+     * P-5 修复：批量事务化更新联系人。
+     *
+     * 用于 CleanCustomTypeUseCase 等需要更新 N 个联系人的场景，
+     * 替代 N 次独立 updateContact（N 次独立事务 + N 次 SQL 往返）。
+     */
+    suspend fun updateContacts(contacts: List<Contact>)
 }

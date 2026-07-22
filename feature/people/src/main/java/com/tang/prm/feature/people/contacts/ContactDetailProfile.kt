@@ -18,6 +18,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.tang.prm.domain.model.Contact
+import com.tang.prm.feature.people.contacts.components.PersonRelationTypeInfo
+import com.tang.prm.feature.people.contacts.components.PersonRelationsMode
+import com.tang.prm.feature.people.contacts.components.PersonRelationsSection
 import com.tang.prm.ui.components.DetailInfoRow
 import com.tang.prm.ui.components.DetailSection
 import com.tang.prm.ui.theme.*
@@ -26,7 +29,11 @@ import com.tang.prm.domain.util.parseListField
 import com.tang.prm.ui.animation.core.AnimationTokens
 
 @Composable
-internal fun ProfileContent(contact: Contact, uiState: ContactDetailUiState) {
+internal fun ProfileContent(
+    contact: Contact,
+    uiState: ContactDetailUiState,
+    onNavigateToContactDetail: (Long) -> Unit = {}
+) {
 
     Column(
         modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
@@ -40,6 +47,30 @@ internal fun ProfileContent(contact: Contact, uiState: ContactDetailUiState) {
                 contact.knowingDate?.let {
                     DetailInfoRow(icon = Icons.Default.CalendarToday, label = "相识日期", value = DateUtils.formatYearMonthDayChineseFull(it), iconColor = SignalSky, valueColor = SignalSky)
                 }
+            }
+        }
+
+        if (uiState.data.personRelations.isNotEmpty()) {
+            DetailSection(title = "人物关系", accentColor = Color(0xFF0F766E)) {
+                val typeInfoMap = remember(uiState.data.personRelationTypes) {
+                    uiState.data.personRelationTypes.associate { type ->
+                        type.id to PersonRelationTypeInfo(
+                            name = type.name,
+                            color = type.color?.toComposeColor(Color(0xFF0F766E))
+                        )
+                    }
+                }
+                PersonRelationsSection(
+                    relations = uiState.data.personRelations,
+                    typeInfoMap = typeInfoMap,
+                    mode = PersonRelationsMode.VIEWER,
+                    onRelationClick = { relation ->
+                        relation.targetContactId?.let { targetId ->
+                            onNavigateToContactDetail(targetId)
+                        }
+                    },
+                    onRelationDelete = {}
+                )
             }
         }
 

@@ -29,10 +29,6 @@ interface EventDao {
     @Query("SELECT * FROM events WHERE type = :type ORDER BY time DESC")
     fun getEventsByTypeWithParticipants(type: String): Flow<List<EventWithParticipants>>
 
-    @Transaction
-    @Query("SELECT * FROM events WHERE type = :type AND (:keyword IS NULL OR title LIKE '%' || :keyword || '%' ESCAPE '\\' OR description LIKE '%' || :keyword || '%' ESCAPE '\\' OR location LIKE '%' || :keyword || '%' ESCAPE '\\') ORDER BY time DESC")
-    fun searchEventsByTypeWithParticipants(type: String, keyword: String?): Flow<List<EventWithParticipants>>
-
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertEvent(event: EventEntity): Long
 

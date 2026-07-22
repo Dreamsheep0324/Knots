@@ -7,6 +7,7 @@ import com.tang.prm.domain.model.*
 import com.tang.prm.domain.usecase.ContactDetailAggregationUseCase
 import com.tang.prm.domain.usecase.ContactDetailAggregateData
 import com.tang.prm.domain.usecase.FavoriteToggleUseCase
+import com.tang.prm.domain.usecase.ThoughtWriteUseCase
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -28,6 +29,7 @@ class ContactDetailViewModelTest {
 
     private lateinit var aggregationUseCase: ContactDetailAggregationUseCase
     private lateinit var favoriteToggleUseCase: FavoriteToggleUseCase
+    private lateinit var thoughtWriteUseCase: ThoughtWriteUseCase
     private lateinit var viewModel: ContactDetailViewModel
 
     private val testAggregateData = ContactDetailAggregateData(
@@ -42,15 +44,16 @@ class ContactDetailViewModelTest {
         Dispatchers.setMain(UnconfinedTestDispatcher())
         aggregationUseCase = mockk()
         favoriteToggleUseCase = mockk()
+        thoughtWriteUseCase = mockk()
 
         every { aggregationUseCase.getContactDetail(1L) } returns flowOf(testAggregateData)
         coEvery { aggregationUseCase.deleteContact(any()) } returns Unit
-        coEvery { aggregationUseCase.updateThought(any()) } returns Unit
-        coEvery { aggregationUseCase.deleteThought(any()) } returns Unit
+        coEvery { thoughtWriteUseCase.toggleDone(any()) } returns Unit
+        coEvery { thoughtWriteUseCase.delete(any()) } returns Unit
         coEvery { favoriteToggleUseCase(any(), any(), any(), any()) } returns true
 
         val savedStateHandle = SavedStateHandle(mapOf("contactId" to 1L))
-        viewModel = ContactDetailViewModel(aggregationUseCase, favoriteToggleUseCase, savedStateHandle)
+        viewModel = ContactDetailViewModel(aggregationUseCase, favoriteToggleUseCase, thoughtWriteUseCase, savedStateHandle)
     }
 
     @AfterEach
@@ -112,12 +115,12 @@ class ContactDetailViewModelTest {
     fun `toggleTodoDone updates thought isDone`() = runTest {
         val thought = Thought(id = 1, contactId = 1, content = "待办", isDone = false)
         viewModel.toggleTodoDone(thought)
-        coVerify { aggregationUseCase.updateThought(match { it.isDone }) }
+        coVerify { thoughtWriteUseCase.toggleDone(thought) }
     }
 
     @Test
     fun `deleteThought calls useCase`() = runTest {
         viewModel.deleteThought(1L)
-        coVerify { aggregationUseCase.deleteThought(1L) }
+        coVerify { thoughtWriteUseCase.delete(1L) }
     }
 }

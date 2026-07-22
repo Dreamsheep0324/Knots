@@ -77,6 +77,20 @@ abstract class RepositoryModule {
     @Singleton
     abstract fun bindBackupRepository(impl: BackupRepositoryImpl): BackupRepositoryInterface
 
+    // A-9 修复：BackupRepositoryInterface 拆分为 3 个子接口，分别绑定到同一实现，
+    // 让调用方按需依赖子接口（ISP），Hilt 自动解析到同一个 BackupRepositoryImpl 单例。
+    @Binds
+    @Singleton
+    abstract fun bindImageOrphanCleaner(impl: BackupRepositoryImpl): ImageOrphanCleaner
+
+    @Binds
+    @Singleton
+    abstract fun bindBackupDirectoryManager(impl: BackupRepositoryImpl): BackupDirectoryManager
+
+    @Binds
+    @Singleton
+    abstract fun bindBackupRepositoryTyped(impl: BackupRepositoryImpl): BackupRepository
+
     @Binds
     @Singleton
     abstract fun bindAppRestarter(impl: AppRestarterImpl): AppRestarter
@@ -96,4 +110,17 @@ abstract class RepositoryModule {
     @Binds
     @Singleton
     abstract fun bindRecipeRepository(impl: RecipeRepositoryImpl): RecipeRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindContactRelationRepository(impl: ContactRelationRepositoryImpl): ContactRelationRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindPersonRelationRepository(impl: PersonRelationRepositoryImpl): PersonRelationRepository
+
+    // A-2 修复：EncryptionStatusProvider 绑定（替代原 domain 层全局可变单例）
+    @Binds
+    @Singleton
+    abstract fun bindEncryptionStatusProvider(impl: EncryptionStatusProviderImpl): EncryptionStatusProvider
 }

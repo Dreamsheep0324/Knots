@@ -80,9 +80,11 @@ class SubscriptionStatsUseCaseTest {
 
         @Test
         fun expiredSubscriptions_excludedFromTotals() = runTest {
+            // B-15 修复：EXPIRED 订阅需设置过期的 nextBillingDate，否则会被复活路径判定为 ACTIVE。
+            val expiredBillingDate = System.currentTimeMillis() - 86_400_000L
             val subs = listOf(
                 testSub(price = 30.0, status = SubscriptionStatus.ACTIVE),
-                testSub(price = 50.0, status = SubscriptionStatus.EXPIRED)
+                testSub(price = 50.0, status = SubscriptionStatus.EXPIRED, nextBillingDate = expiredBillingDate)
             )
             every { subscriptionRepository.getAllSubscriptions() } returns flowOf(subs)
 
@@ -90,6 +92,24 @@ class SubscriptionStatsUseCaseTest {
                 val stats = awaitItem()
                 assertThat(stats.activeCount).isEqualTo(1)
                 assertThat(stats.monthlyTotal).isWithin(0.01).of(30.0)
+                cancelAndIgnoreRemainingEvents()
+            }
+        }
+
+        @Test
+        fun revivedSubscriptions_includedInTotals() = runTest {
+            // B-15 复活路径：status=EXPIRED 但 nextBillingDate 已续期到未来，应被统计为 ACTIVE。
+            val renewedBillingDate = System.currentTimeMillis() + 30 * 86_400_000L
+            val subs = listOf(
+                testSub(price = 30.0, status = SubscriptionStatus.ACTIVE),
+                testSub(price = 50.0, status = SubscriptionStatus.EXPIRED, nextBillingDate = renewedBillingDate)
+            )
+            every { subscriptionRepository.getAllSubscriptions() } returns flowOf(subs)
+
+            useCase.getStats().test {
+                val stats = awaitItem()
+                assertThat(stats.activeCount).isEqualTo(2)
+                assertThat(stats.monthlyTotal).isWithin(0.01).of(80.0)
                 cancelAndIgnoreRemainingEvents()
             }
         }

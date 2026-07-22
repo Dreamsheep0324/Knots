@@ -11,6 +11,7 @@ import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
 import com.tang.prm.data.local.dao.*
 import com.tang.prm.data.local.database.TangDatabase
+import com.tang.prm.domain.repository.EncryptionStatusProvider
 import com.tang.prm.data.local.database.migrations.MIGRATION_1_32
 import com.tang.prm.data.local.database.migrations.MIGRATION_24_31
 import com.tang.prm.data.local.database.migrations.MIGRATION_28_31
@@ -25,6 +26,13 @@ import com.tang.prm.data.local.database.migrations.MIGRATION_38_39
 import com.tang.prm.data.local.database.migrations.MIGRATION_39_40
 import com.tang.prm.data.local.database.migrations.MIGRATION_40_41
 import com.tang.prm.data.local.database.migrations.MIGRATION_41_42
+import com.tang.prm.data.local.database.migrations.MIGRATION_42_43
+import com.tang.prm.data.local.database.migrations.MIGRATION_43_44
+import com.tang.prm.data.local.database.migrations.MIGRATION_44_45
+import com.tang.prm.data.local.database.migrations.MIGRATION_45_46
+import com.tang.prm.data.local.database.migrations.MIGRATION_46_47
+import com.tang.prm.data.local.database.migrations.MIGRATION_47_48
+import com.tang.prm.data.local.database.migrations.MIGRATION_48_49
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -56,7 +64,9 @@ object DatabaseModule {
                 MIGRATION_31_33, MIGRATION_32_33,
                 MIGRATION_33_34, MIGRATION_34_35, MIGRATION_35_36,
                 MIGRATION_36_37, MIGRATION_37_38, MIGRATION_38_39,
-                MIGRATION_39_40, MIGRATION_40_41, MIGRATION_41_42
+                MIGRATION_39_40, MIGRATION_40_41, MIGRATION_41_42,
+                MIGRATION_42_43, MIGRATION_43_44, MIGRATION_44_45, MIGRATION_45_46,
+                MIGRATION_46_47, MIGRATION_47_48, MIGRATION_48_49
             )
             .build()
     }
@@ -113,12 +123,25 @@ object DatabaseModule {
     fun provideRecipeTagDao(database: TangDatabase): RecipeTagDao = database.recipeTagDao()
 
     @Provides
+    fun provideContactRelationDao(database: TangDatabase): ContactRelationDao =
+        database.contactRelationDao()
+
+    @Provides
+    fun providePersonRelationDao(database: TangDatabase): PersonRelationDao =
+        database.personRelationDao()
+
+    @Provides
     @Singleton
     fun provideDataStore(@ApplicationContext context: Context): DataStore<Preferences> = context.dataStore
 
     // DI-Q-1 修复：抽取公共方法消除两个 EncryptedSharedPreferences @Provides 的代码重复。
     // DB-B-3 修复：加密失败时标记降级并抛异常，不回退明文。
-    private fun createEncryptedPrefs(context: Context, fileName: String): SharedPreferences {
+    // A-2 修复：改用注入的 EncryptionStatusProvider 替代 domain 层全局单例。
+    private fun createEncryptedPrefs(
+        context: Context,
+        fileName: String,
+        encryptionStatusProvider: EncryptionStatusProvider
+    ): SharedPreferences {
         return try {
             val masterKey = MasterKey.Builder(context)
                 .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
@@ -132,19 +155,23 @@ object DatabaseModule {
             )
         } catch (e: Exception) {
             Log.e("DatabaseModule", "EncryptedSharedPreferences($fileName) 不可用，敏感数据将不会被保存", e)
-            com.tang.prm.domain.util.EncryptionStatus.markDegraded()
+            encryptionStatusProvider.markDegraded()
             throw e
         }
     }
 
     @Provides
     @Singleton
-    fun provideEncryptedSharedPreferences(@ApplicationContext context: Context): SharedPreferences =
-        createEncryptedPrefs(context, "secret_settings")
+    fun provideEncryptedSharedPreferences(
+        @ApplicationContext context: Context,
+        encryptionStatusProvider: EncryptionStatusProvider
+    ): SharedPreferences = createEncryptedPrefs(context, "secret_settings", encryptionStatusProvider)
 
     @Provides
     @Singleton
     @Named("webdav")
-    fun provideWebDavEncryptedPrefs(@ApplicationContext context: Context): SharedPreferences =
-        createEncryptedPrefs(context, "webdav_secret")
+    fun provideWebDavEncryptedPrefs(
+        @ApplicationContext context: Context,
+        encryptionStatusProvider: EncryptionStatusProvider
+    ): SharedPreferences = createEncryptedPrefs(context, "webdav_secret", encryptionStatusProvider)
 }

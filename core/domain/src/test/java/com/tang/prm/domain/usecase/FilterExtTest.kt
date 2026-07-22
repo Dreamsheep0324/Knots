@@ -266,13 +266,28 @@ class FilterExtTest {
 
     @Test
     fun `filters subscriptions by status`() {
+        // B-15 修复：computedStatus() 引入复活路径——status=EXPIRED 但 nextBillingDate>=now 视为 ACTIVE。
+        // 测试 EXPIRED 订阅必须设置过期的 nextBillingDate，才能被 computedStatus() 判定为 EXPIRED。
+        val expiredBillingDate = System.currentTimeMillis() - 86_400_000L
         val subs = listOf(
             testSub(name = "A", status = SubscriptionStatus.ACTIVE),
-            testSub(name = "B", status = SubscriptionStatus.EXPIRED),
+            testSub(name = "B", status = SubscriptionStatus.EXPIRED, nextBillingDate = expiredBillingDate),
             testSub(name = "C", status = SubscriptionStatus.ACTIVE)
         )
         val result = subs.filterBy(status = SubscriptionStatus.ACTIVE)
         assertThat(result.map { it.name }).containsExactly("A", "C")
+    }
+
+    @Test
+    fun `expired subscription with renewed billing date is revived to active`() {
+        // B-15 复活路径：status=EXPIRED 但 nextBillingDate 已续期到未来，computedStatus() 应返回 ACTIVE。
+        val renewedBillingDate = System.currentTimeMillis() + 30 * 86_400_000L
+        val subs = listOf(
+            testSub(name = "Revived", status = SubscriptionStatus.EXPIRED, nextBillingDate = renewedBillingDate),
+            testSub(name = "TrulyExpired", status = SubscriptionStatus.EXPIRED, nextBillingDate = System.currentTimeMillis() - 86_400_000L)
+        )
+        val result = subs.filterBy(status = SubscriptionStatus.ACTIVE)
+        assertThat(result.map { it.name }).containsExactly("Revived")
     }
 
     @Test
@@ -299,10 +314,12 @@ class FilterExtTest {
 
     @Test
     fun `combines multiple subscription filters`() {
+        // B-15 修复：EXPIRED 订阅需设置过期的 nextBillingDate，否则会被复活路径判定为 ACTIVE。
+        val expiredBillingDate = System.currentTimeMillis() - 86_400_000L
         val subs = listOf(
             testSub(name = "Netflix", status = SubscriptionStatus.ACTIVE, category = "娱乐"),
             testSub(name = "Spotify", status = SubscriptionStatus.ACTIVE, category = "工具"),
-            testSub(name = "Netflix Premium", status = SubscriptionStatus.EXPIRED, category = "娱乐")
+            testSub(name = "Netflix Premium", status = SubscriptionStatus.EXPIRED, category = "娱乐", nextBillingDate = expiredBillingDate)
         )
         val result = subs.filterBy(status = SubscriptionStatus.ACTIVE, category = "娱乐")
         assertThat(result.map { it.name }).containsExactly("Netflix")
