@@ -1,0 +1,13 @@
+[
+  {
+    "date": "2026-07-22",
+    "mode": "Health Dashboard",
+    "score": 75,
+    "findings": {
+      "critical": 6,
+      "warning": 10,
+      "suggestion": 8
+    },
+    "scope": "f:\\code\\YU (entire project, 17 modules)"
+  }
+]

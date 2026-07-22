@@ -32,13 +32,6 @@ data class AnniversariesUiState(
     val dialog: AnniversariesDialogState = AnniversariesDialogState()
 )
 
-/** 分类结果，作为独立数据源参与 combine，避免读取 _uiState.value */
-private data class CategorizedAnniversaries(
-    val all: List<Anniversary> = emptyList(),
-    val upcoming: List<Anniversary> = emptyList(),
-    val past: List<Anniversary> = emptyList()
-)
-
 @HiltViewModel
 class AnniversariesViewModel @Inject constructor(
     private val anniversaryRepository: AnniversaryRepository,
