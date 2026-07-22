@@ -18,15 +18,14 @@
     <ID>MaxLineLength:BackupRepositoryImpl.kt$BackupRepositoryImpl$entry.name == BackupZipUtils.ENTRY_SHM -&gt; BackupZipUtils.writeFileFromZip(zipIn, shmFile, shmFile.parentFile ?: shmFile)</ID>
     <ID>MaxLineLength:BackupRepositoryImpl.kt$BackupRepositoryImpl$entry.name == BackupZipUtils.ENTRY_WAL -&gt; BackupZipUtils.writeFileFromZip(zipIn, walFile, walFile.parentFile ?: walFile)</ID>
     <ID>MaxLineLength:CircleDao.kt$CircleDao$@Query("SELECT DISTINCT c.* FROM circles c INNER JOIN circle_member_cross_ref cm ON c.id = cm.circleId WHERE cm.contactId = :contactId ORDER BY c.sortOrder ASC")</ID>
-    <ID>MaxLineLength:ContactDao.kt$ContactDao$/** Callers MUST escape the [value] parameter with [com.tang.prm.util.escapeSqlWildcards] before passing it, otherwise `%`, `_`, `\` will be treated as SQL wildcards. */</ID>
     <ID>MaxLineLength:ContactDao.kt$ContactDao$@Query("SELECT * FROM contacts WHERE (:keyword IS NULL OR name LIKE '%' || :keyword || '%' ESCAPE '\\' OR nickname LIKE '%' || :keyword || '%' ESCAPE '\\' OR phone LIKE '%' || :keyword || '%' ESCAPE '\\') AND (:groupId IS NULL OR groupId = :groupId) AND (:relationship IS NULL OR relationship = :relationship) ORDER BY intimacyScore DESC")</ID>
-    <ID>MaxLineLength:ContactDao.kt$ContactDao$@Query("SELECT id, hobby, habit, diet, skill FROM contacts WHERE hobby LIKE '%' || :value || '%' ESCAPE '\\' OR habit LIKE '%' || :value || '%' ESCAPE '\\' OR diet LIKE '%' || :value || '%' ESCAPE '\\' OR skill LIKE '%' || :value || '%' ESCAPE '\\'")</ID>
     <ID>MaxLineLength:ContactDao.kt$ContactDao$@Query("SELECT id, name, avatar, nickname, phone, relationship, groupId, intimacyScore, lastInteractionTime, updatedAt FROM contacts ORDER BY updatedAt DESC")</ID>
     <ID>MaxLineLength:ContactRepositoryImpl.kt$ContactRepositoryImpl$return contactDao.getFilteredContacts(escapedKeyword, groupId, relationship).withAttributes(contactAttributeDao.getAttributesForAllContacts())</ID>
     <ID>MaxLineLength:EventDao.kt$EventDao$@Query("SELECT * FROM events WHERE type != 'CONVERSATION' AND (:keyword IS NULL OR title LIKE '%' || :keyword || '%' ESCAPE '\\' OR description LIKE '%' || :keyword || '%' ESCAPE '\\' OR location LIKE '%' || :keyword || '%' ESCAPE '\\') ORDER BY time DESC")</ID>
-    <ID>MaxLineLength:EventDao.kt$EventDao$@Query("SELECT * FROM events WHERE type = :type AND (:keyword IS NULL OR title LIKE '%' || :keyword || '%' ESCAPE '\\' OR description LIKE '%' || :keyword || '%' ESCAPE '\\' OR location LIKE '%' || :keyword || '%' ESCAPE '\\') ORDER BY time DESC")</ID>
     <ID>MaxLineLength:EventDao.kt$EventDao$@Query("SELECT e.* FROM events e INNER JOIN event_participants ep ON e.id = ep.eventId WHERE ep.contactId = :contactId ORDER BY e.time DESC")</ID>
     <ID>MaxLineLength:EventDao.kt$EventDao$@Query("SELECT id, type, title, customTypeName, description, time, location, weather, emotion, photos_count, createdAt, updatedAt FROM events WHERE location IS NOT NULL AND location != '' ORDER BY time DESC")</ID>
+    <ID>MaxLineLength:MIGRATION_45_46.kt$&lt;no name provided&gt;$"INSERT INTO custom_types(category, name, key, color, icon, sortOrder, isDefault, createdAt) VALUES(?, ?, ?, ?, ?, ?, ?, ?)"</ID>
+    <ID>MaxLineLength:MIGRATION_45_46.kt$&lt;no name provided&gt;$db.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS `index_contact_relations_contactIdA_contactIdB` ON `contact_relations` (`contactIdA`, `contactIdB`)")</ID>
     <ID>MaxLineLength:Migration_1_32.kt$&lt;no name provided&gt;$"SELECT id, title, start_time, end_time, location, description, is_all_day, remind_time, is_repeat, repeat_rule, color, created_at, updated_at FROM events"</ID>
     <ID>MaxLineLength:Migration_1_32.kt$&lt;no name provided&gt;$db</ID>
     <ID>MaxLineLength:Migration_1_32.kt$&lt;no name provided&gt;$db.execSQL("CREATE TABLE IF NOT EXISTS `anniversaries_tmp` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `contactId` INTEGER, `name` TEXT NOT NULL, `type` TEXT NOT NULL, `date` INTEGER NOT NULL, `isLunar` INTEGER NOT NULL, `isRepeat` INTEGER NOT NULL, `reminderDays` INTEGER NOT NULL, `remarks` TEXT, `icon` TEXT, `createdAt` INTEGER NOT NULL, `updatedAt` INTEGER NOT NULL, FOREIGN KEY(`contactId`) REFERENCES `contacts`(`id`) ON DELETE CASCADE)")</ID>
@@ -61,21 +60,17 @@
     <ID>NestedBlockDepth:WebDavClient.kt$WebDavClient$private fun parsePropfindResponse(xml: String, remotePath: String): List&lt;CloudBackupVersion&gt;</ID>
     <ID>TooGenericExceptionCaught:AiRepositoryImpl.kt$AiRepositoryImpl$e: Exception</ID>
     <ID>TooGenericExceptionCaught:BackupRepositoryImpl.kt$BackupRepositoryImpl$e: Exception</ID>
-    <ID>TooGenericExceptionCaught:ContactMapper.kt$e: Exception</ID>
     <ID>TooGenericExceptionCaught:DatabaseModule.kt$DatabaseModule$e: Exception</ID>
     <ID>TooGenericExceptionCaught:ImageFileManager.kt$ImageFileManager$e: Exception</ID>
     <ID>TooGenericExceptionCaught:ImageReferenceQuery.kt$ImageReferenceQuery$e: Exception</ID>
     <ID>TooGenericExceptionCaught:ListStringConverter.kt$ListStringConverter$e: Exception</ID>
     <ID>TooGenericExceptionCaught:Migration_31_33.kt$&lt;no name provided&gt;$e: Exception</ID>
     <ID>TooGenericExceptionCaught:Migration_32_33.kt$&lt;no name provided&gt;$e: Exception</ID>
-    <ID>TooGenericExceptionCaught:RetryInterceptor.kt$RetryInterceptor$e: Exception</ID>
     <ID>TooGenericExceptionCaught:SafDocumentsHelper.kt$SafDocumentsHelper$e: Exception</ID>
-    <ID>TooGenericExceptionCaught:SafeCall.kt$e: Exception</ID>
     <ID>TooGenericExceptionCaught:UpdateRepositoryImpl.kt$UpdateRepositoryImpl$e: Exception</ID>
     <ID>TooGenericExceptionCaught:WebDavClient.kt$WebDavClient$e: Exception</ID>
     <ID>TooGenericExceptionCaught:WebDavConfigStore.kt$WebDavConfigStore$e: Exception</ID>
     <ID>TooGenericExceptionCaught:WebDavRepositoryImpl.kt$WebDavRepositoryImpl$e: Exception</ID>
-    <ID>TooGenericExceptionThrown:RetryInterceptorTest.kt$RetryInterceptorTest.NonRetryableExceptionTest.&lt;no name provided&gt;$throw RuntimeException("unexpected")</ID>
     <ID>TooGenericExceptionThrown:WebDavClient.kt$WebDavClient$throw Exception("上传图片失败 (${response.code})")</ID>
     <ID>TooGenericExceptionThrown:WebDavClient.kt$WebDavClient$throw Exception("上传数据库失败 (${response.code})")</ID>
     <ID>TooGenericExceptionThrown:WebDavClient.kt$WebDavClient$throw Exception("上传清单失败 (${response.code})")</ID>

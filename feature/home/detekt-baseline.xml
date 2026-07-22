@@ -8,13 +8,14 @@
     <ID>FunctionNaming:HomeChannelList.kt$@Composable private fun ChannelProgressBar(channel: ChannelDef, signalStrength: Int)</ID>
     <ID>FunctionNaming:HomeChannelList.kt$@Composable private fun ChannelSignalBars(channel: ChannelDef, signalStrength: Int)</ID>
     <ID>FunctionNaming:HomeChannelList.kt$@Composable private fun GlassChannelItem( channel: ChannelDef, signalStrength: Int, onClick: () -&gt; Unit )</ID>
+    <ID>FunctionNaming:HomeForceGraphPreview.kt$@Composable fun HomeForceGraphPreview( onContactClick: (Long) -&gt; Unit, modifier: Modifier = Modifier, viewModel: GraphViewModel = hiltViewModel() )</ID>
     <ID>FunctionNaming:HomeOrbitalCalendar.kt$@Composable internal fun OrbitalCalendar( anniversaries: List&lt;Anniversary&gt;, events: List&lt;Event&gt;, // N-3 修复：todayDateKey 透传到 rememberOrbitalCalendarData，让 todayCal 跨日时失效重建 todayDateKey: String, // Q-9 修复：合并 canvasModifier 和 modifier 为单一 modifier，消除两个 Modifier 参数的语义混淆 modifier: Modifier = Modifier )</ID>
     <ID>FunctionNaming:HomeScreen.kt$@Composable fun HomeScreen( navController: NavController, isTabletLayout: Boolean = false, viewModel: HomeViewModel = hiltViewModel() )</ID>
     <ID>FunctionNaming:HomeScreen.kt$@Composable private fun HomeEmptyGuide(onChannelClick: (Any) -&gt; Unit)</ID>
     <ID>FunctionNaming:HomeScreen.kt$@Composable private fun HomeErrorState(onRetry: () -&gt; Unit)</ID>
     <ID>FunctionNaming:HomeScreen.kt$@Composable private fun HomeLoadingSkeleton()</ID>
     <ID>FunctionNaming:HomeScreen.kt$@Composable private fun HomeTopBar( showSettings: Boolean = true, // N-7 + U-10 修复：平板模式传 false 不显示秒级时间，交给 JournalDateBanner 统一呈现日级时间 showTime: Boolean = true, // N-4 修复：isResumed 通过 lambda 传入，让 pausableDelay 每秒读取最新 State.value isResumedProvider: () -&gt; Boolean = { true }, onSettingsClick: () -&gt; Unit )</ID>
-    <ID>FunctionNaming:HomeScreen.kt$@Composable private fun PhoneHomeContent( dateStr: String, uiState: HomeUiState, channels: List&lt;ChannelDef&gt;, signalStrengths: Map&lt;Any, Int&gt;, onChannelClick: (Any) -&gt; Unit )</ID>
+    <ID>FunctionNaming:HomeScreen.kt$@Composable private fun PhoneHomeContent( dateStr: String, uiState: HomeUiState, channels: List&lt;ChannelDef&gt;, signalStrengths: Map&lt;Any, Int&gt;, onChannelClick: (Any) -&gt; Unit, onContactClick: (Long) -&gt; Unit )</ID>
     <ID>FunctionNaming:HomeSignalCard.kt$@Composable internal fun IncomingSignalCard( dateStr: String, // C-2 修复：用 HomeStats 替代 5 个独立 count 参数，与 HomeStatDef 配合消除配置重复 stats: HomeStats )</ID>
     <ID>FunctionNaming:HomeSignalCard.kt$@Composable private fun StatGauge(value: Int, label: String, color: Color, icon: ImageVector)</ID>
     <ID>FunctionNaming:HomeTabletJournal.kt$@Composable internal fun JournalTabletHome( uiState: HomeUiState, channels: List&lt;ChannelDef&gt;, onChannelClick: (Any) -&gt; Unit, onDecorPhotoPathChange: (String?) -&gt; Unit, modifier: Modifier = Modifier )</ID>
@@ -29,6 +30,7 @@
     <ID>FunctionNaming:OrbitalCalendarInfo.kt$@Composable internal fun OrbitalCalendarEventList( isCurrentMonth: Boolean, todayEvents: List&lt;String&gt;, upcomingEvents: List&lt;Pair&lt;String, String&gt;&gt;, nextEventCountdown: Pair&lt;String, Pair&lt;Int, Int&gt;&gt;? )</ID>
     <ID>FunctionNaming:OrbitalCalendarInfo.kt$@Composable internal fun OrbitalCalendarLegend()</ID>
     <ID>LongMethod:HomeChannelList.kt$@Composable private fun GlassChannelItem( channel: ChannelDef, signalStrength: Int, onClick: () -&gt; Unit )</ID>
+    <ID>LongMethod:HomeForceGraphPreview.kt$@Composable fun HomeForceGraphPreview( onContactClick: (Long) -&gt; Unit, modifier: Modifier = Modifier, viewModel: GraphViewModel = hiltViewModel() )</ID>
     <ID>LongMethod:HomeSignalCard.kt$@Composable internal fun IncomingSignalCard( dateStr: String, // C-2 修复：用 HomeStats 替代 5 个独立 count 参数，与 HomeStatDef 配合消除配置重复 stats: HomeStats )</ID>
     <ID>LongMethod:HomeTabletJournal.kt$@Composable private fun JournalDecorCard( modifier: Modifier = Modifier )</ID>
     <ID>LongMethod:HomeTabletJournal.kt$@Composable private fun JournalPhotoCard( photoPath: String?, onPhotoPathChange: (String?) -&gt; Unit, modifier: Modifier = Modifier )</ID>
