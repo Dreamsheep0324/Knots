@@ -6,9 +6,8 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
-import com.tang.prm.domain.model.BackupImageQuality
 import com.tang.prm.domain.model.ThemeMode
-import com.tang.prm.domain.repository.HomeOrbitalMode
+import com.tang.prm.domain.model.HomeOrbitalMode
 import com.tang.prm.domain.repository.SettingsRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.awaitClose
@@ -32,7 +31,6 @@ class SettingsRepositoryImpl @Inject constructor(
         val KEY_USER_SIGNATURE = stringPreferencesKey("user_signature")
         val KEY_AI_GENDER = stringPreferencesKey("ai_gender")
         val KEY_AI_BIRTH_DATE = stringPreferencesKey("ai_birth_date")
-        val KEY_BACKUP_IMAGE_QUALITY = stringPreferencesKey("backup_image_quality")
         val KEY_AUTO_BACKUP_ENABLED = booleanPreferencesKey("auto_backup_enabled")
         val KEY_TABLET_MODE_ENABLED = booleanPreferencesKey("tablet_mode_enabled")
         val KEY_HOME_DECOR_PHOTO_PATH = stringPreferencesKey("home_decor_photo_path")
@@ -118,18 +116,7 @@ class SettingsRepositoryImpl @Inject constructor(
         }
     }
 
-    override fun getBackupImageQuality(): Flow<BackupImageQuality> = dataStore.data.map { prefs ->
-        val name = prefs[KEY_BACKUP_IMAGE_QUALITY] ?: BackupImageQuality.STANDARD.name
-        runCatching { BackupImageQuality.valueOf(name) }.getOrDefault(BackupImageQuality.STANDARD)
-    }
-
-    override suspend fun setBackupImageQuality(quality: BackupImageQuality) {
-        dataStore.edit { prefs ->
-            prefs[KEY_BACKUP_IMAGE_QUALITY] = quality.name
-        }
-    }
-
-    override fun getAutoBackupEnabled(): Flow<Boolean> = dataStore.data.map { prefs ->
+    override val autoBackupEnabled: Flow<Boolean> = dataStore.data.map { prefs ->
         prefs[KEY_AUTO_BACKUP_ENABLED] ?: false
     }
 

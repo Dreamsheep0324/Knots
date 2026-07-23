@@ -32,6 +32,7 @@ import com.tang.prm.ui.navigation.AddChatRoute
 import com.tang.prm.ui.navigation.ChatDetailRoute
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.tang.prm.ui.animation.core.AnimationTokens
+import com.tang.prm.domain.usecase.ConversationItem
 import com.tang.prm.ui.theme.TextGray
 
 @Composable
@@ -188,7 +189,7 @@ private fun ChatEmptyState() {
 
 @Composable
 private fun ChatGroupedList(
-    grouped: Map<String, List<ConversationUiModel>>,
+    grouped: Map<String, List<ConversationItem>>,
     onConversationClick: (Long) -> Unit
 ) {
     LazyColumn(
@@ -245,7 +246,7 @@ private fun ChatGroupedList(
 
 @Composable
 private fun ChatFlatList(
-    conversations: List<ConversationUiModel>,
+    conversations: List<ConversationItem>,
     onConversationClick: (Long) -> Unit
 ) {
     LazyColumn(

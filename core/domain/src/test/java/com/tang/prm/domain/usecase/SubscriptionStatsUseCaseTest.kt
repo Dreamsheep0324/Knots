@@ -49,10 +49,10 @@ class SubscriptionStatsUseCaseTest {
     inner class TotalsTest {
 
         @Test
-        fun emptySubscriptions_returnsZeroTotals() = runTest {
+        fun `empty subscriptions returns zero totals`() = runTest {
             every { subscriptionRepository.getAllSubscriptions() } returns flowOf(emptyList())
 
-            useCase.getStats().test {
+            useCase().test {
                 val stats = awaitItem()
                 assertThat(stats.monthlyTotal).isEqualTo(0.0)
                 assertThat(stats.yearlyTotal).isEqualTo(0.0)
@@ -62,14 +62,14 @@ class SubscriptionStatsUseCaseTest {
         }
 
         @Test
-        fun activeSubscriptions_summedCorrectly() = runTest {
+        fun `active subscriptions summed correctly`() = runTest {
             val subs = listOf(
                 testSub(price = 30.0, cycle = SubscriptionCycle.MONTHLY),
                 testSub(price = 120.0, cycle = SubscriptionCycle.YEARLY)
             )
             every { subscriptionRepository.getAllSubscriptions() } returns flowOf(subs)
 
-            useCase.getStats().test {
+            useCase().test {
                 val stats = awaitItem()
                 assertThat(stats.monthlyTotal).isWithin(0.01).of(30.0 + 10.0) // 30 + 120/12
                 assertThat(stats.yearlyTotal).isWithin(0.01).of(360.0 + 120.0) // 30*12 + 120
@@ -79,7 +79,7 @@ class SubscriptionStatsUseCaseTest {
         }
 
         @Test
-        fun expiredSubscriptions_excludedFromTotals() = runTest {
+        fun `expired subscriptions excluded from totals`() = runTest {
             // B-15 修复：EXPIRED 订阅需设置过期的 nextBillingDate，否则会被复活路径判定为 ACTIVE。
             val expiredBillingDate = System.currentTimeMillis() - 86_400_000L
             val subs = listOf(
@@ -88,7 +88,7 @@ class SubscriptionStatsUseCaseTest {
             )
             every { subscriptionRepository.getAllSubscriptions() } returns flowOf(subs)
 
-            useCase.getStats().test {
+            useCase().test {
                 val stats = awaitItem()
                 assertThat(stats.activeCount).isEqualTo(1)
                 assertThat(stats.monthlyTotal).isWithin(0.01).of(30.0)
@@ -97,7 +97,7 @@ class SubscriptionStatsUseCaseTest {
         }
 
         @Test
-        fun revivedSubscriptions_includedInTotals() = runTest {
+        fun `revived subscriptions included in totals`() = runTest {
             // B-15 复活路径：status=EXPIRED 但 nextBillingDate 已续期到未来，应被统计为 ACTIVE。
             val renewedBillingDate = System.currentTimeMillis() + 30 * 86_400_000L
             val subs = listOf(
@@ -106,7 +106,7 @@ class SubscriptionStatsUseCaseTest {
             )
             every { subscriptionRepository.getAllSubscriptions() } returns flowOf(subs)
 
-            useCase.getStats().test {
+            useCase().test {
                 val stats = awaitItem()
                 assertThat(stats.activeCount).isEqualTo(2)
                 assertThat(stats.monthlyTotal).isWithin(0.01).of(80.0)
@@ -120,7 +120,7 @@ class SubscriptionStatsUseCaseTest {
     inner class CategoryTest {
 
         @Test
-        fun byCategory_groupsCorrectly() = runTest {
+        fun `byCategory groups correctly`() = runTest {
             val subs = listOf(
                 testSub(price = 30.0, category = "娱乐"),
                 testSub(price = 50.0, category = "娱乐"),
@@ -129,7 +129,7 @@ class SubscriptionStatsUseCaseTest {
             )
             every { subscriptionRepository.getAllSubscriptions() } returns flowOf(subs)
 
-            useCase.getStats().test {
+            useCase().test {
                 val stats = awaitItem()
                 assertThat(stats.byCategory).hasSize(3)
                 assertThat(stats.byCategory["娱乐"]).isNotNull()
@@ -140,7 +140,7 @@ class SubscriptionStatsUseCaseTest {
         }
 
         @Test
-        fun byCategorySubscriptions_groupsSubscriptionObjects() = runTest {
+        fun `byCategorySubscriptions groups subscription objects`() = runTest {
             val subs = listOf(
                 testSub(price = 30.0, category = "娱乐"),
                 testSub(price = 50.0, category = "娱乐"),
@@ -148,7 +148,7 @@ class SubscriptionStatsUseCaseTest {
             )
             every { subscriptionRepository.getAllSubscriptions() } returns flowOf(subs)
 
-            useCase.getStats().test {
+            useCase().test {
                 val stats = awaitItem()
                 assertThat(stats.byCategorySubscriptions["娱乐"]).hasSize(2)
                 assertThat(stats.byCategorySubscriptions["工具"]).hasSize(1)
@@ -162,7 +162,7 @@ class SubscriptionStatsUseCaseTest {
     inner class ExpiringSoonTest {
 
         @Test
-        fun subscriptionExpiringIn3Days_isInExpiringSoon() = runTest {
+        fun `subscription expiring in 3 days is in expiring soon`() = runTest {
             val expiringSub = testSub(
                 nextBillingDate = System.currentTimeMillis() + 3 * 86_400_000L
             )
@@ -171,7 +171,7 @@ class SubscriptionStatsUseCaseTest {
             )
             every { subscriptionRepository.getAllSubscriptions() } returns flowOf(listOf(expiringSub, safeSub))
 
-            useCase.getStats().test {
+            useCase().test {
                 val stats = awaitItem()
                 assertThat(stats.expiringSoon).hasSize(1)
                 assertThat(stats.expiringSoon[0].nextBillingDate).isEqualTo(expiringSub.nextBillingDate)
@@ -180,13 +180,13 @@ class SubscriptionStatsUseCaseTest {
         }
 
         @Test
-        fun subscriptionExpiringIn10Days_notInExpiringSoon() = runTest {
+        fun `subscription expiring in 10 days not in expiring soon`() = runTest {
             val sub = testSub(
                 nextBillingDate = System.currentTimeMillis() + 10 * 86_400_000L
             )
             every { subscriptionRepository.getAllSubscriptions() } returns flowOf(listOf(sub))
 
-            useCase.getStats().test {
+            useCase().test {
                 val stats = awaitItem()
                 assertThat(stats.expiringSoon).isEmpty()
                 cancelAndIgnoreRemainingEvents()

@@ -1,4 +1,4 @@
-﻿@file:OptIn(ExperimentalMaterial3Api::class)
+@file:OptIn(ExperimentalMaterial3Api::class)
 
 package com.tang.prm.feature.gifts
 
@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.tang.prm.domain.model.Contact
 import com.tang.prm.domain.model.GiftType
+import com.tang.prm.domain.usecase.GiftRecord
 import com.tang.prm.ui.components.ContactAvatar
 import com.tang.prm.ui.theme.*
 import com.tang.prm.ui.animation.core.AnimationTokens

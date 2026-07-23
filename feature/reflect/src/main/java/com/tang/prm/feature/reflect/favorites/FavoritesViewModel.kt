@@ -34,7 +34,7 @@ class FavoritesViewModel @Inject constructor(
     val uiState: StateFlow<FavoritesUiState> = _selectedFilter
         .flatMapLatest { filterIndex ->
             val sourceType = filterCodes[filterIndex].ifBlank { null }
-            observeFavoritesUseCase.observe(sourceType).map { favorites ->
+            observeFavoritesUseCase(sourceType).map { favorites ->
                 FavoritesUiState(
                     favorites = favorites,
                     selectedFilter = filterIndex,

@@ -33,7 +33,7 @@ import com.tang.prm.data.local.entity.*
         ContactRelationEntity::class,
         PersonRelationEntity::class
     ],
-    version = 49,
+    version = 50,
     exportSchema = true
 )
 // DB-Q-1 修复：移除 RecipeDataConverter 注册——RecipeEntity.ingredients/steps 字段类型为 String，

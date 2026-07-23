@@ -35,15 +35,3 @@ data class StreamChoice(
 data class DeltaContent(
     val content: String? = null
 )
-
-@Serializable
-data class ChatResponse(
-    val choices: List<ChatChoice>? = null
-)
-
-@Serializable
-data class ChatChoice(
-    val message: ChatMessage? = null,
-    @SerialName("finish_reason")
-    val finishReason: String? = null
-)

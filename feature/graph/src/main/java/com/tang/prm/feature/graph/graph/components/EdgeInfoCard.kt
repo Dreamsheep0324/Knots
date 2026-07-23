@@ -66,7 +66,7 @@ fun EdgeInfoCard(
     ) {
         if (info == null) return@AnimatedVisibility
         val typeColor = info.relationTypeColor.toComposeColor(SignalPurple)
-        val canDelete = info.isManual
+        val canDelete = true
 
         Surface(
             modifier = Modifier
@@ -141,8 +141,8 @@ fun EdgeInfoCard(
                             Text(
                                 text = info.sourceLabel,
                                 fontSize = 10.sp,
-                                color = if (info.isManual) typeColor else TextGray.copy(alpha = 0.7f),
-                                fontWeight = if (info.isManual) FontWeight.Medium else FontWeight.Normal,
+                                color = typeColor,
+                                fontWeight = FontWeight.Medium,
                                 maxLines = 1
                             )
                         }

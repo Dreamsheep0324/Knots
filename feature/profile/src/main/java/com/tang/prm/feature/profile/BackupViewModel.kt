@@ -3,7 +3,6 @@ package com.tang.prm.feature.profile
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tang.prm.domain.model.BackupFileInfo
-import com.tang.prm.domain.model.BackupImageQuality
 import com.tang.prm.domain.model.BackupInfo
 import com.tang.prm.domain.model.ClearDataResult
 import com.tang.prm.domain.model.RestoreResult
@@ -85,7 +84,7 @@ class BackupViewModel @Inject constructor(
             _backupDirName.value = backupRepository.getBackupDirName()
         }
         viewModelScope.launch {
-            settingsRepository.getAutoBackupEnabled().collect { _autoBackupEnabled.value = it }
+            settingsRepository.autoBackupEnabled.collect { _autoBackupEnabled.value = it }
         }
         viewModelScope.launch { loadBackupFiles() }
     }
@@ -110,7 +109,7 @@ class BackupViewModel @Inject constructor(
         viewModelScope.launch {
             _state.value = BackupState.BackingUp
             try {
-                val info = backupRepository.backupToDir(BackupImageQuality.ORIGINAL)
+                val info = backupRepository.backupToDir()
                 loadBackupFiles()
                 _state.value = BackupState.BackupSuccess(info)
             } catch (e: Exception) {

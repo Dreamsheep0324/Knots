@@ -50,11 +50,11 @@ class ReminderRepositoryImplTest {
     }
 
     @Test
-    fun getActiveReminders_returnsMappedList() = runTest {
+    fun observeActiveReminders_returnsMappedList() = runTest {
         every { reminderDao.getActiveReminders() } returns flowOf(listOf(entity))
         every { entity.toDomain() } returns domain
 
-        val result = repository.getActiveReminders().first()
+        val result = repository.observeActiveReminders().first()
 
         assertThat(result).hasSize(1)
         assertThat(result[0].title).isEqualTo("Remind")

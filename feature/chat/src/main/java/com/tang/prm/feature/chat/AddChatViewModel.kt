@@ -8,7 +8,6 @@ import com.tang.prm.domain.model.Event
 import com.tang.prm.domain.model.EventType
 import com.tang.prm.domain.repository.ContactRepository
 import com.tang.prm.domain.repository.EventRepository
-import com.tang.prm.domain.usecase.EventManageUseCase
 import com.tang.prm.domain.usecase.UpdateInteractionUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
@@ -35,7 +34,6 @@ class AddChatViewModel @Inject constructor(
     private val eventRepository: EventRepository,
     private val contactRepository: ContactRepository,
     private val dialogueLineManager: DialogueLineManager,
-    private val eventManageUseCase: EventManageUseCase,
     private val updateInteractionUseCase: UpdateInteractionUseCase,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
@@ -207,7 +205,7 @@ class AddChatViewModel @Inject constructor(
                     participants = listOf(contact)
                 )
 
-                eventManageUseCase.insertEventWithParticipants(event, listOf(contact.id))
+                eventRepository.insertEventWithParticipants(event, listOf(contact.id))
 
                 updateInteractionUseCase(
                     contact.id,

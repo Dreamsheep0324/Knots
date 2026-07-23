@@ -1,5 +1,8 @@
 package com.tang.prm.domain.model
 
+import com.tang.prm.domain.util.Zodiac
+import com.tang.prm.domain.util.ZodiacUtils
+
 const val DEFAULT_INTIMACY_SCORE = 50
 
 enum class Gender(val value: Int) {
@@ -42,7 +45,13 @@ data class Contact(
     val notes: String? = null,
     val createdAt: Long = System.currentTimeMillis(),
     val updatedAt: Long = System.currentTimeMillis()
-)
+) {
+    // M-1 富模型：将散落在 util 与 UI 层的内在行为内聚到模型本身
+    val intimacyTier: IntimacyTier get() = IntimacyTier.of(intimacyScore)
+    val isDefaultIntimacy: Boolean get() = intimacyScore == DEFAULT_INTIMACY_SCORE
+    val zodiac: Zodiac? get() = ZodiacUtils.fromBirthday(birthday)
+    val hasAvatar: Boolean get() = !avatar.isNullOrBlank()
+}
 
 data class ContactGroup(
     val id: Long = 0,

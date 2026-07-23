@@ -55,7 +55,7 @@ class FootprintAggregationUseCaseTest {
     inner class MappingTest {
 
         @Test
-        fun eventsWithLocation_mappedToFootprints() = runTest {
+        fun `events with location mapped to footprints`() = runTest {
             val contact = Contact(id = 1L, name = "Alice")
             val events = listOf(
                 Event(
@@ -66,7 +66,7 @@ class FootprintAggregationUseCaseTest {
             )
             setupMocks(events = events)
 
-            useCase.getAggregateData().test {
+            useCase().test {
                 val data = awaitItem()
                 assertThat(data.footprints).hasSize(1)
                 assertThat(data.footprints[0].location).isEqualTo("星巴克")
@@ -77,7 +77,7 @@ class FootprintAggregationUseCaseTest {
         }
 
         @Test
-        fun eventsWithoutLocation_filteredOut() = runTest {
+        fun `events without location filtered out`() = runTest {
             val events = listOf(
                 Event(id = 1, title = "通话", type = EventType.CALL, time = 1000L, location = null),
                 Event(id = 2, title = "见面", type = EventType.MEETUP, time = 2000L, location = "  "),
@@ -85,7 +85,7 @@ class FootprintAggregationUseCaseTest {
             )
             setupMocks(events = events)
 
-            useCase.getAggregateData().test {
+            useCase().test {
                 val data = awaitItem()
                 assertThat(data.footprints).hasSize(1)
                 assertThat(data.footprints[0].eventTitle).isEqualTo("旅游")
@@ -99,7 +99,7 @@ class FootprintAggregationUseCaseTest {
     inner class SortTest {
 
         @Test
-        fun footprints_sortedByDateDescending() = runTest {
+        fun `footprints sorted by date descending`() = runTest {
             val events = listOf(
                 Event(id = 1, title = "旧", type = EventType.MEETUP, time = 1000L, location = "A"),
                 Event(id = 2, title = "新", type = EventType.MEETUP, time = 3000L, location = "B"),
@@ -107,7 +107,7 @@ class FootprintAggregationUseCaseTest {
             )
             setupMocks(events = events)
 
-            useCase.getAggregateData().test {
+            useCase().test {
                 val data = awaitItem()
                 assertThat(data.footprints.map { it.eventTitle })
                     .containsExactly("新", "中", "旧").inOrder()
@@ -121,12 +121,12 @@ class FootprintAggregationUseCaseTest {
     inner class AggregateDataTest {
 
         @Test
-        fun returnsContactsAndEventTypes() = runTest {
+        fun `returns contacts and event types`() = runTest {
             val contacts = listOf(Contact(id = 1L, name = "Alice"))
             val eventTypes = listOf(CustomType(id = 1L, name = "聚会", category = CustomCategories.EVENT_TYPE))
             setupMocks(contacts = contacts, eventTypes = eventTypes)
 
-            useCase.getAggregateData().test {
+            useCase().test {
                 val data = awaitItem()
                 assertThat(data.contacts).hasSize(1)
                 assertThat(data.eventTypes).hasSize(1)
@@ -135,14 +135,14 @@ class FootprintAggregationUseCaseTest {
         }
 
         @Test
-        fun customTypeNameUsedWhenAvailable() = runTest {
+        fun `custom type name used when available`() = runTest {
             val events = listOf(
                 Event(id = 1, title = "团建", type = EventType.MEETUP,
                     customTypeName = "公司活动", time = 1000L, location = "公园")
             )
             setupMocks(events = events)
 
-            useCase.getAggregateData().test {
+            useCase().test {
                 val data = awaitItem()
                 assertThat(data.footprints[0].eventType).isEqualTo("公司活动")
                 cancelAndIgnoreRemainingEvents()
@@ -150,14 +150,14 @@ class FootprintAggregationUseCaseTest {
         }
 
         @Test
-        fun typeNameFallsBackToEventTypeName() = runTest {
+        fun `type name falls back to event type name`() = runTest {
             val events = listOf(
                 Event(id = 1, title = "见面", type = EventType.MEETUP,
                     customTypeName = null, time = 1000L, location = "公园")
             )
             setupMocks(events = events)
 
-            useCase.getAggregateData().test {
+            useCase().test {
                 val data = awaitItem()
                 assertThat(data.footprints[0].eventType).isEqualTo("MEETUP")
                 cancelAndIgnoreRemainingEvents()

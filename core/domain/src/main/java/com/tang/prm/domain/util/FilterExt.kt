@@ -1,7 +1,6 @@
-package com.tang.prm.domain.usecase
+package com.tang.prm.domain.util
 
 import com.tang.prm.domain.model.AlbumPhoto
-import com.tang.prm.domain.model.AppStrings
 import com.tang.prm.domain.model.Contact
 import com.tang.prm.domain.model.Event
 import com.tang.prm.domain.model.FootprintItem
@@ -18,6 +17,16 @@ import java.time.ZoneId
 
 /** All intimacy level names in ascending order */
 val IntimacyLevels: List<String> = IntimacyTier.entries.map { it.label }
+
+/**
+ * 过滤器魔法字符串常量（Q-2：消除散落的 "all"/"todo" 魔法字符串）
+ *
+ * Thought 过滤的 "friend"/"plan"/"murmur" 直接使用 [ThoughtType.key]，避免重复定义。
+ */
+object FilterKeys {
+    const val ALL = "all"
+    const val TODO = "todo"
+}
 
 // endregion
 
@@ -48,7 +57,7 @@ fun List<Contact>.filterBy(
         filtered = filtered.filter { it.relationship == relationship }
     }
     if (intimacy != null) {
-        filtered = filtered.filter { IntimacyTier.of(it.intimacyScore).label == intimacy }
+        filtered = filtered.filter { it.intimacyTier.label == intimacy }
     }
     return filtered.sortedByDescending { it.intimacyScore }
 }
@@ -72,7 +81,7 @@ fun List<Event>.filterBy(
             event.participants.any { it.id == contact.id }
         }
     }
-    if (eventType != null && eventType != "all") {
+    if (eventType != null && eventType != FilterKeys.ALL) {
         filtered = filtered.filter { it.type.name == eventType || it.customTypeName == eventType }
     }
     if (searchQuery.isNotBlank()) {
@@ -94,17 +103,17 @@ fun List<Event>.filterBy(
  * The [contacts] list is used for contact name matching in search.
  */
 fun List<Thought>.filterBy(
-    filter: String = "all",
+    filter: String = FilterKeys.ALL,
     selectedContactId: Long? = null,
     searchQuery: String = "",
     contacts: List<Contact> = emptyList()
 ): List<Thought> {
     val contactMap = contacts.associateBy { it.id }
     val byType = when (filter) {
-        "friend" -> filter { it.type == ThoughtType.FRIEND }
-        "plan" -> filter { it.type == ThoughtType.PLAN }
-        "murmur" -> filter { it.type == ThoughtType.MURMUR }
-        "todo" -> filter { it.isTodo }
+        ThoughtType.FRIEND.key -> filter { it.type == ThoughtType.FRIEND }
+        ThoughtType.PLAN.key -> filter { it.type == ThoughtType.PLAN }
+        ThoughtType.MURMUR.key -> filter { it.type == ThoughtType.MURMUR }
+        FilterKeys.TODO -> filter { it.isTodo }
         else -> this
     }
     val byContact = if (selectedContactId != null) {
@@ -136,7 +145,8 @@ fun List<FootprintItem>.filterBy(
 ): List<FootprintItem> {
     var filtered = this
     if (selectedContactId != null) {
-        filtered = filtered.filter { it.contactId == selectedContactId }
+        // B-4 修复：匹配任意参与者而非仅首参与者，避免多参与者事件被过滤丢失
+        filtered = filtered.filter { it.allContactIds.contains(selectedContactId) }
     }
     if (filterEventType != null) {
         filtered = filtered.filter { it.eventType == filterEventType }
@@ -180,7 +190,8 @@ fun List<AlbumPhoto>.filterBy(
 ): List<AlbumPhoto> {
     var filtered = this
     if (selectedContactId != null) {
-        filtered = filtered.filter { it.contactId == selectedContactId }
+        // B-5 修复：匹配任意参与者而非仅首参与者，避免多参与者事件的照片被过滤丢失
+        filtered = filtered.filter { it.allContactIds.contains(selectedContactId) }
     }
     if (filterSourceType != null) {
         filtered = filtered.filter { it.sourceType == filterSourceType }

@@ -36,6 +36,7 @@ interface AnniversaryDao {
     @Query("SELECT COUNT(*) FROM anniversaries")
     fun getAnniversaryCount(): Flow<Int>
 
+    // 仅测试使用：保留用于 TransactionIntegrityTest 验证 FK CASCADE 级联删除
     @Query("SELECT * FROM anniversaries WHERE contactId = :contactId")
     suspend fun getAnniversariesByContactOnce(contactId: Long): List<AnniversaryEntity>
 }

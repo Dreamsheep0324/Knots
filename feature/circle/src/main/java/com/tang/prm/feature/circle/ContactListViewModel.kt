@@ -4,8 +4,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tang.prm.domain.model.Circle
 import com.tang.prm.domain.model.Contact
+import com.tang.prm.domain.usecase.CircleManageUseCase
 import com.tang.prm.domain.usecase.CircleSortMode
-import com.tang.prm.domain.usecase.ContactListManageUseCase
+import com.tang.prm.domain.usecase.ContactListAggregationUseCase
 import com.tang.prm.ui.common.SearchState
 import com.tang.prm.ui.common.SearchStateManager
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -46,7 +47,8 @@ data class ContactListUiState(
 
 @HiltViewModel
 class ContactListViewModel @Inject constructor(
-    private val useCase: ContactListManageUseCase
+    private val aggregationUseCase: ContactListAggregationUseCase,
+    private val circleManageUseCase: CircleManageUseCase
 ) : ViewModel() {
 
     private val searchManager = SearchStateManager()
@@ -59,7 +61,7 @@ class ContactListViewModel @Inject constructor(
     private val _selectedMember = MutableStateFlow<Map<Long, Long>>(emptyMap())
 
     val uiState: StateFlow<ContactListUiState> = combine(
-        useCase.getContactListAggregate(),
+        aggregationUseCase(),
         searchManager.state,
         _sortMode,
         _dialogState,
@@ -79,10 +81,10 @@ class ContactListViewModel @Inject constructor(
             )
         }
         val availableContacts = hologramCircles.associate { hc ->
-            hc.circle.id to useCase.getAvailableContacts(aggregate.contacts, hc.circle)
+            hc.circle.id to aggregationUseCase.getAvailableContacts(aggregate.contacts, hc.circle)
         }
         val sortedCircles = run {
-            val sorted = useCase.getSortedCircles(
+            val sorted = aggregationUseCase.getSortedCircles(
                 hologramCircles.map { com.tang.prm.domain.usecase.CircleWithMembers(it.circle, it.members) },
                 sortMode
             )
@@ -168,21 +170,21 @@ class ContactListViewModel @Inject constructor(
 
     fun createCircle(name: String, description: String?, color: String, waveform: String) {
         viewModelScope.launch {
-            useCase.createCircle(name, description, color, waveform)
+            circleManageUseCase.createCircle(name, description, color, waveform)
             hideCreateDialog()
         }
     }
 
     fun updateCircle(circle: Circle, name: String, description: String?, color: String, waveform: String) {
         viewModelScope.launch {
-            useCase.updateCircle(circle, name, description, color, waveform)
+            circleManageUseCase.updateCircle(circle, name, description, color, waveform)
             hideEditDialog()
         }
     }
 
     fun deleteCircle(circleId: Long) {
         viewModelScope.launch {
-            useCase.deleteCircle(circleId)
+            circleManageUseCase.deleteCircle(circleId)
             hideDeleteConfirm()
             if (_expandedCircleId.value == circleId) {
                 _expandedCircleId.value = null
@@ -193,7 +195,7 @@ class ContactListViewModel @Inject constructor(
     fun addMemberToCircle(circleId: Long, contactId: Long) {
         viewModelScope.launch {
             val hc = uiState.value.data.circles.find { it.circle.id == circleId } ?: return@launch
-            useCase.addMemberToCircle(hc.circle, contactId)
+            circleManageUseCase.addMemberToCircle(hc.circle, contactId)
             hideAddMemberDialog()
         }
     }
@@ -201,7 +203,7 @@ class ContactListViewModel @Inject constructor(
     fun removeMemberFromCircle(circleId: Long, contactId: Long) {
         viewModelScope.launch {
             val hc = uiState.value.data.circles.find { it.circle.id == circleId } ?: return@launch
-            useCase.removeMemberFromCircle(hc.circle, contactId)
+            circleManageUseCase.removeMemberFromCircle(hc.circle, contactId)
         }
     }
 

@@ -1,13 +1,11 @@
 package com.tang.prm.domain.usecase
 
-import com.tang.prm.domain.model.Contact
 import com.tang.prm.domain.model.CustomCategories
 import com.tang.prm.domain.model.CustomType
-import com.tang.prm.domain.repository.ContactRepository
 import com.tang.prm.domain.repository.CustomTypeRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.distinctUntilChanged
 import javax.inject.Inject
 
 /**
@@ -33,23 +31,23 @@ data class ContactFormReferenceData(
 class ObserveContactFormReferenceDataUseCase @Inject constructor(
     private val customTypeRepository: CustomTypeRepository
 ) {
-    fun invoke(): Flow<ContactFormReferenceData> {
+    operator fun invoke(): Flow<ContactFormReferenceData> {
         return combine(
             combine(
-                customTypeRepository.getTypesByCategory(CustomCategories.RELATIONSHIP),
-                customTypeRepository.getTypesByCategory(CustomCategories.EDUCATION),
-                customTypeRepository.getTypesByCategory(CustomCategories.HOBBY)
+                customTypeRepository.getTypesByCategory(CustomCategories.RELATIONSHIP).distinctUntilChanged(),
+                customTypeRepository.getTypesByCategory(CustomCategories.EDUCATION).distinctUntilChanged(),
+                customTypeRepository.getTypesByCategory(CustomCategories.HOBBY).distinctUntilChanged()
             ) { relationships, educations, hobbies ->
                 Triple(relationships, educations, hobbies)
             },
             combine(
-                customTypeRepository.getTypesByCategory(CustomCategories.HABIT),
-                customTypeRepository.getTypesByCategory(CustomCategories.DIET),
-                customTypeRepository.getTypesByCategory(CustomCategories.SKILL)
+                customTypeRepository.getTypesByCategory(CustomCategories.HABIT).distinctUntilChanged(),
+                customTypeRepository.getTypesByCategory(CustomCategories.DIET).distinctUntilChanged(),
+                customTypeRepository.getTypesByCategory(CustomCategories.SKILL).distinctUntilChanged()
             ) { habits, diets, skills ->
                 Triple(habits, diets, skills)
             },
-            customTypeRepository.getTypesByCategory(CustomCategories.PERSON_RELATION)
+            customTypeRepository.getTypesByCategory(CustomCategories.PERSON_RELATION).distinctUntilChanged()
         ) { ref1, ref2, personRelationTypes ->
             ContactFormReferenceData(
                 relationships = ref1.first,
@@ -61,18 +59,5 @@ class ObserveContactFormReferenceDataUseCase @Inject constructor(
                 personRelationTypes = personRelationTypes
             )
         }
-    }
-}
-
-/**
- * 获取指定联系人用于编辑（一次性读取）。
- *
- * 返回 null 表示联系人不存在或已删除。
- */
-class GetContactForEditUseCase @Inject constructor(
-    private val contactRepository: ContactRepository
-) {
-    suspend operator fun invoke(contactId: Long): Contact? {
-        return contactRepository.getContactById(contactId).first()
     }
 }

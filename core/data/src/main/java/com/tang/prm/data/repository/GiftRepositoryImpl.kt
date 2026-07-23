@@ -7,6 +7,7 @@ import com.tang.prm.data.local.database.TangDatabase
 import com.tang.prm.data.mapper.toDomain
 import com.tang.prm.data.mapper.toEntity
 import com.tang.prm.domain.model.Gift
+import com.tang.prm.domain.model.SaveResult
 import com.tang.prm.domain.model.SourceTypes
 import com.tang.prm.domain.repository.FavoriteRepository
 import com.tang.prm.domain.repository.GiftRepository
@@ -79,7 +80,7 @@ class GiftRepositoryImpl @Inject constructor(
         ImageFileManager.deleteLocalPhotos(context, allPhotos)
     }
 
-    override suspend fun saveGiftWithPhotos(gift: Gift, photoUris: List<String>): Pair<Long, Int> {
+    override suspend fun saveGiftWithPhotos(gift: Gift, photoUris: List<String>): SaveResult {
         // 并发复制图片，缩短用户保存等待时间
         val copyResults = coroutineScope {
             photoUris.map { uriString ->
@@ -99,7 +100,7 @@ class GiftRepositoryImpl @Inject constructor(
             updatedAt = System.currentTimeMillis()
         )
         val id = giftDao.insertGift(newGift.toEntity())
-        return id to failedCount
+        return SaveResult(id = id, failedPhotoCount = failedCount)
     }
 
     override fun getGiftCount(): Flow<Int> = giftDao.getGiftCount()

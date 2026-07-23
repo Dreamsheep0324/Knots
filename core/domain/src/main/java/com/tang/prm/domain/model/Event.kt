@@ -33,4 +33,10 @@ data class Event(
     val participants: List<Contact> = emptyList(),
     val createdAt: Long = System.currentTimeMillis(),
     val updatedAt: Long = System.currentTimeMillis()
-)
+) {
+    // M-2 富模型：补充派生属性，消除 UseCase 重复判断
+    val isConversation: Boolean get() = type == EventType.CONVERSATION
+    val hasLocation: Boolean get() = !location.isNullOrBlank()
+    val hasPhotos: Boolean get() = photos.isNotEmpty()
+    val representativeParticipant: Contact? get() = participants.firstOrNull()
+}

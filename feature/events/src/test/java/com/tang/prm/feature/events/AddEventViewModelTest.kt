@@ -7,7 +7,6 @@ import com.tang.prm.domain.model.EventType
 import com.tang.prm.domain.repository.ContactRepository
 import com.tang.prm.domain.repository.CustomTypeRepository
 import com.tang.prm.domain.repository.EventRepository
-import com.tang.prm.domain.usecase.EventManageUseCase
 import com.tang.prm.domain.usecase.EventReferenceData
 import com.tang.prm.domain.usecase.ObserveEventReferenceDataUseCase
 import com.tang.prm.domain.usecase.UpdateInteractionUseCase
@@ -33,7 +32,6 @@ class AddEventViewModelTest {
     private lateinit var eventRepository: EventRepository
     private lateinit var contactRepository: ContactRepository
     private lateinit var customTypeRepository: CustomTypeRepository
-    private lateinit var eventManageUseCase: EventManageUseCase
     private lateinit var updateInteractionUseCase: UpdateInteractionUseCase
     private lateinit var observeReferenceDataUseCase: ObserveEventReferenceDataUseCase
     private lateinit var viewModel: AddEventViewModel
@@ -44,20 +42,19 @@ class AddEventViewModelTest {
         eventRepository = mockk()
         contactRepository = mockk()
         customTypeRepository = mockk()
-        eventManageUseCase = mockk()
         updateInteractionUseCase = mockk()
         observeReferenceDataUseCase = mockk()
 
         every { observeReferenceDataUseCase.invoke() } returns flowOf(EventReferenceData())
         coEvery { customTypeRepository.getTypeCountByCategory(any()) } returns 1
         coEvery { customTypeRepository.insertTypes(any()) } returns Unit
-        coEvery { eventManageUseCase.insertEventWithParticipants(any(), any()) } returns 1L
-        coEvery { eventManageUseCase.updateEventWithParticipants(any(), any()) } returns Unit
+        coEvery { eventRepository.insertEventWithParticipants(any(), any()) } returns 1L
+        coEvery { eventRepository.updateEventWithParticipants(any(), any()) } returns Unit
         coEvery { updateInteractionUseCase(any(), any(), any()) } returns Unit
 
         viewModel = AddEventViewModel(
             eventRepository, contactRepository, customTypeRepository,
-            eventManageUseCase, updateInteractionUseCase, observeReferenceDataUseCase
+            updateInteractionUseCase, observeReferenceDataUseCase
         )
     }
 
@@ -90,7 +87,7 @@ class AddEventViewModelTest {
             cancelAndIgnoreRemainingEvents()
         }
 
-        coVerify { eventManageUseCase.insertEventWithParticipants(any(), emptyList()) }
+        coVerify { eventRepository.insertEventWithParticipants(any(), emptyList()) }
     }
 
     @Test
@@ -103,7 +100,7 @@ class AddEventViewModelTest {
 
         viewModel = AddEventViewModel(
             eventRepository, contactRepository, customTypeRepository,
-            eventManageUseCase, updateInteractionUseCase, observeReferenceDataUseCase
+            updateInteractionUseCase, observeReferenceDataUseCase
         )
 
         viewModel.uiState.test {
@@ -122,7 +119,7 @@ class AddEventViewModelTest {
             cancelAndIgnoreRemainingEvents()
         }
 
-        coVerify { eventManageUseCase.updateEventWithParticipants(any(), emptyList()) }
+        coVerify { eventRepository.updateEventWithParticipants(any(), emptyList()) }
     }
 
     @Test
@@ -137,7 +134,7 @@ class AddEventViewModelTest {
 
         viewModel = AddEventViewModel(
             eventRepository, contactRepository, customTypeRepository,
-            eventManageUseCase, updateInteractionUseCase, observeReferenceDataUseCase
+            updateInteractionUseCase, observeReferenceDataUseCase
         )
 
         viewModel.uiState.test {

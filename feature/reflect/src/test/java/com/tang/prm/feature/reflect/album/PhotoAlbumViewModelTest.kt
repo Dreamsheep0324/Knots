@@ -53,7 +53,7 @@ class PhotoAlbumViewModelTest {
     fun setUp() {
         Dispatchers.setMain(UnconfinedTestDispatcher())
 
-        every { photoAlbumUseCase.getAggregateData() } returns flowOf(testAggregateData)
+        every { photoAlbumUseCase() } returns flowOf(testAggregateData)
         every { observeFavoritesUseCase.getFavoriteIds(SourceTypes.PHOTO) } returns flowOf(emptySet<Long>())
         coEvery { favoriteToggleUseCase(any(), any(), any(), any()) } returns true
 

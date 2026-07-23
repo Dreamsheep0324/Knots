@@ -5,7 +5,7 @@ import com.google.common.truth.Truth.assertThat
 import com.tang.prm.domain.model.ThemeMode
 import com.tang.prm.domain.repository.AiRepository
 import com.tang.prm.domain.repository.EncryptionStatusProvider
-import com.tang.prm.domain.repository.HomeOrbitalMode
+import com.tang.prm.domain.model.HomeOrbitalMode
 import com.tang.prm.domain.repository.SettingsRepository
 import com.tang.prm.feature.profile.SettingsViewModel
 import com.tang.prm.feature.profile.TestConnectionState

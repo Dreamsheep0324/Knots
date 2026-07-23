@@ -12,6 +12,7 @@ import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.buffer
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOn
@@ -40,18 +41,23 @@ class AiRepositoryImpl @Inject constructor(
 
     private fun buildChatHttpRequest(
         apiKey: String, baseUrl: String, model: String,
-        systemPrompt: String, userPrompt: String
+        systemPrompt: String, userPrompt: String,
+        stream: Boolean = true,
+        maxTokens: Int = 2048
     ): Request {
         val request = ChatRequest(
             model = model,
             messages = listOf(
                 ChatMessage(role = "system", content = systemPrompt),
                 ChatMessage(role = "user", content = userPrompt)
-            )
+            ),
+            stream = stream,
+            maxTokens = maxTokens
         )
         val jsonBody = json.encodeToString(ChatRequest.serializer(), request)
+        // B-8 修复：统一 trimEnd('/')，与 testConnection 行为一致，避免尾部带 / 时拼出 //v1/...
         return Request.Builder()
-            .url("$baseUrl/v1/chat/completions")
+            .url("${baseUrl.trimEnd('/')}/v1/chat/completions")
             .addHeader("Authorization", "Bearer $apiKey")
             .addHeader("Content-Type", "application/json")
             .post(jsonBody.toRequestBody(jsonMediaType))
@@ -129,7 +135,9 @@ class AiRepositoryImpl @Inject constructor(
             call.cancel()
             job.cancel()
         }
-    }.flowOn(Dispatchers.IO)
+        // B-18 修复：默认缓冲 64，UI 重组卡顿/慢收集时 trySend 静默丢 token，
+        // 改为 UNLIMITED 容量，背压时由无界缓冲兜住 token，避免 AI 回复缺字少句。
+    }.buffer(kotlinx.coroutines.channels.Channel.UNLIMITED).flowOn(Dispatchers.IO)
 
     override suspend fun testConnection(): Result<String> = withContext(Dispatchers.IO) {
         val apiKey = settingsRepository.aiApiKey.first()
@@ -137,22 +145,12 @@ class AiRepositoryImpl @Inject constructor(
 
         val baseUrl = settingsRepository.aiBaseUrl.first()
         val model = settingsRepository.aiModel.first()
-        val url = "${baseUrl.trimEnd('/')}/v1/chat/completions"
-
-        val request = ChatRequest(
-            model = model,
-            messages = listOf(ChatMessage(role = "user", content = "Hi")),
-            stream = false,
-            maxTokens = 5
+        // B-8 修复：复用 buildChatHttpRequest，消除请求体构建重复 + 统一 trimEnd
+        val httpRequest = buildChatHttpRequest(
+            apiKey = apiKey, baseUrl = baseUrl, model = model,
+            systemPrompt = "", userPrompt = "Hi",
+            stream = false, maxTokens = 5
         )
-
-        val jsonBody = json.encodeToString(ChatRequest.serializer(), request)
-        val httpRequest = Request.Builder()
-            .url(url)
-            .addHeader("Authorization", "Bearer $apiKey")
-            .addHeader("Content-Type", "application/json")
-            .post(jsonBody.toRequestBody(jsonMediaType))
-            .build()
 
         try {
             okHttpClient.newCall(httpRequest).execute().use { response ->

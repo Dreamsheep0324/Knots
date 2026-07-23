@@ -25,17 +25,8 @@ interface ContactRelationDao {
     """)
     suspend fun findRelation(a: Long, b: Long): ContactRelationEntity?
 
-    @Query("SELECT * FROM contact_relations WHERE id = :id")
-    suspend fun getById(id: Long): ContactRelationEntity?
-
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(entity: ContactRelationEntity): Long
-
-    @Update
-    suspend fun update(entity: ContactRelationEntity)
-
-    @Delete
-    suspend fun delete(entity: ContactRelationEntity)
 
     @Query("DELETE FROM contact_relations WHERE id = :id")
     suspend fun deleteById(id: Long)

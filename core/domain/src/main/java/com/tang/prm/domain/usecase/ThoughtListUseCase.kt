@@ -4,8 +4,10 @@ import com.tang.prm.domain.model.Contact
 import com.tang.prm.domain.model.Thought
 import com.tang.prm.domain.repository.ContactRepository
 import com.tang.prm.domain.repository.ThoughtRepository
+import com.tang.prm.domain.util.filterBy
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import javax.inject.Inject
 
 data class ThoughtListState(
@@ -23,15 +25,15 @@ class ThoughtListUseCase @Inject constructor(
     private val contactRepository: ContactRepository,
     private val gamificationUseCase: ThoughtGamificationUseCase
 ) {
-    fun getThoughtListState(
+    operator fun invoke(
         selectedFilter: String,
         selectedContactId: Long?,
         searchQuery: String
     ): Flow<ThoughtListState> {
         return combine(
-            thoughtRepository.getAllThoughts(),
-            thoughtRepository.getTodoThoughts(),
-            contactRepository.getAllContacts()
+            thoughtRepository.getAllThoughts().distinctUntilChanged(),
+            thoughtRepository.getTodoThoughts().distinctUntilChanged(),
+            contactRepository.getAllContacts().distinctUntilChanged()
         ) { thoughts, todos, contacts ->
             val contactMap = contacts.associateBy { it.id }
             val contactThoughts = thoughts

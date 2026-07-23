@@ -49,7 +49,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.tang.prm.domain.model.ThemeMode
-import com.tang.prm.domain.repository.HomeOrbitalMode
+import com.tang.prm.domain.model.HomeOrbitalMode
 import com.tang.prm.ui.navigation.ThemeSettingsRoute
 import com.tang.prm.ui.navigation.AiConfigRoute
 import com.tang.prm.ui.navigation.BackupRestoreRoute

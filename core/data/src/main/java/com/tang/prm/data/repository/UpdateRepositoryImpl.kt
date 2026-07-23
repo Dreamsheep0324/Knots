@@ -15,7 +15,9 @@ import javax.inject.Singleton
 
 @Singleton
 class UpdateRepositoryImpl @Inject constructor(
-    @Named("ai") private val okHttpClient: OkHttpClient
+    // A-4 修复：检查更新是普通短请求，不应复用 AI 流式专用 client（readTimeout 300s 过长且无重试）。
+    // 改用 webdav client：超时配置合理（readTimeout 120s）且附加 RetryInterceptor 自动重试 GET 请求。
+    @Named("webdav") private val okHttpClient: OkHttpClient
 ) : UpdateRepository {
 
     private val json = Json { ignoreUnknownKeys = true }

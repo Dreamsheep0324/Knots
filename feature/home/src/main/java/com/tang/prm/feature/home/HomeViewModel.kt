@@ -3,8 +3,10 @@ package com.tang.prm.feature.home
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.tang.prm.domain.model.*
-import com.tang.prm.domain.repository.HomeOrbitalMode
+import com.tang.prm.domain.model.Anniversary
+import com.tang.prm.domain.model.Event
+import com.tang.prm.domain.model.TodoItem
+import com.tang.prm.domain.model.HomeOrbitalMode
 import com.tang.prm.domain.usecase.HomeAggregateData
 import com.tang.prm.domain.usecase.HomeDataAggregationUseCase
 import com.tang.prm.domain.usecase.HomeSettingsUseCase
@@ -12,10 +14,21 @@ import com.tang.prm.domain.usecase.HomeStats
 import com.tang.prm.domain.usecase.HomeStatsUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.BufferOverflow
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import java.util.*
+import java.util.Calendar
 import javax.inject.Inject
 
 // A-2 修复：拆分 HomeUiState 为 HomeDataState + HomeDialogState，与 feature/events、
@@ -109,8 +122,8 @@ class HomeViewModel @Inject constructor(
         .flatMapLatest {
             combine(
                 greetingFlow,
-                homeDataUseCase.getAggregateData().distinctUntilChanged(),
-                homeStatsUseCase.getStats().distinctUntilChanged(),
+                homeDataUseCase().distinctUntilChanged(),
+                homeStatsUseCase().distinctUntilChanged(),
                 homeSettingsUseCase.getDecorPhotoPath(),
                 homeSettingsUseCase.getHomeOrbitalMode()
             ) { greeting, data: HomeAggregateData, stats: HomeStats, decorPhotoPath: String?, orbitalMode: HomeOrbitalMode ->

@@ -9,6 +9,7 @@ import com.tang.prm.domain.model.RecipeDifficulty
 import com.tang.prm.domain.model.RecipeTag
 import com.tang.prm.domain.repository.ContactRepository
 import com.tang.prm.domain.repository.RecipeRepository
+import com.tang.prm.domain.repository.RecipeTagRepository
 import com.tang.prm.domain.usecase.CreateRecipeUseCase
 import com.tang.prm.domain.usecase.RecipeDraft
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -46,6 +47,7 @@ data class AddRecipeUiState(
 @HiltViewModel
 class AddRecipeViewModel @Inject constructor(
     private val recipeRepository: RecipeRepository,
+    private val recipeTagRepository: RecipeTagRepository,
     private val contactRepository: ContactRepository,
     private val createRecipeUseCase: CreateRecipeUseCase
 ) : ViewModel() {
@@ -70,7 +72,7 @@ class AddRecipeViewModel @Inject constructor(
             }
         }
         viewModelScope.launch {
-            recipeRepository.getAllTags().collect { tags ->
+            recipeTagRepository.getAllTags().collect { tags ->
                 _availableTags.value = tags
             }
         }
@@ -79,7 +81,7 @@ class AddRecipeViewModel @Inject constructor(
     fun loadForEdit(recipeId: Long) {
         if (recipeId == 0L) return
         viewModelScope.launch {
-            val recipe = recipeRepository.getRecipeByIdOnce(recipeId) ?: return@launch
+            val recipe = recipeRepository.getRecipeById(recipeId) ?: return@launch
             _state.value = AddRecipeUiState(
                 title = recipe.title,
                 description = recipe.description ?: "",
@@ -267,7 +269,7 @@ class AddRecipeViewModel @Inject constructor(
     fun addNewTag(name: String) {
         if (name.isBlank()) return
         viewModelScope.launch {
-            recipeRepository.insertTag(RecipeTag(name = name.trim()))
+            recipeTagRepository.insertTag(RecipeTag(name = name.trim()))
         }
         _state.value = _state.value.copy(
             selectedTagNames = _state.value.selectedTagNames + name.trim()
@@ -276,7 +278,7 @@ class AddRecipeViewModel @Inject constructor(
 
     fun deleteTag(tag: RecipeTag) {
         viewModelScope.launch {
-            recipeRepository.deleteTag(tag.id)
+            recipeTagRepository.deleteTag(tag.id)
             _state.value = _state.value.copy(
                 selectedTagNames = _state.value.selectedTagNames - tag.name
             )

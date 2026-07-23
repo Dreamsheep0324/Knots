@@ -8,6 +8,7 @@ data class SyncManifest(
     val lastSyncTime: Long = 0L,
     val dbBackup: String = "",
     val dbTimestamp: Long = 0L,
+    val dbFingerprint: String = "",
     val images: Map<String, FileEntry> = emptyMap(),
     val giftPhotos: Map<String, FileEntry> = emptyMap()
 )

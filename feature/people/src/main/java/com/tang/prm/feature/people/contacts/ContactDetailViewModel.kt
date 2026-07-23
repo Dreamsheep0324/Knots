@@ -66,7 +66,7 @@ class ContactDetailViewModel @Inject constructor(
 
     val uiState: StateFlow<ContactDetailUiState> = combine(
         _contactId.flatMapLatest { id ->
-            aggregationUseCase.getContactDetail(id)
+            aggregationUseCase(id)
                 .map { data ->
                     ContactDetailDataState(
                         contact = data.contact,

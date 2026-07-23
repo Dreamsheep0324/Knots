@@ -34,6 +34,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import coil.compose.AsyncImage
 import com.tang.prm.domain.model.GiftType
+import com.tang.prm.domain.usecase.GiftRecord
 import com.tang.prm.ui.animation.core.AnimationTokens
 import com.tang.prm.ui.animation.primitives.rememberContinuousRotation
 import com.tang.prm.ui.theme.*
@@ -92,8 +93,9 @@ internal fun ModernDetailContent(
         // ═══════════════════════════════════════════════════════
         //  4. 照片卡片
         // ═══════════════════════════════════════════════════════
-        if (gift.photos.isNotEmpty()) {
-            PhotosCard(photos = gift.photos, onPhotoClick = onPhotoClick)
+        val photoUris = gift.gift.photos.map { android.net.Uri.parse(it) }
+        if (photoUris.isNotEmpty()) {
+            PhotosCard(photos = photoUris, onPhotoClick = onPhotoClick)
             Spacer(modifier = Modifier.height(16.dp))
         }
 

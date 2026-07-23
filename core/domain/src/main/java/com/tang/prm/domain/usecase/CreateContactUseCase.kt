@@ -73,7 +73,13 @@ class CreateContactUseCase @Inject constructor(
     }
 
     /**
-     * 同步生日纪念日：查找已有生日纪念日并更新日期
+     * 同步生日纪念日：
+     * - 已有 BIRTHDAY 纪念日 → 更新日期
+     * - 无 BIRTHDAY 纪念日（H-1 修复：首次设置生日正场景）→ 新建纪念日
+     *
+     * H-1 修复：原实现仅 update 已存在的纪念日，若联系人创建时无生日、后续编辑添加生日，
+     * filter 结果为空 → 什么都不做 → 详情页缺失生日倒计时。
+     * 现补 insert 兜底，与 createContact 的建纪念日逻辑对齐。
      */
     private suspend fun syncBirthdayAnniversary(
         contactId: Long,
@@ -81,9 +87,25 @@ class CreateContactUseCase @Inject constructor(
         contactName: String,
         contactAvatar: String?
     ) {
-        anniversaryRepository.getAnniversariesByContact(contactId).first()
+        val existing = anniversaryRepository.getAnniversariesByContact(contactId).first()
             .filter { it.type == AnniversaryType.BIRTHDAY }
-            .forEach { anniversary ->
+
+        if (existing.isEmpty()) {
+            // H-1：首次设置生日，创建新的 BIRTHDAY 纪念日
+            anniversaryRepository.insertAnniversary(
+                Anniversary(
+                    contactId = contactId,
+                    name = "生日",
+                    type = AnniversaryType.BIRTHDAY,
+                    date = birthdayLong,
+                    isRepeat = true,
+                    remarks = null,
+                    contactName = contactName,
+                    contactAvatar = contactAvatar
+                )
+            )
+        } else {
+            existing.forEach { anniversary ->
                 anniversaryRepository.updateAnniversary(
                     anniversary.copy(
                         date = birthdayLong,
@@ -92,6 +114,7 @@ class CreateContactUseCase @Inject constructor(
                     )
                 )
             }
+        }
     }
 
     /**

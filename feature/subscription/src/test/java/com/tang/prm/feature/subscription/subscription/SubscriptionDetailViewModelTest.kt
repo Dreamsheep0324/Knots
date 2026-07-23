@@ -41,7 +41,7 @@ class SubscriptionDetailViewModelTest {
         Dispatchers.setMain(UnconfinedTestDispatcher())
         subscriptionRepository = mockk()
 
-        every { subscriptionRepository.getSubscriptionById(1L) } returns flowOf(testSubscription)
+        every { subscriptionRepository.observeSubscriptionById(1L) } returns flowOf(testSubscription)
         coEvery { subscriptionRepository.deleteSubscription(any()) } returns Unit
 
         val savedStateHandle = SavedStateHandle(mapOf("subscriptionId" to 1L))

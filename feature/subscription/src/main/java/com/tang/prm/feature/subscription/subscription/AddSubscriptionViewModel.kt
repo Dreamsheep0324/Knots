@@ -60,7 +60,7 @@ class AddSubscriptionViewModel @Inject constructor(
     fun initForEdit(subscriptionId: Long) {
         if (subscriptionId <= 0) return
         viewModelScope.launch {
-            subscriptionRepository.getSubscriptionByIdOnce(subscriptionId)?.let { sub ->
+            subscriptionRepository.getSubscriptionById(subscriptionId)?.let { sub ->
                 _uiState.update { it.copy(
                     name = sub.name,
                     category = sub.category,

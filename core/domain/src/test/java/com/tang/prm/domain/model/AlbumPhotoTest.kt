@@ -30,7 +30,7 @@ class AlbumPhotoTest {
     @DisplayName("stableId 一致性")
     inner class ConsistencyTest {
         @Test
-        fun sameId_producesSameStableId() {
+        fun `same id produces same stableId`() {
             val photo1 = buildPhoto("event_123_0")
             val photo2 = buildPhoto("event_123_0")
 
@@ -38,7 +38,7 @@ class AlbumPhotoTest {
         }
 
         @Test
-        fun stableId_matchesStringHashCodeToLong() {
+        fun `stableId matches string hashCode toLong`() {
             val id = "event_456_7"
             val photo = buildPhoto(id)
 
@@ -46,7 +46,7 @@ class AlbumPhotoTest {
         }
 
         @Test
-        fun stableId_isDeterministicAcrossInstances() {
+        fun `stableId is deterministic across instances`() {
             val id = "gift_999"
             val stableId1 = buildPhoto(id).stableId
             val stableId2 = buildPhoto(id).stableId
@@ -59,7 +59,7 @@ class AlbumPhotoTest {
     @DisplayName("stableId 碰撞")
     inner class CollisionTest {
         @Test
-        fun differentIds_produceDifferentStableIds() {
+        fun `different ids produce different stableIds`() {
             val ids = listOf(
                 "event_1_0", "event_1_1", "event_2_0",
                 "gift_1_0", "event_100_5", "event_1_00"
@@ -71,7 +71,7 @@ class AlbumPhotoTest {
         }
 
         @Test
-        fun prefixDifferent_sameSuffix_produceDifferentStableIds() {
+        fun `prefix different same suffix produce different stableIds`() {
             val photo1 = buildPhoto("event_123")
             val photo2 = buildPhoto("gift_123")
 
@@ -83,7 +83,7 @@ class AlbumPhotoTest {
     @DisplayName("stableId 边界")
     inner class BoundaryTest {
         @Test
-        fun emptyId_producesZeroStableId() {
+        fun `empty id produces zero stableId`() {
             val photo = buildPhoto("")
 
             // String("").hashCode() == 0
@@ -91,7 +91,7 @@ class AlbumPhotoTest {
         }
 
         @Test
-        fun singleCharId_doesNotThrow() {
+        fun `single char id does not throw`() {
             val photo = buildPhoto("a")
 
             // 不抛异常即可
@@ -99,7 +99,7 @@ class AlbumPhotoTest {
         }
 
         @Test
-        fun longId_doesNotOverflow() {
+        fun `long id does not overflow`() {
             // 原 fold 实现在 15+ 字符时会溢出 Long 范围；新实现委托 hashCode 无此风险
             val longId = "event_${"x".repeat(200)}_${System.currentTimeMillis()}"
             val photo = buildPhoto(longId)
@@ -109,7 +109,7 @@ class AlbumPhotoTest {
         }
 
         @Test
-        fun unicodeId_producesValidStableId() {
+        fun `unicode id produces valid stableId`() {
             val unicodeId = "事件_123_中文_🎬"
             val photo = buildPhoto(unicodeId)
 

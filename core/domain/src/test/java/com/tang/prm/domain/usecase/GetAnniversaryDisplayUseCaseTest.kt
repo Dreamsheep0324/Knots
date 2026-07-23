@@ -22,7 +22,7 @@ class GetAnniversaryDisplayUseCaseTest {
     inner class InvokeTest {
 
         @Test
-        fun birthday_usesNextBirthdayDate() {
+        fun `birthday uses next birthday date`() {
             val ann = Anniversary(id = 1, name = "生日", type = AnniversaryType.BIRTHDAY,
                 date = dateMillis(1990, 6, 15), isRepeat = true)
             val info = useCase(ann)
@@ -31,7 +31,7 @@ class GetAnniversaryDisplayUseCaseTest {
         }
 
         @Test
-        fun repeatingAnniversary_usesNextRepeatDate() {
+        fun `repeating anniversary uses next repeat date`() {
             val ann = Anniversary(id = 1, name = "纪念日", type = AnniversaryType.ANNIVERSARY,
                 date = dateMillis(2020, 1, 1), isRepeat = true)
             val info = useCase(ann)
@@ -39,7 +39,7 @@ class GetAnniversaryDisplayUseCaseTest {
         }
 
         @Test
-        fun nonRepeatingAnniversary_usesOriginalDate() {
+        fun `non repeating anniversary uses original date`() {
             val date = dateMillis(2025, 12, 25)
             val ann = Anniversary(id = 1, name = "一次性", type = AnniversaryType.ANNIVERSARY,
                 date = date, isRepeat = false)
@@ -53,7 +53,7 @@ class GetAnniversaryDisplayUseCaseTest {
     inner class CategorizeTest {
 
         @Test
-        fun returnsCategorizedLists() {
+        fun `returns categorized lists`() {
             val anns = listOf(
                 Anniversary(id = 1, name = "A", type = AnniversaryType.BIRTHDAY,
                     date = dateMillis(1990, 1, 1), isRepeat = true)
@@ -63,7 +63,7 @@ class GetAnniversaryDisplayUseCaseTest {
         }
 
         @Test
-        fun emptyList_returnsEmptyCategories() {
+        fun `empty list returns empty categories`() {
             val result = useCase.categorizeAnniversaries(emptyList())
             assertThat(result.all).isEmpty()
             assertThat(result.upcoming).isEmpty()
@@ -71,7 +71,7 @@ class GetAnniversaryDisplayUseCaseTest {
         }
 
         @Test
-        fun allList_containsAllAnniversaries() {
+        fun `all list contains all anniversaries`() {
             val anns = listOf(
                 Anniversary(id = 1, name = "A", type = AnniversaryType.BIRTHDAY,
                     date = dateMillis(1990, 1, 1), isRepeat = true),

@@ -86,8 +86,7 @@ data class GraphDialogState(
 data class GraphStats(
     val totalContacts: Int = 0,
     val totalRelations: Int = 0,
-    val totalCircles: Int = 0,
-    val manualRelations: Int = 0
+    val totalCircles: Int = 0
 )
 
 /**
@@ -146,8 +145,7 @@ data class SelectedNodeInfo(
 data class NeighborRelation(
     val otherName: String,
     val relationTypeName: String,
-    val relationTypeColor: String?,
-    val isManual: Boolean
+    val relationTypeColor: String?
 )
 
 /**
@@ -157,8 +155,7 @@ data class NeighborRelation(
  * - [sourceName] / [targetName]：两端节点名
  * - [relationTypeName] / [relationTypeColor]：关系类型
  * - [label]：可选备注（如"大学室友"）
- * - [isManual]：true=手动添加，false=自动推断或虚拟边
- * - [sourceLabel]：来源标识文案（如"手动添加"/"自动推断"/"亲密度等级"）
+ * - [sourceLabel]：来源标识文案（如"手动添加"/"亲密度等级"）
  */
 data class SelectedEdgeInfo(
     val id: Long,
@@ -167,7 +164,6 @@ data class SelectedEdgeInfo(
     val relationTypeName: String,
     val relationTypeColor: String?,
     val label: String?,
-    val isManual: Boolean,
     val sourceLabel: String
 )
 

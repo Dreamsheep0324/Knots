@@ -10,7 +10,6 @@ import com.tang.prm.domain.model.Event
 import com.tang.prm.domain.model.EventType
 import com.tang.prm.domain.model.IntimacyTier
 import com.tang.prm.domain.model.PersonRelation
-import com.tang.prm.domain.model.RelationSource
 import com.tang.prm.domain.repository.EventRepository
 import com.tang.prm.domain.repository.PersonRelationRepository
 import com.tang.prm.domain.usecase.GraphData
@@ -140,8 +139,7 @@ class GraphViewModel @Inject constructor(
         val stats = GraphStats(
             totalContacts = data.contacts.size,
             totalRelations = data.relations.size,
-            totalCircles = data.contacts.mapNotNull { it.groupId }.distinct().size,
-            manualRelations = data.relations.count { it.source == RelationSource.MANUAL }
+            totalCircles = data.contacts.mapNotNull { it.groupId }.distinct().size
         )
         GraphUiState(
             data = GraphDataState(
@@ -260,7 +258,6 @@ class GraphViewModel @Inject constructor(
             relationTypeName = edge.relationType.name,
             relationTypeColor = edge.relationType.color,
             label = edge.label,
-            isManual = edge.isManual,
             sourceLabel = sourceLabel
         )
     }
@@ -507,8 +504,7 @@ class GraphViewModel @Inject constructor(
                     NeighborRelation(
                         otherName = other.name,
                         relationTypeName = edge.relationType.name,
-                        relationTypeColor = edge.relationType.color,
-                        isManual = edge.isManual
+                        relationTypeColor = edge.relationType.color
                     )
                 )
             }
@@ -727,7 +723,7 @@ class GraphViewModel @Inject constructor(
      *   - 匹配成功：用该关系类型的颜色和名称（如"家人"=红色、"朋友"=紫色）
      *   - relationship 为空：用灰色"未标注"类型
      *   - 未匹配到：用灰色 + relationship 字符串作为名称
-     * - source = [RelationSource.AUTO_EVENT]，标记为虚拟自动边（不可删除）
+     * - 通过 isPersonRelation/isVirtual 标记虚拟边（不可删除）
      *
      * 同时保留真实 relations 表的"联系人↔联系人"边数据，供 [computeSelectedNodeInfo]
      * 在选中联系人节点时展示该联系人的邻居关系（画布上不绘制）。
@@ -750,8 +746,7 @@ class GraphViewModel @Inject constructor(
                 sourceId = relation.contactIdA,
                 targetId = relation.contactIdB,
                 relationType = type,
-                label = relation.note,
-                source = relation.source
+                label = relation.note
             )
         }
         // 2. PersonRelation 人物关系边（owner→target，单向）
@@ -770,7 +765,6 @@ class GraphViewModel @Inject constructor(
                 targetId = targetId,
                 relationType = type,
                 label = label,
-                source = RelationSource.MANUAL,
                 isPersonRelation = true
             )
         }
@@ -782,7 +776,6 @@ class GraphViewModel @Inject constructor(
                 targetId = contact.id,
                 relationType = contactToRelationType(contact, typeByName),
                 label = null,
-                source = RelationSource.MANUAL,
                 isVirtual = true
             )
         }
@@ -805,7 +798,6 @@ class GraphViewModel @Inject constructor(
                             targetId = participant.id,
                             relationType = eventType,
                             label = null,
-                            source = RelationSource.MANUAL,
                             isEventRelation = true
                         )
                     )

@@ -3,6 +3,7 @@ package com.tang.prm.domain.usecase
 import com.tang.prm.domain.model.Favorite
 import com.tang.prm.domain.repository.FavoriteRepository
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
@@ -24,13 +25,14 @@ import javax.inject.Inject
 class ObserveFavoritesUseCase @Inject constructor(
     private val favoriteRepository: FavoriteRepository
 ) {
-    fun observe(sourceType: String? = null): Flow<List<Favorite>> {
+    operator fun invoke(sourceType: String? = null): Flow<List<Favorite>> {
         // P-3 修复：sourceType 非空时走 DB 层过滤（getFavoritesByType 走 SQL WHERE），
         // 替代原 getAllFavorites + Kotlin filter 的全表加载模式。
+        // Q-3 修复：上游 Flow 加 distinctUntilChanged 避免无意义重发。
         return if (sourceType.isNullOrBlank()) {
-            favoriteRepository.getAllFavorites()
+            favoriteRepository.getAllFavorites().distinctUntilChanged()
         } else {
-            favoriteRepository.getFavoritesByType(sourceType)
+            favoriteRepository.getFavoritesByType(sourceType).distinctUntilChanged()
         }
     }
 
@@ -38,15 +40,17 @@ class ObserveFavoritesUseCase @Inject constructor(
      * 返回指定 sourceType 下所有已收藏的 sourceId 集合。
      */
     fun getFavoriteIds(sourceType: String): Flow<Set<Long>> {
-        return favoriteRepository.getFavoritesByType(sourceType).map { favList ->
-            favList.map { it.sourceId }.toSet()
-        }
+        return favoriteRepository.getFavoritesByType(sourceType)
+            .distinctUntilChanged()
+            .map { favList ->
+                favList.map { it.sourceId }.toSet()
+            }
     }
 
     /**
      * 观察单条资源的收藏状态。
      */
     fun isFavorite(sourceType: String, sourceId: Long): Flow<Boolean> {
-        return favoriteRepository.isFavorite(sourceType, sourceId)
+        return favoriteRepository.isFavorite(sourceType, sourceId).distinctUntilChanged()
     }
 }

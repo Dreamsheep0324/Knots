@@ -18,25 +18,25 @@ class DateCalcUtilsTest {
     inner class SafeDateTest {
 
         @Test
-        fun normalDate_returnsSame() {
+        fun `normal date returns same`() {
             val date = DateCalcUtils.safeDate(2024, 6, 15)
             assertThat(date).isEqualTo(LocalDate.of(2024, 6, 15))
         }
 
         @Test
-        fun feb29InLeapYear_returnsFeb29() {
+        fun `feb29 in leap year returns feb29`() {
             val date = DateCalcUtils.safeDate(2024, 2, 29)
             assertThat(date).isEqualTo(LocalDate.of(2024, 2, 29))
         }
 
         @Test
-        fun feb29InNonLeapYear_fallsBackToFeb28() {
+        fun `feb29 in non leap year falls back to feb28`() {
             val date = DateCalcUtils.safeDate(2023, 2, 29)
             assertThat(date).isEqualTo(LocalDate.of(2023, 2, 28))
         }
 
         @Test
-        fun feb28InNonLeapYear_returnsFeb28() {
+        fun `feb28 in non leap year returns feb28`() {
             val date = DateCalcUtils.safeDate(2023, 2, 28)
             assertThat(date).isEqualTo(LocalDate.of(2023, 2, 28))
         }
@@ -47,7 +47,7 @@ class DateCalcUtilsTest {
     inner class SafeDateInvalidInputTest {
 
         @Test
-        fun month13_throwsException() {
+        fun `month13 throws exception`() {
             // safeDate 透传给 LocalDate.of，非法月份抛 DateTimeException
             org.junit.jupiter.api.assertThrows<java.time.DateTimeException> {
                 DateCalcUtils.safeDate(2024, 13, 1)
@@ -55,21 +55,21 @@ class DateCalcUtilsTest {
         }
 
         @Test
-        fun month0_throwsException() {
+        fun `month0 throws exception`() {
             org.junit.jupiter.api.assertThrows<java.time.DateTimeException> {
                 DateCalcUtils.safeDate(2024, 0, 1)
             }
         }
 
         @Test
-        fun day32_throwsException() {
+        fun `day32 throws exception`() {
             org.junit.jupiter.api.assertThrows<java.time.DateTimeException> {
                 DateCalcUtils.safeDate(2024, 1, 32)
             }
         }
 
         @Test
-        fun day0_throwsException() {
+        fun `day0 throws exception`() {
             org.junit.jupiter.api.assertThrows<java.time.DateTimeException> {
                 DateCalcUtils.safeDate(2024, 1, 0)
             }
@@ -81,7 +81,7 @@ class DateCalcUtilsTest {
     inner class CalculateDaysInfoTest {
 
         @Test
-        fun futureDate_isNotPast() {
+        fun `future date is not past`() {
             val today = LocalDate.now(zoneId)
             val target = today.plusDays(60)
             val targetMillis = target.atStartOfDay(zoneId).toInstant().toEpochMilli()
@@ -91,7 +91,7 @@ class DateCalcUtilsTest {
         }
 
         @Test
-        fun pastDate_isPast() {
+        fun `past date is past`() {
             val today = LocalDate.now(zoneId)
             val target = today.minusDays(60)
             val targetMillis = target.atStartOfDay(zoneId).toInstant().toEpochMilli()
@@ -106,7 +106,7 @@ class DateCalcUtilsTest {
     inner class GetNextBirthdayDateTest {
 
         @Test
-        fun birthdayToday_returnsToday() {
+        fun `birthday today returns today`() {
             val today = LocalDate.now(zoneId)
             val birthMillis = today.atStartOfDay(zoneId).toInstant().toEpochMilli()
             val next = DateCalcUtils.getNextBirthdayDate(birthMillis)
@@ -115,7 +115,7 @@ class DateCalcUtilsTest {
         }
 
         @Test
-        fun pastBirthdayThisYear_returnsNextYear() {
+        fun `past birthday this year returns next year`() {
             val today = LocalDate.now(zoneId)
             // Use a date that has definitely passed this year (Jan 1)
             val pastBirthday = LocalDate.of(today.year, 1, 1)
@@ -131,7 +131,7 @@ class DateCalcUtilsTest {
     inner class GetNextRepeatDateTest {
 
         @Test
-        fun futureDateThisYear_returnsThisYear() {
+        fun `future date this year returns this year`() {
             val today = LocalDate.now(zoneId)
             val target = today.plusMonths(3)
             val targetMillis = target.atStartOfDay(zoneId).toInstant().toEpochMilli()
@@ -142,7 +142,7 @@ class DateCalcUtilsTest {
         }
 
         @Test
-        fun pastDateThisYear_returnsNextYear() {
+        fun `past date this year returns next year`() {
             val today = LocalDate.now(zoneId)
             val target = today.minusMonths(3)
             val targetMillis = target.atStartOfDay(zoneId).toInstant().toEpochMilli()
@@ -157,7 +157,7 @@ class DateCalcUtilsTest {
     inner class GetTodayStartTest {
 
         @Test
-        fun returnsMidnightToday() {
+        fun `returns midnight today`() {
             val todayStart = DateCalcUtils.getTodayStart()
             val today = LocalDate.now(zoneId).atStartOfDay(zoneId).toInstant().toEpochMilli()
             assertThat(todayStart).isEqualTo(today)

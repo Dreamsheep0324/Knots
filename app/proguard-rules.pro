@@ -51,6 +51,10 @@
 -dontwarn okhttp3.internal.sse.**
 -dontwarn okio.**
 
+# ---- kXML2 (DavXmlParser 使用, Android 平台内部库) ----
+-dontwarn org.kxml2.**
+-keep class org.kxml2.** { *; }
+
 # ---- Gson ----
 -keepattributes Signature
 -keepattributes *Annotation*

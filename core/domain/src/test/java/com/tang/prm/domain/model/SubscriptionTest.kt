@@ -14,32 +14,32 @@ class SubscriptionTest {
     inner class MonthlyEquivalentTest {
 
         @Test
-        fun weekly_priceConvertedToMonthly() {
+        fun `weekly price converted to monthly`() {
             val sub = testSubscription(price = 52.0, cycle = SubscriptionCycle.WEEKLY)
             // 52 * (52/12) = 52 * 4.333... = 225.333...
             assertThat(sub.monthlyEquivalent()).isWithin(0.01).of(52.0 * 52.0 / 12.0)
         }
 
         @Test
-        fun monthly_priceUnchanged() {
+        fun `monthly price unchanged`() {
             val sub = testSubscription(price = 30.0, cycle = SubscriptionCycle.MONTHLY)
             assertThat(sub.monthlyEquivalent()).isEqualTo(30.0)
         }
 
         @Test
-        fun quarterly_dividedBy3() {
+        fun `quarterly divided by 3`() {
             val sub = testSubscription(price = 90.0, cycle = SubscriptionCycle.QUARTERLY)
             assertThat(sub.monthlyEquivalent()).isEqualTo(30.0)
         }
 
         @Test
-        fun yearly_dividedBy12() {
+        fun `yearly divided by 12`() {
             val sub = testSubscription(price = 120.0, cycle = SubscriptionCycle.YEARLY)
             assertThat(sub.monthlyEquivalent()).isEqualTo(10.0)
         }
 
         @Test
-        fun oneTime_returnsZero() {
+        fun `oneTime returns zero`() {
             val sub = testSubscription(price = 99.0, cycle = SubscriptionCycle.ONE_TIME)
             assertThat(sub.monthlyEquivalent()).isEqualTo(0.0)
         }
@@ -50,31 +50,31 @@ class SubscriptionTest {
     inner class YearlyEquivalentTest {
 
         @Test
-        fun weekly_priceTimes52() {
+        fun `weekly price times 52`() {
             val sub = testSubscription(price = 10.0, cycle = SubscriptionCycle.WEEKLY)
             assertThat(sub.yearlyEquivalent()).isEqualTo(520.0)
         }
 
         @Test
-        fun monthly_priceTimes12() {
+        fun `monthly price times 12`() {
             val sub = testSubscription(price = 30.0, cycle = SubscriptionCycle.MONTHLY)
             assertThat(sub.yearlyEquivalent()).isEqualTo(360.0)
         }
 
         @Test
-        fun quarterly_priceTimes4() {
+        fun `quarterly price times 4`() {
             val sub = testSubscription(price = 90.0, cycle = SubscriptionCycle.QUARTERLY)
             assertThat(sub.yearlyEquivalent()).isEqualTo(360.0)
         }
 
         @Test
-        fun yearly_priceUnchanged() {
+        fun `yearly price unchanged`() {
             val sub = testSubscription(price = 120.0, cycle = SubscriptionCycle.YEARLY)
             assertThat(sub.yearlyEquivalent()).isEqualTo(120.0)
         }
 
         @Test
-        fun oneTime_returnsPrice() {
+        fun `oneTime returns price`() {
             val sub = testSubscription(price = 99.0, cycle = SubscriptionCycle.ONE_TIME)
             assertThat(sub.yearlyEquivalent()).isEqualTo(99.0)
         }
@@ -85,7 +85,7 @@ class SubscriptionTest {
     inner class ComputedStatusTest {
 
         @Test
-        fun activeWithFutureBilling_returnsActive() {
+        fun `active with future billing returns ACTIVE`() {
             val sub = testSubscription(
                 status = SubscriptionStatus.ACTIVE,
                 nextBillingDate = System.currentTimeMillis() + 86_400_000L
@@ -94,7 +94,7 @@ class SubscriptionTest {
         }
 
         @Test
-        fun activeWithPastBilling_returnsExpired() {
+        fun `active with past billing returns EXPIRED`() {
             val sub = testSubscription(
                 status = SubscriptionStatus.ACTIVE,
                 nextBillingDate = System.currentTimeMillis() - 86_400_000L
@@ -103,7 +103,7 @@ class SubscriptionTest {
         }
 
         @Test
-        fun cancelledWithFutureBilling_returnsCancelled() {
+        fun `cancelled with future billing returns CANCELLED`() {
             val sub = testSubscription(
                 status = SubscriptionStatus.CANCELLED,
                 nextBillingDate = System.currentTimeMillis() + 86_400_000L
@@ -112,7 +112,7 @@ class SubscriptionTest {
         }
 
         @Test
-        fun cancelledWithPastBilling_returnsExpired() {
+        fun `cancelled with past billing returns EXPIRED`() {
             val sub = testSubscription(
                 status = SubscriptionStatus.CANCELLED,
                 nextBillingDate = System.currentTimeMillis() - 86_400_000L
@@ -121,7 +121,7 @@ class SubscriptionTest {
         }
 
         @Test
-        fun expiredWithFutureBilling_revivesToActive() {
+        fun `expired with future billing revives to ACTIVE`() {
             // B-15 修复：status=EXPIRED 但 nextBillingDate 已被续期到未来 → 复活为 ACTIVE
             val sub = testSubscription(
                 status = SubscriptionStatus.EXPIRED,
@@ -131,7 +131,7 @@ class SubscriptionTest {
         }
 
         @Test
-        fun expiredWithPastBilling_remainsExpired() {
+        fun `expired with past billing remains EXPIRED`() {
             // B-15 修复：status=EXPIRED 且 nextBillingDate 仍过期 → 保持 EXPIRED
             val sub = testSubscription(
                 status = SubscriptionStatus.EXPIRED,
@@ -147,7 +147,7 @@ class SubscriptionTest {
 
         @ParameterizedTest
         @CsvSource("WEEKLY,每周", "MONTHLY,每月", "QUARTERLY,每季", "YEARLY,每年", "ONE_TIME,一次性")
-        fun displayName(cycle: SubscriptionCycle, expected: String) {
+        fun `display name is correct`(cycle: SubscriptionCycle, expected: String) {
             assertThat(cycle.displayName).isEqualTo(expected)
         }
     }

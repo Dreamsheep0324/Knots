@@ -236,12 +236,5 @@ private fun NeighborRow(rel: NeighborRelation) {
             color = TextGray
         )
         Spacer(modifier = Modifier.width(8.dp))
-        if (!rel.isManual) {
-            Text(
-                text = "推断",
-                fontSize = 10.sp,
-                color = TextGray.copy(alpha = 0.7f)
-            )
-        }
     }
 }

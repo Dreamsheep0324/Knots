@@ -32,6 +32,19 @@ object DateCalcUtils {
     fun getTodayStart(): Long =
         LocalDate.now(defaultZoneId).atStartOfDay(defaultZoneId).toInstant().toEpochMilli()
 
+    /**
+     * 计算从今天到目标日期的天数差（target - today，可为负）。
+     *
+     * 用于一次性事件（不滚到次年），与 [calculateDaysInfo] 的滚动逻辑互补。
+     * B-3 修复：[GetAnniversaryDisplayUseCase] 原用 [calculateDaysInfo] 计算 daysUntil，
+     * 但后者把已过去的日期滚动到次年，导致"生效日期已过"却"距今还有正 X 天"的语义矛盾。
+     */
+    fun daysUntilFromToday(targetMillis: Long): Int {
+        val today = LocalDate.now(defaultZoneId)
+        val targetDate = Instant.ofEpochMilli(targetMillis).atZone(defaultZoneId).toLocalDate()
+        return java.time.temporal.ChronoUnit.DAYS.between(today, targetDate).toInt()
+    }
+
     fun calculateDaysInfo(targetMillis: Long): DaysInfo {
         val today = LocalDate.now(defaultZoneId)
         val targetDate = Instant.ofEpochMilli(targetMillis).atZone(defaultZoneId).toLocalDate()

@@ -7,7 +7,7 @@ import com.tang.prm.domain.model.Contact
 import com.tang.prm.domain.model.SourceTypes
 import com.tang.prm.domain.usecase.FavoriteToggleUseCase
 import com.tang.prm.domain.usecase.ObserveFavoritesUseCase
-import com.tang.prm.domain.usecase.filterBy
+import com.tang.prm.domain.util.filterBy
 import com.tang.prm.domain.usecase.PhotoAlbumAggregationUseCase
 import com.tang.prm.domain.usecase.PhotoAlbumAggregateData
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -43,7 +43,7 @@ class PhotoAlbumViewModel @Inject constructor(
     private val _favoritePhotoIds = MutableStateFlow<Set<Long>>(emptySet())
 
     /** 单一聚合数据源，避免 getAggregateData() 被重复调用导致双重订阅 */
-    private val aggregateData = photoAlbumAggregationUseCase.getAggregateData()
+    private val aggregateData = photoAlbumAggregationUseCase()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), PhotoAlbumAggregateData(emptyList(), emptyList()))
 
     init {

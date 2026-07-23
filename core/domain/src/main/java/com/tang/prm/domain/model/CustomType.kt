@@ -31,7 +31,7 @@ data class CustomType(
  * CleanCustomTypeUseCase、DeleteCustomTypeUseCase、ObserveEventsAggregateUseCase。
  *
  * 保留 object + const val 形式（而非改 enum）：数据库存储为 String，enum 会引入额外序列化，
- * 且当前 11 个分类无行为差异，不需要 enum 的方法绑定。
+ * 且当前 12 个分类无行为差异，不需要 enum 的方法绑定。
  */
 object CustomCategories {
     /** 事件自定义类型（如"聚餐"/"见面"之外的扩展类型） */

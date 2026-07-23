@@ -1,6 +1,10 @@
 package com.tang.prm.domain.repository
 
-import com.tang.prm.domain.model.*
+import com.tang.prm.domain.model.BackupFileInfo
+import com.tang.prm.domain.model.BackupInfo
+import com.tang.prm.domain.model.ClearDataResult
+import com.tang.prm.domain.model.FileEntry
+import com.tang.prm.domain.model.RestoreResult
 import kotlinx.coroutines.flow.Flow
 import java.io.File
 
@@ -40,7 +44,7 @@ interface BackupRepository {
     suspend fun restoreFromUri(uri: String): Flow<RestoreResult>
     fun generateBackupFileName(): String
     suspend fun clearAllData(): ClearDataResult
-    suspend fun backupToDir(imageQuality: BackupImageQuality): BackupInfo
+    suspend fun backupToDir(): BackupInfo
     suspend fun listBackups(): List<BackupFileInfo>
     suspend fun deleteBackup(fileName: String): Boolean
     suspend fun restoreBackup(fileName: String): Flow<RestoreResult>

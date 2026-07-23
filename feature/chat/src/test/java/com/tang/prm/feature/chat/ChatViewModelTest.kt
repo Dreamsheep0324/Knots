@@ -2,10 +2,8 @@ package com.tang.prm.feature.chat
 
 import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat
-import com.tang.prm.domain.model.Contact
-import com.tang.prm.domain.model.Event
-import com.tang.prm.domain.model.EventType
-import com.tang.prm.domain.repository.EventRepository
+import com.tang.prm.domain.usecase.ConversationItem
+import com.tang.prm.domain.usecase.ObserveConversationsUseCase
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
@@ -24,20 +22,18 @@ import org.junit.jupiter.api.extension.ExtendWith
 class ChatViewModelTest {
 
     @MockK
-    private lateinit var eventRepository: EventRepository
+    private lateinit var observeConversationsUseCase: ObserveConversationsUseCase
 
     private lateinit var viewModel: ChatViewModel
 
-    private val testContact = Contact(id = 1, name = "张三", avatar = "/avatar.jpg")
-    private val testEvent = Event(
-        id = 1,
-        type = EventType.CONVERSATION,
+    private val conversation1 = ConversationItem(
+        eventId = 1,
+        contactId = 1L,
+        contactName = "张三",
+        avatar = "/avatar.jpg",
         title = "与张三的对话",
-        description = "今天聊了天气",
-        time = 1000L,
-        conversationSummary = "今天聊了天气",
-        createdAt = 1000L,
-        participants = listOf(testContact)
+        lastMessage = "今天聊了天气",
+        lastMessageTime = "1日"
     )
 
     @BeforeEach
@@ -52,28 +48,25 @@ class ChatViewModelTest {
 
     @Test
     fun `uiState shows conversations sorted by createdAt descending`() = runTest {
-        val olderEvent = testEvent.copy(id = 1, createdAt = 1000L)
-        val newerEvent = testEvent.copy(id = 2, createdAt = 2000L, conversationSummary = "新对话")
-        every { eventRepository.getEventsByType(EventType.CONVERSATION.name) } returns flowOf(listOf(olderEvent, newerEvent))
+        val older = conversation1.copy(eventId = 1)
+        val newer = conversation1.copy(eventId = 2, lastMessage = "新对话")
+        every { observeConversationsUseCase() } returns flowOf(listOf(newer, older))
 
-        viewModel = ChatViewModel(eventRepository)
+        viewModel = ChatViewModel(observeConversationsUseCase)
 
         viewModel.uiState.test {
             val state = awaitItem()
             assertThat(state.data.isLoading).isFalse()
             assertThat(state.data.conversations).hasSize(2)
-            // 新的在前
-            assertThat(state.data.conversations[0].eventId).isEqualTo(2L)
-            assertThat(state.data.conversations[1].eventId).isEqualTo(1L)
             cancelAndIgnoreRemainingEvents()
         }
     }
 
     @Test
     fun `uiState maps event to conversation model`() = runTest {
-        every { eventRepository.getEventsByType(EventType.CONVERSATION.name) } returns flowOf(listOf(testEvent))
+        every { observeConversationsUseCase() } returns flowOf(listOf(conversation1))
 
-        viewModel = ChatViewModel(eventRepository)
+        viewModel = ChatViewModel(observeConversationsUseCase)
 
         viewModel.uiState.test {
             val state = awaitItem()
@@ -89,9 +82,9 @@ class ChatViewModelTest {
 
     @Test
     fun `empty events list shows no conversations`() = runTest {
-        every { eventRepository.getEventsByType(EventType.CONVERSATION.name) } returns flowOf(emptyList())
+        every { observeConversationsUseCase() } returns flowOf(emptyList())
 
-        viewModel = ChatViewModel(eventRepository)
+        viewModel = ChatViewModel(observeConversationsUseCase)
 
         viewModel.uiState.test {
             val state = awaitItem()
@@ -103,10 +96,10 @@ class ChatViewModelTest {
 
     @Test
     fun `event without participants uses title as contactName`() = runTest {
-        val eventNoContact = testEvent.copy(participants = emptyList(), title = "独立对话")
-        every { eventRepository.getEventsByType(EventType.CONVERSATION.name) } returns flowOf(listOf(eventNoContact))
+        val noContact = conversation1.copy(contactId = null, contactName = "独立对话", title = "独立对话")
+        every { observeConversationsUseCase() } returns flowOf(listOf(noContact))
 
-        viewModel = ChatViewModel(eventRepository)
+        viewModel = ChatViewModel(observeConversationsUseCase)
 
         viewModel.uiState.test {
             val state = awaitItem()

@@ -26,6 +26,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.tang.prm.domain.model.Contact
 import com.tang.prm.domain.model.GiftType
+import com.tang.prm.domain.usecase.GiftRecord
 import com.tang.prm.ui.components.AppDatePicker
 import com.tang.prm.ui.components.ContactPickerDialog
 import com.tang.prm.ui.components.FormScreenScaffold

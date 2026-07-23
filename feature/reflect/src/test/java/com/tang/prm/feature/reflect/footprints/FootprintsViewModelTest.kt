@@ -45,7 +45,7 @@ class FootprintsViewModelTest {
     fun setUp() {
         Dispatchers.setMain(UnconfinedTestDispatcher())
 
-        every { footprintUseCase.getAggregateData() } returns flowOf(testAggregateData)
+        every { footprintUseCase() } returns flowOf(testAggregateData)
 
         viewModel = FootprintsViewModel(footprintUseCase)
     }

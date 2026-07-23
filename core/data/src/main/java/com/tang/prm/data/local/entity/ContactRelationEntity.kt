@@ -46,7 +46,6 @@ data class ContactRelationEntity(
     val contactIdB: Long,
     val relationTypeId: Long,
     val note: String?,
-    val source: String,
     val createdAt: Long,
     val updatedAt: Long
 )

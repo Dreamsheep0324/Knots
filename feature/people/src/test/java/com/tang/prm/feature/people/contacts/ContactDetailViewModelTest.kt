@@ -46,7 +46,7 @@ class ContactDetailViewModelTest {
         favoriteToggleUseCase = mockk()
         thoughtWriteUseCase = mockk()
 
-        every { aggregationUseCase.getContactDetail(1L) } returns flowOf(testAggregateData)
+        every { aggregationUseCase(1L) } returns flowOf(testAggregateData)
         coEvery { aggregationUseCase.deleteContact(any()) } returns Unit
         coEvery { thoughtWriteUseCase.toggleDone(any()) } returns Unit
         coEvery { thoughtWriteUseCase.delete(any()) } returns Unit

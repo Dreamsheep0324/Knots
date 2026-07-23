@@ -60,7 +60,14 @@ class CleanCustomTypeUseCase @Inject constructor(
             if (newArr.size == arr.size) this
             else if (newArr.isEmpty()) null
             else JsonArray(newArr).toString()
-        } catch (e: Exception) {
+        } catch (e: kotlinx.serialization.SerializationException) {
+            // L-3 修复：原捕获过宽 Exception，现仅捕获 SerializationException，
+            // 降级到逗号分隔解析路径（兼容历史脏数据）。
+            val items = split(",").map { it.trim() }.filter { it.isNotEmpty() && it != value }
+            if (items.isEmpty()) null
+            else JsonArray(items.map { JsonPrimitive(it) }).toString()
+        } catch (e: IllegalArgumentException) {
+            // parseToJsonElement 对非法 JSON 抛 IllegalArgumentException，同样降级。
             val items = split(",").map { it.trim() }.filter { it.isNotEmpty() && it != value }
             if (items.isEmpty()) null
             else JsonArray(items.map { JsonPrimitive(it) }).toString()

@@ -55,9 +55,6 @@ interface PersonRelationDao {
     @Update
     suspend fun update(entity: PersonRelationEntity)
 
-    @Delete
-    suspend fun delete(entity: PersonRelationEntity)
-
     @Query("DELETE FROM person_relations WHERE id = :id")
     suspend fun deleteById(id: Long)
 

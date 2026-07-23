@@ -2,7 +2,16 @@ package com.tang.prm.domain.usecase
 
 import com.tang.prm.domain.model.EventType
 import com.tang.prm.domain.model.IntimacyTier
-import com.tang.prm.domain.repository.*
+import com.tang.prm.domain.repository.AnniversaryRepository
+import com.tang.prm.domain.repository.CircleRepository
+import com.tang.prm.domain.repository.ContactRelationRepository
+import com.tang.prm.domain.repository.ContactRepository
+import com.tang.prm.domain.repository.EventStatsRepository
+import com.tang.prm.domain.repository.FavoriteRepository
+import com.tang.prm.domain.repository.GiftRepository
+import com.tang.prm.domain.repository.RecipeRepository
+import com.tang.prm.domain.repository.SubscriptionRepository
+import com.tang.prm.domain.repository.ThoughtRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -66,12 +75,12 @@ class HomeStatsUseCase @Inject constructor(
     private val favoriteRepository: FavoriteRepository,
     private val circleRepository: CircleRepository,
     private val anniversaryRepository: AnniversaryRepository,
-    private val eventRepository: EventRepository,
+    private val eventStatsRepository: EventStatsRepository,
     private val subscriptionRepository: SubscriptionRepository,
     private val recipeRepository: RecipeRepository,
     private val contactRelationRepository: ContactRelationRepository
 ) {
-    fun getStats(): Flow<HomeStats> {
+    operator fun invoke(): Flow<HomeStats> {
         val statsA: Flow<CountStatsA> = combine(
             giftRepository.getGiftCount().distinctUntilChanged(),
             thoughtRepository.getThoughtCount().distinctUntilChanged(),
@@ -83,7 +92,7 @@ class HomeStatsUseCase @Inject constructor(
         }
         val statsB: Flow<CountStatsB> = combine(
             anniversaryRepository.getAnniversaryCount().distinctUntilChanged(),
-            eventRepository.getEventCount().distinctUntilChanged(),
+            eventStatsRepository.getEventCount().distinctUntilChanged(),
             subscriptionRepository.getSubscriptionCount().distinctUntilChanged(),
             recipeRepository.getRecipeCount().distinctUntilChanged(),
             contactRelationRepository.getRelationCount().distinctUntilChanged()
@@ -91,9 +100,9 @@ class HomeStatsUseCase @Inject constructor(
             CountStatsB(anniversary, event, subscription, recipe, relation)
         }
         val breakdown: Flow<EventBreakdown> = combine(
-            eventRepository.getEventCountByType(EventType.CONVERSATION.name).distinctUntilChanged(),
-            eventRepository.getEventCountWithLocation().distinctUntilChanged(),
-            eventRepository.getPhotoCount().distinctUntilChanged(),
+            eventStatsRepository.getEventCountByType(EventType.CONVERSATION.name).distinctUntilChanged(),
+            eventStatsRepository.getEventCountWithLocation().distinctUntilChanged(),
+            eventStatsRepository.getPhotoCount().distinctUntilChanged(),
             giftRepository.getPhotoCount().distinctUntilChanged(),
             contactRepository.getAllIntimacyScores()
                 .map { scores -> scores.groupingBy { IntimacyTier.of(it) }.eachCount() }

@@ -4,7 +4,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import com.tang.prm.domain.model.Anniversary
 import com.tang.prm.domain.model.Event
-import com.tang.prm.domain.model.effectiveDate
 import com.tang.prm.domain.util.DateUtils
 import java.util.Calendar
 

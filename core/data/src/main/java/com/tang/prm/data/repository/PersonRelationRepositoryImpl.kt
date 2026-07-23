@@ -14,8 +14,10 @@ import javax.inject.Singleton
  * 人物关系 Repository 实现。
  *
  * 写路径保证不变量：
- * - [PersonRelation.targetContactId] 与 [PersonRelation.targetName] 互斥（一空一非空），
- *   违反时抛 [IllegalArgumentException]
+ * - [PersonRelation.targetContactId] 与 [PersonRelation.targetName] 至少一个非空，
+ *   两者都为空时抛 [IllegalArgumentException]（见 [validateMutex]）
+ * - 当 targetContactId 非空（App 联系人）时，targetName/targetAvatar 由 [toEntity] 兜底清空，
+ *   确保落库后两条字段互斥（App 联系人仅留 id，外部人物仅留 name）
  * - 主体联系人删除时，FK CASCADE 自动清除所有相关记录
  * - 客体联系人删除时，FK SET NULL 保留记录，下次查询时由 [toDomain] 兜底为"已删除联系人"
  *

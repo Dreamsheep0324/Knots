@@ -55,7 +55,7 @@ class ThoughtGamificationUseCase @Inject constructor() {
 
     fun calcStreak(thoughts: List<Thought>): Int {
         if (thoughts.isEmpty()) return 0
-        val zone = ZoneId.systemDefault()
+        val zone = ZoneId.of("Asia/Shanghai")
         val daysWithThoughts = thoughts.map {
             Instant.ofEpochMilli(it.createdAt).atZone(zone).toLocalDate().toEpochDay()
         }.toSet()

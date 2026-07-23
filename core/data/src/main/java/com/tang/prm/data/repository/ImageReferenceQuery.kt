@@ -39,9 +39,11 @@ class ImageReferenceQuery(
             }
         }
 
-        // 菜谱照片以 List<String> 直接存储（非 JSON），直接取路径
-        recipeDao.getReferencedPhotoPaths().forEach { path ->
-            extractImageFileName(path)?.let { referencedNames.add(it) }
+        // 菜谱照片通过 ListStringConverter 以 JSON 数组串存储，与 gift/event 一致需先 parsePhotoPaths。
+        recipeDao.getReferencedPhotoPaths().forEach { json ->
+            parsePhotoPaths(json).forEach { path ->
+                extractImageFileName(path)?.let { referencedNames.add(it) }
+            }
         }
 
         return referencedNames

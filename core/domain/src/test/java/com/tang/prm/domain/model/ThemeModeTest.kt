@@ -6,37 +6,37 @@ import org.junit.jupiter.api.Test
 class ThemeModeTest {
 
     @Test
-    fun themeMode_values_has3Entries() {
+    fun `themeMode values has 3 entries`() {
         assertThat(ThemeMode.entries).hasSize(3)
     }
 
     @Test
-    fun themeMode_light_nameIsLIGHT() {
+    fun `themeMode light name is LIGHT`() {
         assertThat(ThemeMode.LIGHT.name).isEqualTo("LIGHT")
     }
 
     @Test
-    fun themeMode_dark_nameIsDARK() {
+    fun `themeMode dark name is DARK`() {
         assertThat(ThemeMode.DARK.name).isEqualTo("DARK")
     }
 
     @Test
-    fun themeMode_system_nameIsSYSTEM() {
+    fun `themeMode system name is SYSTEM`() {
         assertThat(ThemeMode.SYSTEM.name).isEqualTo("SYSTEM")
     }
 
     @Test
-    fun themeMode_light_labelIs浅色模式() {
+    fun `themeMode light label is 浅色模式`() {
         assertThat(ThemeMode.LIGHT.label).isEqualTo("浅色模式")
     }
 
     @Test
-    fun themeMode_dark_labelIs深色模式() {
+    fun `themeMode dark label is 深色模式`() {
         assertThat(ThemeMode.DARK.label).isEqualTo("深色模式")
     }
 
     @Test
-    fun themeMode_system_labelIs跟随系统() {
+    fun `themeMode system label is 跟随系统`() {
         assertThat(ThemeMode.SYSTEM.label).isEqualTo("跟随系统")
     }
 }

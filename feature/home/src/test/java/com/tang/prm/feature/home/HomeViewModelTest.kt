@@ -4,7 +4,7 @@ import androidx.lifecycle.viewModelScope
 import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat
 import com.tang.prm.domain.model.*
-import com.tang.prm.domain.repository.HomeOrbitalMode
+import com.tang.prm.domain.model.HomeOrbitalMode
 import com.tang.prm.domain.usecase.HomeAggregateData
 import com.tang.prm.domain.usecase.HomeDataAggregationUseCase
 import com.tang.prm.domain.usecase.HomeSettingsUseCase
@@ -50,8 +50,8 @@ class HomeViewModelTest {
     fun setUp() {
         Dispatchers.setMain(UnconfinedTestDispatcher())
 
-        every { homeDataUseCase.getAggregateData() } returns flowOf(emptyHomeData)
-        every { homeStatsUseCase.getStats() } returns flowOf(HomeStats())
+        every { homeDataUseCase() } returns flowOf(emptyHomeData)
+        every { homeStatsUseCase() } returns flowOf(HomeStats())
         every { homeSettingsUseCase.getDecorPhotoPath() } returns flowOf(null)
         every { homeSettingsUseCase.getHomeOrbitalMode() } returns flowOf(HomeOrbitalMode.ORBITAL)
 
@@ -74,7 +74,7 @@ class HomeViewModelTest {
     @Test
     fun init_loadsStats() = runTest {
         val stats = HomeStats(giftCount = 5, contactCount = 10)
-        every { homeStatsUseCase.getStats() } returns flowOf(stats)
+        every { homeStatsUseCase() } returns flowOf(stats)
 
         val freshViewModel = HomeViewModel(
             homeDataUseCase, homeStatsUseCase, homeSettingsUseCase

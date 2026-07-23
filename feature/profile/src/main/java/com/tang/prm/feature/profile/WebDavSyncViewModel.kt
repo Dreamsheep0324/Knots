@@ -89,6 +89,8 @@ class WebDavSyncViewModel @Inject constructor(
     }
 
     fun uploadBackup() {
+        // B-7/A-3 修复：ViewModel 层 Idle 守卫，与仓库层 Mutex 构成双层防护
+        if (_syncState.value !is SyncState.Idle) return
         viewModelScope.launch {
             _syncState.value = SyncState.Uploading("准备中", 0, 0, "准备上传...")
             try {
@@ -113,6 +115,8 @@ class WebDavSyncViewModel @Inject constructor(
     }
 
     fun downloadBackup(fileName: String) {
+        // B-7/A-3 修复：ViewModel 层 Idle 守卫，与仓库层 Mutex 构成双层防护
+        if (_syncState.value !is SyncState.Idle) return
         viewModelScope.launch {
             _syncState.value = SyncState.Downloading("准备中", 0, 0, "准备下载...")
             try {
@@ -144,8 +148,13 @@ class WebDavSyncViewModel @Inject constructor(
 
     fun refreshCloudVersions() {
         viewModelScope.launch {
-            val versions = webDavRepository.listRemoteBackups()
-            _cloudVersions.value = versions
+            try {
+                val versions = webDavRepository.listRemoteBackups()
+                _cloudVersions.value = versions
+            } catch (e: Exception) {
+                // B-16 修复：listRemoteBackups 现在会抛出网络异常而非伪装空数据
+                Log.e("WebDavSyncVM", "刷新云端版本失败", e)
+            }
         }
     }
 
@@ -181,7 +190,11 @@ class WebDavSyncViewModel @Inject constructor(
                     is ConnectionTestResult.Error -> ConnectionState.Error(result.message)
                 }
                 if (result is ConnectionTestResult.Success) {
-                    _cloudVersions.value = webDavRepository.listRemoteBackups()
+                    try {
+                        _cloudVersions.value = webDavRepository.listRemoteBackups()
+                    } catch (e: Exception) {
+                        Log.e("WebDavSyncVM", "获取云端版本失败", e)
+                    }
                 }
             }
         }

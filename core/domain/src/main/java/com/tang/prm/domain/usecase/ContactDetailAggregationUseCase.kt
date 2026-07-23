@@ -1,11 +1,24 @@
 package com.tang.prm.domain.usecase
 
-import com.tang.prm.domain.model.*
-import com.tang.prm.domain.repository.*
+import com.tang.prm.domain.model.Anniversary
+import com.tang.prm.domain.model.Contact
+import com.tang.prm.domain.model.CustomCategories
+import com.tang.prm.domain.model.CustomType
+import com.tang.prm.domain.model.Event
+import com.tang.prm.domain.model.Gift
+import com.tang.prm.domain.model.PersonRelation
+import com.tang.prm.domain.model.SourceTypes
+import com.tang.prm.domain.model.Thought
+import com.tang.prm.domain.repository.AnniversaryRepository
+import com.tang.prm.domain.repository.ContactRepository
+import com.tang.prm.domain.repository.CustomTypeRepository
+import com.tang.prm.domain.repository.EventRepository
+import com.tang.prm.domain.repository.GiftRepository
+import com.tang.prm.domain.repository.PersonRelationRepository
+import com.tang.prm.domain.repository.ThoughtRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
 /**
@@ -53,7 +66,7 @@ class ContactDetailAggregationUseCase @Inject constructor(
     private val observeFavoritesUseCase: ObserveFavoritesUseCase,
     private val personRelationRepository: PersonRelationRepository
 ) {
-    fun getContactDetail(contactId: Long): Flow<ContactDetailAggregateData> {
+    operator fun invoke(contactId: Long): Flow<ContactDetailAggregateData> {
         // C-5 修复：统一约定在 UseCase 层对 combine 上游加 distinctUntilChanged，
         // 防止 Room Flow 在表数据未实际变化时重发导致 combine 重新计算与多余 UI 重组。
         val contactFlow = contactRepository.getContactById(contactId).distinctUntilChanged()
@@ -73,8 +86,8 @@ class ContactDetailAggregationUseCase @Inject constructor(
             thoughtFavoritesFlow,
             personRelationsFlow
         ) { contactData, customTypesMap, thoughtFavoriteIds, personRelations ->
-            val conversations = contactData.events.filter { it.type == EventType.CONVERSATION }
-            val nonConversationEvents = contactData.events.filter { it.type != EventType.CONVERSATION }
+            val conversations = contactData.events.filter { it.isConversation }
+            val nonConversationEvents = contactData.events.filter { !it.isConversation }
 
             ContactDetailAggregateData(
                 contact = contactData.contact,

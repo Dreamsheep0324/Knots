@@ -15,7 +15,7 @@ class SubscriptionStatsViewModel @Inject constructor(
     private val subscriptionStatsUseCase: SubscriptionStatsUseCase
 ) : ViewModel() {
 
-    val uiState: StateFlow<SubscriptionStatsUiState> = subscriptionStatsUseCase.getStats()
+    val uiState: StateFlow<SubscriptionStatsUiState> = subscriptionStatsUseCase()
         .map { stats ->
             val total = stats.yearlyTotal
             SubscriptionStatsUiState(

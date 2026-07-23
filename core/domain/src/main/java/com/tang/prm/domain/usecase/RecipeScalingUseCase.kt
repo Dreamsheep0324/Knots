@@ -1,6 +1,7 @@
 package com.tang.prm.domain.usecase
 
 import com.tang.prm.domain.model.Ingredient
+import java.util.Locale
 import javax.inject.Inject
 
 /**
@@ -46,10 +47,14 @@ class RecipeScalingUseCase @Inject constructor() {
      * - 整数值去小数（2.0 → "2"）
      * - 小于 1 保留两位小数（0.50 → "0.5"）
      * - 其余保留一位小数（1.25 → "1.3"）
+     *
+     * M-4 修复：改为 private（DC-2 遗漏，仅同类内部调用，无外部消费点）。
+     * M-6 修复：使用 Locale.US 而非默认 Locale.getDefault()，避免非英语/非中文 locale 下
+     * String.format 产生逗号小数点（如德语 "0,50"），导致后续 toDoubleOrNull() 解析失败。
      */
-    fun formatScaledAmount(value: Double): String = when {
+    private fun formatScaledAmount(value: Double): String = when {
         value == value.toLong().toDouble() -> value.toLong().toString()
-        value < 1 -> String.format("%.2f", value).trimEnd('0').trimEnd('.')
-        else -> String.format("%.1f", value).trimEnd('0').trimEnd('.')
+        value < 1 -> String.format(Locale.US, "%.2f", value).trimEnd('0').trimEnd('.')
+        else -> String.format(Locale.US, "%.1f", value).trimEnd('0').trimEnd('.')
     }
 }

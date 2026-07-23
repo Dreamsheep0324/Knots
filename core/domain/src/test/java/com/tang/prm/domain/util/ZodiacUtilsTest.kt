@@ -28,12 +28,12 @@ class ZodiacUtilsTest {
             "1, 20, AQUARIUS", "2, 18, AQUARIUS",
             "2, 19, PISCES", "3, 20, PISCES"
         )
-        fun boundaryDates(month: Int, day: Int, expected: Zodiac) {
+        fun `boundary dates return correct zodiac`(month: Int, day: Int, expected: Zodiac) {
             assertThat(ZodiacUtils.fromMonthDay(month, day)).isEqualTo(expected)
         }
 
         @Test
-        fun midRangeDates() {
+        fun `mid range dates return correct zodiac`() {
             assertThat(ZodiacUtils.fromMonthDay(4, 5)).isEqualTo(Zodiac.ARIES)
             assertThat(ZodiacUtils.fromMonthDay(7, 1)).isEqualTo(Zodiac.CANCER)
             assertThat(ZodiacUtils.fromMonthDay(12, 31)).isEqualTo(Zodiac.CAPRICORN)
@@ -46,12 +46,12 @@ class ZodiacUtilsTest {
     inner class FromBirthdayTest {
 
         @Test
-        fun nullBirthday_returnsNull() {
+        fun `null birthday returns null`() {
             assertThat(ZodiacUtils.fromBirthday(null)).isNull()
         }
 
         @Test
-        fun validBirthday_returnsCorrectZodiac() {
+        fun `valid birthday returns correct zodiac`() {
             // March 25 -> ARIES
             val calendar = java.util.Calendar.getInstance().apply {
                 set(2000, 2, 25, 0, 0, 0) // month is 0-based
@@ -66,12 +66,12 @@ class ZodiacUtilsTest {
     inner class ZodiacEnumTest {
 
         @Test
-        fun has12Signs() {
+        fun `has 12 signs`() {
             assertThat(Zodiac.entries).hasSize(12)
         }
 
         @Test
-        fun eachSignHasRequiredFields() {
+        fun `each sign has required fields`() {
             Zodiac.entries.forEach { z ->
                 assertThat(z.iconName).isNotEmpty()
                 assertThat(z.displayName).isNotEmpty()

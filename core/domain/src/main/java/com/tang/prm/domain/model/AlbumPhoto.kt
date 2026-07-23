@@ -1,5 +1,11 @@
 package com.tang.prm.domain.model
 
+/**
+ * 相册照片项。
+ *
+ * B-5 修复：新增 [allContactIds] 保存全部参与者 ID，过滤时匹配任意参与者而非仅首参与者。
+ * 原 [contactId] 仅为首参与者，按其他参与者过滤时会丢失该照片。
+ */
 data class AlbumPhoto(
     val id: String,
     val uri: String,
@@ -9,6 +15,7 @@ data class AlbumPhoto(
     val contactId: Long?,
     val contactName: String?,
     val contactAvatar: String?,
+    val allContactIds: List<Long> = emptyList(),
     val allContactNames: List<String> = emptyList(),
     val allContactAvatars: List<String?> = emptyList(),
     val date: Long,

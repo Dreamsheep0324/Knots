@@ -43,7 +43,7 @@ class CleanCustomTypeUseCaseTest {
     inner class RemoveFromListFieldAllTest {
 
         @Test
-        fun removesValueFromHobbyJsonArray() = runTest {
+        fun `removes value from hobby json array`() = runTest {
             val contact = Contact(id = 1L, name = "Alice", hobby = """["阅读","游泳","音乐"]""")
             coEvery { contactRepository.getAllContacts() } returns flowOf(listOf(contact))
             val captured = mockUpdateContacts()
@@ -57,7 +57,7 @@ class CleanCustomTypeUseCaseTest {
         }
 
         @Test
-        fun removesLastItem_returnsNull() = runTest {
+        fun `removes last item returns null`() = runTest {
             val contact = Contact(id = 1L, name = "Alice", hobby = """["阅读"]""")
             coEvery { contactRepository.getAllContacts() } returns flowOf(listOf(contact))
             val captured = mockUpdateContacts()
@@ -68,7 +68,7 @@ class CleanCustomTypeUseCaseTest {
         }
 
         @Test
-        fun valueNotInArray_noUpdate() = runTest {
+        fun `value not in array no update`() = runTest {
             val contact = Contact(id = 1L, name = "Alice", hobby = """["阅读","音乐"]""")
             coEvery { contactRepository.getAllContacts() } returns flowOf(listOf(contact))
             mockUpdateContacts()
@@ -80,7 +80,7 @@ class CleanCustomTypeUseCaseTest {
         }
 
         @Test
-        fun nullFields_notUpdated() = runTest {
+        fun `null fields not updated`() = runTest {
             val contact = Contact(id = 1L, name = "Alice", hobby = null, habit = null, diet = null, skill = null)
             coEvery { contactRepository.getAllContacts() } returns flowOf(listOf(contact))
             mockUpdateContacts()
@@ -91,7 +91,7 @@ class CleanCustomTypeUseCaseTest {
         }
 
         @Test
-        fun commaSeparatedFallback_removesValue() = runTest {
+        fun `comma separated fallback removes value`() = runTest {
             // Non-JSON format: comma-separated
             val contact = Contact(id = 1L, name = "Alice", hobby = "阅读,游泳,音乐")
             coEvery { contactRepository.getAllContacts() } returns flowOf(listOf(contact))
@@ -105,7 +105,7 @@ class CleanCustomTypeUseCaseTest {
         }
 
         @Test
-        fun multipleContacts_updatedInBatch() = runTest {
+        fun `multiple contacts updated in batch`() = runTest {
             // P-5 修复后：多个联系人变更通过一次 updateContacts 调用提交
             val contact1 = Contact(id = 1L, name = "Alice", hobby = """["阅读","游泳"]""")
             val contact2 = Contact(id = 2L, name = "Bob", hobby = """["游泳","音乐"]""")
@@ -119,7 +119,7 @@ class CleanCustomTypeUseCaseTest {
         }
 
         @Test
-        fun doesNotPolluteOtherFieldsWhenRemovingHobby() = runTest {
+        fun `does not pollute other fields when removing hobby`() = runTest {
             // T-9 回归测试：删除 HOBBY 类别的"音乐"，不应影响 skill 字段
             val contact = Contact(
                 id = 1L,
@@ -141,7 +141,7 @@ class CleanCustomTypeUseCaseTest {
         }
 
         @Test
-        fun doesNotPolluteOtherFieldsWhenRemovingSkill() = runTest {
+        fun `does not pollute other fields when removing skill`() = runTest {
             // T-9 回归测试：删除 SKILL 类别的"音乐"，不应影响 hobby 字段
             val contact = Contact(
                 id = 1L,
@@ -163,7 +163,7 @@ class CleanCustomTypeUseCaseTest {
         }
 
         @Test
-        fun doesNotPolluteOtherFieldsWhenRemovingDiet() = runTest {
+        fun `does not pollute other fields when removing diet`() = runTest {
             // T-9 回归测试：删除 DIET 类别的"咖啡"，不应影响 hobby/habit/skill
             val contact = Contact(
                 id = 1L,
@@ -187,7 +187,7 @@ class CleanCustomTypeUseCaseTest {
         }
 
         @Test
-        fun doesNotPolluteOtherFieldsWhenRemovingHabit() = runTest {
+        fun `does not pollute other fields when removing habit`() = runTest {
             // T-9 回归测试：删除 HABIT 类别的"游泳"，不应影响 hobby/diet/skill
             val contact = Contact(
                 id = 1L,
@@ -211,7 +211,7 @@ class CleanCustomTypeUseCaseTest {
         }
 
         @Test
-        fun unknownField_noUpdate() = runTest {
+        fun `unknown field no update`() = runTest {
             // 传入未知 field 应直接返回，不更新任何联系人
             val contact = Contact(id = 1L, name = "Alice", hobby = """["阅读"]""")
             coEvery { contactRepository.getAllContacts() } returns flowOf(listOf(contact))

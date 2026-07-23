@@ -3,7 +3,6 @@ package com.tang.prm.feature.graph.graph
 import com.google.common.truth.Truth.assertThat
 import com.tang.prm.domain.model.CustomType
 import com.tang.prm.domain.model.IntimacyTier
-import com.tang.prm.domain.model.RelationSource
 import org.junit.jupiter.api.Test
 
 /**
@@ -40,15 +39,13 @@ class ForceSimulatorTest {
     private fun makeEdge(
         id: Long,
         sourceId: Long,
-        targetId: Long,
-        source: RelationSource = RelationSource.MANUAL
+        targetId: Long
     ): GraphEdge = GraphEdge(
         id = id,
         sourceId = sourceId,
         targetId = targetId,
         relationType = CustomType(category = "RELATIONSHIP", name = "关系"),
-        label = null,
-        source = source
+        label = null
     )
 
     @Test

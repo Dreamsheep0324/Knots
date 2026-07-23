@@ -138,7 +138,7 @@ class BootReceiver : BroadcastReceiver() {
             val scope = CoroutineScope(Dispatchers.IO + SupervisorJob() + exceptionHandler)
             scope.launch {
                 try {
-                    val reminders = reminderRepository.getActiveRemindersSync()
+                    val reminders = reminderRepository.getActiveReminders()
                     val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as android.app.AlarmManager
                     for (reminder in reminders) {
                         if (reminder.time > System.currentTimeMillis()) {

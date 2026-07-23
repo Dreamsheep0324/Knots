@@ -23,27 +23,27 @@ class ThoughtGamificationUseCaseTest {
     inner class ExpForLevelTest {
 
         @Test
-        fun level1_returns0() {
+        fun `level1 returns 0`() {
             assertThat(useCase.expForLevel(1)).isEqualTo(0)
         }
 
         @Test
-        fun level2_returns15() {
+        fun `level2 returns 15`() {
             assertThat(useCase.expForLevel(2)).isEqualTo(15)
         }
 
         @Test
-        fun level3_returns45() {
+        fun `level3 returns 45`() {
             assertThat(useCase.expForLevel(3)).isEqualTo(45)
         }
 
         @Test
-        fun level0_returns0() {
+        fun `level0 returns 0`() {
             assertThat(useCase.expForLevel(0)).isEqualTo(0)
         }
 
         @Test
-        fun negativeLevel_returns0() {
+        fun `negative level returns 0`() {
             assertThat(useCase.expForLevel(-1)).isEqualTo(0)
         }
     }
@@ -53,32 +53,32 @@ class ThoughtGamificationUseCaseTest {
     inner class CalcLevelTest {
 
         @Test
-        fun exp0_isLevel1() {
+        fun `exp0 is level1`() {
             assertThat(useCase.calcLevel(0)).isEqualTo(1)
         }
 
         @Test
-        fun exp14_isLevel1() {
+        fun `exp14 is level1`() {
             assertThat(useCase.calcLevel(14)).isEqualTo(1)
         }
 
         @Test
-        fun exp15_isLevel2() {
+        fun `exp15 is level2`() {
             assertThat(useCase.calcLevel(15)).isEqualTo(2)
         }
 
         @Test
-        fun exp44_isLevel2() {
+        fun `exp44 is level2`() {
             assertThat(useCase.calcLevel(44)).isEqualTo(2)
         }
 
         @Test
-        fun exp45_isLevel3() {
+        fun `exp45 is level3`() {
             assertThat(useCase.calcLevel(45)).isEqualTo(3)
         }
 
         @Test
-        fun exp90_isLevel4() {
+        fun `exp90 is level4`() {
             // expForLevel(4) = 15*4*3/2 = 90
             assertThat(useCase.expForLevel(4)).isEqualTo(90)
             assertThat(useCase.calcLevel(90)).isEqualTo(4)
@@ -90,27 +90,27 @@ class ThoughtGamificationUseCaseTest {
     inner class ThoughtExpTest {
 
         @Test
-        fun baseThought_givesBaseXP() {
+        fun `base thought gives base XP`() {
             val thought = Thought(content = "test", type = ThoughtType.MURMUR)
             assertThat(useCase.thoughtExp(thought)).isEqualTo(ThoughtGamificationUseCase.XP_BASE)
         }
 
         @Test
-        fun doneTodo_givesBasePlusDoneBonus() {
+        fun `done todo gives base plus done bonus`() {
             val thought = Thought(content = "test", isTodo = true, isDone = true)
             assertThat(useCase.thoughtExp(thought))
                 .isEqualTo(ThoughtGamificationUseCase.XP_BASE + ThoughtGamificationUseCase.XP_DONE_BONUS)
         }
 
         @Test
-        fun withContact_givesBasePlusContactBonus() {
+        fun `with contact gives base plus contact bonus`() {
             val thought = Thought(content = "test", contactId = 1L)
             assertThat(useCase.thoughtExp(thought))
                 .isEqualTo(ThoughtGamificationUseCase.XP_BASE + ThoughtGamificationUseCase.XP_CONTACT_BONUS)
         }
 
         @Test
-        fun doneTodoWithContact_givesAllBonuses() {
+        fun `done todo with contact gives all bonuses`() {
             val thought = Thought(content = "test", contactId = 1L, isTodo = true, isDone = true)
             assertThat(useCase.thoughtExp(thought))
                 .isEqualTo(
@@ -126,18 +126,18 @@ class ThoughtGamificationUseCaseTest {
     inner class CalcStreakTest {
 
         @Test
-        fun emptyList_returns0() {
+        fun `empty list returns 0`() {
             assertThat(useCase.calcStreak(emptyList())).isEqualTo(0)
         }
 
         @Test
-        fun todayThought_returnsStreak1() {
+        fun `today thought returns streak 1`() {
             val thoughts = listOf(Thought(content = "t", createdAt = daysAgoAtHour(0, 14)))
             assertThat(useCase.calcStreak(thoughts)).isEqualTo(1)
         }
 
         @Test
-        fun todayAndYesterday_returnsStreak2() {
+        fun `today and yesterday returns streak 2`() {
             val thoughts = listOf(
                 Thought(content = "t0", createdAt = daysAgoAtHour(0, 10)),
                 Thought(content = "t1", createdAt = daysAgoAtHour(1, 20))
@@ -146,7 +146,7 @@ class ThoughtGamificationUseCaseTest {
         }
 
         @Test
-        fun threeDayStreak_returns3() {
+        fun `three day streak returns 3`() {
             val thoughts = (0..2).map {
                 Thought(content = "t$it", createdAt = daysAgoAtHour(it.toLong(), 12))
             }
@@ -154,7 +154,7 @@ class ThoughtGamificationUseCaseTest {
         }
 
         @Test
-        fun gapBreaksStreak() {
+        fun `gap breaks streak`() {
             // 今天和前天有，昨天没有 → streak = 1
             val thoughts = listOf(
                 Thought(content = "today", createdAt = daysAgoAtHour(0, 10)),
@@ -164,14 +164,14 @@ class ThoughtGamificationUseCaseTest {
         }
 
         @Test
-        fun noThoughtToday_returns0() {
+        fun `no thought today returns 0`() {
             // 今天没有 thought，昨天有 → streak = 0
             val thoughts = listOf(Thought(content = "yesterday", createdAt = daysAgoAtHour(1, 10)))
             assertThat(useCase.calcStreak(thoughts)).isEqualTo(0)
         }
 
         @Test
-        fun multipleThoughtsSameDay_returns1() {
+        fun `multiple thoughts same day returns 1`() {
             val thoughts = listOf(
                 Thought(content = "morning", createdAt = daysAgoAtHour(0, 8)),
                 Thought(content = "afternoon", createdAt = daysAgoAtHour(0, 15)),
@@ -181,7 +181,7 @@ class ThoughtGamificationUseCaseTest {
         }
 
         @Test
-        fun midnightAndAfternoon_sameDay() {
+        fun `midnight and afternoon same day`() {
             // 同一天凌晨 00:30 和下午 14:00 → 都算同一天
             val thoughts = listOf(
                 Thought(content = "midnight", createdAt = daysAgoAtHour(0, 0) + 30 * 60 * 1000),
@@ -191,7 +191,7 @@ class ThoughtGamificationUseCaseTest {
         }
 
         @Test
-        fun unorderedThoughts_stillCorrect() {
+        fun `unordered thoughts still correct`() {
             // 乱序输入也能正确计算
             val thoughts = listOf(
                 Thought(content = "today", createdAt = daysAgoAtHour(0, 10)),
@@ -207,7 +207,7 @@ class ThoughtGamificationUseCaseTest {
     inner class GetGamificationStateTest {
 
         @Test
-        fun emptyInputs_returnsZeroState() {
+        fun `empty inputs returns zero state`() {
             val state = useCase.getGamificationState(
                 allThoughts = emptyList(),
                 todoThoughts = emptyList(),
@@ -222,7 +222,7 @@ class ThoughtGamificationUseCaseTest {
         }
 
         @Test
-        fun countsThoughtTypes() {
+        fun `counts thought types`() {
             val allThoughts = listOf(
                 Thought(content = "f", type = ThoughtType.FRIEND),
                 Thought(content = "p", type = ThoughtType.PLAN),
@@ -237,7 +237,7 @@ class ThoughtGamificationUseCaseTest {
         }
 
         @Test
-        fun expIncludesDoneTodoAndContactBonuses() {
+        fun `exp includes done todo and contact bonuses`() {
             val allThoughts = listOf(
                 Thought(content = "a"),
                 Thought(content = "b", contactId = 1L)
@@ -258,7 +258,7 @@ class ThoughtGamificationUseCaseTest {
         }
 
         @Test
-        fun levelProgress_isZeroAtLevelStart() {
+        fun `levelProgress is zero at level start`() {
             val state = useCase.getGamificationState(
                 allThoughts = emptyList(),
                 todoThoughts = emptyList(),

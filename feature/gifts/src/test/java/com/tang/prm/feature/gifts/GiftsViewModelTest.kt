@@ -5,11 +5,13 @@ import com.google.common.truth.Truth.assertThat
 import com.tang.prm.domain.model.Contact
 import com.tang.prm.domain.model.Gift
 import com.tang.prm.domain.model.GiftType
+import com.tang.prm.domain.model.SaveResult
 import com.tang.prm.domain.model.SourceTypes
-import com.tang.prm.domain.repository.ContactRepository
 import com.tang.prm.domain.repository.GiftRepository
 import com.tang.prm.domain.usecase.FavoriteToggleUseCase
-import com.tang.prm.domain.usecase.ObserveFavoritesUseCase
+import com.tang.prm.domain.usecase.GiftListAggregateData
+import com.tang.prm.domain.usecase.GiftRecord
+import com.tang.prm.domain.usecase.ObserveGiftListUseCase
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -39,13 +41,10 @@ class GiftsViewModelTest {
     private lateinit var giftRepository: GiftRepository
 
     @MockK
-    private lateinit var contactRepository: ContactRepository
-
-    @MockK
     private lateinit var favoriteToggleUseCase: FavoriteToggleUseCase
 
     @MockK
-    private lateinit var observeFavoritesUseCase: ObserveFavoritesUseCase
+    private lateinit var observeGiftListUseCase: ObserveGiftListUseCase
 
     private lateinit var viewModel: GiftsViewModel
 
@@ -55,16 +54,24 @@ class GiftsViewModelTest {
         date = 2000L, isSent = true
     )
 
+    private val aggregateFlow = MutableStateFlow(
+        GiftListAggregateData(
+            gifts = listOf(
+                GiftRecord(gift = gift, contactName = "Alice", contactAvatar = "avatar.jpg")
+            ),
+            availableContacts = listOf(contact),
+            favoriteGiftIds = emptySet()
+        )
+    )
+
     @BeforeEach
     fun setUp() = runTest {
         Dispatchers.setMain(UnconfinedTestDispatcher())
 
-        every { contactRepository.getAllContacts() } returns flowOf(listOf(contact))
-        every { giftRepository.getAllGifts() } returns flowOf(listOf(gift))
-        every { observeFavoritesUseCase.getFavoriteIds("GIFT") } returns flowOf(emptySet())
+        every { observeGiftListUseCase() } returns aggregateFlow
         coEvery { favoriteToggleUseCase(any(), any(), any(), any()) } returns true
 
-        viewModel = GiftsViewModel(giftRepository, contactRepository, favoriteToggleUseCase, observeFavoritesUseCase)
+        viewModel = GiftsViewModel(giftRepository, favoriteToggleUseCase, observeGiftListUseCase)
     }
 
     @AfterEach
@@ -90,9 +97,17 @@ class GiftsViewModelTest {
         @Test
         fun unknownContact_fallsBackToDefaultName() = runTest {
             val giftWithUnknownContact = gift.copy(contactId = 999L)
-            every { giftRepository.getAllGifts() } returns flowOf(listOf(giftWithUnknownContact))
+            every { observeGiftListUseCase() } returns flowOf(
+                GiftListAggregateData(
+                    gifts = listOf(
+                        GiftRecord(gift = giftWithUnknownContact, contactName = "未知人物", contactAvatar = null)
+                    ),
+                    availableContacts = listOf(contact),
+                    favoriteGiftIds = emptySet()
+                )
+            )
 
-            val vm = GiftsViewModel(giftRepository, contactRepository, favoriteToggleUseCase, observeFavoritesUseCase)
+            val vm = GiftsViewModel(giftRepository, favoriteToggleUseCase, observeGiftListUseCase)
 
             vm.uiState.test {
                 val state = awaitItem()
@@ -156,15 +171,21 @@ class GiftsViewModelTest {
 
         @Test
         fun toggleFavorite_addsToFavoriteSet() = runTest {
-            val favoriteIds = MutableStateFlow(emptySet<Long>())
-            every { observeFavoritesUseCase.getFavoriteIds("GIFT") } returns favoriteIds
+            val baseAggregate = GiftListAggregateData(
+                gifts = listOf(GiftRecord(gift = gift, contactName = "Alice", contactAvatar = "avatar.jpg")),
+                availableContacts = listOf(contact),
+                favoriteGiftIds = emptySet()
+            )
+            val aggregateFlowWithFav = MutableStateFlow(baseAggregate)
+            every { observeGiftListUseCase() } returns aggregateFlowWithFav
             coEvery { favoriteToggleUseCase(any(), any(), any(), any()) } answers {
                 val sourceId = secondArg<Long>()
-                favoriteIds.value = favoriteIds.value + sourceId
+                val current = aggregateFlowWithFav.value
+                aggregateFlowWithFav.value = current.copy(favoriteGiftIds = current.favoriteGiftIds + sourceId)
                 true
             }
-            // 重新创建 viewModel 以使用新的 favoriteIds flow
-            viewModel = GiftsViewModel(giftRepository, contactRepository, favoriteToggleUseCase, observeFavoritesUseCase)
+            // 重新创建 viewModel 以使用新的 aggregate flow
+            viewModel = GiftsViewModel(giftRepository, favoriteToggleUseCase, observeGiftListUseCase)
             val job = launch { viewModel.uiState.collect { } }
             advanceUntilIdle()
             viewModel.toggleFavorite(10L, "巧克力", "Alice")
@@ -210,7 +231,7 @@ class GiftsViewModelTest {
             val giftRecord = GiftRecord(
                 gift = gift, contactName = "Alice", contactAvatar = null
             )
-            coEvery { giftRepository.saveGiftWithPhotos(any(), any()) } returns Pair(1L, 0)
+            coEvery { giftRepository.saveGiftWithPhotos(any(), any()) } returns SaveResult(1L, 0)
             viewModel.addGift(giftRecord)
             coVerify { giftRepository.saveGiftWithPhotos(any(), any()) }
         }
@@ -222,7 +243,7 @@ class GiftsViewModelTest {
             val giftRecord = GiftRecord(
                 gift = gift, contactName = "Alice", contactAvatar = null
             )
-            coEvery { giftRepository.saveGiftWithPhotos(any(), any()) } returns Pair(1L, 2)
+            coEvery { giftRepository.saveGiftWithPhotos(any(), any()) } returns SaveResult(1L, 2)
             viewModel.addGift(giftRecord)
             // 等待协程完成
             advanceUntilIdle()

@@ -8,9 +8,11 @@ package com.tang.prm.domain.model
  * - 客体可为外部人物：[targetContactId] 与 [targetName] 互斥（一空一非空）
  * - 用途：人物详情/编辑界面的社交关系展示，不参与图谱可视化
  *
- * 字段互斥约束：
- * - [targetContactId] 非空时，目标为 App 内联系人，[targetName] / [targetAvatar] 应为空
- * - [targetName] 非空时，目标为外部人物，[targetContactId] 应为空
+ * 字段互斥约束（两层校验）：
+ * - **域层 init 校验**：[targetContactId] 与 [targetName] 至少一个非空（防止构造无目标的关系）
+ * - **持久化层校验**：[com.tang.prm.data.mapper.PersonRelationMapper.toEntity] 会在落库前
+ *   清空 App 联系人（[targetContactId] 非空）的 [targetName] / [targetAvatar]
+ *   域模型的 [targetName] 可同时非空（JOIN 填充或 UI 层预填），仅持久化时强制互斥
  *
  * 关系词渲染优先级：[customLabel] > [relationTypeId] 对应的 CustomType.name > "其他"
  *
@@ -34,6 +36,16 @@ data class PersonRelation(
     val createdAt: Long,
     val updatedAt: Long
 ) {
+    init {
+        // B-7 修复：运行时校验。原仅靠 KDoc 约束，data 层误填两者皆空时无任何提示。
+        // 注意：不强制严格 XOR——JOIN 结果与 AddContactViewModel 构造时会同时填充
+        // targetContactId 和 targetName（域模型层允许 targetName 作为冗余显示字段）。
+        // 仅校验"至少一个非空"，捕获真正无效的构造（两者皆空）。
+        require(targetContactId != null || !targetName.isNullOrBlank()) {
+            "targetContactId 与 targetName 至少需要一个非空"
+        }
+    }
+
     /** 渲染时使用的关系词：customLabel 优先，其次 typeName，最后兜底"其他" */
     fun resolveLabel(typeName: String?): String =
         customLabel?.takeIf { it.isNotBlank() } ?: typeName ?: "其他"

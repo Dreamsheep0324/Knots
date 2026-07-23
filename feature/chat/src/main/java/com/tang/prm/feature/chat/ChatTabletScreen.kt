@@ -74,6 +74,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.tang.prm.domain.model.IntimacyTier
+import com.tang.prm.domain.usecase.ConversationItem
 import com.tang.prm.domain.util.DateUtils
 import com.tang.prm.ui.components.ContactAvatar
 import com.tang.prm.ui.components.DeleteConfirmDialog
@@ -232,7 +233,7 @@ fun ChatTabletScreen(
 
 @Composable
 private fun ConversationListPane(
-    conversations: List<ConversationUiModel>,
+    conversations: List<ConversationItem>,
     totalCount: Int,
     contactCount: Int,
     searchQuery: String,
@@ -349,7 +350,7 @@ private fun ConversationListPane(
 
 @Composable
 private fun ConversationListItem(
-    conversation: ConversationUiModel,
+    conversation: ConversationItem,
     isSelected: Boolean,
     onClick: () -> Unit
 ) {
@@ -397,8 +398,8 @@ private fun ConversationListItem(
                 )
             }
             // 第二行：最后消息（或标题）
-            val subText = if (conversation.title != null && conversation.title != "与${conversation.contactName}的对话") {
-                conversation.title
+            val subText: String = if (conversation.title != null && conversation.title != "与${conversation.contactName}的对话") {
+                conversation.title ?: ""
             } else {
                 conversation.lastMessage.ifEmpty { "暂无消息" }
             }
@@ -744,7 +745,7 @@ private fun MeLine(content: String, imageUri: String?) {
 @Composable
 private fun CharacterPane(
     uiState: ChatDetailUiState,
-    conversations: List<ConversationUiModel>,
+    conversations: List<ConversationItem>,
     modifier: Modifier = Modifier
 ) {
     Surface(

@@ -43,7 +43,7 @@ class HomeDataAggregationUseCaseTest {
     }
 
     @Test
-    fun aggregatesAllData() = runTest {
+    fun `aggregates all data`() = runTest {
         val events = listOf(Event(id = 1, title = "Meetup", type = EventType.MEETUP, time = 1000L))
         val anniversaries = listOf(
             Anniversary(id = 1, name = "Birthday", type = AnniversaryType.BIRTHDAY, date = 1000L, isRepeat = true)
@@ -56,7 +56,7 @@ class HomeDataAggregationUseCaseTest {
             todos = todos
         )
 
-        useCase.getAggregateData().test {
+        useCase().test {
             val data = awaitItem()
             assertThat(data.recentEvents).hasSize(1)
             assertThat(data.upcomingAnniversaries).hasSize(1)
@@ -70,14 +70,14 @@ class HomeDataAggregationUseCaseTest {
     inner class RecentEventsTest {
 
         @Test
-        fun passesThroughRecentEventsFromRepository() = runTest {
+        fun `passes through recent events from repository`() = runTest {
             // P-2 修复后：LIMIT 在 SQL 层完成，UseCase 直接透传 Repository 返回的事件列表
             val events = (1..5).map {
                 Event(id = it.toLong(), title = "E$it", type = EventType.OTHER, time = it.toLong())
             }
             setupMocks(events = events)
 
-            useCase.getAggregateData().test {
+            useCase().test {
                 val data = awaitItem()
                 assertThat(data.recentEvents).hasSize(5)
                 assertThat(data.recentEvents.map { it.id }).containsExactly(1L, 2L, 3L, 4L, 5L).inOrder()
@@ -87,10 +87,10 @@ class HomeDataAggregationUseCaseTest {
     }
 
     @Test
-    fun emptyData_returnsEmptyLists() = runTest {
+    fun `empty data returns empty lists`() = runTest {
         setupMocks()
 
-        useCase.getAggregateData().test {
+        useCase().test {
             val data = awaitItem()
             assertThat(data.recentEvents).isEmpty()
             assertThat(data.pendingTodos).isEmpty()

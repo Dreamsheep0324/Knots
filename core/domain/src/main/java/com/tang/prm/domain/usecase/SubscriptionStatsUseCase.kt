@@ -11,11 +11,15 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.days
-import kotlin.time.DurationUnit
 
 class SubscriptionStatsUseCase @Inject constructor(
     private val subscriptionRepository: SubscriptionRepository
 ) {
+    companion object {
+        // Q-8：消除魔法数字，"即将到期"的判定窗口
+        private val EXPIRING_SOON_WINDOW = 7.days
+    }
+
     data class SubscriptionStats(
         val monthlyTotal: Double,
         val yearlyTotal: Double,
@@ -26,8 +30,9 @@ class SubscriptionStatsUseCase @Inject constructor(
         val activeCount: Int
     )
 
-    fun getStats(): Flow<SubscriptionStats> =
+    operator fun invoke(): Flow<SubscriptionStats> =
         subscriptionRepository.getAllSubscriptions()
+            .distinctUntilChanged()
             .map { subs ->
                 val active = subs.filter { it.computedStatus() == SubscriptionStatus.ACTIVE }
                 val monthlyTotal = active.sumOf { it.monthlyEquivalent() }
@@ -40,9 +45,8 @@ class SubscriptionStatsUseCase @Inject constructor(
                     // （这些订阅应归类为已过期，不应显示在「即将到期」列表中）
                     val diff = it.nextBillingDate - System.currentTimeMillis()
                     it.computedStatus() == SubscriptionStatus.ACTIVE &&
-                    diff in 0..7.days.inWholeMilliseconds
+                    diff in 0..EXPIRING_SOON_WINDOW.inWholeMilliseconds
                 }
                 SubscriptionStats(monthlyTotal, yearlyTotal, byCategory, byCategorySubscriptions, expiringSoon, active, active.size)
             }
-            .distinctUntilChanged()
 }

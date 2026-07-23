@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tang.prm.domain.model.CustomType
 import com.tang.prm.domain.model.FootprintItem
-import com.tang.prm.domain.usecase.filterBy
+import com.tang.prm.domain.util.filterBy
 import com.tang.prm.domain.usecase.FootprintAggregationUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
@@ -35,7 +35,7 @@ class FootprintsViewModel @Inject constructor(
     private val _isTimelineView = MutableStateFlow(true)
 
     val uiState: StateFlow<FootprintsUiState> = combine(
-        footprintAggregationUseCase.getAggregateData(),
+        footprintAggregationUseCase(),
         _selectedYear,
         _isTimelineView
     ) { data, selectedYear, isTimelineView ->

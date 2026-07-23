@@ -28,6 +28,7 @@ class HomeStatsUseCaseTest {
     @MockK private lateinit var eventRepository: EventRepository
     @MockK private lateinit var subscriptionRepository: SubscriptionRepository
     @MockK private lateinit var recipeRepository: RecipeRepository
+    @MockK private lateinit var contactRelationRepository: ContactRelationRepository
 
     private lateinit var useCase: HomeStatsUseCase
 
@@ -36,7 +37,8 @@ class HomeStatsUseCaseTest {
         useCase = HomeStatsUseCase(
             giftRepository, thoughtRepository, contactRepository,
             favoriteRepository, circleRepository, anniversaryRepository,
-            eventRepository, subscriptionRepository, recipeRepository
+            eventRepository, subscriptionRepository, recipeRepository,
+            contactRelationRepository
         )
     }
 
@@ -61,14 +63,15 @@ class HomeStatsUseCaseTest {
         every { giftRepository.getPhotoCount() } returns flowOf(giftPhotoCount)
         every { subscriptionRepository.getSubscriptionCount() } returns flowOf(subscriptionCount)
         every { recipeRepository.getRecipeCount() } returns flowOf(0)
+        every { contactRelationRepository.getRelationCount() } returns flowOf(0)
         every { contactRepository.getAllIntimacyScores() } returns flowOf(intimacyScores)
     }
 
     @Test
-    fun allZeroCounts() = runTest {
+    fun `all zero counts`() = runTest {
         setupCountMocks()
 
-        useCase.getStats().test {
+        useCase().test {
             val stats = awaitItem()
             assertThat(stats.giftCount).isEqualTo(0)
             assertThat(stats.contactCount).isEqualTo(0)
@@ -78,7 +81,7 @@ class HomeStatsUseCaseTest {
     }
 
     @Test
-    fun countsAggregatedCorrectly() = runTest {
+    fun `counts aggregated correctly`() = runTest {
         setupCountMocks(
             giftCount = 5, thoughtCount = 10, contactCount = 20,
             favoriteCount = 3, circleCount = 2, anniversaryCount = 7,
@@ -87,7 +90,7 @@ class HomeStatsUseCaseTest {
             subscriptionCount = 1
         )
 
-        useCase.getStats().test {
+        useCase().test {
             val stats = awaitItem()
             assertThat(stats.giftCount).isEqualTo(5)
             assertThat(stats.thoughtCount).isEqualTo(10)
@@ -108,10 +111,10 @@ class HomeStatsUseCaseTest {
     inner class PhotoCountTest {
 
         @Test
-        fun photoCount_isSumOfEventAndGiftPhotos() = runTest {
+        fun `photoCount is sum of event and gift photos`() = runTest {
             setupCountMocks(eventPhotoCount = 30, giftPhotoCount = 12)
 
-            useCase.getStats().test {
+            useCase().test {
                 val stats = awaitItem()
                 assertThat(stats.photoCount).isEqualTo(42)
                 cancelAndIgnoreRemainingEvents()
@@ -124,11 +127,11 @@ class HomeStatsUseCaseTest {
     inner class TierDistributionTest {
 
         @Test
-        fun tierDistribution_aggregatedCorrectly() = runTest {
+        fun `tierDistribution aggregated correctly`() = runTest {
             // 亲密分数 10/50/90 → NEW/ACQUAINTANCE/CLOSE（具体 Tier 由 IntimacyTier.of 决定）
             setupCountMocks(intimacyScores = listOf(10, 50, 90, 10))
 
-            useCase.getStats().test {
+            useCase().test {
                 val stats = awaitItem()
                 // 10 出现两次，50 一次，90 一次
                 assertThat(stats.tierDistribution).isNotEmpty()
@@ -140,10 +143,10 @@ class HomeStatsUseCaseTest {
         }
 
         @Test
-        fun tierDistribution_emptyWhenNoContacts() = runTest {
+        fun `tierDistribution empty when no contacts`() = runTest {
             setupCountMocks(intimacyScores = emptyList())
 
-            useCase.getStats().test {
+            useCase().test {
                 val stats = awaitItem()
                 assertThat(stats.tierDistribution).isEmpty()
                 cancelAndIgnoreRemainingEvents()

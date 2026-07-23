@@ -32,7 +32,7 @@ class FootprintAggregationUseCase @Inject constructor(
     private val contactRepository: ContactRepository,
     private val customTypeRepository: CustomTypeRepository
 ) {
-    fun getAggregateData(): Flow<FootprintAggregateData> = combine(
+    operator fun invoke(): Flow<FootprintAggregateData> = combine(
         eventRepository.getEventsWithLocation().distinctUntilChanged(),
         contactRepository.getAllContacts().distinctUntilChanged(),
         customTypeRepository.getTypesByCategory(CustomCategories.EVENT_TYPE).distinctUntilChanged()
@@ -40,7 +40,7 @@ class FootprintAggregationUseCase @Inject constructor(
         val footprints = events
             .filter { !it.location.isNullOrBlank() }
             .map { event ->
-                val participant = event.participants.firstOrNull()
+                val participant = event.representativeParticipant
                 FootprintItem(
                     id = event.id,
                     location = event.location ?: "",
@@ -53,7 +53,9 @@ class FootprintAggregationUseCase @Inject constructor(
                     description = event.description,
                     weather = event.weather,
                     emotion = event.emotion,
-                    photoCount = event.photosCount
+                    photoCount = event.photosCount,
+                    // B-4 修复：保存全部参与者 ID，过滤时匹配任意参与者而非仅首参与者
+                    allContactIds = event.participants.map { it.id }
                 )
             }
             .sortedByDescending { it.date }

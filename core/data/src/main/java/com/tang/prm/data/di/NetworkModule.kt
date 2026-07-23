@@ -30,7 +30,9 @@ object NetworkModule {
 
     /**
      * WebDav 大文件传输专用 OkHttpClient。
-     * - 附加 RetryInterceptor：网络抖动时自动重试，对 PUT 上传幂等有利
+     * - 附加 RetryInterceptor：网络抖动时自动重试（仅对幂等读操作 PROPFIND/GET 生效，
+     *   写操作 PUT/POST/DELETE/PATCH 由 RetryInterceptor.NON_RETRYABLE_METHODS 放行不重试，
+     *   避免重复上传/删除等副作用）
      * - writeTimeout 加长至 10 分钟：db.zip 等大文件上传在慢网下需要
      */
     @Provides

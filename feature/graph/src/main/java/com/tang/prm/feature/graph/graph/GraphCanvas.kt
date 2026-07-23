@@ -701,8 +701,7 @@ private fun DrawScope.drawSelectedEdgeGlow(
     val (colorA, colorB) = when {
         isSelfEdge -> if (a.isSelf) selfGold to tierColorB else tierColorA to selfGold
         edge.isEventRelation -> relationColor to relationColor
-        edge.isManual -> relationColor to relationColor
-        else -> tierColorA to tierColorB
+        else -> relationColor to relationColor
     }
 
     // 1. 外层光晕（更宽更柔）
@@ -728,23 +727,19 @@ private fun DrawScope.drawSelectedEdgeGlow(
     // 3. 顶层流动虚线（白色能量流；事件边用更细更柔的虚线，凸显其"轻量"属性）
     val dashWidth = when {
         edge.isEventRelation -> 6f
-        isSelfEdge || edge.isManual -> 12f
-        else -> 8f
+        else -> 12f
     }
     val dashGap = when {
         edge.isEventRelation -> 5f
-        isSelfEdge || edge.isManual -> 8f
-        else -> 6f
+        else -> 8f
     }
     val flowWidth = when {
         edge.isEventRelation -> 1.4f
-        isSelfEdge || edge.isManual -> 2.2f
-        else -> 1.5f
+        else -> 2.2f
     }
     val flowAlpha = when {
         edge.isEventRelation -> 0.75f
-        isSelfEdge || edge.isManual -> 0.85f
-        else -> 0.7f
+        else -> 0.85f
     }
     drawLine(
         color = Color.White.copy(alpha = flowAlpha),

@@ -2,7 +2,6 @@ package com.tang.prm.data.repository
 
 import android.content.Context
 import com.tang.prm.data.local.dao.*
-import com.tang.prm.data.local.dao.ContactListItemEntity
 import com.tang.prm.data.local.entity.ContactAttributeEntity
 import com.tang.prm.data.local.entity.ContactEntity
 import com.tang.prm.data.local.database.TangDatabase
@@ -20,9 +19,7 @@ import androidx.room.withTransaction
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.map
 import com.tang.prm.data.mapper.mapList
-import com.tang.prm.data.mapper.mapNullable
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -56,6 +53,8 @@ class ContactRepositoryImpl @Inject constructor(
 
     override suspend fun insertContact(contact: Contact): Long = database.withTransaction {
         val id = contactDao.insertContact(contact.toEntity())
+        // B-10 修复：IGNORE 冲突时返回 -1，若继续插属性会用 -1 作 FK 导致脏数据
+        require(id > 0) { "联系人插入被 IGNORE 忽略（主键冲突），事务回滚" }
         val attributes = contact.copy(id = id).toAttributeEntities()
         if (attributes.isNotEmpty()) {
             contactAttributeDao.insertAll(attributes)
@@ -102,6 +101,8 @@ class ContactRepositoryImpl @Inject constructor(
     ): Long = database.withTransaction {
         // A-8 修复：单一事务包裹跨聚合写入，任一失败回滚
         val newId = contactDao.insertContact(contact.toEntity())
+        // B-10 修复：IGNORE 冲突时返回 -1，若继续插属性/纪念日会用 -1 作 FK 导致脏数据
+        require(newId > 0) { "联系人插入被 IGNORE 忽略（主键冲突），事务回滚" }
         val attributes = contact.copy(id = newId).toAttributeEntities()
         if (attributes.isNotEmpty()) {
             contactAttributeDao.insertAll(attributes)

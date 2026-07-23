@@ -9,11 +9,14 @@ import java.time.LocalDate
 import java.time.ZoneId
 
 /**
- * T-11 修复：[AnniversaryEffectiveDate.effectiveDate] 的 domain 层直接测试。
+ * T-11 修复：[Anniversary.effectiveDate] 的 domain 层直接测试。
  *
- * 虽然逻辑已简化为 19 行纯公历，但 3 个分支（BIRTHDAY / REPEAT / 一次性）的正确性
+ * 虽然逻辑已简化为纯公历，但 3 个分支（BIRTHDAY / REPEAT / 一次性）的正确性
  * 直接影响首页"即将到来纪念日"列表的排序与"今天/明天/N 天后"展示，必须有直接测试
  * 保护分支正确性，防止未来重构引入回归。
+ *
+ * M-3 修复：原扩展函数已内聚为 [Anniversary.effectiveDate] 成员方法，
+ * 测试调用语法不变（`anniversary.effectiveDate()`），无需调整测试代码。
  *
  * 时区固定为北京时区，避免 CI 跨时区 flaky（与 T-5 修复一致）。
  */
@@ -43,7 +46,7 @@ class AnniversaryEffectiveDateTest {
     inner class BirthdayTest {
 
         @Test
-        fun birthdayThisYearFuture_returnsThisYearDate() {
+        fun `birthday this year future returns this year date`() {
             // 今天 + 30 天的生日 → 当年生日的 effectiveDate 应为当年生日
             val today = LocalDate.now(zoneId)
             val birthday = today.plusDays(30)
@@ -61,7 +64,7 @@ class AnniversaryEffectiveDateTest {
         }
 
         @Test
-        fun birthdayThisYearPast_rollsToNextYear() {
+        fun `birthday this year past rolls to next year`() {
             // 今天 - 30 天的生日（今年已过）→ 滚到明年生日
             val today = LocalDate.now(zoneId)
             val birthday = today.minusDays(30)
@@ -79,7 +82,7 @@ class AnniversaryEffectiveDateTest {
         }
 
         @Test
-        fun birthdayToday_returnsToday() {
+        fun `birthday today returns today`() {
             // 今天生日 → effectiveDate 应为今天
             val today = LocalDate.now(zoneId)
             val anniversary = anniversaryOf(
@@ -94,7 +97,7 @@ class AnniversaryEffectiveDateTest {
         }
 
         @Test
-        fun birthdayFeb29InNonLeapYear_fallsBackToFeb28() {
+        fun `birthday feb29 in non leap year falls back to feb28`() {
             // 2/29 生日在非闰年 → safeDate 兜底为 2/28
             val today = LocalDate.now(zoneId)
             val nextNonLeapYear = (today.year..today.year + 4).first { !java.time.Year.isLeap(it.toLong()) }
@@ -120,7 +123,7 @@ class AnniversaryEffectiveDateTest {
     inner class RepeatTest {
 
         @Test
-        fun repeatThisYearFuture_returnsThisYearDate() {
+        fun `repeat this year future returns this year date`() {
             val today = LocalDate.now(zoneId)
             val original = today.plusDays(60)
             val anniversary = anniversaryOf(
@@ -138,7 +141,7 @@ class AnniversaryEffectiveDateTest {
         }
 
         @Test
-        fun repeatThisYearPast_rollsToNextYear() {
+        fun `repeat this year past rolls to next year`() {
             val today = LocalDate.now(zoneId)
             val original = today.minusDays(60)
             val anniversary = anniversaryOf(
@@ -161,7 +164,7 @@ class AnniversaryEffectiveDateTest {
     inner class OneTimeTest {
 
         @Test
-        fun oneTimeAnniversary_returnsOriginalDate() {
+        fun `one time anniversary returns original date`() {
             // 一次性纪念日（isRepeat=false）：直接返回 date，无论过去未来
             val fixedDate = millisOf(2024, 6, 15)
             val anniversary = anniversaryOf(
@@ -176,7 +179,7 @@ class AnniversaryEffectiveDateTest {
         }
 
         @Test
-        fun oneTimePastDate_returnsOriginalDate() {
+        fun `one time past date returns original date`() {
             // 过去的一次性纪念日：仍返回原 date（用于"已发生"展示）
             val pastDate = millisOf(2000, 1, 1)
             val anniversary = anniversaryOf(
@@ -196,7 +199,7 @@ class AnniversaryEffectiveDateTest {
     inner class BranchPriorityTest {
 
         @Test
-        fun birthdayType_takesPriorityOverIsRepeat() {
+        fun `birthday type takes priority over isRepeat`() {
             // type=BIRTHDAY 时走 BIRTHDAY 分支，忽略 isRepeat
             val today = LocalDate.now(zoneId)
             val birthday = today.plusDays(15)

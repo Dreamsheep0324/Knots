@@ -88,7 +88,7 @@ class ThoughtsViewModel @Inject constructor(
     }
 
     private val thoughtListState = filterState.flatMapLatest { filter ->
-        thoughtListUseCase.getThoughtListState(
+        thoughtListUseCase(
             selectedFilter = filter.selectedFilter,
             selectedContactId = filter.selectedContactId,
             searchQuery = ""

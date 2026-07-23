@@ -26,7 +26,8 @@ class MigrationTest {
         MIGRATION_1_32, MIGRATION_28_31, MIGRATION_24_31, MIGRATION_31_33, MIGRATION_32_33,
         MIGRATION_33_34, MIGRATION_34_35, MIGRATION_35_36, MIGRATION_36_37,
         MIGRATION_37_38, MIGRATION_38_39, MIGRATION_39_40, MIGRATION_40_41,
-        MIGRATION_41_42, MIGRATION_42_43, MIGRATION_43_44, MIGRATION_44_45, MIGRATION_45_46
+        MIGRATION_41_42, MIGRATION_42_43, MIGRATION_43_44, MIGRATION_44_45, MIGRATION_45_46,
+        MIGRATION_46_47, MIGRATION_47_48, MIGRATION_48_49, MIGRATION_49_50
     )
 
     @Test
@@ -342,7 +343,7 @@ class MigrationTest {
         val db = helper.createDatabase(testDbName, 1)
         db.close()
         // 如果缺少任何中间迁移，此调用会抛异常
-        helper.runMigrationsAndValidate(testDbName, 46, true, *allMigrations)
+        helper.runMigrationsAndValidate(testDbName, 50, true, *allMigrations)
     }
 
     /**
@@ -639,6 +640,296 @@ class MigrationTest {
         // 已有 1 条，迁移不应再插入 6 条预设，总数应为 1
         assertEquals("幂等：已有 RELATIONSHIP 数据时不重复插入种子", 1, cursor.getInt(0))
         cursor.close()
+        migratedDb.close()
+    }
+
+    /**
+     * 验证 MIGRATION_46_47：
+     * 1. 新建 person_relations 表，schema 与 PersonRelationEntity 一致。
+     * 2. 创建 3 个索引：ownerContactId + targetContactId + relationTypeId。
+     * 3. 3 个外键：ownerContactId CASCADE / targetContactId SET NULL / relationTypeId SET NULL。
+     */
+    @Test
+    fun migrate46To47_personRelationsCreated() {
+        val db = helper.createDatabase(testDbName, 46)
+        db.close()
+
+        val migratedDb = helper.runMigrationsAndValidate(testDbName, 47, true, MIGRATION_46_47)
+
+        // 1. 验证 person_relations 表已创建
+        val tableCursor = migratedDb.query(
+            "SELECT name FROM sqlite_master WHERE type='table' AND name='person_relations'"
+        )
+        assertTrue("应创建 person_relations 表", tableCursor.moveToFirst())
+        tableCursor.close()
+
+        // 2. 验证表结构（字段名 + 类型 + NOT NULL 约束）
+        val columnCursor = migratedDb.query("PRAGMA table_info(person_relations)")
+        val columns = mutableMapOf<String, String>()
+        while (columnCursor.moveToNext()) {
+            val name = columnCursor.getString(columnCursor.getColumnIndexOrThrow("name"))
+            val type = columnCursor.getString(columnCursor.getColumnIndexOrThrow("type"))
+            columns[name] = type
+        }
+        columnCursor.close()
+        assertEquals("INTEGER", columns["id"])
+        assertEquals("INTEGER", columns["ownerContactId"])
+        assertEquals("INTEGER", columns["targetContactId"])
+        assertEquals("TEXT", columns["targetName"])
+        assertEquals("TEXT", columns["targetAvatar"])
+        assertEquals("INTEGER", columns["relationTypeId"])
+        assertEquals("TEXT", columns["customLabel"])
+        assertEquals("TEXT", columns["note"])
+        assertEquals("INTEGER", columns["createdAt"])
+        assertEquals("INTEGER", columns["updatedAt"])
+
+        // 3. 验证 3 个索引
+        val indexCursor = migratedDb.query(
+            "SELECT name FROM sqlite_master WHERE type='index' AND tbl_name='person_relations'"
+        )
+        val indexNames = mutableListOf<String>()
+        while (indexCursor.moveToNext()) {
+            indexNames.add(indexCursor.getString(0))
+        }
+        indexCursor.close()
+        assertTrue("应有 ownerContactId 索引", "index_person_relations_ownerContactId" in indexNames)
+        assertTrue("应有 targetContactId 索引", "index_person_relations_targetContactId" in indexNames)
+        assertTrue("应有 relationTypeId 索引", "index_person_relations_relationTypeId" in indexNames)
+
+        // 4. 验证外键 ON DELETE 行为
+        val fkCursor = migratedDb.query("PRAGMA foreign_key_list(person_relations)")
+        val fkPairs = mutableListOf<Pair<String, String>>() // (from, on_delete)
+        while (fkCursor.moveToNext()) {
+            val from = fkCursor.getString(fkCursor.getColumnIndexOrThrow("from"))
+            val onDelete = fkCursor.getString(fkCursor.getColumnIndexOrThrow("on_delete"))
+            fkPairs.add(from to onDelete)
+        }
+        fkCursor.close()
+        assertEquals("应有 3 个外键", 3, fkPairs.size)
+        assertTrue("ownerContactId 应 CASCADE",
+            fkPairs.any { it.first == "ownerContactId" && it.second == "CASCADE" })
+        assertTrue("targetContactId 应 SET NULL",
+            fkPairs.any { it.first == "targetContactId" && it.second == "SET NULL" })
+        assertTrue("relationTypeId 应 SET NULL",
+            fkPairs.any { it.first == "relationTypeId" && it.second == "SET NULL" })
+
+        migratedDb.close()
+    }
+
+    /**
+     * 验证 MIGRATION_47_48：
+     * 清理 isDefault=1 的 PERSON_RELATION 类型，保留用户自建（isDefault=0）的类型。
+     * 非 PERSON_RELATION 类别不受影响。
+     */
+    @Test
+    fun migrate47To48_personRelationDefaultsCleaned() {
+        val db = helper.createDatabase(testDbName, 47)
+        // 插入 1 条 isDefault=1 的 PERSON_RELATION（应被清理）
+        db.execSQL(
+            """
+            INSERT INTO custom_types (category, name, key, color, icon, sortOrder, isDefault, createdAt)
+            VALUES ('PERSON_RELATION', '预设关系', 'preset', '#aaaaaa', '预', 0, 1, 0)
+            """.trimIndent()
+        )
+        // 插入 1 条 isDefault=0 的 PERSON_RELATION（应保留）
+        db.execSQL(
+            """
+            INSERT INTO custom_types (category, name, key, color, icon, sortOrder, isDefault, createdAt)
+            VALUES ('PERSON_RELATION', '自建关系', 'custom', '#bbbbbb', '自', 1, 0, 0)
+            """.trimIndent()
+        )
+        // 插入 1 条 RELATIONSHIP 类别（应保留，不受影响）
+        db.execSQL(
+            """
+            INSERT INTO custom_types (category, name, key, color, icon, sortOrder, isDefault, createdAt)
+            VALUES ('RELATIONSHIP', '家人', 'family', '#ef4444', '家', 0, 1, 0)
+            """.trimIndent()
+        )
+        db.close()
+
+        val migratedDb = helper.runMigrationsAndValidate(testDbName, 48, true, MIGRATION_47_48)
+
+        // 验证 isDefault=1 的 PERSON_RELATION 已删除
+        val defaultCursor = migratedDb.query(
+            "SELECT COUNT(*) FROM custom_types WHERE category = 'PERSON_RELATION' AND isDefault = 1"
+        )
+        assertTrue(defaultCursor.moveToFirst())
+        assertEquals("isDefault=1 的 PERSON_RELATION 应被清理", 0, defaultCursor.getInt(0))
+        defaultCursor.close()
+
+        // 验证 isDefault=0 的 PERSON_RELATION 保留
+        val customCursor = migratedDb.query(
+            "SELECT name FROM custom_types WHERE category = 'PERSON_RELATION' AND isDefault = 0"
+        )
+        assertTrue(customCursor.moveToFirst())
+        assertEquals("自建关系", customCursor.getString(0))
+        customCursor.close()
+
+        // 验证非 PERSON_RELATION 类别不受影响
+        val otherCursor = migratedDb.query(
+            "SELECT COUNT(*) FROM custom_types WHERE category != 'PERSON_RELATION'"
+        )
+        assertTrue(otherCursor.moveToFirst())
+        assertEquals("非 PERSON_RELATION 类别应保留", 1, otherCursor.getInt(0))
+        otherCursor.close()
+
+        migratedDb.close()
+    }
+
+    /**
+     * 验证 MIGRATION_48_49：
+     * 清理 contact_relations 中 source 为 AUTO_CIRCLE/AUTO_EVENT 的记录，保留 MANUAL。
+     */
+    @Test
+    fun migrate48To49_autoRelationsCleaned() {
+        val db = helper.createDatabase(testDbName, 48)
+        // 先插 contacts 满足外键
+        db.execSQL(
+            """
+            INSERT INTO contacts (id, name, gender, childrenCount, intimacyScore, createdAt, updatedAt)
+            VALUES (1, 'A', 0, 0, 50, 0, 0)
+            """.trimIndent()
+        )
+        db.execSQL(
+            """
+            INSERT INTO contacts (id, name, gender, childrenCount, intimacyScore, createdAt, updatedAt)
+            VALUES (2, 'B', 0, 0, 50, 0, 0)
+            """.trimIndent()
+        )
+        db.execSQL(
+            """
+            INSERT INTO contacts (id, name, gender, childrenCount, intimacyScore, createdAt, updatedAt)
+            VALUES (3, 'C', 0, 0, 50, 0, 0)
+            """.trimIndent()
+        )
+        // 插入 relationType 满足外键
+        db.execSQL(
+            """
+            INSERT INTO custom_types (id, category, name, key, sortOrder, isDefault, createdAt)
+            VALUES (1, 'RELATIONSHIP', '朋友', 'friend', 0, 1, 0)
+            """.trimIndent()
+        )
+        // 插入 AUTO_CIRCLE 记录（应删除）
+        db.execSQL(
+            """
+            INSERT INTO contact_relations (id, contactIdA, contactIdB, relationTypeId, source, note, createdAt, updatedAt)
+            VALUES (1, 1, 2, 1, 'AUTO_CIRCLE', '自动', 0, 0)
+            """.trimIndent()
+        )
+        // 插入 AUTO_EVENT 记录（应删除）
+        db.execSQL(
+            """
+            INSERT INTO contact_relations (id, contactIdA, contactIdB, relationTypeId, source, note, createdAt, updatedAt)
+            VALUES (2, 1, 3, 1, 'AUTO_EVENT', '自动', 0, 0)
+            """.trimIndent()
+        )
+        // 插入 MANUAL 记录（应保留）
+        db.execSQL(
+            """
+            INSERT INTO contact_relations (id, contactIdA, contactIdB, relationTypeId, source, note, createdAt, updatedAt)
+            VALUES (3, 2, 3, 1, 'MANUAL', '手动', 0, 0)
+            """.trimIndent()
+        )
+        db.close()
+
+        val migratedDb = helper.runMigrationsAndValidate(testDbName, 49, true, MIGRATION_48_49)
+
+        // 验证 AUTO_* 已删除，仅剩 1 条 MANUAL
+        val cursor = migratedDb.query(
+            "SELECT id, source, note FROM contact_relations ORDER BY id ASC"
+        )
+        assertTrue(cursor.moveToFirst())
+        assertEquals("仅剩 1 条 MANUAL 记录", 1, cursor.count)
+        assertEquals(3L, cursor.getLong(0))
+        assertEquals("MANUAL", cursor.getString(1))
+        assertEquals("手动", cursor.getString(2))
+        cursor.close()
+
+        migratedDb.close()
+    }
+
+    /**
+     * 验证 MIGRATION_49_50：
+     * 1. contact_relations 表删除 source 列（CREATE+COPY+DROP+RENAME）。
+     * 2. 数据保留：id/contactIdA/contactIdB/relationTypeId/note/createdAt/updatedAt 不丢失。
+     * 3. 3 个索引完整重建。
+     */
+    @Test
+    fun migrate49To50_sourceColumnDropped() {
+        val db = helper.createDatabase(testDbName, 49)
+        // 先插 contacts 满足外键
+        db.execSQL(
+            """
+            INSERT INTO contacts (id, name, gender, childrenCount, intimacyScore, createdAt, updatedAt)
+            VALUES (1, 'A', 0, 0, 50, 0, 0)
+            """.trimIndent()
+        )
+        db.execSQL(
+            """
+            INSERT INTO contacts (id, name, gender, childrenCount, intimacyScore, createdAt, updatedAt)
+            VALUES (2, 'B', 0, 0, 50, 0, 0)
+            """.trimIndent()
+        )
+        // 插入 relationType 满足外键
+        db.execSQL(
+            """
+            INSERT INTO custom_types (id, category, name, key, sortOrder, isDefault, createdAt)
+            VALUES (1, 'RELATIONSHIP', '朋友', 'friend', 0, 1, 0)
+            """.trimIndent()
+        )
+        // 插入 1 条 MANUAL 记录
+        db.execSQL(
+            """
+            INSERT INTO contact_relations (id, contactIdA, contactIdB, relationTypeId, source, note, createdAt, updatedAt)
+            VALUES (1, 1, 2, 1, 'MANUAL', '测试备注', 111, 222)
+            """.trimIndent()
+        )
+        db.close()
+
+        val migratedDb = helper.runMigrationsAndValidate(testDbName, 50, true, MIGRATION_49_50)
+
+        // 1. 验证 source 列已删除
+        val columnCursor = migratedDb.query("PRAGMA table_info(contact_relations)")
+        val columnNames = mutableListOf<String>()
+        while (columnCursor.moveToNext()) {
+            columnNames.add(columnCursor.getString(columnCursor.getColumnIndexOrThrow("name")))
+        }
+        columnCursor.close()
+        assertFalse("contact_relations 不应再有 source 列", "source" in columnNames)
+        assertTrue("应保留 id 列", "id" in columnNames)
+        assertTrue("应保留 note 列", "note" in columnNames)
+
+        // 2. 验证数据保留
+        val dataCursor = migratedDb.query(
+            "SELECT id, contactIdA, contactIdB, relationTypeId, note, createdAt, updatedAt FROM contact_relations WHERE id = 1"
+        )
+        assertTrue(dataCursor.moveToFirst())
+        assertEquals(1L, dataCursor.getLong(0))
+        assertEquals(1L, dataCursor.getLong(1))
+        assertEquals(2L, dataCursor.getLong(2))
+        assertEquals(1L, dataCursor.getLong(3))
+        assertEquals("测试备注", dataCursor.getString(4))
+        assertEquals(111L, dataCursor.getLong(5))
+        assertEquals(222L, dataCursor.getLong(6))
+        dataCursor.close()
+
+        // 3. 验证 3 个索引完整重建
+        val indexCursor = migratedDb.query(
+            "SELECT name FROM sqlite_master WHERE type='index' AND tbl_name='contact_relations'"
+        )
+        val indexNames = mutableListOf<String>()
+        while (indexCursor.moveToNext()) {
+            indexNames.add(indexCursor.getString(0))
+        }
+        indexCursor.close()
+        listOf(
+            "index_contact_relations_contactIdA_contactIdB",
+            "index_contact_relations_contactIdB",
+            "index_contact_relations_relationTypeId"
+        ).forEach {
+            assertTrue("contact_relations 表应有 $it 索引", it in indexNames)
+        }
+
         migratedDb.close()
     }
 }

@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.tang.prm.domain.model.GiftType
+import com.tang.prm.domain.usecase.GiftRecord
 import com.tang.prm.ui.theme.*
 import com.tang.prm.domain.util.DateUtils
 

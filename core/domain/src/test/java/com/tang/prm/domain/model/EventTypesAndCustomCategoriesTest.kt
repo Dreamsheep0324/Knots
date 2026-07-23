@@ -7,25 +7,25 @@ import java.lang.reflect.Modifier
 class EventTypesAndCustomCategoriesTest {
 
     @Test
-    fun eventType_has8Entries() {
+    fun `eventType has 8 entries`() {
         assertThat(EventType.entries).hasSize(8)
     }
 
     @Test
-    fun eventType_namesAreUnique() {
+    fun `eventType names are unique`() {
         val names = EventType.entries.map { it.name }
         assertThat(names).hasSize(names.toSet().size)
     }
 
     @Test
-    fun sourceTypes_has8Constants() {
+    fun `sourceTypes has 8 constants`() {
         val fields = SourceTypes::class.java.declaredFields
             .filter { Modifier.isPublic(it.modifiers) && Modifier.isStatic(it.modifiers) && Modifier.isFinal(it.modifiers) && it.type == String::class.java }
         assertThat(fields).hasSize(8)
     }
 
     @Test
-    fun sourceTypes_valuesAreUnique() {
+    fun `sourceTypes values are unique`() {
         val fields = SourceTypes::class.java.declaredFields
             .filter { Modifier.isPublic(it.modifiers) && Modifier.isStatic(it.modifiers) && Modifier.isFinal(it.modifiers) && it.type == String::class.java }
         val values = fields.map { it.get(null) as String }
@@ -33,14 +33,14 @@ class EventTypesAndCustomCategoriesTest {
     }
 
     @Test
-    fun customCategories_has11Constants() {
+    fun `customCategories has 12 constants`() {
         val fields = CustomCategories::class.java.declaredFields
             .filter { Modifier.isPublic(it.modifiers) && Modifier.isStatic(it.modifiers) && Modifier.isFinal(it.modifiers) && it.type == String::class.java }
-        assertThat(fields).hasSize(11)
+        assertThat(fields).hasSize(12)
     }
 
     @Test
-    fun customCategories_valuesAreUnique() {
+    fun `customCategories values are unique`() {
         val fields = CustomCategories::class.java.declaredFields
             .filter { Modifier.isPublic(it.modifiers) && Modifier.isStatic(it.modifiers) && Modifier.isFinal(it.modifiers) && it.type == String::class.java }
         val values = fields.map { it.get(null) as String }

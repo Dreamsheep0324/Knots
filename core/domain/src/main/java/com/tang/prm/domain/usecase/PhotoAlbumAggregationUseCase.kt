@@ -3,7 +3,6 @@ package com.tang.prm.domain.usecase
 import com.tang.prm.domain.model.AlbumPhoto
 import com.tang.prm.domain.model.Contact
 import com.tang.prm.domain.model.Event
-import com.tang.prm.domain.model.EventType
 import com.tang.prm.domain.model.Gift
 import com.tang.prm.domain.model.SourceTypes
 import com.tang.prm.domain.repository.ContactRepository
@@ -32,7 +31,7 @@ class PhotoAlbumAggregationUseCase @Inject constructor(
     private val giftRepository: GiftRepository,
     private val contactRepository: ContactRepository
 ) {
-    fun getAggregateData(): Flow<PhotoAlbumAggregateData> = combine(
+    operator fun invoke(): Flow<PhotoAlbumAggregateData> = combine(
         eventRepository.getAllEvents().distinctUntilChanged(),
         giftRepository.getAllGifts().distinctUntilChanged(),
         contactRepository.getAllContacts().distinctUntilChanged()
@@ -45,18 +44,21 @@ class PhotoAlbumAggregationUseCase @Inject constructor(
 
     private fun extractEventPhotos(events: List<Event>): List<AlbumPhoto> =
         events.flatMap { event ->
-            val sourceType = if (event.type == EventType.CONVERSATION) SourceTypes.ALBUM_CHAT else SourceTypes.ALBUM_EVENT
-            val participant = event.participants.firstOrNull()
+            val sourceType = if (event.isConversation) SourceTypes.ALBUM_CHAT else SourceTypes.ALBUM_EVENT
+            val participant = event.representativeParticipant
             event.photos.mapIndexed { photoIndex, photoUri ->
                 AlbumPhoto(
                     id = "${sourceType}_${event.id}_${photoIndex}",
-                    uri = photoUri,
+                    // B-5 修复：统一 trim 策略，与 extractGiftPhotos 一致，避免 URI 带空格时收藏键比对失配
+                    uri = photoUri.trim(),
                     sourceType = sourceType,
                     sourceId = event.id,
                     sourceTitle = event.title,
                     contactId = participant?.id,
                     contactName = participant?.name,
                     contactAvatar = participant?.avatar,
+                    // B-5 修复：保存全部参与者 ID，过滤时匹配任意参与者
+                    allContactIds = event.participants.map { it.id },
                     allContactNames = event.participants.map { it.name },
                     allContactAvatars = event.participants.map { it.avatar },
                     date = event.time,
@@ -77,6 +79,8 @@ class PhotoAlbumAggregationUseCase @Inject constructor(
                     contactId = gift.contactId,
                     contactName = contactMap[gift.contactId]?.name,
                     contactAvatar = contactMap[gift.contactId]?.avatar,
+                    // B-5 修复：Gift 只关联一个联系人，allContactIds 含单个元素
+                    allContactIds = listOfNotNull(gift.contactId),
                     date = gift.date,
                     location = gift.location
                 )

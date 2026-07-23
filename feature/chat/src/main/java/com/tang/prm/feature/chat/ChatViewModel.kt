@@ -2,26 +2,14 @@ package com.tang.prm.feature.chat
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.tang.prm.domain.model.Event
-import com.tang.prm.domain.model.EventType
-import com.tang.prm.domain.repository.EventRepository
+import com.tang.prm.domain.usecase.ConversationItem
+import com.tang.prm.domain.usecase.ObserveConversationsUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
-import com.tang.prm.domain.util.DateUtils
 import javax.inject.Inject
 
-data class ConversationUiModel(
-    val eventId: Long,
-    val contactId: Long?,
-    val contactName: String,
-    val avatar: String?,
-    val title: String?,
-    val lastMessage: String,
-    val lastMessageTime: String
-)
-
 data class ChatDataState(
-    val conversations: List<ConversationUiModel> = emptyList(),
+    val conversations: List<ConversationItem> = emptyList(),
     val isLoading: Boolean = false
 )
 class ChatDialogState
@@ -32,26 +20,14 @@ data class ChatUiState(
 
 @HiltViewModel
 class ChatViewModel @Inject constructor(
-    private val eventRepository: EventRepository
+    private val observeConversationsUseCase: ObserveConversationsUseCase
 ) : ViewModel() {
 
     private val _dialogState = MutableStateFlow(ChatDialogState())
 
     val uiState: StateFlow<ChatUiState> = combine(
-        eventRepository.getEventsByType(EventType.CONVERSATION.name)
-            .map { events ->
-                val conversations = events.sortedByDescending { it.createdAt }.map { event ->
-                    val primaryContact = event.participants.firstOrNull()
-                    ConversationUiModel(
-                        eventId = event.id,
-                        contactId = primaryContact?.id,
-                        contactName = primaryContact?.name ?: event.title,
-                        avatar = primaryContact?.avatar,
-                        title = event.title,
-                        lastMessage = event.conversationSummary ?: event.title,
-                        lastMessageTime = DateUtils.formatShortDate(event.createdAt)
-                    )
-                }
+        observeConversationsUseCase()
+            .map { conversations ->
                 ChatDataState(conversations = conversations, isLoading = false)
             },
         _dialogState

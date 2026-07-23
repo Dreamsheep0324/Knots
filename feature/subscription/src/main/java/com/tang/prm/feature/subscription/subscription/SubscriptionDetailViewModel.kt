@@ -29,7 +29,7 @@ class SubscriptionDetailViewModel @Inject constructor(
             SubscriptionDetailUiState(data = data, dialog = dialog)
         }
     } else {
-        val dataState = subscriptionRepository.getSubscriptionById(subscriptionId).map { sub ->
+        val dataState = subscriptionRepository.observeSubscriptionById(subscriptionId).map { sub ->
             SubscriptionDetailDataState(subscription = sub, isLoading = false)
         }
         combine(dataState, _dialogState) { data, dialog ->

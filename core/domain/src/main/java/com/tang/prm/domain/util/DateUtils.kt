@@ -42,7 +42,7 @@ object DateUtils {
         val formatter = DateTimeFormatter.ofPattern(pattern, Locale.getDefault())
     }
 
-    private val defaultZoneId = ZoneId.systemDefault()
+    private val defaultZoneId = ZoneId.of("Asia/Shanghai")
 
     private fun formatWith(timestamp: Long, format: DateFormat): String =
         Instant.ofEpochMilli(timestamp).atZone(defaultZoneId).format(format.formatter)

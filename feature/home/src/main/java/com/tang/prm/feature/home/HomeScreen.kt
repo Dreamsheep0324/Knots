@@ -48,7 +48,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
-import com.tang.prm.domain.repository.HomeOrbitalMode
+import com.tang.prm.domain.model.HomeOrbitalMode
 import com.tang.prm.ui.navigation.SettingsRoute
 import com.tang.prm.ui.navigation.ContactDetailRoute
 import com.tang.prm.ui.navigation.ContactListRoute

@@ -4,9 +4,10 @@ import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat
 import com.tang.prm.domain.model.Circle
 import com.tang.prm.domain.model.Contact
+import com.tang.prm.domain.usecase.CircleManageUseCase
 import com.tang.prm.domain.usecase.CircleSortMode
 import com.tang.prm.domain.usecase.CircleWithMembers
-import com.tang.prm.domain.usecase.ContactListManageUseCase
+import com.tang.prm.domain.usecase.ContactListAggregationUseCase
 import com.tang.prm.domain.usecase.ContactListAggregate
 import io.mockk.coEvery
 import io.mockk.every
@@ -32,7 +33,10 @@ import org.junit.jupiter.api.extension.ExtendWith
 class ContactListViewModelTest {
 
     @MockK
-    private lateinit var useCase: ContactListManageUseCase
+    private lateinit var aggregationUseCase: ContactListAggregationUseCase
+
+    @MockK
+    private lateinit var circleManageUseCase: CircleManageUseCase
 
     private lateinit var viewModel: ContactListViewModel
     private val testDispatcher = UnconfinedTestDispatcher()
@@ -48,13 +52,13 @@ class ContactListViewModelTest {
             circles = listOf(CircleWithMembers(circle, listOf(contact))),
             contacts = listOf(contact)
         )
-        every { useCase.getContactListAggregate() } returns flowOf(aggregate)
-        every { useCase.getAvailableContacts(any(), any()) } returns emptyList()
-        every { useCase.getSortedCircles(any(), any()) } answers {
+        every { aggregationUseCase() } returns flowOf(aggregate)
+        every { aggregationUseCase.getAvailableContacts(any(), any()) } returns emptyList()
+        every { aggregationUseCase.getSortedCircles(any(), any()) } answers {
             firstArg<List<CircleWithMembers>>()
         }
 
-        viewModel = ContactListViewModel(useCase)
+        viewModel = ContactListViewModel(aggregationUseCase, circleManageUseCase)
         // 启动后台收集器以激活 WhileSubscribed(5000)
         testScope.launch { viewModel.uiState.collect { } }
     }

@@ -1,7 +1,11 @@
 package com.tang.prm.domain.usecase
 
-import com.tang.prm.domain.model.*
-import com.tang.prm.domain.repository.*
+import com.tang.prm.domain.model.Anniversary
+import com.tang.prm.domain.model.Event
+import com.tang.prm.domain.model.TodoItem
+import com.tang.prm.domain.repository.AnniversaryRepository
+import com.tang.prm.domain.repository.EventRepository
+import com.tang.prm.domain.repository.TodoRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -30,7 +34,7 @@ class HomeDataAggregationUseCase @Inject constructor(
     private val anniversaryRepository: AnniversaryRepository,
     private val todoRepository: TodoRepository
 ) {
-    fun getAggregateData(): Flow<HomeAggregateData> {
+    operator fun invoke(): Flow<HomeAggregateData> {
         // P-2 修复：改用 getRecentEvents(RECENT_EVENT_LIMIT) 让 SQL 层 LIMIT 5，
         // 避免全量加载 N 条事件再内存取前 5
         val eventsFlow = eventRepository.getRecentEvents(RECENT_EVENT_LIMIT).distinctUntilChanged()

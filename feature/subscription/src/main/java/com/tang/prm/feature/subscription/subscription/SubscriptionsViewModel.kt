@@ -8,7 +8,7 @@ import com.tang.prm.domain.model.SubscriptionStatus
 import com.tang.prm.domain.model.computedStatus
 import com.tang.prm.domain.repository.SubscriptionRepository
 import com.tang.prm.domain.usecase.SubscriptionStatsUseCase
-import com.tang.prm.domain.usecase.filterBy
+import com.tang.prm.domain.util.filterBy
 import com.tang.prm.ui.common.SearchStateManager
 import com.tang.prm.ui.common.SearchState
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -76,7 +76,7 @@ class SubscriptionsViewModel @Inject constructor(
 
     private fun observeStats() {
         viewModelScope.launch {
-            subscriptionStatsUseCase.getStats().collect { stats ->
+            subscriptionStatsUseCase().collect { stats ->
                 _uiState.update { it.copy(data = it.data.copy(stats = stats)) }
             }
         }

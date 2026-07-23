@@ -5,7 +5,6 @@ import com.tang.prm.data.local.entity.AnniversaryWithContact
 import com.tang.prm.data.mapper.toDomain
 import com.tang.prm.data.mapper.toEntity
 import com.tang.prm.domain.model.Anniversary
-import com.tang.prm.domain.model.effectiveDate
 import com.tang.prm.domain.repository.AnniversaryRepository
 import com.tang.prm.domain.util.DateCalcUtils
 import kotlinx.coroutines.Dispatchers
@@ -27,7 +26,7 @@ class AnniversaryRepositoryImpl @Inject constructor(
         contactAvatar = contact?.avatar
     )
 
-    // B-5 修复：effectiveDate() 已提到 domain 层作为 Anniversary 的公共扩展函数，
+    // M-3 修复：effectiveDate() 已内聚为 Anniversary 的成员方法，
     // 消除 Repository 内的 private 实现，单一真相源；UI 层（OrbitalCalendarState）也可复用。
 
     override fun getAllAnniversaries(): Flow<List<Anniversary>> =

@@ -11,7 +11,6 @@ import com.tang.prm.domain.model.EventType
 import com.tang.prm.domain.repository.ContactRepository
 import com.tang.prm.domain.repository.CustomTypeRepository
 import com.tang.prm.domain.repository.EventRepository
-import com.tang.prm.domain.usecase.EventManageUseCase
 import com.tang.prm.domain.usecase.ObserveEventReferenceDataUseCase
 import com.tang.prm.domain.usecase.UpdateInteractionUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -34,7 +33,6 @@ class AddEventViewModel @Inject constructor(
     private val eventRepository: EventRepository,
     private val contactRepository: ContactRepository,
     private val customTypeRepository: CustomTypeRepository,
-    private val eventManageUseCase: EventManageUseCase,
     private val updateInteractionUseCase: UpdateInteractionUseCase,
     private val observeReferenceDataUseCase: ObserveEventReferenceDataUseCase
 ) : ViewModel() {
@@ -159,12 +157,12 @@ class AddEventViewModel @Inject constructor(
                 weather = state.weather.ifBlank { null }, conversationSummary = state.conversationSummary.ifBlank { null },
                 remarks = state.remarks.ifBlank { null }, photos = state.photos, participants = state.participants)
             if (editingEventId != null) {
-                eventManageUseCase.updateEventWithParticipants(event, state.participants.map { it.id })
+                eventRepository.updateEventWithParticipants(event, state.participants.map { it.id })
                 state.participants.forEach { p ->
                     updateInteractionUseCase(p.id, p.intimacyScore, state.time)
                 }
             } else {
-                eventManageUseCase.insertEventWithParticipants(event, state.participants.map { it.id })
+                eventRepository.insertEventWithParticipants(event, state.participants.map { it.id })
                 state.participants.forEach { p ->
                     updateInteractionUseCase(p.id, p.intimacyScore, state.time)
                 }

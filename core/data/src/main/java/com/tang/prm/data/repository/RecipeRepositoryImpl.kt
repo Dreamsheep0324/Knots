@@ -12,11 +12,10 @@ import com.tang.prm.data.mapper.mapList
 import com.tang.prm.data.mapper.mapNullable
 import com.tang.prm.data.mapper.toDomain
 import com.tang.prm.data.mapper.toEntity
-import com.tang.prm.data.mapper.toRecipeDomainList
 import com.tang.prm.data.util.ImageFileManager
 import com.tang.prm.data.util.computeRemovedPhotos
 import com.tang.prm.domain.model.Recipe
-import com.tang.prm.domain.model.RecipeTag
+import com.tang.prm.domain.model.SaveResult
 import com.tang.prm.domain.repository.RecipeRepository
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.async
@@ -40,13 +39,13 @@ class RecipeRepositoryImpl @Inject constructor(
     override fun getRecipeListItems(): Flow<List<Recipe>> =
         recipeDao.getRecipeListItems().mapList { it.toDomain() }
 
-    override fun getRecipeById(id: Long): Flow<Recipe?> =
+    override fun observeRecipeById(id: Long): Flow<Recipe?> =
         recipeDao.getRecipeById(id).mapNullable { it.toDomain() }
 
     override fun getRecipesByContactId(contactId: Long): Flow<List<Recipe>> =
         recipeDao.getRecipesByContactId(contactId).mapList { it.toDomain() }
 
-    override suspend fun getRecipeByIdOnce(id: Long): Recipe? {
+    override suspend fun getRecipeById(id: Long): Recipe? {
         val entity = recipeDao.getRecipeByIdOnce(id) ?: return null
         return entity.toDomain()
     }
@@ -90,7 +89,7 @@ class RecipeRepositoryImpl @Inject constructor(
     override suspend fun saveRecipeWithPhotos(
         recipe: Recipe,
         photoUris: List<String>
-    ): Pair<Long, Int> {
+    ): SaveResult {
         // 并发复制图片，缩短用户保存等待时间
         val copyResults = coroutineScope {
             photoUris.map { uriString ->
@@ -117,18 +116,10 @@ class RecipeRepositoryImpl @Inject constructor(
             }
             recipeId
         }
-        return id to failedCount
+        return SaveResult(id = id, failedPhotoCount = failedCount)
     }
 
     override fun getRecipeCount(): Flow<Int> = recipeDao.getRecipeCount()
-
-    override fun getAllTags(): Flow<List<RecipeTag>> =
-        recipeTagDao.getAllTags().mapList { it.toDomain() }
-
-    override suspend fun insertTag(tag: RecipeTag): Long =
-        recipeTagDao.insertTag(tag.toEntity())
-
-    override suspend fun deleteTag(id: Long) = recipeTagDao.deleteTagById(id)
 
     /**
      * 写入菜谱-联系人交叉引用。空列表时跳过，避免无意义 DELETE+INSERT。

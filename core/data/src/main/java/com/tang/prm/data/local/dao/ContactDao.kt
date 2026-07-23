@@ -46,9 +46,6 @@ interface ContactDao {
     @Query("UPDATE contacts SET intimacyScore = :score, lastInteractionTime = :interactionTime, updatedAt = :timestamp WHERE id = :id")
     suspend fun updateContactInteraction(id: Long, score: Int, interactionTime: Long, timestamp: Long = System.currentTimeMillis())
 
-    @Query("SELECT * FROM contacts WHERE id IN (:ids)")
-    fun getContactsByIds(ids: List<Long>): Flow<List<ContactEntity>>
-
     /** 仅查询引用了头像的联系人头像路径，用于清理孤儿图片时避免全表扫描 */
     @Query("SELECT avatar FROM contacts WHERE avatar IS NOT NULL AND avatar != ''")
     suspend fun getReferencedAvatarPaths(): List<String>
@@ -69,7 +66,7 @@ data class ContactListItemEntity(
     val groupId: Long? = null,
     val intimacyScore: Int = 50,
     val lastInteractionTime: Long? = null,
-    val updatedAt: Long = System.currentTimeMillis()
+    val updatedAt: Long = 0L
 )
 
 @Dao

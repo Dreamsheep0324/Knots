@@ -24,11 +24,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.tang.prm.ui.animation.core.AnimationTokens
 import com.tang.prm.ui.components.AppCard
+import com.tang.prm.domain.usecase.ConversationItem
 import com.tang.prm.ui.components.ContactAvatar
 
 @Composable
 internal fun ConversationItem(
-    conversation: ConversationUiModel,
+    conversation: ConversationItem,
     showAvatar: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
@@ -103,6 +104,7 @@ internal fun ConversationItem(
                 )
 
                 if (showAvatar && conversation.title != null && conversation.title != "与${conversation.contactName}的对话") {
+                    val titleText = conversation.title ?: ""
                     Spacer(modifier = Modifier.height(6.dp))
                     Surface(
                         shape = RoundedCornerShape(4.dp),
@@ -120,7 +122,7 @@ internal fun ConversationItem(
                                 modifier = Modifier.size(10.dp)
                             )
                             Text(
-                                text = conversation.title,
+                                text = titleText,
                                 style = MaterialTheme.typography.labelSmall,
                                 color = MaterialTheme.colorScheme.primary,
                                 maxLines = 1,

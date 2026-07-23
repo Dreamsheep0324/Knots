@@ -57,9 +57,6 @@ interface EventDao {
     @Query("SELECT contactId FROM event_participants WHERE eventId = :eventId")
     suspend fun getParticipantIdsForEventOnce(eventId: Long): List<Long>
 
-    @Query("DELETE FROM event_participants WHERE eventId = :eventId")
-    suspend fun deleteParticipantsByEvent(eventId: Long)
-
     @Query("SELECT COUNT(*) FROM events WHERE type != 'CONVERSATION'")
     fun getEventCount(): Flow<Int>
 

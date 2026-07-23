@@ -19,6 +19,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.tang.prm.domain.model.GiftType
+import com.tang.prm.domain.usecase.GiftRecord
 import com.tang.prm.ui.components.DeleteConfirmDialog
 import com.tang.prm.ui.theme.*
 

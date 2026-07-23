@@ -41,7 +41,7 @@ class AddSubscriptionViewModelTest {
         every { customTypeRepository.getTypesByCategory(CustomCategories.SUBSCRIPTION_CATEGORY) } returns flowOf(emptyList())
         coEvery { subscriptionRepository.insertSubscription(any()) } returns 1L
         coEvery { subscriptionRepository.updateSubscription(any()) } returns Unit
-        coEvery { subscriptionRepository.getSubscriptionByIdOnce(any()) } returns null
+        coEvery { subscriptionRepository.getSubscriptionById(any()) } returns null
 
         viewModel = AddSubscriptionViewModel(subscriptionRepository, customTypeRepository)
     }
@@ -102,7 +102,7 @@ class AddSubscriptionViewModelTest {
             nextBillingDate = System.currentTimeMillis() + 30L * 24 * 60 * 60 * 1000,
             status = SubscriptionStatus.ACTIVE
         )
-        coEvery { subscriptionRepository.getSubscriptionByIdOnce(5L) } returns existing
+        coEvery { subscriptionRepository.getSubscriptionById(5L) } returns existing
 
         viewModel.initForEdit(5L)
         advanceUntilIdle()
@@ -120,7 +120,7 @@ class AddSubscriptionViewModelTest {
             cycle = SubscriptionCycle.MONTHLY, startDate = System.currentTimeMillis(),
             nextBillingDate = System.currentTimeMillis() + 30L * 24 * 60 * 60 * 1000
         )
-        coEvery { subscriptionRepository.getSubscriptionByIdOnce(5L) } returns existing
+        coEvery { subscriptionRepository.getSubscriptionById(5L) } returns existing
 
         viewModel.initForEdit(5L)
         advanceUntilIdle()

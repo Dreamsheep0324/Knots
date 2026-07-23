@@ -9,7 +9,6 @@ import com.tang.prm.data.mapper.toDomain
 import com.tang.prm.data.mapper.toEntity
 import androidx.room.withTransaction
 import com.tang.prm.domain.model.Event
-import com.tang.prm.domain.model.EventType
 import com.tang.prm.domain.model.SourceTypes
 import com.tang.prm.domain.repository.EventRepository
 import com.tang.prm.domain.repository.FavoriteRepository
@@ -18,7 +17,6 @@ import com.tang.prm.data.util.computeRemovedPhotos
 import com.tang.prm.util.escapeSqlWildcards
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -97,6 +95,8 @@ class EventRepositoryImpl @Inject constructor(
     ): Long = database.withTransaction {
         // B-8 修复：单一事务包裹事件插入 + 参与者批量插入
         val eventId = eventDao.insertEvent(event.toEntity())
+        // B-10 修复：IGNORE 冲突时返回 -1，若继续插参与者会用 -1 作 eventId 导致脏数据
+        require(eventId > 0) { "事件插入被 IGNORE 忽略（主键冲突），事务回滚" }
         participantIds.forEach { contactId ->
             eventDao.insertEventParticipant(
                 com.tang.prm.data.local.entity.EventParticipantCrossRef(eventId, contactId)

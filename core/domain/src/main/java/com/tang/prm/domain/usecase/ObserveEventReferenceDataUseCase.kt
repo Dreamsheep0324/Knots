@@ -41,7 +41,7 @@ class ObserveEventReferenceDataUseCase @Inject constructor(
     private val contactRepository: ContactRepository,
     private val customTypeRepository: CustomTypeRepository
 ) {
-    fun invoke(): Flow<EventReferenceData> = combine(
+    operator fun invoke(): Flow<EventReferenceData> = combine(
         // C-5 修复：统一约定在 UseCase 层对 combine 上游加 distinctUntilChanged
         contactRepository.getAllContacts().distinctUntilChanged(),
         customTypeRepository.getTypesByCategory(CustomCategories.EVENT_TYPE).distinctUntilChanged(),

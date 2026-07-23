@@ -3,9 +3,9 @@ package com.tang.prm.feature.recipes
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tang.prm.domain.model.Contact
-import com.tang.prm.domain.model.Recipe
-import com.tang.prm.domain.repository.ContactRepository
 import com.tang.prm.domain.repository.RecipeRepository
+import com.tang.prm.domain.usecase.ObserveRecipeListItemsUseCase
+import com.tang.prm.domain.usecase.RecipeListItem
 import com.tang.prm.ui.common.SearchStateManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -14,21 +14,6 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-
-data class RecipeListItem(
-    val recipe: Recipe,
-    val contactNames: List<String>
-) {
-    val id get() = recipe.id
-    val title get() = recipe.title
-    val description get() = recipe.description
-    val cuisine get() = recipe.cuisine
-    val cookingTime get() = recipe.cookingTime
-    val servings get() = recipe.servings
-    val photos get() = recipe.photos
-    val tags get() = recipe.tags
-    val rating get() = recipe.rating
-}
 
 data class RecipesDataState(
     val allRecipes: List<RecipeListItem> = emptyList(),
@@ -51,8 +36,9 @@ data class RecipesUiState(
 
 @HiltViewModel
 class RecipesViewModel @Inject constructor(
+    /** 仅用于 [deleteRecipe]；列表观察已下沉到 [observeRecipeListItemsUseCase]。 */
     private val recipeRepository: RecipeRepository,
-    private val contactRepository: ContactRepository
+    private val observeRecipeListItemsUseCase: ObserveRecipeListItemsUseCase
 ) : ViewModel() {
 
     private val searchManager = SearchStateManager()
@@ -66,22 +52,13 @@ class RecipesViewModel @Inject constructor(
 
     val uiState = combine(
         combine(
-            recipeRepository.getRecipeListItems(),
-            contactRepository.getAllContacts(),
+            observeRecipeListItemsUseCase(),
             searchManager.state,
             _selectedTag,
             _isLoading
-        ) { recipes, contacts, search, selectedTag, isLoading ->
-            val contactMap = contacts.associateBy { it.id }
-            val items = recipes.map { recipe ->
-                RecipeListItem(
-                    recipe = recipe,
-                    contactNames = recipe.likedByContactIds.mapNotNull { id ->
-                        contactMap[id]?.name
-                    }
-                )
-            }
-            val allTags = items.flatMap { it.tags }.distinct().sorted()
+        ) { aggregate, search, selectedTag, isLoading ->
+            val items = aggregate.items
+            val allTags = aggregate.availableTags
             _categorized.value = items to allTags
 
             val filtered = items.filter { item ->
@@ -98,7 +75,7 @@ class RecipesViewModel @Inject constructor(
                 selectedTag = selectedTag,
                 isLoading = isLoading,
                 availableTags = allTags,
-                contactMap = contactMap
+                contactMap = aggregate.contactMap
             )
         },
         _dialogState

@@ -31,18 +31,21 @@ enum class IntimacyTier(
     FAMILY("至亲", "UR", 90, 100, 0xFFF59E0B, 0xFFFBBF24, 5);
 
     companion object {
+        // B-6 修复：阈值与枚举声明脱钩。原 when 分支硬编码 90/75/40/15，
+        // 与 minScore 重复；调整枚举阈值时 of() 不会自动同步。
+        // 现通过 minScore..maxScore 区间匹配，单一来源。
         fun of(score: Int): IntimacyTier {
             val s = score.coerceIn(0, 100)
-            return when {
-                s >= 90 -> FAMILY
-                s >= 75 -> CLOSE
-                s >= 40 -> FRIEND
-                s >= 15 -> ACQUAINTANCE
-                else -> NEW
-            }
+            return entries.firstOrNull { s in it.minScore..it.maxScore } ?: NEW
         }
     }
 }
 
-fun getIntimacyLabel(score: Int): String = IntimacyTier.of(score).label
-fun getCardRarityLabel(score: Int): String = IntimacyTier.of(score).cardRarity
+// Q-7：扩展属性作为惯用 Kotlin 调用方式，顶层函数保留向后兼容（测试仍在使用）
+val Int.intimacyLabel: String get() = IntimacyTier.of(this).label
+val Int.cardRarityLabel: String get() = IntimacyTier.of(this).cardRarity
+
+@JvmName("intimacyLabelForScore")
+fun getIntimacyLabel(score: Int): String = score.intimacyLabel
+@JvmName("cardRarityLabelForScore")
+fun getCardRarityLabel(score: Int): String = score.cardRarityLabel

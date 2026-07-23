@@ -5,7 +5,6 @@ import com.tang.prm.data.local.entity.ContactRelationEntity
 import com.tang.prm.data.mapper.mapList
 import com.tang.prm.data.mapper.toDomain
 import com.tang.prm.domain.model.ContactRelation
-import com.tang.prm.domain.model.RelationSource
 import com.tang.prm.domain.repository.ContactRelationRepository
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
@@ -41,8 +40,7 @@ class ContactRelationRepositoryImpl @Inject constructor(
         contactIdA: Long,
         contactIdB: Long,
         relationTypeId: Long,
-        note: String?,
-        source: RelationSource
+        note: String?
     ): Long {
         // 规范化：保证 contactIdA < contactIdB，匹配唯一索引
         val (a, b) = if (contactIdA < contactIdB) {
@@ -58,7 +56,6 @@ class ContactRelationRepositoryImpl @Inject constructor(
             contactIdB = b,
             relationTypeId = relationTypeId,
             note = note,
-            source = source.name,
             createdAt = existing?.createdAt ?: now,
             updatedAt = now
         )

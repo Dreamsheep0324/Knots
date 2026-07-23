@@ -24,10 +24,10 @@ class SubscriptionRepositoryImpl @Inject constructor(
         return subscriptionDao.searchSubscriptions(escapedKeyword).mapList { it.toDomain() }
     }
 
-    override fun getSubscriptionById(id: Long): Flow<Subscription?> =
+    override fun observeSubscriptionById(id: Long): Flow<Subscription?> =
         subscriptionDao.getSubscriptionById(id).mapNullable { it.toDomain() }
 
-    override suspend fun getSubscriptionByIdOnce(id: Long): Subscription? =
+    override suspend fun getSubscriptionById(id: Long): Subscription? =
         subscriptionDao.getSubscriptionByIdOnce(id)?.toDomain()
 
     override fun getAllCategories(): Flow<List<String>> =

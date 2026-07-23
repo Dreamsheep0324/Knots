@@ -8,42 +8,42 @@ import java.util.Locale
 class DateUtilsTest {
 
     @Test
-    fun formatRelativeTime_justNow_returns刚刚() {
+    fun `formatRelativeTime justNow returns 刚刚`() {
         val now = System.currentTimeMillis()
         val result = DateUtils.formatRelativeTime(now)
         assertThat(result).isEqualTo("刚刚")
     }
 
     @Test
-    fun formatRelativeTime_5minAgo_returns5分钟前() {
+    fun `formatRelativeTime 5minAgo returns 5分钟前`() {
         val now = System.currentTimeMillis()
         val result = DateUtils.formatRelativeTime(now - 5 * 60 * 1000)
         assertThat(result).isEqualTo("5分钟前")
     }
 
     @Test
-    fun formatRelativeTime_3hoursAgo_returns3小时前() {
+    fun `formatRelativeTime 3hoursAgo returns 3小时前`() {
         val now = System.currentTimeMillis()
         val result = DateUtils.formatRelativeTime(now - 3 * 60 * 60 * 1000)
         assertThat(result).isEqualTo("3小时前")
     }
 
     @Test
-    fun formatRelativeTime_7daysAgo_returnsChineseDate() {
+    fun `formatRelativeTime 7daysAgo returns chinese date`() {
         val now = System.currentTimeMillis()
         val result = DateUtils.formatRelativeTime(now - 7 * 24 * 60 * 60 * 1000L)
         assertThat(result).matches("\\d{4}年\\d{1,2}月\\d{1,2}日")
     }
 
     @Test
-    fun formatRelativeTime_future_returns即将() {
+    fun `formatRelativeTime future returns 即将`() {
         val now = System.currentTimeMillis()
         val result = DateUtils.formatRelativeTime(now + 1000)
         assertThat(result).isEqualTo("即将")
     }
 
     @Test
-    fun formatDate_knownTimestamp_returnsFormattedDate() {
+    fun `formatDate knownTimestamp returns formatted date`() {
         val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
         val timestamp = System.currentTimeMillis()
         val expected = sdf.format(timestamp)
@@ -52,7 +52,7 @@ class DateUtilsTest {
     }
 
     @Test
-    fun formatTime_knownTimestamp_returnsFormattedTime() {
+    fun `formatTime knownTimestamp returns formatted time`() {
         val sdf = SimpleDateFormat("HH:mm", Locale.getDefault())
         val timestamp = System.currentTimeMillis()
         val expected = sdf.format(timestamp)
@@ -61,26 +61,26 @@ class DateUtilsTest {
     }
 
     @Test
-    fun parseDateToMillis_validDate_returnsMillis() {
+    fun `parseDateToMillis validDate returns millis`() {
         val result = DateUtils.parseDateToMillis("2024-06-15")
         assertThat(result).isNotNull()
     }
 
     @Test
-    fun parseDateToMillis_invalidDate_returnsNull() {
+    fun `parseDateToMillis invalidDate returns null`() {
         val result = DateUtils.parseDateToMillis("not-a-date")
         assertThat(result).isNull()
     }
 
     @Test
-    fun calculateDaysInfo_futureDate_isPastFalse() {
+    fun `calculateDaysInfo futureDate isPast false`() {
         val future = System.currentTimeMillis() + 10L * 24 * 60 * 60 * 1000
         val result = DateCalcUtils.calculateDaysInfo(future)
         assertThat(result.isPast).isFalse()
     }
 
     @Test
-    fun getTodayStart_returnsMidnightTimestamp() {
+    fun `getTodayStart returns midnight timestamp`() {
         val todayStart = DateCalcUtils.getTodayStart()
         val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
         val formatted = sdf.format(todayStart)
@@ -88,13 +88,13 @@ class DateUtilsTest {
     }
 
     @Test
-    fun getTodayStart_isBeforeNow() {
+    fun `getTodayStart is before now`() {
         val todayStart = DateCalcUtils.getTodayStart()
         assertThat(todayStart).isLessThan(System.currentTimeMillis())
     }
 
     @Test
-    fun getTodayStart_isWithinToday() {
+    fun `getTodayStart is within today`() {
         val todayStart = DateCalcUtils.getTodayStart()
         val dayMs = 24 * 60 * 60 * 1000L
         assertThat(System.currentTimeMillis() - todayStart).isLessThan(dayMs)
@@ -103,7 +103,7 @@ class DateUtilsTest {
     // Q-5/C-6：新增 DateUtils.formatMonthName / formatWeekdayShortName 测试
 
     @Test
-    fun formatMonthName_returnsChineseFullName() {
+    fun `formatMonthName returns chinese full name`() {
         // 2026-07-15 00:00（系统时区），月名应为「七月」
         val ts = java.time.LocalDate.of(2026, 7, 15)
             .atStartOfDay(java.time.ZoneId.systemDefault())
@@ -113,13 +113,13 @@ class DateUtilsTest {
     }
 
     @Test
-    fun formatMonthName_nonNullNonEmpty() {
+    fun `formatMonthName non null non empty`() {
         val result = DateUtils.formatMonthName(System.currentTimeMillis())
         assertThat(result).isNotEmpty()
     }
 
     @Test
-    fun formatWeekdayShortName_returnsChineseShortName() {
+    fun `formatWeekdayShortName returns chinese short name`() {
         // 2026-07-15 是周三
         val ts = java.time.LocalDate.of(2026, 7, 15)
             .atStartOfDay(java.time.ZoneId.systemDefault())
@@ -129,7 +129,7 @@ class DateUtilsTest {
     }
 
     @Test
-    fun formatWeekdayShortName_nonNullNonEmpty() {
+    fun `formatWeekdayShortName non null non empty`() {
         val result = DateUtils.formatWeekdayShortName(System.currentTimeMillis())
         assertThat(result).isNotEmpty()
     }

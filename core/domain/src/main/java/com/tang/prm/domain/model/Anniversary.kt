@@ -1,5 +1,7 @@
 package com.tang.prm.domain.model
 
+import com.tang.prm.domain.util.DateCalcUtils
+
 enum class AnniversaryType(val displayName: String) {
     BIRTHDAY("生日"),
     ANNIVERSARY("纪念日"),
@@ -17,6 +19,9 @@ enum class AnniversaryType(val displayName: String) {
  *
  * C-8 修复：[reminderDays] 默认 1 天 = 纪念日提前 1 天提醒；与 Subscription 的
  * 3 天默认值不同（订阅金额较大需更早提醒），非 bug。
+ *
+ * M-3 修复：[effectiveDate] 由扩展函数内聚为成员方法，避免 [GetAnniversaryDisplayUseCase]
+ * 内联复制 when 逻辑。原 AnniversaryEffectiveDate.kt 扩展函数已删除。
  */
 data class Anniversary(
     val id: Long = 0,
@@ -33,6 +38,19 @@ data class Anniversary(
     val createdAt: Long = System.currentTimeMillis(),
     val updatedAt: Long = System.currentTimeMillis()
 ) {
+    /**
+     * 计算下次生效日期。
+     *
+     * - [type] 为 BIRTHDAY：取下次生日（当年或次年）。
+     * - [isRepeat] 为 true：取下次重复日期（当年或次年）。
+     * - 否则（一次性纪念日）：直接返回 [date]（可能已过去）。
+     */
+    fun effectiveDate(): Long = when {
+        type == AnniversaryType.BIRTHDAY -> DateCalcUtils.getNextBirthdayDate(date)
+        isRepeat -> DateCalcUtils.getNextRepeatDate(date)
+        else -> date
+    }
+
     companion object {
         /** 纪念日提前提醒天数：1 天（与 Subscription 默认 3 天区分） */
         const val DEFAULT_ANNIVERSARY_REMINDER_DAYS = 1

@@ -3,7 +3,13 @@ package com.tang.prm.domain.repository
 import com.tang.prm.domain.model.Event
 import kotlinx.coroutines.flow.Flow
 
-interface EventRepository {
+/**
+ * 事件 Repository（R-2 ISP 拆分后）。
+ *
+ * 继承 [EventStatsRepository] 以保持向后兼容（Hilt 绑定不变）。
+ * [HomeStatsUseCase] 改依赖 [EventStatsRepository] 以解耦统计与 CRUD 职责。
+ */
+interface EventRepository : EventStatsRepository {
     fun getAllEvents(): Flow<List<Event>>
     fun getEventById(id: Long): Flow<Event?>
     fun getRecentEvents(limit: Int): Flow<List<Event>>
@@ -34,9 +40,4 @@ interface EventRepository {
      * @param participantIds 期望的最终参与者列表（diff 后增/删）
      */
     suspend fun updateEventWithParticipants(event: Event, participantIds: List<Long>)
-
-    fun getEventCount(): Flow<Int>
-    fun getEventCountByType(type: String): Flow<Int>
-    fun getEventCountWithLocation(): Flow<Int>
-    fun getPhotoCount(): Flow<Int>
 }

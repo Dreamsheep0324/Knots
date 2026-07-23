@@ -14,7 +14,6 @@ import java.io.File
 import java.util.zip.ZipInputStream
 import com.tang.prm.domain.model.BackupFileInfo
 import com.tang.prm.domain.model.FileEntry
-import com.tang.prm.domain.model.BackupImageQuality
 import com.tang.prm.domain.model.BackupInfo
 import com.tang.prm.domain.model.ClearDataResult
 import com.tang.prm.domain.model.RestoreResult
@@ -41,6 +40,20 @@ class BackupRepositoryImpl @Inject constructor(
         // 备份目录 URI 存储
         private const val PREFS_NAME = "backup_meta"
         private const val KEY_BACKUP_DIR_URI = "backup_dir_uri"
+
+        // B-13 修复：远端文件名消毒，防止恶意/被篡改服务器通过 `../` 越界读写应用私有目录
+        private fun requireSafeEntryName(name: String) {
+            require(name.isNotBlank() && !name.contains('/') && !name.contains('\\') && name != "." && name != "..") {
+                "非法的远端文件名: $name"
+            }
+        }
+    }
+
+    // B-12 修复：回滚结果枚举化，让上层给出准确文案而非误报"已回滚"
+    private sealed interface RollbackResult {
+        data object Restored : RollbackResult  // 从快照成功恢复
+        data object Cleaned : RollbackResult   // 无快照，已清理半写 DB
+        data object Failed : RollbackResult    // 回滚失败，数据库可能已损坏
     }
 
     private val backupPrefs by lazy {
@@ -78,7 +91,7 @@ class BackupRepositoryImpl @Inject constructor(
         return SafDocumentsHelper.getBackupDirNameFromUri(uriStr)
     }
 
-    override suspend fun backupToDir(imageQuality: BackupImageQuality): BackupInfo {
+    override suspend fun backupToDir(): BackupInfo {
         val dirUriStr = getBackupDirUri() ?: throw IllegalStateException("未设置备份目录")
         val treeUri = Uri.parse(dirUriStr)
         val docUri = safHelper.toDocumentUri(treeUri)
@@ -91,13 +104,18 @@ class BackupRepositoryImpl @Inject constructor(
 
             val tempFile = File(context.cacheDir, "backup_temp_${System.currentTimeMillis()}.zip")
             try {
-                val info = backupToFileInternal(tempFile, imageQuality)
+                val info = backupToFileInternal(tempFile)
                 tempFile.inputStream().use { input ->
                     context.contentResolver.openOutputStream(newFileUri)?.use { output ->
                         input.copyTo(output, BackupZipUtils.BUFFER_SIZE)
                     } ?: throw IllegalStateException("无法写入备份文件")
                 }
                 info.copy(fileName = fileName)
+            } catch (e: Exception) {
+                // B-17 修复：失败时删除残留的损坏 SAF 文档，避免被 listBackups 误列为有效备份
+                try { DocumentsContract.deleteDocument(context.contentResolver, newFileUri) }
+                catch (del: Exception) { Log.w(TAG, "清理残留备份文件失败", del) }
+                throw e
             } finally {
                 tempFile.delete()
             }
@@ -188,6 +206,8 @@ class BackupRepositoryImpl @Inject constructor(
     }
 
     override fun getLocalImageFile(dir: String, fileName: String): File? {
+        // B-13 修复：远端文件名消毒，防止 `../` 越界
+        requireSafeEntryName(fileName)
         val file = File(File(context.filesDir, dir), fileName)
         return if (file.exists() && file.isFile) file else null
     }
@@ -212,14 +232,18 @@ class BackupRepositoryImpl @Inject constructor(
         val result = withContext(Dispatchers.IO) {
             val dbFile = context.getDatabasePath(DB_NAME)
             val backupSnapshot = File(dbFile.parent, "$DB_NAME.before_restore")
+            // B-5 修复：快照范围纳入 DataStore，避免"datastore 已写入、DB 未写完"窗口失败时旧 DB + 新设置混跑
+            val datastoreFile = File(File(context.filesDir.parent, "datastore"), "$DATASTORE_NAME.preferences_pb")
+            val datastoreSnapshot = File(dbFile.parent, "$DATASTORE_NAME.datastore.before_restore")
             try {
                 database.checkpoint()
                 database.close()
                 if (dbFile.exists()) dbFile.copyTo(backupSnapshot, overwrite = true)
+                // B-5: 创建 DataStore 快照
+                if (datastoreFile.exists()) datastoreFile.copyTo(datastoreSnapshot, overwrite = true)
                 val walFile = File(dbFile.parent, "$DB_NAME-wal")
                 val shmFile = File(dbFile.parent, "$DB_NAME-shm")
                 val datastoreDir = File(context.filesDir.parent, "datastore")
-                val datastoreFile = File(datastoreDir, "$DATASTORE_NAME.preferences_pb")
 
                 context.contentResolver.openInputStream(parsedUri)?.use { inputStream ->
                     ZipInputStream(inputStream).use { zipIn ->
@@ -239,13 +263,16 @@ class BackupRepositoryImpl @Inject constructor(
                         }
                     }
                 } ?: return@withContext RestoreResult.Error("无法打开备份文件")
+                // B-4 修复：成功路径删除快照，避免整库明文副本永久残留
+                try { backupSnapshot.delete() } catch (e: Exception) { Log.e(TAG, "删除 DB 快照失败", e) }
+                try { if (datastoreSnapshot.exists()) datastoreSnapshot.delete() } catch (e: Exception) { Log.e(TAG, "删除 DataStore 快照失败", e) }
                 RestoreResult.Success
             } catch (e: Exception) {
-                val rolledBack = rollbackDatabase(dbFile, backupSnapshot)
-                if (rolledBack) {
-                    RestoreResult.Error("恢复失败：${e.message}")
-                } else {
-                    RestoreResult.FatalError(
+                val rollbackResult = rollbackDatabase(dbFile, backupSnapshot, datastoreSnapshot)
+                when (rollbackResult) {
+                    is RollbackResult.Restored -> RestoreResult.Error("恢复失败：${e.message}")
+                    is RollbackResult.Cleaned -> RestoreResult.Error("恢复失败：${e.message}（已清理半写数据，应用将以空库启动）")
+                    is RollbackResult.Failed -> RestoreResult.FatalError(
                         message = "恢复失败且数据库回滚失败，应用可能无法正常启动，建议重新安装",
                         cause = e
                     )
@@ -263,6 +290,8 @@ class BackupRepositoryImpl @Inject constructor(
     }
 
     override fun deleteLocalImageFile(dir: String, fileName: String): Boolean {
+        // B-13 修复：远端文件名消毒，防止 `../` 越界
+        requireSafeEntryName(fileName)
         val file = File(File(context.filesDir, dir), fileName)
         return file.exists() && file.delete()
     }
@@ -307,7 +336,7 @@ class BackupRepositoryImpl @Inject constructor(
 
     // ===== 核心备份逻辑 =====
 
-    private suspend fun backupToFileInternal(file: File, imageQuality: BackupImageQuality): BackupInfo = withContext(Dispatchers.IO) {
+    private suspend fun backupToFileInternal(file: File): BackupInfo = withContext(Dispatchers.IO) {
         database.checkpoint()
 
         val dbFile = context.getDatabasePath(DB_NAME)
@@ -351,21 +380,28 @@ class BackupRepositoryImpl @Inject constructor(
     private suspend fun restoreFromUriInternal(uri: Uri): RestoreResult {
         val dbFile = context.getDatabasePath(DB_NAME)
         val backupSnapshot = File(dbFile.parent, "$DB_NAME.before_restore")
+        // B-5: DataStore 快照
+        val datastoreFile = File(File(context.filesDir.parent, "datastore"), "$DATASTORE_NAME.preferences_pb")
+        val datastoreSnapshot = File(dbFile.parent, "$DATASTORE_NAME.datastore.before_restore")
         try {
             database.checkpoint()
             database.close()
             if (dbFile.exists()) dbFile.copyTo(backupSnapshot, overwrite = true)
+            if (datastoreFile.exists()) datastoreFile.copyTo(datastoreSnapshot, overwrite = true)
             val dirs = getExtractDirs()
             context.contentResolver.openInputStream(uri)?.use { inputStream ->
                 BackupZipUtils.extractFromStream(inputStream, dirs)
             } ?: return RestoreResult.Error("无法打开备份文件")
+            // B-4: 成功路径删除快照，避免整库明文副本永久残留
+            try { backupSnapshot.delete() } catch (e: Exception) { Log.e(TAG, "删除 DB 快照失败", e) }
+            try { if (datastoreSnapshot.exists()) datastoreSnapshot.delete() } catch (e: Exception) { Log.e(TAG, "删除 DataStore 快照失败", e) }
             return RestoreResult.Success
         } catch (e: Exception) {
-            val rolledBack = rollbackDatabase(dbFile, backupSnapshot)
-            return if (rolledBack) {
-                RestoreResult.Error("恢复失败：${e.message}")
-            } else {
-                RestoreResult.FatalError(
+            val rollbackResult = rollbackDatabase(dbFile, backupSnapshot, datastoreSnapshot)
+            return when (rollbackResult) {
+                is RollbackResult.Restored -> RestoreResult.Error("恢复失败：${e.message}")
+                is RollbackResult.Cleaned -> RestoreResult.Error("恢复失败：${e.message}（已清理半写数据，应用将以空库启动）")
+                is RollbackResult.Failed -> RestoreResult.FatalError(
                     message = "恢复失败且数据库回滚失败，应用可能无法正常启动，建议重新安装",
                     cause = e
                 )
@@ -388,19 +424,30 @@ class BackupRepositoryImpl @Inject constructor(
 
     /**
      * 回滚数据库文件：恢复失败时将快照覆盖回数据库文件，并删除快照。
-     * @return true 表示回滚成功；false 表示回滚失败，数据库文件可能已损坏。
+     * B-12 修复：无快照时删除半写 DB（而非误报 return true），返回枚举让上层给出准确文案。
+     * B-5 修复：回滚范围纳入 DataStore，避免旧 DB + 新设置混跑。
      */
-    private fun rollbackDatabase(dbFile: File, backupSnapshot: File): Boolean {
-        if (!backupSnapshot.exists()) return true
+    private fun rollbackDatabase(
+        dbFile: File,
+        backupSnapshot: File,
+        datastoreSnapshot: File? = null
+    ): RollbackResult {
         val walFile = File(dbFile.parent, "$DB_NAME-wal")
         val shmFile = File(dbFile.parent, "$DB_NAME-shm")
+
+        if (!backupSnapshot.exists()) {
+            // B-12: 无快照（新设备首次恢复）时删除半写 DB，避免残留损坏数据库
+            if (dbFile.exists()) { try { dbFile.delete() } catch (e: Exception) { Log.e(TAG, "删除半写数据库失败", e) } }
+            if (walFile.exists()) { try { walFile.delete() } catch (e: Exception) { Log.e(TAG, "删除 wal 文件失败", e) } }
+            if (shmFile.exists()) { try { shmFile.delete() } catch (e: Exception) { Log.e(TAG, "删除 shm 文件失败", e) } }
+            return RollbackResult.Cleaned
+        }
+
         val copied = try {
             backupSnapshot.copyTo(dbFile, overwrite = true); true
         } catch (e: Exception) {
             Log.e(TAG, "回滚数据库文件失败，数据库可能已损坏", e); false
         }
-        // 删除 wal/shm 文件：回滚后的 dbFile 与恢复过程中产生的 wal/shm 状态不一致，
-        // 会导致 SQLite 误读 wal 中的脏页，使回滚失效。必须一并删除。
         if (walFile.exists()) {
             try { walFile.delete() } catch (e: Exception) { Log.e(TAG, "删除 wal 文件失败", e) }
         }
@@ -408,7 +455,19 @@ class BackupRepositoryImpl @Inject constructor(
             try { shmFile.delete() } catch (e: Exception) { Log.e(TAG, "删除 shm 文件失败", e) }
         }
         try { backupSnapshot.delete() } catch (e: Exception) { Log.e(TAG, "删除备份快照失败", e) }
-        return copied
+
+        // B-5: 回滚 DataStore
+        if (datastoreSnapshot != null && datastoreSnapshot.exists()) {
+            val datastoreFile = File(File(context.filesDir.parent, "datastore"), "$DATASTORE_NAME.preferences_pb")
+            try {
+                datastoreSnapshot.copyTo(datastoreFile, overwrite = true)
+                datastoreSnapshot.delete()
+            } catch (e: Exception) {
+                Log.e(TAG, "回滚 DataStore 文件失败", e)
+            }
+        }
+
+        return if (copied) RollbackResult.Restored else RollbackResult.Failed
     }
 
     override fun generateBackupFileName(): String {
@@ -436,6 +495,25 @@ class BackupRepositoryImpl @Inject constructor(
 
             val giftPhotosDir = File(context.filesDir, "gift_photos")
             if (giftPhotosDir.exists() && giftPhotosDir.isDirectory) giftPhotosDir.listFiles()?.forEach { it.delete() }
+
+            // B-11 修复：清除四个 SharedPreferences，避免"清空所有数据"后密钥与密码残留
+            // secret_settings: AI apiKey/baseUrl/model
+            // webdav_secret: WebDAV 密码（EncryptedSharedPreferences）
+            // webdav_config: WebDAV 服务器地址/账号/路径/开关
+            // backup_meta: SAF 备份目录 URI
+            listOf("secret_settings", "webdav_secret", "webdav_config", PREFS_NAME).forEach { name ->
+                try { context.deleteSharedPreferences(name) }
+                catch (e: Exception) { Log.w(TAG, "清除 $name 失败", e) }
+            }
+            // 释放 SAF 持久化 URI 权限
+            try {
+                val uriStr = backupPrefs.getString(KEY_BACKUP_DIR_URI, null)
+                if (uriStr != null) {
+                    val takeFlags = android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION or
+                            android.content.Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+                    context.contentResolver.releasePersistableUriPermission(Uri.parse(uriStr), takeFlags)
+                }
+            } catch (e: Exception) { Log.w(TAG, "释放 SAF 权限失败", e) }
 
             // 数据库已删除，必须重启进程以重建连接池
             val restarted = appRestarter.restart()

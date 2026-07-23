@@ -56,14 +56,14 @@ class PhotoAlbumAggregationUseCaseTest {
     inner class ConversationTest {
 
         @Test
-        fun conversationEvent_mapsToAlbumChatSourceType() = runTest {
+        fun `conversation event maps to album chat source type`() = runTest {
             val events = listOf(
                 Event(id = 1, title = "对话", type = EventType.CONVERSATION,
                     time = 1000L, photos = listOf("photo1.jpg"))
             )
             setupMocks(events = events)
 
-            useCase.getAggregateData().test {
+            useCase().test {
                 val data = awaitItem()
                 assertThat(data.allPhotos).hasSize(1)
                 assertThat(data.allPhotos[0].sourceType).isEqualTo(SourceTypes.ALBUM_CHAT)
@@ -72,14 +72,14 @@ class PhotoAlbumAggregationUseCaseTest {
         }
 
         @Test
-        fun meetupEvent_mapsToAlbumEventSourceType() = runTest {
+        fun `meetup event maps to album event source type`() = runTest {
             val events = listOf(
                 Event(id = 1, title = "见面", type = EventType.MEETUP,
                     time = 1000L, photos = listOf("photo1.jpg"))
             )
             setupMocks(events = events)
 
-            useCase.getAggregateData().test {
+            useCase().test {
                 val data = awaitItem()
                 assertThat(data.allPhotos).hasSize(1)
                 assertThat(data.allPhotos[0].sourceType).isEqualTo(SourceTypes.ALBUM_EVENT)
@@ -93,14 +93,14 @@ class PhotoAlbumAggregationUseCaseTest {
     inner class AggregationTest {
 
         @Test
-        fun eventWithMultiplePhotos_createsMultipleAlbumPhotos() = runTest {
+        fun `event with multiple photos creates multiple album photos`() = runTest {
             val events = listOf(
                 Event(id = 1, title = "旅游", type = EventType.TRAVEL,
                     time = 1000L, photos = listOf("p1.jpg", "p2.jpg", "p3.jpg"))
             )
             setupMocks(events = events)
 
-            useCase.getAggregateData().test {
+            useCase().test {
                 val data = awaitItem()
                 assertThat(data.allPhotos).hasSize(3)
                 assertThat(data.allPhotos.map { it.uri })
@@ -110,14 +110,14 @@ class PhotoAlbumAggregationUseCaseTest {
         }
 
         @Test
-        fun giftPhotos_includedWithGiftSourceType() = runTest {
+        fun `gift photos included with gift source type`() = runTest {
             val gifts = listOf(
                 Gift(id = 1, contactId = 1L, giftName = "礼物", date = 1000L,
                     isSent = true, photos = listOf("gift1.jpg"))
             )
             setupMocks(gifts = gifts, contacts = listOf(Contact(id = 1L, name = "Bob")))
 
-            useCase.getAggregateData().test {
+            useCase().test {
                 val data = awaitItem()
                 assertThat(data.allPhotos).hasSize(1)
                 assertThat(data.allPhotos[0].sourceType).isEqualTo(SourceTypes.ALBUM_GIFT)
@@ -127,7 +127,7 @@ class PhotoAlbumAggregationUseCaseTest {
         }
 
         @Test
-        fun mixedSources_sortedByDateDescending() = runTest {
+        fun `mixed sources sorted by date descending`() = runTest {
             val events = listOf(
                 Event(id = 1, title = "旧事件", type = EventType.MEETUP,
                     time = 1000L, photos = listOf("old.jpg"))
@@ -138,7 +138,7 @@ class PhotoAlbumAggregationUseCaseTest {
             )
             setupMocks(events = events, gifts = gifts, contacts = listOf(Contact(id = 1L, name = "A")))
 
-            useCase.getAggregateData().test {
+            useCase().test {
                 val data = awaitItem()
                 assertThat(data.allPhotos).hasSize(2)
                 assertThat(data.allPhotos[0].sourceTitle).isEqualTo("新礼物")
@@ -153,14 +153,14 @@ class PhotoAlbumAggregationUseCaseTest {
     inner class ContactInfoTest {
 
         @Test
-        fun giftPhoto_resolvesContactFromMap() = runTest {
+        fun `gift photo resolves contact from map`() = runTest {
             val gifts = listOf(
                 Gift(id = 1, contactId = 42L, giftName = "礼物", date = 1000L,
                     isSent = true, photos = listOf("g.jpg"))
             )
             setupMocks(gifts = gifts, contacts = listOf(Contact(id = 42L, name = "Alice")))
 
-            useCase.getAggregateData().test {
+            useCase().test {
                 val data = awaitItem()
                 assertThat(data.allPhotos[0].contactName).isEqualTo("Alice")
                 cancelAndIgnoreRemainingEvents()
@@ -168,7 +168,7 @@ class PhotoAlbumAggregationUseCaseTest {
         }
 
         @Test
-        fun eventPhoto_usesFirstParticipant() = runTest {
+        fun `event photo uses first participant`() = runTest {
             val contact = Contact(id = 5L, name = "Charlie")
             val events = listOf(
                 Event(id = 1, title = "见面", type = EventType.MEETUP,
@@ -176,7 +176,7 @@ class PhotoAlbumAggregationUseCaseTest {
             )
             setupMocks(events = events)
 
-            useCase.getAggregateData().test {
+            useCase().test {
                 val data = awaitItem()
                 assertThat(data.allPhotos[0].contactName).isEqualTo("Charlie")
                 cancelAndIgnoreRemainingEvents()

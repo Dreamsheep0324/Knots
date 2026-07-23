@@ -25,6 +25,7 @@ class ContactDetailAggregationUseCaseTest {
     private lateinit var thoughtRepository: ThoughtRepository
     private lateinit var customTypeRepository: CustomTypeRepository
     private lateinit var observeFavoritesUseCase: ObserveFavoritesUseCase
+    private lateinit var personRelationRepository: PersonRelationRepository
     private lateinit var useCase: ContactDetailAggregationUseCase
 
     private val testContact = Contact(id = 1, name = "测试联系人", phone = "13800138000")
@@ -44,6 +45,7 @@ class ContactDetailAggregationUseCaseTest {
         thoughtRepository = mockk()
         customTypeRepository = mockk()
         observeFavoritesUseCase = mockk()
+        personRelationRepository = mockk()
 
         every { contactRepository.getContactById(any()) } returns flowOf(testContact)
         every { eventRepository.getEventsByContact(any()) } returns flowOf(listOf(testEvent, testConversation))
@@ -54,16 +56,18 @@ class ContactDetailAggregationUseCaseTest {
             mapOf(CustomCategories.HOBBY to listOf(testCustomType))
         )
         every { observeFavoritesUseCase.getFavoriteIds(SourceTypes.THOUGHT) } returns flowOf(setOf(1L))
+        every { personRelationRepository.observeRelations(any()) } returns flowOf(emptyList())
 
         useCase = ContactDetailAggregationUseCase(
             contactRepository, eventRepository, anniversaryRepository,
-            giftRepository, thoughtRepository, customTypeRepository, observeFavoritesUseCase
+            giftRepository, thoughtRepository, customTypeRepository, observeFavoritesUseCase,
+            personRelationRepository
         )
     }
 
     @Test
     fun `getContactDetail aggregates all data sources`() = runTest {
-        useCase.getContactDetail(1L).test {
+        useCase(1L).test {
             val result = awaitItem()
             assertThat(result.contact).isEqualTo(testContact)
             assertThat(result.events).hasSize(1)
@@ -80,7 +84,7 @@ class ContactDetailAggregationUseCaseTest {
 
     @Test
     fun `getContactDetail separates conversations from events`() = runTest {
-        useCase.getContactDetail(1L).test {
+        useCase(1L).test {
             val result = awaitItem()
             assertThat(result.events.none { it.type == EventType.CONVERSATION }).isTrue()
             assertThat(result.conversations.all { it.type == EventType.CONVERSATION }).isTrue()
@@ -90,7 +94,7 @@ class ContactDetailAggregationUseCaseTest {
 
     @Test
     fun `getContactDetail maps custom types by category`() = runTest {
-        useCase.getContactDetail(1L).test {
+        useCase(1L).test {
             val result = awaitItem()
             assertThat(result.hobbyOptions).containsExactly(testCustomType)
             assertThat(result.habitOptions).isEmpty()
@@ -103,7 +107,7 @@ class ContactDetailAggregationUseCaseTest {
     fun `getContactDetail returns null contact when not found`() = runTest {
         every { contactRepository.getContactById(any()) } returns flowOf(null)
 
-        useCase.getContactDetail(999L).test {
+        useCase(999L).test {
             val result = awaitItem()
             assertThat(result.contact).isNull()
             cancelAndIgnoreRemainingEvents()

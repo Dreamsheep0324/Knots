@@ -1,6 +1,7 @@
 package com.tang.prm.domain.repository
 
 import com.tang.prm.domain.model.Gift
+import com.tang.prm.domain.model.SaveResult
 import kotlinx.coroutines.flow.Flow
 
 interface GiftRepository {
@@ -11,7 +12,7 @@ interface GiftRepository {
     suspend fun updateGift(gift: Gift)
     suspend fun deleteGiftById(id: Long)
     suspend fun deleteGiftsByContactId(contactId: Long)
-    suspend fun saveGiftWithPhotos(gift: Gift, photoUris: List<String>): Pair<Long, Int>
+    suspend fun saveGiftWithPhotos(gift: Gift, photoUris: List<String>): SaveResult
     fun getGiftCount(): Flow<Int>
     fun getPhotoCount(): Flow<Int>
 }

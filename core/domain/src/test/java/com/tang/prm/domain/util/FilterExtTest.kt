@@ -1,4 +1,4 @@
-package com.tang.prm.domain.usecase
+package com.tang.prm.domain.util
 
 import com.tang.prm.domain.model.AlbumPhoto
 import com.tang.prm.domain.model.Contact
@@ -215,9 +215,9 @@ class FilterExtTest {
     @Test
     fun `filters footprints by contact`() {
         val footprints = listOf(
-            FootprintItem(id = 1, location = "北京", date = 1000L, eventType = "MEETUP", eventTitle = "A", contactId = 10L, contactName = "A", contactAvatar = null, description = null, weather = null, emotion = null, photoCount = 0),
-            FootprintItem(id = 2, location = "上海", date = 2000L, eventType = "DINING", eventTitle = "B", contactId = 20L, contactName = "B", contactAvatar = null, description = null, weather = null, emotion = null, photoCount = 0),
-            FootprintItem(id = 3, location = "北京", date = 3000L, eventType = "MEETUP", eventTitle = "C", contactId = 10L, contactName = "C", contactAvatar = null, description = null, weather = null, emotion = null, photoCount = 0)
+            FootprintItem(id = 1, location = "北京", date = 1000L, eventType = "MEETUP", eventTitle = "A", contactId = 10L, contactName = "A", contactAvatar = null, description = null, weather = null, emotion = null, photoCount = 0, allContactIds = listOf(10L)),
+            FootprintItem(id = 2, location = "上海", date = 2000L, eventType = "DINING", eventTitle = "B", contactId = 20L, contactName = "B", contactAvatar = null, description = null, weather = null, emotion = null, photoCount = 0, allContactIds = listOf(20L)),
+            FootprintItem(id = 3, location = "北京", date = 3000L, eventType = "MEETUP", eventTitle = "C", contactId = 10L, contactName = "C", contactAvatar = null, description = null, weather = null, emotion = null, photoCount = 0, allContactIds = listOf(10L))
         )
         val result = footprints.filterBy(selectedContactId = 10L)
         assertThat(result.map { it.id }).containsExactly(1L, 3L).inOrder()
@@ -241,9 +241,9 @@ class FilterExtTest {
     @Test
     fun `filters photos by contact`() {
         val photos = listOf(
-            AlbumPhoto(id = "p1", uri = "", sourceType = "event", sourceId = 1, sourceTitle = "A", contactId = 10L, contactName = "A", contactAvatar = null, date = 1000L, location = null),
-            AlbumPhoto(id = "p2", uri = "", sourceType = "event", sourceId = 2, sourceTitle = "B", contactId = 20L, contactName = "B", contactAvatar = null, date = 2000L, location = null),
-            AlbumPhoto(id = "p3", uri = "", sourceType = "gift", sourceId = 3, sourceTitle = "C", contactId = 10L, contactName = "C", contactAvatar = null, date = 3000L, location = null)
+            AlbumPhoto(id = "p1", uri = "", sourceType = "event", sourceId = 1, sourceTitle = "A", contactId = 10L, contactName = "A", contactAvatar = null, date = 1000L, location = null, allContactIds = listOf(10L)),
+            AlbumPhoto(id = "p2", uri = "", sourceType = "event", sourceId = 2, sourceTitle = "B", contactId = 20L, contactName = "B", contactAvatar = null, date = 2000L, location = null, allContactIds = listOf(20L)),
+            AlbumPhoto(id = "p3", uri = "", sourceType = "gift", sourceId = 3, sourceTitle = "C", contactId = 10L, contactName = "C", contactAvatar = null, date = 3000L, location = null, allContactIds = listOf(10L))
         )
         val result = photos.filterBy(selectedContactId = 10L)
         assertThat(result.map { it.id }).containsExactly("p1", "p3").inOrder()

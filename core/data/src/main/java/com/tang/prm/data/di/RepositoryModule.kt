@@ -29,6 +29,12 @@ abstract class RepositoryModule {
     @Singleton
     abstract fun bindEventRepository(impl: EventRepositoryImpl): EventRepository
 
+    // R-2 修复：EventStatsRepository 是 EventRepository 的父接口，分别绑定到同一实现，
+    // 让 HomeStatsUseCase 只依赖统计职责（ISP），Hilt 自动解析到同一个 EventRepositoryImpl 单例。
+    @Binds
+    @Singleton
+    abstract fun bindEventStatsRepository(impl: EventRepositoryImpl): EventStatsRepository
+
     @Binds
     @Singleton
     abstract fun bindAnniversaryRepository(impl: AnniversaryRepositoryImpl): AnniversaryRepository
@@ -64,6 +70,12 @@ abstract class RepositoryModule {
     @Binds
     @Singleton
     abstract fun bindSettingsRepository(impl: SettingsRepositoryImpl): SettingsRepository
+
+    // R-1 修复：UiPreferencesSettings 是 SettingsRepository 的父接口，分别绑定到同一实现，
+    // 让 HomeSettingsUseCase 只依赖 UI 偏好职责（ISP），Hilt 自动解析到同一个 SettingsRepositoryImpl 单例。
+    @Binds
+    @Singleton
+    abstract fun bindUiPreferencesSettings(impl: SettingsRepositoryImpl): UiPreferencesSettings
 
     @Binds
     @Singleton
@@ -110,6 +122,11 @@ abstract class RepositoryModule {
     @Binds
     @Singleton
     abstract fun bindRecipeRepository(impl: RecipeRepositoryImpl): RecipeRepository
+
+    // R-3 修复：RecipeTagRepository 从 RecipeRepository 拆分，Tag 作为独立聚合根（ISP）。
+    @Binds
+    @Singleton
+    abstract fun bindRecipeTagRepository(impl: RecipeTagRepositoryImpl): RecipeTagRepository
 
     @Binds
     @Singleton

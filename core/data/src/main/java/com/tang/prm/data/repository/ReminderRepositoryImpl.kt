@@ -14,7 +14,7 @@ import javax.inject.Singleton
 class ReminderRepositoryImpl @Inject constructor(
     private val reminderDao: ReminderDao
 ) : ReminderRepository {
-    override fun getActiveReminders(): Flow<List<Reminder>> =
+    override fun observeActiveReminders(): Flow<List<Reminder>> =
         reminderDao.getActiveReminders().mapList { it.toDomain() }
 
     override fun getRemindersByContact(contactId: Long): Flow<List<Reminder>> =
@@ -35,6 +35,6 @@ class ReminderRepositoryImpl @Inject constructor(
     override suspend fun deleteReminder(id: Long) =
         reminderDao.deleteReminderById(id)
 
-    override suspend fun getActiveRemindersSync(currentTime: Long): List<Reminder> =
+    override suspend fun getActiveReminders(currentTime: Long): List<Reminder> =
         reminderDao.getActiveRemindersSync(currentTime).map { it.toDomain() }
 }

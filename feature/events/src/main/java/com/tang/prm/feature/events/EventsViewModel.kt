@@ -2,14 +2,22 @@ package com.tang.prm.feature.events
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.tang.prm.domain.model.*
+import com.tang.prm.domain.model.Contact
+import com.tang.prm.domain.model.CustomType
+import com.tang.prm.domain.model.Event
 import com.tang.prm.domain.util.DateUtils
 import com.tang.prm.domain.usecase.ObserveEventsAggregateUseCase
-import com.tang.prm.domain.usecase.filterBy
+import com.tang.prm.domain.util.filterBy
 import com.tang.prm.ui.common.SearchState
 import com.tang.prm.ui.common.SearchStateManager
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.FlowPreview
 import java.util.Calendar
 import javax.inject.Inject

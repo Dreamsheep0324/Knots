@@ -1,7 +1,6 @@
 package com.tang.prm.domain.repository
 
 import com.tang.prm.domain.model.ContactRelation
-import com.tang.prm.domain.model.RelationSource
 import kotlinx.coroutines.flow.Flow
 
 interface ContactRelationRepository {
@@ -13,8 +12,7 @@ interface ContactRelationRepository {
         contactIdA: Long,
         contactIdB: Long,
         relationTypeId: Long,
-        note: String?,
-        source: RelationSource
+        note: String?
     ): Long
     suspend fun deleteRelation(id: Long)
 }

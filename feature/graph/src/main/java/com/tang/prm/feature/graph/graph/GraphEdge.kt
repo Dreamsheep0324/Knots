@@ -1,7 +1,6 @@
 package com.tang.prm.feature.graph.graph
 
 import com.tang.prm.domain.model.CustomType
-import com.tang.prm.domain.model.RelationSource
 
 /**
  * 图谱边。
@@ -11,11 +10,9 @@ import com.tang.prm.domain.model.RelationSource
  * @property targetId 终点节点 ID
  * @property relationType 关系类型（含颜色/图标/名称），用于边的着色与标签
  * @property label 可选标签（如"大学室友"），显示在边中点；null 时不绘制
- * @property source 关系来源（MANUAL：用户手动添加）
  * @property isVirtual 是否为虚拟"我→联系人"边（基于 Contact.relationship 标签生成，非真实关系记录）
  * @property isPersonRelation 是否为人物关系边（PersonRelation，单向 owner→target）
  * @property isEventRelation 是否为事件↔人物边（事件节点连接到其参与者）
- * @property isManual = source == MANUAL，缓存以避免渲染热路径反复枚举比较
  */
 data class GraphEdge(
     val id: Long,
@@ -23,9 +20,7 @@ data class GraphEdge(
     val targetId: Long,
     val relationType: CustomType,
     val label: String?,
-    val source: RelationSource,
     val isVirtual: Boolean = false,
     val isPersonRelation: Boolean = false,
-    val isEventRelation: Boolean = false,
-    val isManual: Boolean = source == RelationSource.MANUAL
+    val isEventRelation: Boolean = false
 )

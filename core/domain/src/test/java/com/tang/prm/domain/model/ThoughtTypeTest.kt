@@ -6,37 +6,37 @@ import org.junit.jupiter.api.Test
 class ThoughtTypeTest {
 
     @Test
-    fun thoughtType_values_has3Entries() {
+    fun `thoughtType values has 3 entries`() {
         assertThat(ThoughtType.entries).hasSize(3)
     }
 
     @Test
-    fun thoughtType_friend_keyIsFriend() {
+    fun `thoughtType friend key is friend`() {
         assertThat(ThoughtType.FRIEND.key).isEqualTo("friend")
     }
 
     @Test
-    fun thoughtType_plan_keyIsPlan() {
+    fun `thoughtType plan key is plan`() {
         assertThat(ThoughtType.PLAN.key).isEqualTo("plan")
     }
 
     @Test
-    fun thoughtType_murmur_keyIsMurmur() {
+    fun `thoughtType murmur key is murmur`() {
         assertThat(ThoughtType.MURMUR.key).isEqualTo("murmur")
     }
 
     @Test
-    fun thoughtType_fromKey_friend_returnsFRIEND() {
+    fun `thoughtType fromKey friend returns FRIEND`() {
         assertThat(ThoughtType.fromKey("friend")).isEqualTo(ThoughtType.FRIEND)
     }
 
     @Test
-    fun thoughtType_fromKey_unknown_returnsMURMUR() {
+    fun `thoughtType fromKey unknown returns MURMUR`() {
         assertThat(ThoughtType.fromKey("unknown")).isEqualTo(ThoughtType.MURMUR)
     }
 
     @Test
-    fun thoughtType_fromKey_empty_returnsMURMUR() {
+    fun `thoughtType fromKey empty returns MURMUR`() {
         assertThat(ThoughtType.fromKey("")).isEqualTo(ThoughtType.MURMUR)
     }
 }

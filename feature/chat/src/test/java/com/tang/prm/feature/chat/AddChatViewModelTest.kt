@@ -8,7 +8,6 @@ import com.tang.prm.domain.model.Event
 import com.tang.prm.domain.model.EventType
 import com.tang.prm.domain.repository.ContactRepository
 import com.tang.prm.domain.repository.EventRepository
-import com.tang.prm.domain.usecase.EventManageUseCase
 import com.tang.prm.domain.usecase.UpdateInteractionUseCase
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -35,9 +34,6 @@ class AddChatViewModelTest {
 
     @MockK
     private lateinit var contactRepository: ContactRepository
-
-    @MockK
-    private lateinit var eventManageUseCase: EventManageUseCase
 
     @MockK
     private lateinit var updateInteractionUseCase: UpdateInteractionUseCase
@@ -69,7 +65,7 @@ class AddChatViewModelTest {
         )
         return AddChatViewModel(
             eventRepository, contactRepository, dialogueLineManager,
-            eventManageUseCase, updateInteractionUseCase, savedStateHandle
+            updateInteractionUseCase, savedStateHandle
         )
     }
 
@@ -167,7 +163,7 @@ class AddChatViewModelTest {
 
     @Test
     fun `saveChat inserts new event and marks saved`() = runTest {
-        coEvery { eventManageUseCase.insertEventWithParticipants(any(), any()) } returns 1L
+        coEvery { eventRepository.insertEventWithParticipants(any(), any()) } returns 1L
         coEvery { updateInteractionUseCase(any(), any(), any()) } returns Unit
 
         val viewModel = createViewModel()
@@ -184,7 +180,7 @@ class AddChatViewModelTest {
         advanceUntilIdle()
 
         coVerify {
-            eventManageUseCase.insertEventWithParticipants(
+            eventRepository.insertEventWithParticipants(
                 match { it.type == EventType.CONVERSATION && it.title == "标题" },
                 listOf(1L)
             )
@@ -195,7 +191,7 @@ class AddChatViewModelTest {
 
     @Test
     fun `saveChat without contact does nothing`() = runTest {
-        coEvery { eventManageUseCase.insertEventWithParticipants(any(), any()) } returns 1L
+        coEvery { eventRepository.insertEventWithParticipants(any(), any()) } returns 1L
 
         val viewModel = createViewModel()
         advanceUntilIdle()
@@ -204,7 +200,7 @@ class AddChatViewModelTest {
         advanceUntilIdle()
 
         coVerify(exactly = 0) {
-            eventManageUseCase.insertEventWithParticipants(any(), any())
+            eventRepository.insertEventWithParticipants(any(), any())
         }
         assertThat(viewModel.uiState.value.isSaved).isFalse()
     }

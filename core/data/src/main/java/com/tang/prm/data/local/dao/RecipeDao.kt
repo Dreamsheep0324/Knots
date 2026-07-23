@@ -68,9 +68,6 @@ interface RecipeDao {
     suspend fun deleteRecipeContactCrossRefs(recipeId: Long)
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    suspend fun insertRecipeTagCrossRef(crossRef: RecipeTagCrossRef)
-
-    @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertRecipeTagCrossRefs(crossRefs: List<RecipeTagCrossRef>)
 
     @Query("DELETE FROM recipe_tag_cross_ref WHERE recipeId = :recipeId")

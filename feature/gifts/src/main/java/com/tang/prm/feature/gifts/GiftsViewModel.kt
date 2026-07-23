@@ -1,37 +1,17 @@
 package com.tang.prm.feature.gifts
 
-import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tang.prm.domain.model.Gift
-import com.tang.prm.domain.model.GiftType
 import com.tang.prm.domain.model.SourceTypes
-import com.tang.prm.domain.repository.ContactRepository
 import com.tang.prm.domain.repository.GiftRepository
 import com.tang.prm.domain.usecase.FavoriteToggleUseCase
-import com.tang.prm.domain.usecase.ObserveFavoritesUseCase
+import com.tang.prm.domain.usecase.GiftRecord
+import com.tang.prm.domain.usecase.ObserveGiftListUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-
-data class GiftRecord(
-    val gift: Gift,
-    val contactName: String,
-    val contactAvatar: String?
-) {
-    val id get() = gift.id
-    val contactId get() = gift.contactId
-    val giftName get() = gift.giftName
-    val giftType: GiftType get() = gift.giftType
-    val date get() = gift.date
-    val isSent get() = gift.isSent
-    val occasion get() = gift.occasion
-    val description get() = gift.description
-    val location get() = gift.location
-    val photos: List<Uri> get() = gift.photos.map { Uri.parse(it) }
-    val createdAt get() = gift.createdAt
-}
 
 data class GiftsDataState(
     val gifts: List<GiftRecord> = emptyList(),
@@ -54,9 +34,8 @@ data class GiftsUiState(
 @HiltViewModel
 class GiftsViewModel @Inject constructor(
     private val giftRepository: GiftRepository,
-    private val contactRepository: ContactRepository,
     private val favoriteToggleUseCase: FavoriteToggleUseCase,
-    private val observeFavoritesUseCase: ObserveFavoritesUseCase
+    private val observeGiftListUseCase: ObserveGiftListUseCase
 ) : ViewModel() {
 
     private val _filterType = MutableStateFlow("all")
@@ -65,27 +44,17 @@ class GiftsViewModel @Inject constructor(
 
     val uiState: StateFlow<GiftsUiState> = combine(
         combine(
-            contactRepository.getAllContacts(),
-            giftRepository.getAllGifts(),
-            observeFavoritesUseCase.getFavoriteIds("GIFT"),
+            observeGiftListUseCase(),
             _filterType,
             _selectedContactId
-        ) { contacts, giftList, favoriteIds, filterType, selectedContactId ->
-            val contactMap = contacts.associateBy { it.id }
-            val gifts = giftList.map { gift ->
-                GiftRecord(
-                    gift = gift,
-                    contactName = contactMap[gift.contactId]?.name ?: "未知人物",
-                    contactAvatar = contactMap[gift.contactId]?.avatar
-                )
-            }
+        ) { aggregate, filterType, selectedContactId ->
             GiftsDataState(
-                gifts = gifts,
+                gifts = aggregate.gifts,
                 filterType = filterType,
                 selectedContactId = selectedContactId,
-                availableContacts = contacts,
+                availableContacts = aggregate.availableContacts,
                 isLoading = false,
-                favoriteGiftIds = favoriteIds
+                favoriteGiftIds = aggregate.favoriteGiftIds
             )
         },
         _dialogState
@@ -107,9 +76,9 @@ class GiftsViewModel @Inject constructor(
 
     fun addGift(gift: GiftRecord) {
         viewModelScope.launch {
-            val (id, failedCount) = giftRepository.saveGiftWithPhotos(gift.gift, gift.photos.map { it.toString() })
-            if (failedCount > 0) {
-                _dialogState.value = _dialogState.value.copy(photoSaveErrorCount = failedCount)
+            val result = giftRepository.saveGiftWithPhotos(gift.gift, gift.gift.photos)
+            if (result.failedPhotoCount > 0) {
+                _dialogState.value = _dialogState.value.copy(photoSaveErrorCount = result.failedPhotoCount)
             }
         }
     }

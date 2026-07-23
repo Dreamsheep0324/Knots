@@ -79,7 +79,7 @@ class RecipeDetailViewModel @Inject constructor(
         loadedRecipeId = recipeId
         _isLoading.value = true
         viewModelScope.launch {
-            val recipe = recipeRepository.getRecipeByIdOnce(recipeId)
+            val recipe = recipeRepository.getRecipeById(recipeId)
             if (recipe != null) {
                 _recipe.value = recipe
                 _currentServings.value = recipe.servings ?: 1

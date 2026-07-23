@@ -60,6 +60,7 @@ interface CircleDao {
     @Query("SELECT COUNT(*) FROM circles")
     fun getCircleCount(): Flow<Int>
 
+    // 仅测试使用：保留用于 CircleDaoTest 回归验证，生产代码走 updateCircleWithMembers（delete-all + insert）
     @Query("SELECT contactId FROM circle_member_cross_ref WHERE circleId = :circleId")
     fun getMemberIdsForCircle(circleId: Long): Flow<List<Long>>
 
@@ -69,6 +70,7 @@ interface CircleDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertMemberCrossRefs(crossRefs: List<CircleMemberCrossRef>)
 
+    // 仅测试使用：保留用于 CircleDaoTest 回归验证，生产代码走 deleteAllMembersForCircle + insertMemberCrossRefs
     @Query("DELETE FROM circle_member_cross_ref WHERE circleId = :circleId AND contactId = :contactId")
     suspend fun deleteMemberCrossRef(circleId: Long, contactId: Long)
 
@@ -87,6 +89,8 @@ interface CircleDao {
     @Transaction
     suspend fun insertCircleWithMembers(circle: CircleEntity, memberIds: List<Long>): Long {
         val id = insertCircle(circle)
+        // B-10 修复：IGNORE 冲突时返回 -1，若继续插成员会用 -1 作 circleId 导致脏数据
+        require(id > 0) { "圈子插入被 IGNORE 忽略（主键冲突），事务回滚" }
         insertMemberCrossRefs(memberIds.map { contactId ->
             CircleMemberCrossRef(circleId = id, contactId = contactId)
         })

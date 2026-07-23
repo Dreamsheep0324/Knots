@@ -14,9 +14,6 @@ data class ContactRelation(
     val contactIdB: Long,
     val relationTypeId: Long,
     val note: String?,
-    val source: RelationSource,
     val createdAt: Long,
     val updatedAt: Long
 )
-
-enum class RelationSource { MANUAL }

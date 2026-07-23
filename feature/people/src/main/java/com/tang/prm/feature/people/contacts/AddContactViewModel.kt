@@ -11,7 +11,6 @@ import com.tang.prm.domain.model.PersonRelation
 import com.tang.prm.domain.repository.ContactRepository
 import com.tang.prm.domain.repository.PersonRelationRepository
 import com.tang.prm.domain.usecase.CreateContactUseCase
-import com.tang.prm.domain.usecase.GetContactForEditUseCase
 import com.tang.prm.domain.usecase.ObserveContactFormReferenceDataUseCase
 import com.tang.prm.feature.people.contacts.components.PersonRelationDraft
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -64,7 +63,6 @@ data class AddContactUiState(
 @HiltViewModel
 class AddContactViewModel @Inject constructor(
     private val createContactUseCase: CreateContactUseCase,
-    private val getContactForEditUseCase: GetContactForEditUseCase,
     private val observeReferenceDataUseCase: ObserveContactFormReferenceDataUseCase,
     private val contactFormHelper: ContactFormHelper,
     private val personRelationRepository: PersonRelationRepository,
@@ -139,7 +137,7 @@ class AddContactViewModel @Inject constructor(
 
     private fun loadContact(id: Long) {
         viewModelScope.launch {
-            val contact = getContactForEditUseCase(id)
+            val contact = contactRepository.getContactById(id).first()
             contact?.let {
                 _uiState.update { state ->
                     state.copy(

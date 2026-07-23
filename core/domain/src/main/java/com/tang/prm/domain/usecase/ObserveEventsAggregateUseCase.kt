@@ -43,10 +43,10 @@ class ObserveEventsAggregateUseCase @Inject constructor(
     private val contactRepository: ContactRepository,
     private val customTypeRepository: CustomTypeRepository
 ) {
-    fun invoke(): Flow<EventsAggregate> = combine(
+    operator fun invoke(): Flow<EventsAggregate> = combine(
         contactRepository.getAllContacts().distinctUntilChanged(),
         customTypeRepository.getTypesByCategory(CustomCategories.EVENT_TYPE).distinctUntilChanged(),
-        eventRepository.getAllEvents()
+        eventRepository.getAllEvents().distinctUntilChanged()
     ) { contacts, eventTypes, events ->
         EventsAggregate(contacts, eventTypes, events)
     }

@@ -5,8 +5,6 @@ import com.tang.prm.data.local.entity.RecipeListItemWithRelations
 import com.tang.prm.data.local.entity.RecipeTagEntity
 import com.tang.prm.data.local.entity.RecipeWithContactsAndTags
 import com.tang.prm.data.local.database.RecipeDataConverter
-import com.tang.prm.domain.model.Ingredient
-import com.tang.prm.domain.model.CookingStep
 import com.tang.prm.domain.model.Recipe
 import com.tang.prm.domain.model.RecipeDifficulty
 import com.tang.prm.domain.model.RecipeTag
