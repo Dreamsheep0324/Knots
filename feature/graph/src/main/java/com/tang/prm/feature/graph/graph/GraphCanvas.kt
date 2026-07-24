@@ -120,51 +120,33 @@ fun GraphCanvas(
     // 选中边的流动动画相位（每帧递增，驱动 dashPhase 动画）
     var flowPhase by remember { mutableStateOf(0f) }
 
-    // 首次拿到有效尺寸时把"我"(0,0)居中到屏幕中央
-    // autoCenterOnReady=false 时跳过（由调用方自行控制 viewport 初始化，避免"先放大再缩小"的割裂感）
-    LaunchedEffect(canvasSize) {
-        if (!hasCentered && canvasSize.width > 0 && canvasSize.height > 0) {
-            if (autoCenterOnReady) {
-                viewport.centerOn(
-                    viewWidth = canvasSize.width.toFloat(),
-                    viewHeight = canvasSize.height.toFloat(),
-                    targetWorldX = 0f,
-                    targetWorldY = 0f,
-                    targetScale = 1f
-                )
-            }
+    CenterOnReadyEffect(
+        canvasSize = canvasSize,
+        hasCentered = hasCentered,
+        autoCenterOnReady = autoCenterOnReady,
+        viewport = viewport,
+        onCentered = {
             hasCentered = true
             onCanvasReady()
             frameTick++
         }
-    }
+    )
 
-    // 物理模拟主循环：每帧 step
-    LaunchedEffect(nodes, edges) {
-        while (true) {
-            withFrameNanos { nano ->
-                simulator.step(nodes, edges, centerX = 0f, centerY = 0f)
-                val converged = simulator.isConverged(nodes)
-                // P0-2 修复：收敛且无选中边时跳过 frameTick 写入，
-                // 节点位置不再每帧重组（节点坐标未变，无需触发 BackgroundCanvas + NodeLayer 全量重组）
-                if (!converged || selectedEdgeId != null) {
-                    frameTick = nano
-                }
-                // flowPhase 持续递增：驱动所有边的流动光粒子 + 人物关系虚线脉搏波
-                // 选中边时递增更快（-2.5f），增强选中态视觉冲击
-                flowPhase = if (selectedEdgeId != null) {
-                    (flowPhase - 2.5f) % 1000f
-                } else {
-                    (flowPhase - 1.2f) % 1000f
-                }
+    PhysicsLoopEffect(
+        nodes = nodes,
+        edges = edges,
+        simulator = simulator,
+        selectedEdgeId = selectedEdgeId,
+        currentFlowPhase = flowPhase,
+        onFrame = { nano, converged ->
+            // P0-2 修复：收敛且无选中边时跳过 frameTick 写入，
+            // 节点位置不再每帧重组（节点坐标未变，无需触发 BackgroundCanvas + NodeLayer 全量重组）
+            if (!converged || selectedEdgeId != null) {
+                frameTick = nano
             }
-            if (simulator.isConverged(nodes) && selectedEdgeId == null) {
-                // P0-2 修复：收敛后慢轮询，从 50ms 降到 200ms（约 5fps），
-                // 仅维持边的流光动画，不触发节点位置重组
-                kotlinx.coroutines.delay(200)
-            }
-        }
-    }
+        },
+        onFlowPhase = { phase -> flowPhase = phase }
+    )
 
     val handleNodeDrag: (Long, Float, Float) -> Unit = { id, dx, dy ->
         onNodeDrag(id, dx, dy)
@@ -214,6 +196,66 @@ fun GraphCanvas(
             onNodeDrag = handleNodeDrag,
             onNodeDragEnd = handleNodeDragEnd
         )
+    }
+}
+
+/** 首次拿到有效尺寸时把"我"(0,0)居中到屏幕中央。autoCenterOnReady=false 时跳过。 */
+@Composable
+private fun CenterOnReadyEffect(
+    canvasSize: IntSize,
+    hasCentered: Boolean,
+    autoCenterOnReady: Boolean,
+    viewport: GraphViewport,
+    onCentered: () -> Unit
+) {
+    LaunchedEffect(canvasSize) {
+        if (!hasCentered && canvasSize.width > 0 && canvasSize.height > 0) {
+            if (autoCenterOnReady) {
+                viewport.centerOn(
+                    viewWidth = canvasSize.width.toFloat(),
+                    viewHeight = canvasSize.height.toFloat(),
+                    targetWorldX = 0f,
+                    targetWorldY = 0f,
+                    targetScale = 1f
+                )
+            }
+            onCentered()
+        }
+    }
+}
+
+/** 物理模拟主循环：每帧 step + flowPhase 推进 + 收敛后慢轮询。 */
+@Composable
+private fun PhysicsLoopEffect(
+    nodes: List<GraphNode>,
+    edges: List<GraphEdge>,
+    simulator: ForceSimulator,
+    selectedEdgeId: Long?,
+    currentFlowPhase: Float,
+    onFrame: (Long, Boolean) -> Unit,
+    onFlowPhase: (Float) -> Unit
+) {
+    LaunchedEffect(nodes, edges) {
+        while (true) {
+            withFrameNanos { nano ->
+                simulator.step(nodes, edges, centerX = 0f, centerY = 0f)
+                val converged = simulator.isConverged(nodes)
+                onFrame(nano, converged)
+                // flowPhase 持续递增：驱动所有边的流动光粒子 + 人物关系虚线脉搏波
+                // 选中边时递增更快（-2.5f），增强选中态视觉冲击
+                val phase = if (selectedEdgeId != null) {
+                    (currentFlowPhase - 2.5f) % 1000f
+                } else {
+                    (currentFlowPhase - 1.2f) % 1000f
+                }
+                onFlowPhase(phase)
+            }
+            if (simulator.isConverged(nodes) && selectedEdgeId == null) {
+                // P0-2 修复：收敛后慢轮询，从 50ms 降到 200ms（约 5fps），
+                // 仅维持边的流光动画，不触发节点位置重组
+                kotlinx.coroutines.delay(200)
+            }
+        }
     }
 }
 

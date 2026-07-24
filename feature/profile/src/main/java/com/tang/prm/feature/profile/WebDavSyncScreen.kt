@@ -273,7 +273,7 @@ fun WebDavSyncScreen(
 
 @Composable
 private fun ConnectionHeroSection(state: ConnectionState, config: WebDavConfig) {
-    val (icon, label, tint, bgGradient) = when (state) {
+    val hero = when (state) {
         is ConnectionState.Success -> Tuple4(
             Icons.Default.CloudDone, "已连接", SignalGreen,
             listOf(SignalGreen.copy(alpha = 0.15f), SignalGreen.copy(alpha = 0.05f))
@@ -293,6 +293,11 @@ private fun ConnectionHeroSection(state: ConnectionState, config: WebDavConfig) 
             listOf(MaterialTheme.colorScheme.surfaceVariant, MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
         )
     }
+
+    val icon = hero.first
+    val label = hero.second
+    val tint = hero.third
+    val bgGradient = hero.fourth
 
     Box(
         modifier = Modifier

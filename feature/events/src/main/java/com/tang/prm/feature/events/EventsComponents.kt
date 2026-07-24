@@ -130,7 +130,12 @@ internal fun EventCard(event: Event, eventTypes: List<CustomType>, onClick: () -
                 Spacer(modifier = Modifier.height(12.dp))
                 Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                     if (event.photos.isNotEmpty()) {
-                        MetaTag(icon = Icons.Default.PhotoCamera, text = "${event.photos.size}", bgColor = SemanticIndigoBg, textColor = SignalPurple)
+                        MetaTag(
+                            icon = Icons.Default.PhotoCamera,
+                            text = "${event.photos.size}",
+                            bgColor = SemanticIndigoBg,
+                            textColor = SignalPurple
+                        )
                     }
 
                     event.weather?.let { weather ->

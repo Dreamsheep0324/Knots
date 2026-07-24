@@ -749,6 +749,7 @@ private fun StepsSection(steps: List<CookingStep>) {
  * 左侧 56dp 编号区（琥珀色渐变底，左圆角）承载大号数字 + STEP 小标；
  * 1dp 竖向分隔线；右侧内容区承载步骤描述 + 计时器。
  */
+@Suppress("FunctionNaming")
 @Composable
 private fun StepCardItem(step: CookingStep) {
     Surface(
@@ -760,37 +761,7 @@ private fun StepCardItem(step: CookingStep) {
     ) {
         Row(modifier = Modifier.height(IntrinsicSize.Min)) {
             // 左侧编号区
-            Box(
-                modifier = Modifier
-                    .width(56.dp)
-                    .fillMaxHeight()
-                    .background(
-                        Brush.horizontalGradient(
-                            listOf(
-                                SignalAmber.copy(alpha = 0.14f),
-                                SignalAmber.copy(alpha = 0.05f)
-                            )
-                        )
-                    ),
-                contentAlignment = Alignment.Center
-            ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(
-                        text = step.order.toString(),
-                        fontSize = 26.sp,
-                        fontWeight = FontWeight.Black,
-                        color = SignalAmber
-                    )
-                    Spacer(modifier = Modifier.height(2.dp))
-                    Text(
-                        text = "STEP",
-                        fontSize = 9.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = SignalAmber.copy(alpha = 0.6f),
-                        letterSpacing = 1.5.sp
-                    )
-                }
-            }
+            StepNumberBadge(step = step)
             // 竖向分隔线
             Box(
                 modifier = Modifier
@@ -837,6 +808,42 @@ private fun StepCardItem(step: CookingStep) {
                     }
                 }
             }
+        }
+    }
+}
+
+@Suppress("FunctionNaming")
+@Composable
+private fun StepNumberBadge(step: CookingStep) {
+    Box(
+        modifier = Modifier
+            .width(56.dp)
+            .fillMaxHeight()
+            .background(
+                Brush.horizontalGradient(
+                    listOf(
+                        SignalAmber.copy(alpha = 0.14f),
+                        SignalAmber.copy(alpha = 0.05f)
+                    )
+                )
+            ),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(
+                text = step.order.toString(),
+                fontSize = 26.sp,
+                fontWeight = FontWeight.Black,
+                color = SignalAmber
+            )
+            Spacer(modifier = Modifier.height(2.dp))
+            Text(
+                text = "STEP",
+                fontSize = 9.sp,
+                fontWeight = FontWeight.Bold,
+                color = SignalAmber.copy(alpha = 0.6f),
+                letterSpacing = 1.5.sp
+            )
         }
     }
 }

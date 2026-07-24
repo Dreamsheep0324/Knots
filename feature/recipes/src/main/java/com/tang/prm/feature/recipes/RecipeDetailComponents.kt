@@ -107,6 +107,31 @@ private fun ScalerButton(
     }
 }
 
+private data class IngredientGroupStyle(
+    val accentColor: Color,
+    val amountTextColor: Color,
+    val englishLabel: String
+)
+
+private fun ingredientGroupStyleFor(groupType: IngredientGroupType): IngredientGroupStyle =
+    when (groupType) {
+        IngredientGroupType.MAIN -> IngredientGroupStyle(
+            accentColor = SignalAmber,
+            amountTextColor = Color(0xFFB07000),
+            englishLabel = "MAIN"
+        )
+        IngredientGroupType.SUB -> IngredientGroupStyle(
+            accentColor = SignalGreen,
+            amountTextColor = Color(0xFF0A7A52),
+            englishLabel = "SUB"
+        )
+        IngredientGroupType.SEASONING -> IngredientGroupStyle(
+            accentColor = SignalPurple,
+            amountTextColor = Color(0xFF4250D4),
+            englishLabel = "SEASONING"
+        )
+    }
+
 /**
  * 食材分组区块：胶囊分栏版式（方案 C 精致版）。
  * 组标题由「色条 + 中文名 + 英文小标 + 数量徽章 + 渐变装饰线」组成；
@@ -122,21 +147,10 @@ fun IngredientGroupSection(
     isScaled: Boolean,
     modifier: Modifier = Modifier
 ) {
-    val accentColor = when (groupType) {
-        IngredientGroupType.MAIN -> SignalAmber
-        IngredientGroupType.SUB -> SignalGreen
-        IngredientGroupType.SEASONING -> SignalPurple
-    }
-    val amountTextColor = when (groupType) {
-        IngredientGroupType.MAIN -> Color(0xFFB07000)
-        IngredientGroupType.SUB -> Color(0xFF0A7A52)
-        IngredientGroupType.SEASONING -> Color(0xFF4250D4)
-    }
-    val englishLabel = when (groupType) {
-        IngredientGroupType.MAIN -> "MAIN"
-        IngredientGroupType.SUB -> "SUB"
-        IngredientGroupType.SEASONING -> "SEASONING"
-    }
+    val groupStyle = ingredientGroupStyleFor(groupType)
+    val accentColor = groupStyle.accentColor
+    val amountTextColor = groupStyle.amountTextColor
+    val englishLabel = groupStyle.englishLabel
 
     Column(modifier = modifier.fillMaxWidth()) {
         // 组标题行：色条 + 中文名 + 英文小标 + 数量徽章
@@ -196,25 +210,24 @@ fun IngredientGroupSection(
                 )
         )
         // 食材胶囊列表
-        ingredients.forEachIndexed { index, ingredient ->
+        ingredients.forEach { ingredient ->
             IngredientRow(
                 ingredient = ingredient,
                 accentColor = accentColor,
                 amountTextColor = amountTextColor,
-                isScaled = isScaled,
-                index = index
+                isScaled = isScaled
             )
         }
     }
 }
 
+@Suppress("FunctionNaming")
 @Composable
 private fun IngredientRow(
     ingredient: Ingredient,
     accentColor: Color,
     amountTextColor: Color,
-    isScaled: Boolean,
-    index: Int
+    isScaled: Boolean
 ) {
     val scaled = isScaled && ingredient.isScalable
     val amountText = formatIngredientAmount(ingredient)

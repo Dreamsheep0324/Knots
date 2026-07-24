@@ -277,7 +277,11 @@ fun BackupScreen(
                     enabled = state !is BackupState.Clearing
                 ) {
                     if (state is BackupState.Clearing) {
-                        CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp, color = MaterialTheme.colorScheme.error)
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(18.dp),
+                            strokeWidth = 2.dp,
+                            color = MaterialTheme.colorScheme.error
+                        )
                         Spacer(Modifier.width(8.dp))
                         Text("正在清空...")
                     } else if (state is BackupState.ClearSuccess) {
