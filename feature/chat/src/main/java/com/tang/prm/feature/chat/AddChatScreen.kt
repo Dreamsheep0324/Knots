@@ -14,6 +14,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.tang.prm.ui.components.AppDatePicker
+import com.tang.prm.ui.components.ContactPickerConfig
 import com.tang.prm.ui.components.ContactPickerDialog
 import com.tang.prm.ui.components.DiscardEditDialog
 import com.tang.prm.ui.components.FormScreenScaffold
@@ -73,10 +74,9 @@ fun AddChatScreen(
     if (uiState.showContactPicker) {
         ContactPickerDialog(
             contacts = uiState.contacts,
-            title = "选择人物",
-            subtitle = "选择与谁进行了对话",
-            onContactSelected = { viewModel.selectContact(it) },
-            onDismiss = { viewModel.hideContactPicker() }
+            onDismiss = { viewModel.hideContactPicker() },
+            config = ContactPickerConfig(title = "选择人物", subtitle = "选择与谁进行了对话"),
+            onContactSelected = { viewModel.selectContact(it) }
         )
     }
 

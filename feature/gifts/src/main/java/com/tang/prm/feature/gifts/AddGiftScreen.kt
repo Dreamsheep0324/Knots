@@ -28,6 +28,7 @@ import com.tang.prm.domain.model.Contact
 import com.tang.prm.domain.model.GiftType
 import com.tang.prm.domain.usecase.GiftRecord
 import com.tang.prm.ui.components.AppDatePicker
+import com.tang.prm.ui.components.ContactPickerConfig
 import com.tang.prm.ui.components.ContactPickerDialog
 import com.tang.prm.ui.components.FormScreenScaffold
 import com.tang.prm.ui.components.photo.PhotoPickerConfig
@@ -92,9 +93,9 @@ fun AddGiftScreen(
     if (showContactPicker) {
         ContactPickerDialog(
             contacts = uiState.data.availableContacts,
-            title = "选择人物",
-            onContactSelected = { selectedContact = it; showContactPicker = false },
-            onDismiss = { showContactPicker = false }
+            onDismiss = { showContactPicker = false },
+            config = ContactPickerConfig(title = "选择人物"),
+            onContactSelected = { selectedContact = it; showContactPicker = false }
         )
     }
 
@@ -103,9 +104,7 @@ fun AddGiftScreen(
             show = showDatePicker,
             onDismiss = { showDatePicker = false },
             onDateSelected = { selectedDate = it },
-            initialDate = selectedDate,
-            confirmColor = MaterialTheme.colorScheme.primary,
-            dismissColor = MaterialTheme.colorScheme.onSurfaceVariant
+            initialDate = selectedDate
         )
     }
 

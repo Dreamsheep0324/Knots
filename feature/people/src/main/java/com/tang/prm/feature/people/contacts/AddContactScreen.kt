@@ -39,6 +39,8 @@ import com.tang.prm.ui.components.AppDatePicker
 import com.tang.prm.ui.components.DiscardEditDialog
 import com.tang.prm.ui.components.FormScreenScaffold
 import com.tang.prm.ui.components.TagSelector
+import com.tang.prm.ui.components.TagSelectorCallbacks
+import com.tang.prm.ui.components.TagSelectorConfig
 import com.tang.prm.ui.components.TagSelectorMode
 import com.tang.prm.domain.util.DateUtils
 import com.tang.prm.ui.theme.toComposeColor
@@ -118,11 +120,15 @@ fun AddContactScreen(
                     FormField("昵称", uiState.nickname ?: "", viewModel::updateNickname, placeholder = "请输入昵称")
                     Spacer(modifier = Modifier.height(12.dp))
                     TagSelector(
-                        mode = TagSelectorMode.SINGLE, title = "学校",
+                        config = TagSelectorConfig(
+                            mode = TagSelectorMode.SINGLE, title = "学校"
+                        ),
                         availableItems = uiState.educations, selectedItems = listOfNotNull(uiState.education),
-                        onSelectionChange = { viewModel.updateEducation(it.firstOrNull() ?: "") },
-                        onAddItem = { name, _, _ -> viewModel.addCustomType(CustomCategories.EDUCATION, name) },
-                        onDeleteItem = { viewModel.deleteCustomType(it) }
+                        callbacks = TagSelectorCallbacks(
+                            onSelectionChange = { viewModel.updateEducation(it.firstOrNull() ?: "") },
+                            onAddItem = { name, _, _ -> viewModel.addCustomType(CustomCategories.EDUCATION, name) },
+                            onDeleteItem = { viewModel.deleteCustomType(it) }
+                        )
                     )
                 }
             }
@@ -140,15 +146,20 @@ fun AddContactScreen(
                     }
                 ) {
                     TagSelector(
-                        mode = TagSelectorMode.SINGLE, availableItems = uiState.relationships,
+                        config = TagSelectorConfig(
+                            mode = TagSelectorMode.SINGLE,
+                            emptyText = "暂无关系标签，点击新增添加",
+                            showHeader = false
+                        ),
+                        availableItems = uiState.relationships,
                         selectedItems = listOfNotNull(uiState.relationship),
-                        onSelectionChange = { viewModel.updateRelationship(it.firstOrNull() ?: "") },
-                        onAddItem = { name, color, icon -> viewModel.addCustomType(CustomCategories.RELATIONSHIP, name, color, icon) },
-                        onDeleteItem = { viewModel.deleteCustomType(it) },
-                        emptyText = "暂无关系标签，点击新增添加",
-                        showHeader = false,
-                        showAddDialog = showAddRelationshipDialog,
-                        onAddDialogDismiss = { showAddRelationshipDialog = false }
+                        callbacks = TagSelectorCallbacks(
+                            onSelectionChange = { viewModel.updateRelationship(it.firstOrNull() ?: "") },
+                            onAddItem = { name, color, icon -> viewModel.addCustomType(CustomCategories.RELATIONSHIP, name, color, icon) },
+                            onDeleteItem = { viewModel.deleteCustomType(it) },
+                            onAddDialogDismiss = { showAddRelationshipDialog = false }
+                        ),
+                        showAddDialog = showAddRelationshipDialog
                     )
                 }
             }
@@ -230,13 +241,13 @@ fun AddContactScreen(
 
             item {
                 FormSection("个人特征") {
-                    TagSelector(mode = TagSelectorMode.MULTI, title = "爱好", availableItems = uiState.hobbyOptions, selectedItems = uiState.hobbies, onSelectionChange = { viewModel.updateHobbies(it) }, onAddItem = { name, color, _ -> viewModel.addCustomType(CustomCategories.HOBBY, name, color) }, onDeleteItem = { viewModel.deleteCustomType(it) })
+                    TagSelector(config = TagSelectorConfig(mode = TagSelectorMode.MULTI, title = "爱好"), availableItems = uiState.hobbyOptions, selectedItems = uiState.hobbies, callbacks = TagSelectorCallbacks(onSelectionChange = { viewModel.updateHobbies(it) }, onAddItem = { name, color, _ -> viewModel.addCustomType(CustomCategories.HOBBY, name, color) }, onDeleteItem = { viewModel.deleteCustomType(it) }))
                     Spacer(modifier = Modifier.height(14.dp))
-                    TagSelector(mode = TagSelectorMode.MULTI, title = "习惯", availableItems = uiState.habitOptions, selectedItems = uiState.habits, onSelectionChange = { viewModel.updateHabits(it) }, onAddItem = { name, color, _ -> viewModel.addCustomType(CustomCategories.HABIT, name, color) }, onDeleteItem = { viewModel.deleteCustomType(it) })
+                    TagSelector(config = TagSelectorConfig(mode = TagSelectorMode.MULTI, title = "习惯"), availableItems = uiState.habitOptions, selectedItems = uiState.habits, callbacks = TagSelectorCallbacks(onSelectionChange = { viewModel.updateHabits(it) }, onAddItem = { name, color, _ -> viewModel.addCustomType(CustomCategories.HABIT, name, color) }, onDeleteItem = { viewModel.deleteCustomType(it) }))
                     Spacer(modifier = Modifier.height(14.dp))
-                    TagSelector(mode = TagSelectorMode.MULTI, title = "饮食", availableItems = uiState.dietOptions, selectedItems = uiState.diets, onSelectionChange = { viewModel.updateDiets(it) }, onAddItem = { name, color, _ -> viewModel.addCustomType(CustomCategories.DIET, name, color) }, onDeleteItem = { viewModel.deleteCustomType(it) })
+                    TagSelector(config = TagSelectorConfig(mode = TagSelectorMode.MULTI, title = "饮食"), availableItems = uiState.dietOptions, selectedItems = uiState.diets, callbacks = TagSelectorCallbacks(onSelectionChange = { viewModel.updateDiets(it) }, onAddItem = { name, color, _ -> viewModel.addCustomType(CustomCategories.DIET, name, color) }, onDeleteItem = { viewModel.deleteCustomType(it) }))
                     Spacer(modifier = Modifier.height(14.dp))
-                    TagSelector(mode = TagSelectorMode.MULTI, title = "技能", availableItems = uiState.skillOptions, selectedItems = uiState.skills, onSelectionChange = { viewModel.updateSkills(it) }, onAddItem = { name, color, _ -> viewModel.addCustomType(CustomCategories.SKILL, name, color) }, onDeleteItem = { viewModel.deleteCustomType(it) })
+                    TagSelector(config = TagSelectorConfig(mode = TagSelectorMode.MULTI, title = "技能"), availableItems = uiState.skillOptions, selectedItems = uiState.skills, callbacks = TagSelectorCallbacks(onSelectionChange = { viewModel.updateSkills(it) }, onAddItem = { name, color, _ -> viewModel.addCustomType(CustomCategories.SKILL, name, color) }, onDeleteItem = { viewModel.deleteCustomType(it) }))
                 }
             }
 

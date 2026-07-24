@@ -672,7 +672,7 @@ private fun SelectedContactChip(
                 ContactAvatar(
                     avatar = contact.avatar,
                     name = contact.name,
-                    size = 50
+                    size = 50.dp
                 )
                 IconButton(
                     onClick = onRemove,

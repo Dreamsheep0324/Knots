@@ -24,6 +24,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.tang.prm.ui.animation.core.AnimationTokens
+import com.tang.prm.ui.theme.Dimens
 
 /**
  * 简洁区块标题行：标题 + 可选操作按钮（SpaceBetween 布局）。
@@ -37,7 +38,7 @@ fun SectionHeader(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
+            .padding(horizontal = Dimens.paddingPage, vertical = Dimens.spacingSm),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -64,15 +65,15 @@ fun FormSectionLabel(
     Row(
         modifier = modifier,
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
+        horizontalArrangement = Arrangement.spacedBy(Dimens.spacingSm)
     ) {
         Box(
             modifier = Modifier
-                .size(28.dp)
+                .size(Dimens.iconBadgeBg)
                 .background(color.copy(alpha = AnimationTokens.Alpha.faint), CircleShape),
             contentAlignment = Alignment.Center
         ) {
-            Icon(icon, contentDescription = null, tint = color, modifier = Modifier.size(14.dp))
+            Icon(icon, contentDescription = null, tint = color, modifier = Modifier.size(Dimens.iconBadge))
         }
         Text(
             label,
@@ -103,11 +104,11 @@ fun TerminalSectionHeader(
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onSurface
         )
-        Spacer(modifier = Modifier.width(8.dp))
+        Spacer(modifier = Modifier.width(Dimens.spacingSm))
         Box(
             modifier = Modifier
                 .weight(1f)
-                .height(0.5.dp)
+                .height(Dimens.hairline)
                 .background(MaterialTheme.colorScheme.outline.copy(alpha = 0.3f))
         )
     }
@@ -127,6 +128,6 @@ fun SimpleSectionLabel(
         style = MaterialTheme.typography.titleSmall,
         color = MaterialTheme.colorScheme.primary,
         fontWeight = FontWeight.Medium,
-        modifier = modifier.padding(vertical = 8.dp)
+        modifier = modifier.padding(vertical = Dimens.spacingSm)
     )
 }

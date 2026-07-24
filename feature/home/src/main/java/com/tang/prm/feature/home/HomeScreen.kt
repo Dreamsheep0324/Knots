@@ -379,13 +379,12 @@ private fun PhoneHomeContent(
             }
         }
 
-        item(key = "channel_grid", contentType = "grid") {
-            // Q-1 修复：函数从 ChannelGrid 重命名为 ChannelList，反映其单列纵向列表实现
-            ChannelList(
-                channels = channels,
-                signalStrengths = signalStrengths,
-                onChannelClick = onChannelClick
-            )
-        }
+        // P0-1 修复：频道列表展平为 LazyColumn items，滑出视口的卡片被回收，
+        // 其内部的呼吸/shimmer 无限动画随之销毁，避免 10 张卡片同时组合 + 20 个无限循环动画。
+        channelItems(
+            channels = channels,
+            signalStrengths = signalStrengths,
+            onChannelClick = onChannelClick
+        )
     }
 }

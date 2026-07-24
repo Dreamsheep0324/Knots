@@ -58,6 +58,7 @@ import com.tang.prm.domain.model.ThoughtType
 import com.tang.prm.ui.animation.core.AnimationTokens
 import com.tang.prm.ui.components.AppDatePicker
 import com.tang.prm.ui.components.ContactAvatar
+import com.tang.prm.ui.components.ContactPickerConfig
 import com.tang.prm.ui.components.ContactPickerDialog
 import com.tang.prm.ui.components.FormSectionLabel
 import com.tang.prm.ui.theme.DialogDefaults
@@ -87,9 +88,9 @@ internal fun ThoughtDialog(
     if (showContactPicker) {
         ContactPickerDialog(
             contacts = contacts,
-            title = "关联人物",
-            onContactSelected = { selectedContactId = it.id; showContactPicker = false },
-            onDismiss = { showContactPicker = false }
+            onDismiss = { showContactPicker = false },
+            config = ContactPickerConfig(title = "关联人物"),
+            onContactSelected = { selectedContactId = it.id; showContactPicker = false }
         )
     }
 
@@ -189,7 +190,7 @@ internal fun ThoughtDialog(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         if (selectedContact != null) {
-                            ContactAvatar(avatar = selectedContact.avatar, name = selectedContact.name, size = 36)
+                            ContactAvatar(avatar = selectedContact.avatar, name = selectedContact.name, size = 36.dp)
                             Spacer(modifier = Modifier.width(10.dp))
                             Column(modifier = Modifier.weight(1f)) {
                                 Text(

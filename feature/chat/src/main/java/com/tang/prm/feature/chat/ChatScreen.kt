@@ -209,7 +209,7 @@ private fun ChatGroupedList(
                     ContactAvatar(
                         avatar = conversations.firstOrNull()?.avatar,
                         name = contactName,
-                        size = 28
+                        size = 28.dp
                     )
                     Text(
                         text = contactName,

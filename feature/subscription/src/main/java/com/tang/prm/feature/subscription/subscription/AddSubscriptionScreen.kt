@@ -62,6 +62,8 @@ import com.tang.prm.ui.components.DiscardEditDialog
 import com.tang.prm.ui.components.FormSectionLabel
 import com.tang.prm.ui.components.FormScreenScaffold
 import com.tang.prm.ui.components.TagSelector
+import com.tang.prm.ui.components.TagSelectorCallbacks
+import com.tang.prm.ui.components.TagSelectorConfig
 import com.tang.prm.ui.components.TagSelectorMode
 import com.tang.prm.ui.theme.SceneOrange
 import com.tang.prm.ui.theme.SignalGreen
@@ -148,15 +150,19 @@ fun AddSubscriptionScreen(
                     title = "分类"
                 ) {
                     TagSelector(
-                        mode = TagSelectorMode.SINGLE,
+                        config = TagSelectorConfig(
+                            mode = TagSelectorMode.SINGLE,
+                            showHeader = false,
+                            showIconPicker = false,
+                            emptyText = "暂无分类，点击新增"
+                        ),
                         availableItems = uiState.categoryOptions,
                         selectedItems = listOfNotNull(uiState.category),
-                        onSelectionChange = { viewModel.updateCategory(it.firstOrNull()) },
-                        onAddItem = { name, color, icon -> viewModel.addCustomType(name, color, icon) },
-                        onDeleteItem = { viewModel.deleteCustomType(it) },
-                        showHeader = false,
-                        showIconPicker = false,
-                        emptyText = "暂无分类，点击新增"
+                        callbacks = TagSelectorCallbacks(
+                            onSelectionChange = { viewModel.updateCategory(it.firstOrNull()) },
+                            onAddItem = { name, color, icon -> viewModel.addCustomType(name, color, icon) },
+                            onDeleteItem = { viewModel.deleteCustomType(it) }
+                        )
                     )
                 }
             }

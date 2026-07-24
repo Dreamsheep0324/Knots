@@ -17,7 +17,6 @@ object AnimationTokens {
 
     object Easing {
         val standard = FastOutSlowInEasing
-        val enter = FastOutSlowInEasing
         val exit = FastOutLinearInEasing
         val emphasis = EaseInOutSine
         val linear = LinearEasing

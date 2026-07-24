@@ -24,6 +24,15 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.unit.dp
 import com.tang.prm.ui.animation.core.AnimationTokens
 
+private const val BAR_COUNT = 4
+private const val TRACK_ALPHA = 0.1f
+private const val BAR_ACTIVE_ALPHA = 0.7f
+private const val RADIAL_PROGRESS_ALPHA = 0.85f
+private const val CORNER_RADIUS_PX = 2f
+private const val BAR_BASE_HEIGHT_DP = 3f
+private const val BAR_HEIGHT_STEP_DP = 1.5f
+private val BAR_WIDTH = 2.5.dp
+
 /**
  * 信号进度共享组件（C-3 修复）。
  *
@@ -51,6 +60,15 @@ fun SignalProgress(
     style: SignalProgressStyle = SignalProgressStyle.Linear,
     strokeWidth: Float = 3f
 ) {
+    if (maxValue <= 0) {
+        // 除零守卫：绘制空轨道并返回，避免 NaN 传入绘制管线
+        when (style) {
+            SignalProgressStyle.Linear -> DrawLinearProgress(0f, color, modifier)
+            SignalProgressStyle.Radial -> DrawRadialProgress(0f, color, modifier, strokeWidth)
+            SignalProgressStyle.Bars -> DrawBarsProgress(0, 1, color, modifier)
+        }
+        return
+    }
     val progress = (value.toFloat() / maxValue).coerceIn(0f, 1f)
     when (style) {
         SignalProgressStyle.Linear -> DrawLinearProgress(progress, color, modifier)
@@ -64,13 +82,13 @@ enum class SignalProgressStyle { Linear, Radial, Bars }
 @Composable
 private fun DrawLinearProgress(progress: Float, color: Color, modifier: Modifier) {
     Canvas(modifier) {
-        drawRoundRect(color = color.copy(alpha = 0.1f), cornerRadius = CornerRadius(2f))
+        drawRoundRect(color = color.copy(alpha = TRACK_ALPHA), cornerRadius = CornerRadius(CORNER_RADIUS_PX))
         drawRoundRect(
             brush = Brush.horizontalGradient(
                 colors = listOf(color.copy(alpha = 0.6f), color.copy(alpha = 0.3f))
             ),
             size = Size(size.width * progress, size.height),
-            cornerRadius = CornerRadius(2f)
+            cornerRadius = CornerRadius(CORNER_RADIUS_PX)
         )
     }
 }
@@ -85,9 +103,9 @@ private fun DrawRadialProgress(progress: Float, color: Color, modifier: Modifier
     Canvas(modifier) {
         val radius = (size.minDimension - strokeWidth) / 2
         val c = Offset(size.width / 2, size.height / 2)
-        drawCircle(color = color.copy(alpha = 0.1f), radius = radius, center = c, style = Stroke(width = strokeWidth))
+        drawCircle(color = color.copy(alpha = TRACK_ALPHA), radius = radius, center = c, style = Stroke(width = strokeWidth))
         drawArc(
-            color = color.copy(alpha = 0.85f),
+            color = color.copy(alpha = RADIAL_PROGRESS_ALPHA),
             startAngle = -90f,
             sweepAngle = 360f * animatedProgress,
             useCenter = false,
@@ -100,15 +118,15 @@ private fun DrawRadialProgress(progress: Float, color: Color, modifier: Modifier
 
 @Composable
 private fun DrawBarsProgress(value: Int, maxValue: Int, color: Color, modifier: Modifier) {
-    val level = (value.toFloat() / maxValue * 4).toInt().coerceIn(0, 4)
+    val level = (value.toFloat() / maxValue * BAR_COUNT).toInt().coerceIn(0, BAR_COUNT)
     Row(modifier = modifier, horizontalArrangement = Arrangement.spacedBy(1.dp), verticalAlignment = Alignment.Bottom) {
-        repeat(4) { i ->
+        repeat(BAR_COUNT) { i ->
             Box(
                 modifier = Modifier
-                    .width(2.5.dp)
-                    .height((3 + i * 1.5f).dp)
+                    .width(BAR_WIDTH)
+                    .height((BAR_BASE_HEIGHT_DP + i * BAR_HEIGHT_STEP_DP).dp)
                     .background(
-                        if (i < level) color.copy(alpha = 0.7f) else color.copy(alpha = 0.1f),
+                        if (i < level) color.copy(alpha = BAR_ACTIVE_ALPHA) else color.copy(alpha = TRACK_ALPHA),
                         RoundedCornerShape(1.dp)
                     )
             )

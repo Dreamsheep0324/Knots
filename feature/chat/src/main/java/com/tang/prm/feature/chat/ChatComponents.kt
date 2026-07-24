@@ -48,7 +48,7 @@ internal fun ConversationItem(
                 ContactAvatar(
                     avatar = conversation.avatar,
                     name = conversation.contactName,
-                    size = 46
+                    size = 46.dp
                 )
                 Spacer(modifier = Modifier.width(12.dp))
             }

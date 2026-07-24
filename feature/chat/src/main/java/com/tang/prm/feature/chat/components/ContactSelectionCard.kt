@@ -47,7 +47,7 @@ internal fun ContactSelectionCard(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    ContactAvatar(avatar = selectedContact.avatar, name = selectedContact.name, size = 44)
+                    ContactAvatar(avatar = selectedContact.avatar, name = selectedContact.name, size = 44.dp)
                     Spacer(modifier = Modifier.width(12.dp))
                     Column(modifier = Modifier.weight(1f)) {
                         Text(selectedContact.name, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)

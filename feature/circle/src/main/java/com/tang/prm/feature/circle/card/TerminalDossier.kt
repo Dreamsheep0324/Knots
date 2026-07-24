@@ -41,7 +41,6 @@ import com.tang.prm.domain.model.IntimacyTier
 import com.tang.prm.ui.animation.core.AnimationTokens
 import com.tang.prm.ui.animation.primitives.rememberBreathingPulse
 import com.tang.prm.ui.theme.Dimens
-import com.tang.prm.ui.theme.Error
 import com.tang.prm.ui.theme.SignalPurple
 import com.tang.prm.ui.theme.LocalIntimacyColors
 import com.tang.prm.feature.circle.HologramCircle
@@ -280,7 +279,7 @@ private fun TerminalActionBar(
         )
         TerminalActionButton(
             label = "删除",
-            accentColor = Error,
+            accentColor = MaterialTheme.colorScheme.error,
             onClick = onDeleteCircle
         )
     }

@@ -24,6 +24,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -38,7 +39,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import kotlinx.coroutines.delay
 import com.tang.prm.feature.graph.graph.GraphCanvas
 import com.tang.prm.feature.graph.graph.GraphNode
 import com.tang.prm.feature.graph.graph.GraphViewModel
@@ -83,27 +83,39 @@ fun HomeForceGraphPreview(
     }
 
     var canvasSize by remember { mutableStateOf(IntSize.Zero) }
-    var hasFit by remember { mutableStateOf(false) }
+    // rememberSaveable：跨 LazyColumn item 销毁/重建保持 hasFit=true，
+    // 避免上下滑动时 item 移出视口再回来导致重新 fit，图谱"重新出现"的割裂感。
+    // viewport 在 GraphViewModel 中持久化，GraphCanvas 重建时直接用持久化 viewport 渲染。
+    var hasFit by rememberSaveable { mutableStateOf(false) }
     val density = LocalDensity.current.density
 
-    // fit 逻辑：用 LaunchedEffect 监听 canvasSize 和 personNodes.size，
-    // 加 delay(80) 确保晚于 GraphCanvas 内部的 centerOn(scale=1) 执行，
-    // 这样我们的 fit 是最后设置的，不会被覆盖。
-    // 首次进入时数据还在加载（personNodes 为空），等数据加载后 personNodes 非空才 fit；
-    // 切回首页时 ViewModel 有缓存，personNodes 立即非空，delay 后 fit。
-    // hasFit 标志确保只 fit 一次（每次 Composable 进入 composition 时 remember 重置为 false）。
+    // fit 逻辑：GraphCanvas 传入 autoCenterOnReady=false，跳过内部 centerOn(scale=1)，
+    // 完全由这里控制 viewport 初始化，避免"先以 scale=1 放大渲染 → 再 fit 缩小"的割裂动画。
+    // canvasSize 就绪后：personNodes 非空则 fit，为空则基础居中（"我"节点在画布中央）。
+    // personNodes 加载完成后会再次触发（size 变化），执行 fit。
+    // hasFit 确保只 fit 一次（LazyColumn item 重建时通过 rememberSaveable 保持 true）。
     LaunchedEffect(canvasSize, personNodes.size, hasFit) {
-        if (!hasFit && canvasSize.width > 0 && canvasSize.height > 0 && personNodes.isNotEmpty()) {
-            delay(80)
-            resetToDeterministicCircle(personNodes)
-            fitNodesToView(
-                nodes = personNodes,
-                viewWidth = canvasSize.width.toFloat(),
-                viewHeight = canvasSize.height.toFloat(),
-                viewport = viewModel.viewport,
-                nodeRadiusPx = 20f * density
-            )
-            hasFit = true
+        if (!hasFit && canvasSize.width > 0 && canvasSize.height > 0) {
+            if (personNodes.isNotEmpty()) {
+                resetToDeterministicCircle(personNodes)
+                fitNodesToView(
+                    nodes = personNodes,
+                    viewWidth = canvasSize.width.toFloat(),
+                    viewHeight = canvasSize.height.toFloat(),
+                    viewport = viewModel.viewport,
+                    nodeRadiusPx = 20f * density
+                )
+                hasFit = true
+            } else {
+                // 数据未加载时基础居中（scale=1，"我"节点在画布中央）
+                viewModel.viewport.centerOn(
+                    viewWidth = canvasSize.width.toFloat(),
+                    viewHeight = canvasSize.height.toFloat(),
+                    targetWorldX = 0f,
+                    targetWorldY = 0f,
+                    targetScale = 1f
+                )
+            }
         }
     }
 
@@ -198,6 +210,7 @@ fun HomeForceGraphPreview(
                     eventTypes = data.eventTypes,
                     onCanvasReady = { },
                     showAmbientBackground = false,
+                    autoCenterOnReady = false,
                     onNodeClick = { id ->
                         // "我"节点不跳转；其他人物节点直接跳转详情
                         if (id != GraphViewModel.SELF_NODE_ID) {

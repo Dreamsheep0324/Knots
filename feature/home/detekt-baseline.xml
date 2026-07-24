@@ -4,7 +4,7 @@
   <CurrentIssues>
     <ID>CyclomaticComplexMethod:OrbitalCalendarState.kt$@Composable internal fun rememberOrbitalCalendarData( displayMonth: Int, displayYear: Int, events: List&lt;Event&gt;, anniversaries: List&lt;Anniversary&gt;, // N-3 修复：todayDateKey 让 todayCal 跨日时失效重建，避免 P-5 remember 缓存导致的 staleness // 调用方传入 "yyyy-MM-dd" 字符串（来自 HomeScreen.dateStr 60s 轮询），跨日时自动刷新 todayDateKey: String ): OrbitalCalendarData</ID>
     <ID>FunctionNaming:HomeChannelList.kt$@Composable internal fun ChannelIcon( channel: ChannelDef, modifier: Modifier = Modifier, diameter: Dp = 42.dp, withShimmer: Boolean = false, breathAlpha: Float = 1f, shimmerPhase: Float = 0f )</ID>
-    <ID>FunctionNaming:HomeChannelList.kt$@Composable internal fun ChannelList( channels: List&lt;ChannelDef&gt;, signalStrengths: Map&lt;Any, Int&gt;, onChannelClick: (Any) -&gt; Unit )</ID>
+    <ID>FunctionNaming:HomeChannelList.kt$internal fun LazyListScope.channelItems( channels: List&lt;ChannelDef&gt;, signalStrengths: Map&lt;Any, Int&gt;, onChannelClick: (Any) -&gt; Unit )</ID>
     <ID>FunctionNaming:HomeChannelList.kt$@Composable private fun ChannelProgressBar(channel: ChannelDef, signalStrength: Int)</ID>
     <ID>FunctionNaming:HomeChannelList.kt$@Composable private fun ChannelSignalBars(channel: ChannelDef, signalStrength: Int)</ID>
     <ID>FunctionNaming:HomeChannelList.kt$@Composable private fun GlassChannelItem( channel: ChannelDef, signalStrength: Int, onClick: () -&gt; Unit )</ID>

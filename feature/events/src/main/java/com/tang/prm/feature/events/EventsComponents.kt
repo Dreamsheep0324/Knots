@@ -46,7 +46,7 @@ import com.tang.prm.domain.model.EventType
 import com.tang.prm.ui.animation.core.AnimationTokens
 import com.tang.prm.ui.components.AppCard
 import com.tang.prm.ui.theme.Dimens
-import com.tang.prm.ui.theme.EventLightIndigo
+import com.tang.prm.ui.theme.SemanticIndigoBg
 import com.tang.prm.ui.theme.SignalAmber
 import com.tang.prm.ui.theme.SignalPurple
 import com.tang.prm.ui.theme.SignalSky
@@ -130,7 +130,7 @@ internal fun EventCard(event: Event, eventTypes: List<CustomType>, onClick: () -
                 Spacer(modifier = Modifier.height(12.dp))
                 Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                     if (event.photos.isNotEmpty()) {
-                        MetaTag(icon = Icons.Default.PhotoCamera, text = "${event.photos.size}", bgColor = EventLightIndigo, textColor = SignalPurple)
+                        MetaTag(icon = Icons.Default.PhotoCamera, text = "${event.photos.size}", bgColor = SemanticIndigoBg, textColor = SignalPurple)
                     }
 
                     event.weather?.let { weather ->

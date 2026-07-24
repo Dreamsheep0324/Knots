@@ -118,7 +118,7 @@ internal fun ProfileContent(
                         FeatureTagSectionWithColors("技能", parseListField(it).map { tag -> tag to uiState.data.skillOptions.find { o -> o.name == tag }?.color }, SignalPurple)
                     }
                     contact.mbti?.takeIf { it.isNotBlank() }?.let {
-                        FeatureTagSection("MBTI", listOf(it), EventMoneyTeal)
+                        FeatureTagSection("MBTI", listOf(it), SignalElectric)
                     }
                 }
             }

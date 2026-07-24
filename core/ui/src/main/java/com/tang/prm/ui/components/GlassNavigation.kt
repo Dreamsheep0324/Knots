@@ -142,7 +142,7 @@ fun GlassNavItem(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
         modifier = Modifier
-            .clip(RoundedCornerShape(16.dp))
+            .clip(RoundedCornerShape(Dimens.cornerLarge))
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null,
@@ -238,7 +238,7 @@ private fun SideNavItem(
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(16.dp))
+            .clip(RoundedCornerShape(Dimens.cornerLarge))
             .background(bgColor)
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
@@ -279,7 +279,7 @@ private fun SideNavSettingsItem(onClick: () -> Unit) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(16.dp))
+            .clip(RoundedCornerShape(Dimens.cornerLarge))
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null,

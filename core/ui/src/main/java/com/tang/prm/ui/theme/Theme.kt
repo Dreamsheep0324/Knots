@@ -14,7 +14,6 @@ import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 
@@ -112,5 +111,5 @@ fun TangTheme(
 object DialogDefaults {
     val containerColor: Color
         @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.surface
-    val shape = RoundedCornerShape(20.dp)
+    val shape = RoundedCornerShape(Dimens.cornerXl)
 }

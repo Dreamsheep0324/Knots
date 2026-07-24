@@ -10,6 +10,8 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import com.tang.prm.domain.model.CustomType
 import com.tang.prm.ui.components.TagSelector
+import com.tang.prm.ui.components.TagSelectorCallbacks
+import com.tang.prm.ui.components.TagSelectorConfig
 import com.tang.prm.ui.components.TagSelectorMode
 import org.junit.Rule
 import org.junit.Test
@@ -35,12 +37,14 @@ class TagSelectorTest {
         composeTestRule.setContent {
             MaterialTheme {
                 TagSelector(
-                    mode = TagSelectorMode.SINGLE,
+                    config = TagSelectorConfig(mode = TagSelectorMode.SINGLE),
                     availableItems = testTags,
                     selectedItems = emptyList(),
-                    onSelectionChange = {},
-                    onAddItem = { _, _, _ -> },
-                    onDeleteItem = {}
+                    callbacks = TagSelectorCallbacks(
+                        onSelectionChange = {},
+                        onAddItem = { _, _, _ -> },
+                        onDeleteItem = {}
+                    )
                 )
             }
         }
@@ -54,12 +58,14 @@ class TagSelectorTest {
         composeTestRule.setContent {
             MaterialTheme {
                 TagSelector(
-                    mode = TagSelectorMode.SINGLE,
+                    config = TagSelectorConfig(mode = TagSelectorMode.SINGLE),
                     availableItems = testTags,
                     selectedItems = listOf("朋友"),
-                    onSelectionChange = {},
-                    onAddItem = { _, _, _ -> },
-                    onDeleteItem = {}
+                    callbacks = TagSelectorCallbacks(
+                        onSelectionChange = {},
+                        onAddItem = { _, _, _ -> },
+                        onDeleteItem = {}
+                    )
                 )
             }
         }
@@ -73,12 +79,14 @@ class TagSelectorTest {
         composeTestRule.setContent {
             MaterialTheme {
                 TagSelector(
-                    mode = TagSelectorMode.SINGLE,
+                    config = TagSelectorConfig(mode = TagSelectorMode.SINGLE),
                     availableItems = testTags,
                     selectedItems = selectedTags,
-                    onSelectionChange = { selectedTags = it },
-                    onAddItem = { _, _, _ -> },
-                    onDeleteItem = {}
+                    callbacks = TagSelectorCallbacks(
+                        onSelectionChange = { selectedTags = it },
+                        onAddItem = { _, _, _ -> },
+                        onDeleteItem = {}
+                    )
                 )
             }
         }
@@ -93,12 +101,14 @@ class TagSelectorTest {
         composeTestRule.setContent {
             MaterialTheme {
                 TagSelector(
-                    mode = TagSelectorMode.MULTI,
+                    config = TagSelectorConfig(mode = TagSelectorMode.MULTI),
                     availableItems = testTags,
                     selectedItems = selectedTags,
-                    onSelectionChange = { selectedTags = it },
-                    onAddItem = { _, _, _ -> },
-                    onDeleteItem = {}
+                    callbacks = TagSelectorCallbacks(
+                        onSelectionChange = { selectedTags = it },
+                        onAddItem = { _, _, _ -> },
+                        onDeleteItem = {}
+                    )
                 )
             }
         }
@@ -112,13 +122,14 @@ class TagSelectorTest {
         composeTestRule.setContent {
             MaterialTheme {
                 TagSelector(
-                    mode = TagSelectorMode.SINGLE,
+                    config = TagSelectorConfig(mode = TagSelectorMode.SINGLE, showAddButton = true),
                     availableItems = testTags,
                     selectedItems = emptyList(),
-                    onSelectionChange = {},
-                    onAddItem = { _, _, _ -> },
-                    onDeleteItem = {},
-                    showAddButton = true
+                    callbacks = TagSelectorCallbacks(
+                        onSelectionChange = {},
+                        onAddItem = { _, _, _ -> },
+                        onDeleteItem = {}
+                    )
                 )
             }
         }

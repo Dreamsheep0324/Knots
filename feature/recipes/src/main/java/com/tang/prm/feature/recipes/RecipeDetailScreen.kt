@@ -4,6 +4,7 @@ package com.tang.prm.feature.recipes
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -17,6 +18,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -41,6 +43,7 @@ import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Sell
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.StarBorder
+import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material.icons.filled.Whatshot
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
@@ -661,7 +664,7 @@ private fun RelatedPeopleSection(contacts: List<Contact>) {
                     ContactAvatar(
                         avatar = contact.avatar,
                         name = contact.name,
-                        size = 52,
+                        size = 52.dp,
                         modifier = Modifier.padding(2.dp)
                     )
                 }
@@ -712,27 +715,16 @@ private fun IngredientsSection(
             }
         }
     }
-    Surface(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(20.dp),
-        color = MaterialTheme.colorScheme.surface,
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.45f)),
-        shadowElevation = 2.dp
-    ) {
-        Column(modifier = Modifier.padding(horizontal = 14.dp, vertical = 14.dp)) {
-            IngredientGroupType.entries.forEachIndexed { index, groupType ->
-                val groupIngredients = ingredients.filter { it.groupType == groupType }
-                if (groupIngredients.isNotEmpty()) {
-                    if (index > 0) {
-                        Spacer(modifier = Modifier.height(12.dp))
-                    }
-                    IngredientGroupSection(
-                        groupName = groupType.displayName,
-                        groupType = groupType,
-                        ingredients = groupIngredients,
-                        isScaled = isScaled
-                    )
-                }
+    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        IngredientGroupType.entries.forEach { groupType ->
+            val groupIngredients = ingredients.filter { it.groupType == groupType }
+            if (groupIngredients.isNotEmpty()) {
+                IngredientGroupSection(
+                    groupName = groupType.displayName,
+                    groupType = groupType,
+                    ingredients = groupIngredients,
+                    isScaled = isScaled
+                )
             }
         }
     }
@@ -744,60 +736,118 @@ private fun IngredientsSection(
 
 @Composable
 private fun StepsSection(steps: List<CookingStep>) {
-    DetailSectionLabel("烹饪步骤", icon = Icons.Default.RestaurantMenu, iconTint = SignalGreen)
-    Column {
-        steps.forEachIndexed { index, step ->
-            val isLast = index == steps.lastIndex
-            TimelineStep(
-                step = step,
-                isLast = isLast
-            )
+    DetailSectionLabel("烹饪步骤", icon = Icons.Default.RestaurantMenu, iconTint = SignalAmber)
+    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        steps.forEach { step ->
+            StepCardItem(step = step)
         }
     }
 }
 
+/**
+ * 嵌入式编号卡片：编号区与内容区一体化。
+ * 左侧 56dp 编号区（琥珀色渐变底，左圆角）承载大号数字 + STEP 小标；
+ * 1dp 竖向分隔线；右侧内容区承载步骤描述 + 计时器。
+ */
 @Composable
-private fun TimelineStep(
-    step: CookingStep,
-    isLast: Boolean
-) {
-    Row(modifier = Modifier.fillMaxWidth()) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.width(28.dp)
-        ) {
+private fun StepCardItem(step: CookingStep) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(14.dp),
+        color = MaterialTheme.colorScheme.surface,
+        border = BorderStroke(1.dp, SignalAmber.copy(alpha = 0.14f)),
+        shadowElevation = 1.dp
+    ) {
+        Row(modifier = Modifier.height(IntrinsicSize.Min)) {
+            // 左侧编号区
             Box(
                 modifier = Modifier
-                    .size(28.dp)
-                    .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.primary),
+                    .width(56.dp)
+                    .fillMaxHeight()
+                    .background(
+                        Brush.horizontalGradient(
+                            listOf(
+                                SignalAmber.copy(alpha = 0.14f),
+                                SignalAmber.copy(alpha = 0.05f)
+                            )
+                        )
+                    ),
                 contentAlignment = Alignment.Center
             ) {
-                Text(
-                    text = step.order.toString(),
-                    style = MaterialTheme.typography.labelLarge,
-                    fontSize = 13.sp,
-                    fontWeight = FontWeight.ExtraBold,
-                    color = MaterialTheme.colorScheme.onPrimary
-                )
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(
+                        text = step.order.toString(),
+                        fontSize = 26.sp,
+                        fontWeight = FontWeight.Black,
+                        color = SignalAmber
+                    )
+                    Spacer(modifier = Modifier.height(2.dp))
+                    Text(
+                        text = "STEP",
+                        fontSize = 9.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = SignalAmber.copy(alpha = 0.6f),
+                        letterSpacing = 1.5.sp
+                    )
+                }
             }
-            if (!isLast) {
-                Box(
-                    modifier = Modifier
-                        .width(2.dp)
-                        .fillMaxHeight()
-                        .padding(vertical = 4.dp)
-                        .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.2f))
+            // 竖向分隔线
+            Box(
+                modifier = Modifier
+                    .width(1.dp)
+                    .fillMaxHeight()
+                    .background(SignalAmber.copy(alpha = 0.12f))
+            )
+            // 右侧内容区
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(horizontal = 14.dp, vertical = 12.dp)
+            ) {
+                Text(
+                    text = step.description,
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontSize = 14.5.sp,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    lineHeight = 21.sp
                 )
+                step.timerSeconds?.takeIf { it > 0 }?.let { seconds ->
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Row(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(7.dp))
+                            .border(1.dp, SignalAmber.copy(alpha = 0.3f), RoundedCornerShape(7.dp))
+                            .padding(horizontal = 8.dp, vertical = 3.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            Icons.Default.Timer,
+                            contentDescription = null,
+                            tint = SignalAmber,
+                            modifier = Modifier.size(12.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = formatTimer(seconds),
+                            fontSize = 11.sp,
+                            color = SignalAmber,
+                            fontWeight = FontWeight.Bold,
+                            letterSpacing = 0.3.sp
+                        )
+                    }
+                }
             }
         }
-        Spacer(modifier = Modifier.width(12.dp))
-        StepCard(
-            step = step,
-            modifier = Modifier
-                .weight(1f)
-                .padding(bottom = if (isLast) 0.dp else 12.dp)
-        )
+    }
+}
+
+private fun formatTimer(seconds: Int): String {
+    val minutes = seconds / 60
+    val secs = seconds % 60
+    return if (minutes > 0) {
+        if (secs > 0) "${minutes}分${secs}秒" else "${minutes}分钟"
+    } else {
+        "${secs}秒"
     }
 }
 

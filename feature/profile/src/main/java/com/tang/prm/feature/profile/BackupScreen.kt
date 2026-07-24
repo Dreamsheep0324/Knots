@@ -57,7 +57,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import com.tang.prm.ui.theme.Error
 import com.tang.prm.ui.theme.Success
 import com.tang.prm.ui.components.AppConfirmDialog
 import com.tang.prm.ui.components.SimpleSectionLabel
@@ -274,11 +273,11 @@ fun BackupScreen(
                     onClick = { showClearConfirm = true },
                     modifier = Modifier.fillMaxWidth().height(52.dp),
                     shape = MaterialTheme.shapes.medium,
-                    colors = ButtonDefaults.outlinedButtonColors(contentColor = Error),
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error),
                     enabled = state !is BackupState.Clearing
                 ) {
                     if (state is BackupState.Clearing) {
-                        CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp, color = Error)
+                        CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp, color = MaterialTheme.colorScheme.error)
                         Spacer(Modifier.width(8.dp))
                         Text("正在清空...")
                     } else if (state is BackupState.ClearSuccess) {

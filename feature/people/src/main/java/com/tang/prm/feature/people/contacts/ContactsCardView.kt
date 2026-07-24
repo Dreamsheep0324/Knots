@@ -42,6 +42,7 @@ import com.tang.prm.domain.model.IntimacyTier
 import com.tang.prm.ui.components.CardCornerBrackets
 import com.tang.prm.ui.components.ContactAvatar
 import com.tang.prm.ui.components.ContactRelationshipBadge
+import com.tang.prm.ui.components.BadgeTextStyle
 import com.tang.prm.ui.theme.LocalIntimacyColors
 import com.tang.prm.ui.theme.SignalGreen
 
@@ -144,7 +145,7 @@ private fun ContactMiniCard(
                             .border(1.dp, rarityColor.copy(alpha = 0.4f), RoundedCornerShape(2.dp)),
                         contentAlignment = Alignment.Center
                     ) {
-                        ContactAvatar(contact.avatar, contact.name, 36)
+                        ContactAvatar(contact.avatar, contact.name, 36.dp)
                     }
 
                     Column(
@@ -172,8 +173,7 @@ private fun ContactMiniCard(
                                 ContactRelationshipBadge(
                                     relationship = contact.relationship,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis
+                                    style = BadgeTextStyle(maxLines = 1, overflow = TextOverflow.Ellipsis)
                                 )
                                 Box(
                                     modifier = Modifier

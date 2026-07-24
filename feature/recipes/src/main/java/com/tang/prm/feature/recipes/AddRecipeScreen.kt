@@ -60,6 +60,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.tang.prm.domain.model.IngredientGroupType
+import com.tang.prm.ui.components.ContactPickerConfig
 import com.tang.prm.ui.components.ContactPickerDialog
 import com.tang.prm.ui.components.FormScreenScaffold
 import com.tang.prm.ui.components.SectionCard
@@ -104,12 +105,10 @@ fun AddRecipeScreen(
         val selectedContacts = uiState.availableContacts.filter { it.id in uiState.selectedContactIds }
         ContactPickerDialog(
             contacts = uiState.availableContacts,
-            multiSelect = true,
-            selectedContacts = selectedContacts,
-            title = "关联人物",
-            subtitle = "选择喜欢这道菜的人",
+            onDismiss = { showContactPicker = false },
+            config = ContactPickerConfig(title = "关联人物", subtitle = "选择喜欢这道菜的人", multiSelect = true),
             onContactSelected = { viewModel.toggleContact(it.id) },
-            onDismiss = { showContactPicker = false }
+            selectedContacts = selectedContacts
         )
     }
 

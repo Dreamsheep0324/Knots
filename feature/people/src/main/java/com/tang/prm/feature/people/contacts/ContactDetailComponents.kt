@@ -373,7 +373,7 @@ private fun ThoughtDialogActions(
                     modifier = Modifier.padding(start = 6.dp, end = 10.dp, top = 5.dp, bottom = 5.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    com.tang.prm.ui.components.ContactAvatar(avatar = contactAvatar, name = contactName, size = 20)
+                    com.tang.prm.ui.components.ContactAvatar(avatar = contactAvatar, name = contactName, size = 20.dp)
                     Spacer(modifier = Modifier.width(5.dp))
                     Text(
                         contactName,

@@ -36,12 +36,12 @@ fun Modifier.staggeredAppear(
     }
     val alpha by animateFloatAsState(
         targetValue = if (visible == 1) 1f else 0f,
-        animationSpec = tween(durationMs, easing = AnimationTokens.Easing.enter),
+        animationSpec = tween(durationMs, easing = AnimationTokens.Easing.standard),
         label = "stagger_alpha_$index"
     )
     val offsetY by animateFloatAsState(
         targetValue = if (visible == 1) 0f else 12f,
-        animationSpec = tween(durationMs, easing = AnimationTokens.Easing.enter),
+        animationSpec = tween(durationMs, easing = AnimationTokens.Easing.standard),
         label = "stagger_offset_$index"
     )
     return this.graphicsLayer {

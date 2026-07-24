@@ -12,6 +12,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -22,6 +24,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -43,21 +46,31 @@ import com.tang.prm.ui.animation.primitives.rememberShimmerPhase
 import kotlin.math.cos
 import kotlin.math.sin
 
-@Composable
-internal fun ChannelList(
+/**
+ * 频道列表：直接展平为 [LazyListScope] 的 items，让外层 [LazyColumn][androidx.compose.foundation.lazy.LazyColumn]
+ * 逐项管理频道卡片。滑出视口的卡片被回收时，其内部的呼吸/shimmer 无限动画状态随之销毁，
+ * 避免一次性组合 10 张卡片 + 20 个无限循环动画导致的滚动卡顿。
+ */
+internal fun LazyListScope.channelItems(
     channels: List<ChannelDef>,
     signalStrengths: Map<Any, Int>,
     onChannelClick: (Any) -> Unit
 ) {
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        channels.forEach { channel ->
-            val strength = signalStrengths[channel.route] ?: 0
-            GlassChannelItem(
-                channel = channel,
-                signalStrength = strength,
-                onClick = { onChannelClick(channel.route) }
-            )
+    items(
+        items = channels,
+        key = { "channel_${it.route}" },
+        contentType = { "channel" }
+    ) { channel ->
+        val strength = signalStrengths[channel.route] ?: 0
+        // P1-1 修复：remember onClick lambda，避免父级重组时所有频道卡片强制重组
+        val rememberedClick = remember(channel, onChannelClick) {
+            { onChannelClick(channel.route) }
         }
+        GlassChannelItem(
+            channel = channel,
+            signalStrength = strength,
+            onClick = rememberedClick
+        )
     }
 }
 
@@ -184,12 +197,14 @@ private fun GlassChannelItem(
 
     // Q-12 修复：AppCard 支持 onClick 参数，内部用 Surface.clickable 统一 ripple 语义；
     // U-9 修复：mergeDescendants 合并卡片内多个 Text 为单一语义节点，读屏一次播报完整信息
+    // P1-6 修复：shadowElevation = 0.dp，滑动时避免 10 张卡片的 software layer 阴影渲染开销
     AppCard(
         modifier = Modifier
             .fillMaxWidth()
             .semantics(mergeDescendants = true) {
                 contentDescription = "${channel.name}，信号强度 ${signalStrength}，${channel.desc}"
             },
+        shadowElevation = 0.dp,
         onClick = onClick
     ) {
         // Q-15 修复：主函数只做组合，图标 / 进度条 / 格条分别委托独立 Composable

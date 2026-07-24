@@ -106,7 +106,7 @@ internal fun SwipeablePhotoViewerDialog(
                                     ContactAvatar(
                                         avatar = avatar,
                                         name = name,
-                                        size = 22
+                                        size = 22.dp
                                     )
                                 }
                                 Text(

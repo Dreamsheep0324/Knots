@@ -21,13 +21,13 @@ data class EventTypeStyle(
 @Composable
 fun getEventTypeStyle(eventType: EventType): EventTypeStyle {
     return when (eventType) {
-        EventType.MEETUP -> EventTypeStyle(SignalGreen, EventLightGreen, Icons.Default.People)
-        EventType.DINING -> EventTypeStyle(SignalAmber, EventLightAmber, Icons.Default.Restaurant)
-        EventType.TRAVEL -> EventTypeStyle(SignalSky, EventLightBlue, Icons.Default.Flight)
-        EventType.CALL -> EventTypeStyle(SignalPurple, EventLightPurple, Icons.Default.Phone)
-        EventType.GIFT_SENT, EventType.GIFT_RECEIVED -> EventTypeStyle(SignalCoral, EventLightRed, Icons.Default.CardGiftcard)
-        EventType.CONVERSATION -> EventTypeStyle(SignalPurple, EventLightIndigo, Icons.AutoMirrored.Filled.Chat)
-        EventType.OTHER -> EventTypeStyle(SignalElectric, EventLightIndigo, Icons.Default.MoreHoriz)
+        EventType.MEETUP -> EventTypeStyle(SignalGreen, SemanticGreenBg, Icons.Default.People)
+        EventType.DINING -> EventTypeStyle(SignalAmber, SemanticAmberBg, Icons.Default.Restaurant)
+        EventType.TRAVEL -> EventTypeStyle(SignalSky, SemanticBlueBg, Icons.Default.Flight)
+        EventType.CALL -> EventTypeStyle(SignalPurple, SemanticPurpleBg, Icons.Default.Phone)
+        EventType.GIFT_SENT, EventType.GIFT_RECEIVED -> EventTypeStyle(SignalCoral, SemanticCoralBg, Icons.Default.CardGiftcard)
+        EventType.CONVERSATION -> EventTypeStyle(SignalPurple, SemanticIndigoBg, Icons.AutoMirrored.Filled.Chat)
+        EventType.OTHER -> EventTypeStyle(SignalElectric, SemanticIndigoBg, Icons.Default.MoreHoriz)
     }
 }
 
@@ -43,7 +43,7 @@ fun getEventTypeStyle(eventType: EventType): EventTypeStyle {
  *    - 含"餐/吃/饭/食/dining/meal" → Restaurant
  *    - 含"见/聚/面/约/meet" → People
  *    - 含"旅/行/飞/游/travel/trip" → Flight
- *    - 含"话/电/call/phone" → Phone
+ *    - 含"电话/致电/通话/call/phone" → Phone
  *    - 含"礼/送/收/gift" → CardGiftcard
  *    - 含"聊/谈/对话/chat" → Chat
  *    - 其他 → Event（通用事件图标，不用 MoreHoriz 三个点）
@@ -60,30 +60,80 @@ fun resolveEventIcon(
     title: String?,
     eventTypes: List<CustomType> = emptyList()
 ): ImageVector {
+    val defaultIcon = getEventTypeStyle(type).icon
+    return resolveEventIconCore(
+        type = type,
+        customTypeName = customTypeName,
+        title = title,
+        eventTypes = eventTypes,
+        defaultIcon = defaultIcon,
+        resolveIconByName = { getGenericIcon(it) }
+    )
+}
+
+/**
+ * [resolveEventIcon] 的纯函数核心（可单独测试）。
+ *
+ * 通过 [defaultIcon] 和 [resolveIconByName] 注入依赖，
+ * 使核心逻辑脱离 Compose 运行时即可验证。
+ */
+internal fun resolveEventIconCore(
+    type: EventType,
+    customTypeName: String?,
+    title: String?,
+    eventTypes: List<CustomType>,
+    defaultIcon: ImageVector,
+    resolveIconByName: (String) -> ImageVector?
+): ImageVector {
     // 1. 优先查找用户自定义类型（CustomType.icon 字段）
-    val customType = if (type != EventType.OTHER) {
-        eventTypes.find { it.key == type.name } ?: eventTypes.find { it.name == type.name }
-    } else {
-        customTypeName?.let { ctn -> eventTypes.find { it.name == ctn } }
-    }
+    val customType = resolveCustomType(type, customTypeName, eventTypes)
     customType?.icon?.let { iconName ->
-        getGenericIcon(iconName)?.let { return it }
+        resolveIconByName(iconName)?.let { return it }
     }
 
     // 2. 非 OTHER 类型无自定义匹配 → 返回类型默认图标
     if (type != EventType.OTHER) {
-        return getEventTypeStyle(type).icon
+        return defaultIcon
     }
 
     // 3. OTHER 类型无自定义匹配 → 关键词匹配
     val combined = ((customTypeName ?: "") + " " + (title ?: "")).lowercase()
+    return resolveOtherTypeIconByKeywords(combined)
+}
+
+/**
+ * 解析用户自定义类型（纯函数，可单独测试）。
+ *
+ * 优先级：key == type.name → name == type.name（非 OTHER）；name == customTypeName（OTHER）。
+ */
+internal fun resolveCustomType(
+    type: EventType,
+    customTypeName: String?,
+    eventTypes: List<CustomType>
+): CustomType? = if (type != EventType.OTHER) {
+    eventTypes.find { it.key == type.name } ?: eventTypes.find { it.name == type.name }
+} else {
+    customTypeName?.let { ctn -> eventTypes.find { it.name == ctn } }
+}
+
+/**
+ * OTHER 类型事件的关键词图标匹配（纯函数，可单独测试）。
+ *
+ * 内部对输入做 [String.lowercase]，因此调用方无需预先转换大小写。
+ *
+ * 匹配优先级：餐食 > 见面 > 旅行 > 通话 > 礼物 > 聊天 > 通用 Event。
+ *
+ * 注：通话分支用「电话」而非单字「话」，避免「对话」等含「话」的聊天语义被误判为通话。
+ */
+internal fun resolveOtherTypeIconByKeywords(combined: String): ImageVector {
+    val text = combined.lowercase()
     return when {
-        listOf("餐", "吃", "饭", "食", "dining", "meal", "lunch", "dinner").any { it in combined } -> Icons.Default.Restaurant
-        listOf("见", "聚", "面", "约", "meet", "meetup").any { it in combined } -> Icons.Default.People
-        listOf("旅", "行", "飞", "游", "出", "travel", "trip", "fly").any { it in combined } -> Icons.Default.Flight
-        listOf("话", "电", "call", "phone").any { it in combined } -> Icons.Default.Phone
-        listOf("礼", "送", "收", "gift").any { it in combined } -> Icons.Default.CardGiftcard
-        listOf("聊", "谈", "对话", "chat", "talk").any { it in combined } -> Icons.AutoMirrored.Filled.Chat
+        listOf("餐", "吃", "饭", "食", "dining", "meal", "lunch", "dinner").any { it in text } -> Icons.Default.Restaurant
+        listOf("见", "聚", "面", "约", "meet", "meetup").any { it in text } -> Icons.Default.People
+        listOf("旅", "行", "飞", "游", "出", "travel", "trip", "fly").any { it in text } -> Icons.Default.Flight
+        listOf("电话", "致电", "通话", "call", "phone").any { it in text } -> Icons.Default.Phone
+        listOf("礼", "送", "收", "gift").any { it in text } -> Icons.Default.CardGiftcard
+        listOf("聊", "谈", "对话", "chat", "talk").any { it in text } -> Icons.AutoMirrored.Filled.Chat
         else -> Icons.Default.Event
     }
 }
@@ -106,28 +156,33 @@ fun resolveEventAccentColor(
     customTypeName: String?,
     eventTypes: List<CustomType> = emptyList()
 ): Color {
-    val customType = if (type != EventType.OTHER) {
-        eventTypes.find { it.key == type.name } ?: eventTypes.find { it.name == type.name }
-    } else {
-        customTypeName?.let { ctn -> eventTypes.find { it.name == ctn } }
-    }
+    val defaultColor = getEventTypeStyle(type).accentColor
+    return resolveEventAccentColorCore(
+        type = type,
+        customTypeName = customTypeName,
+        eventTypes = eventTypes,
+        defaultColor = defaultColor,
+        parseColor = { parseHexColorOrNull(it) }
+    )
+}
+
+/**
+ * [resolveEventAccentColor] 的纯函数核心（可单独测试）。
+ */
+internal fun resolveEventAccentColorCore(
+    type: EventType,
+    customTypeName: String?,
+    eventTypes: List<CustomType>,
+    defaultColor: Color,
+    parseColor: (String) -> Color?
+): Color {
+    val customType = resolveCustomType(type, customTypeName, eventTypes)
     if (customType != null) {
-        return customType.color?.let { parseHexColor(it) } ?: getEventTypeStyle(type).accentColor
+        return customType.color?.let { parseColor(it) } ?: defaultColor
     }
     return if (type != EventType.OTHER) {
-        getEventTypeStyle(type).accentColor
+        defaultColor
     } else {
         SignalElectric
     }
 }
-
-/** 解析十六进制颜色字符串（支持 #RRGGBB / #AARRGGBB / 无前缀） */
-private fun parseHexColor(hex: String): Color? = runCatching {
-    val normalized = hex.removePrefix("#")
-    val intValue = when (normalized.length) {
-        6 -> ("FF$normalized").toLong(16)
-        8 -> normalized.toLong(16)
-        else -> return null
-    }
-    Color(intValue.toInt())
-}.getOrNull()

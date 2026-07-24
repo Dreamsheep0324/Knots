@@ -700,7 +700,7 @@ private fun EventCardParticipants(participants: List<Contact>) {
             ContactAvatar(
                 avatar = participant.avatar,
                 name = participant.name,
-                size = 26,
+                size = 26.dp,
                 modifier = Modifier.size(26.dp).clip(CircleShape)
             )
         }

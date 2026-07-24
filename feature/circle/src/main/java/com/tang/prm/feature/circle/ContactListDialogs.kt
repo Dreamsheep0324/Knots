@@ -30,6 +30,7 @@ import com.tang.prm.domain.model.Circle
 import com.tang.prm.domain.model.Contact
 import com.tang.prm.ui.components.ContactAvatar
 import com.tang.prm.ui.components.ContactRelationshipBadge
+import com.tang.prm.ui.components.BadgeTextStyle
 import com.tang.prm.feature.circle.card.TerminalActionButton
 import com.tang.prm.domain.constant.CircleConstants
 import com.tang.prm.ui.theme.*
@@ -394,7 +395,7 @@ internal fun TerminalAddMemberDialog(
                                         .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(2.dp)),
                                     contentAlignment = Alignment.Center
                                 ) {
-                                    ContactAvatar(contact.avatar, contact.name, 32)
+                                    ContactAvatar(contact.avatar, contact.name, 32.dp)
                                 }
                                 Spacer(Modifier.width(12.dp))
                                 Column(modifier = Modifier.weight(1f)) {
@@ -408,7 +409,7 @@ internal fun TerminalAddMemberDialog(
                                     ContactRelationshipBadge(
                                         relationship = contact.relationship,
                                         color = TerminalTextDim,
-                                        fontSize = 10.sp
+                                        style = BadgeTextStyle(fontSize = 10.sp)
                                     )
                                 }
                                 Text("[+]", fontFamily = FontFamily.Monospace, fontSize = 14.sp, color = SignalPurple, fontWeight = FontWeight.Bold)

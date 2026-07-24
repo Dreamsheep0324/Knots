@@ -61,7 +61,7 @@ internal fun ContactStoriesRow(
                         ContactAvatar(
                             avatar = ct.contact.avatar,
                             name = ct.contact.name,
-                            size = 44
+                            size = 44.dp
                         )
                     }
                 }

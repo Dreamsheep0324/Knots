@@ -354,7 +354,7 @@ internal fun ContactGridCard(
             ContactAvatar(
                 avatar = contact.avatar,
                 name = contact.name,
-                size = 50
+                size = 50.dp
             )
 
             Spacer(modifier = Modifier.height(10.dp))
@@ -415,7 +415,7 @@ internal fun ContactListCard(
             ContactAvatar(
                 avatar = contact.avatar,
                 name = contact.name,
-                size = 48
+                size = 48.dp
             )
 
             Spacer(modifier = Modifier.width(14.dp))

@@ -22,6 +22,7 @@ object Dimens {
     val paddingXs = 4.dp
     val paddingLg = 20.dp
     val paddingXl = 24.dp
+    val paddingXxl = 32.dp
 
     // ── 间距 ────────────────────────────────────────────────
     val spacingXs = 4.dp
@@ -48,6 +49,15 @@ object Dimens {
     val iconMedium = 24.dp
     val iconLarge = 32.dp
     val iconXl = 36.dp
+    val iconXxl = 64.dp
+    /** 徽章背景圆形尺寸（FormSectionLabel 等图标圆背景） */
+    val iconBadgeBg = 28.dp
+    /** 徽章内图标尺寸（配 iconBadgeBg 使用） */
+    val iconBadge = 14.dp
+
+    // ── 分隔线 ──────────────────────────────────────────────
+    /** 发丝级分隔线粗细（TerminalSectionHeader 等渐变线） */
+    val hairline = 0.5.dp
 
     // ── 头像尺寸 ───────────────────────────────────────────
     val avatarSmall = 32.dp

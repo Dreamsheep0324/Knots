@@ -10,14 +10,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.tang.prm.ui.theme.Dimens
 
 @Composable
 fun AppCard(
     modifier: Modifier = Modifier,
-    shape: Shape = RoundedCornerShape(16.dp),
+    shape: Shape = RoundedCornerShape(Dimens.cornerCard),
     color: Color = MaterialTheme.colorScheme.surface,
     border: BorderStroke = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
-    shadowElevation: Dp = 3.dp,
+    shadowElevation: Dp = Dimens.elevationCard,
     onClick: (() -> Unit)? = null,
     content: @Composable () -> Unit
 ) {

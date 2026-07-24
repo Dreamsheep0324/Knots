@@ -8,6 +8,10 @@ android {
     namespace = "com.tang.prm.ui"
 }
 
+tasks.withType<Test> {
+    useJUnitPlatform()
+}
+
 dependencies {
     implementation(project(":core:domain"))
 

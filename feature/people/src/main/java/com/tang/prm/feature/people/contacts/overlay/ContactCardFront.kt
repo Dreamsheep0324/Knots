@@ -219,7 +219,7 @@ private fun CardFrontIdentity(
                 .border(1.5.dp, rarityColor.copy(alpha = 0.4f), RoundedCornerShape(2.dp)),
             contentAlignment = Alignment.Center
         ) {
-            ContactAvatar(contact.avatar, contact.name, 52)
+            ContactAvatar(contact.avatar, contact.name, 52.dp)
         }
 
         Column(

@@ -165,7 +165,7 @@ fun PersonRelationDialog(
                                     modifier = Modifier.padding(horizontal = 14.dp, vertical = 12.dp),
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    ContactAvatar(avatar = contact.avatar, name = contact.name, size = 42)
+                                    ContactAvatar(avatar = contact.avatar, name = contact.name, size = 42.dp)
                                     Spacer(Modifier.width(14.dp))
                                     Column(modifier = Modifier.weight(1f)) {
                                         Text(
@@ -456,7 +456,7 @@ private fun ContactPickerField(
                 modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                ContactAvatar(avatar = contact.avatar, name = contact.name, size = 36)
+                ContactAvatar(avatar = contact.avatar, name = contact.name, size = 36.dp)
                 Spacer(Modifier.width(12.dp))
                 Column(modifier = Modifier.weight(1f)) {
                     Text(

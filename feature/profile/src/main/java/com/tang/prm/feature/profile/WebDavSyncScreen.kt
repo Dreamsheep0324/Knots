@@ -89,7 +89,6 @@ import com.tang.prm.domain.util.DateUtils
 import com.tang.prm.ui.components.AppConfirmDialog
 import com.tang.prm.ui.theme.AnniversaryHoliday
 import com.tang.prm.ui.theme.Dimens
-import com.tang.prm.ui.theme.Error
 import com.tang.prm.ui.theme.SignalGreen
 import com.tang.prm.ui.theme.SignalSky
 
@@ -284,8 +283,8 @@ private fun ConnectionHeroSection(state: ConnectionState, config: WebDavConfig) 
             listOf(MaterialTheme.colorScheme.primary.copy(alpha = 0.12f), MaterialTheme.colorScheme.primary.copy(alpha = 0.03f))
         )
         is ConnectionState.Error -> Tuple4(
-            Icons.Default.CloudOff, "连接失败", Error,
-            listOf(Error.copy(alpha = 0.12f), Error.copy(alpha = 0.03f))
+            Icons.Default.CloudOff, "连接失败", MaterialTheme.colorScheme.error,
+            listOf(MaterialTheme.colorScheme.error.copy(alpha = 0.12f), MaterialTheme.colorScheme.error.copy(alpha = 0.03f))
         )
         else -> Tuple4(
             Icons.Default.Cloud,
@@ -330,7 +329,7 @@ private fun ConnectionHeroSection(state: ConnectionState, config: WebDavConfig) 
                     Text(
                         state.message,
                         style = MaterialTheme.typography.labelSmall,
-                        color = Error.copy(alpha = 0.8f),
+                        color = MaterialTheme.colorScheme.error.copy(alpha = 0.8f),
                         maxLines = 2, overflow = TextOverflow.Ellipsis
                     )
                 }

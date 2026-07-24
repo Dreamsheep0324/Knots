@@ -2,17 +2,24 @@
 <SmellBaseline>
   <ManuallySuppressedIssues></ManuallySuppressedIssues>
   <CurrentIssues>
-    <ID>CyclomaticComplexMethod:TagSelector.kt$@OptIn(ExperimentalLayoutApi::class) @Composable fun TagSelector( mode: TagSelectorMode, availableItems: List&lt;CustomType&gt;, selectedItems: List&lt;String&gt;, onSelectionChange: (List&lt;String&gt;) -&gt; Unit, onAddItem: (String, String?, String?) -&gt; Unit, onDeleteItem: (CustomType) -&gt; Unit, title: String? = null, emptyText: String = "暂无标签，点击新增添加", showHeader: Boolean = true, showAddButton: Boolean = true, showAddDialog: Boolean = false, onAddDialogDismiss: () -&gt; Unit = {}, iconResolver: ((String) -&gt; ImageVector?)? = null, showIconPicker: Boolean = false )</ID>
-    <ID>FunctionNaming:AppCard.kt$@Composable fun AppCard( modifier: Modifier = Modifier, shape: Shape = RoundedCornerShape(16.dp), color: Color = MaterialTheme.colorScheme.surface, border: BorderStroke = BorderStroke(1.dp, MaterialTheme.colorScheme.outline), shadowElevation: Dp = 3.dp, onClick: (() -&gt; Unit)? = null, content: @Composable () -&gt; Unit )</ID>
+    <ID>FunctionNaming:AppCard.kt$@Composable fun AppCard( modifier: Modifier = Modifier, shape: Shape = RoundedCornerShape(Dimens.cornerCard), color: Color = MaterialTheme.colorScheme.surface, border: BorderStroke = BorderStroke(1.dp, MaterialTheme.colorScheme.outline), shadowElevation: Dp = Dimens.elevationCard, onClick: (() -&gt; Unit)? = null, content: @Composable () -&gt; Unit )</ID>
     <ID>FunctionNaming:AvatarCropDialog.kt$@Composable fun AvatarCropDialog( imagePath: String, onCropComplete: (String) -&gt; Unit, onDismiss: () -&gt; Unit )</ID>
-    <ID>FunctionNaming:Avatars.kt$@Composable fun ContactAvatar( avatar: String?, name: String, size: Int = 48, modifier: Modifier = Modifier )</ID>
-    <ID>FunctionNaming:ContactPickerDialog.kt$@Composable fun ContactPickerDialog( contacts: List&lt;com.tang.prm.domain.model.Contact&gt;, onDismiss: () -&gt; Unit, title: String = "选择联系人", subtitle: String? = null, multiSelect: Boolean = false, selectedContacts: List&lt;com.tang.prm.domain.model.Contact&gt; = emptyList(), onContactSelected: (com.tang.prm.domain.model.Contact) -&gt; Unit, emptyText: String = "暂无联系人", onCreateContact: (() -&gt; Unit)? = null )</ID>
-    <ID>FunctionNaming:ContactRelationshipBadge.kt$@Composable fun ContactRelationshipBadge( relationship: String?, bracketed: Boolean = false, color: Color, fontSize: TextUnit = if (bracketed) 11.sp else 9.sp, textAlign: TextAlign? = null, maxLines: Int = Int.MAX_VALUE, overflow: TextOverflow = TextOverflow.Clip )</ID>
+    <ID>FunctionNaming:AvatarCropDialog.kt$@Composable private fun CropCanvas( imageBitmap: ImageBitmap, userScale: Float, userOffsetX: Float, userOffsetY: Float, onOffsetChange: (Float, Float) -&gt; Unit, onScaleChange: (Float, Float, Float) -&gt; Unit, onCanvasSizeChanged: (Float) -&gt; Unit )</ID>
+    <ID>FunctionNaming:AvatarCropDialog.kt$@Composable private fun CropDialogButtons( onReset: () -&gt; Unit, onCancel: () -&gt; Unit, onConfirm: () -&gt; Unit )</ID>
+    <ID>FunctionNaming:AvatarCropDialog.kt$@Composable private fun CropDialogHeader()</ID>
+    <ID>FunctionNaming:Avatars.kt$@Composable fun ContactAvatar( avatar: String?, name: String, size: Dp = 48.dp, modifier: Modifier = Modifier )</ID>
+    <ID>FunctionNaming:Avatars.kt$@Composable private fun FallbackAvatarBlock( initial: String, bg: Color, textStyle: TextStyle, modifier: Modifier = Modifier )</ID>
+    <ID>FunctionNaming:ContactPickerDialog.kt$@Composable fun ContactPickerDialog( contacts: List&lt;com.tang.prm.domain.model.Contact&gt;, onDismiss: () -&gt; Unit, config: ContactPickerConfig = ContactPickerConfig(), onContactSelected: (com.tang.prm.domain.model.Contact) -&gt; Unit, selectedContacts: List&lt;com.tang.prm.domain.model.Contact&gt; = emptyList() )</ID>
+    <ID>FunctionNaming:ContactPickerDialog.kt$@Composable private fun ContactPickerEmptyState( emptyText: String, onCreateContact: (() -&gt; Unit)? )</ID>
+    <ID>FunctionNaming:ContactPickerDialog.kt$@Composable private fun ContactPickerItem( contact: com.tang.prm.domain.model.Contact, isSelected: Boolean, multiSelect: Boolean, onClick: () -&gt; Unit )</ID>
+    <ID>FunctionNaming:ContactRelationshipBadge.kt$@Composable fun ContactRelationshipBadge( relationship: String?, bracketed: Boolean = false, color: Color, style: BadgeTextStyle = BadgeTextStyle.Default )</ID>
     <ID>FunctionNaming:Dialogs.kt$@Composable fun AppConfirmDialog( title: String, text: String, confirmLabel: String = "确认", dismissLabel: String = "取消", onConfirm: () -&gt; Unit, onDismiss: () -&gt; Unit, isDestructive: Boolean = false )</ID>
     <ID>FunctionNaming:Dialogs.kt$@Composable fun DeleteConfirmDialog( title: String = "确认删除", message: String, onConfirm: () -&gt; Unit, onDismiss: () -&gt; Unit )</ID>
     <ID>FunctionNaming:Dialogs.kt$@Composable fun DiscardEditDialog( onDiscard: () -&gt; Unit, onDismiss: () -&gt; Unit )</ID>
+    <ID>FunctionNaming:Dialogs.kt$@Composable private fun DialogButtonRow( confirmLabel: String, dismissLabel: String, isDestructive: Boolean, onConfirm: () -&gt; Unit, onDismiss: () -&gt; Unit )</ID>
+    <ID>FunctionNaming:Dialogs.kt$@Composable private fun DialogIconBlock( isDestructive: Boolean, modifier: Modifier = Modifier )</ID>
     <ID>FunctionNaming:EmptyState.kt$@Composable fun EmptyState( icon: ImageVector, title: String, description: String = "", actionLabel: String = "", onAction: (() -&gt; Unit)? = null, modifier: Modifier = Modifier )</ID>
-    <ID>FunctionNaming:FormComponents.kt$@Composable fun AppDatePicker( show: Boolean, onDismiss: () -&gt; Unit, onDateSelected: (Long) -&gt; Unit, initialDate: Long? = null, confirmText: String = "确定", dismissText: String = "取消", confirmColor: Color = MaterialTheme.colorScheme.primary, dismissColor: Color = MaterialTheme.colorScheme.onSurfaceVariant )</ID>
+    <ID>FunctionNaming:FormComponents.kt$@Composable fun AppDatePicker( show: Boolean, onDismiss: () -&gt; Unit, onDateSelected: (Long) -&gt; Unit, initialDate: Long? = null, colors: DatePickerColors = DatePickerColors( confirmColor = MaterialTheme.colorScheme.primary, dismissColor = MaterialTheme.colorScheme.onSurfaceVariant ), labels: DatePickerLabels = DatePickerLabels(confirmText = "确定", dismissText = "取消") )</ID>
     <ID>FunctionNaming:FormComponents.kt$@Composable fun DetailInfoRow( icon: ImageVector, label: String, value: String, iconColor: Color = MaterialTheme.colorScheme.primary, valueColor: Color = MaterialTheme.colorScheme.onSurface, maxLines: Int = 1 )</ID>
     <ID>FunctionNaming:FormComponents.kt$@Composable fun DetailSection( title: String, accentColor: Color = MaterialTheme.colorScheme.primary, content: @Composable ColumnScope.() -&gt; Unit )</ID>
     <ID>FunctionNaming:FormComponents.kt$@Composable fun FormScreenScaffold( title: String, onSaveClick: () -&gt; Unit, saveEnabled: Boolean = true, onBackClick: () -&gt; Unit, containerColor: Color = MaterialTheme.colorScheme.surface, snackbarHostState: SnackbarHostState = remember { SnackbarHostState() }, content: @Composable (PaddingValues) -&gt; Unit )</ID>
@@ -31,7 +38,10 @@
     <ID>FunctionNaming:HoloEffects.kt$@Composable fun HoloDataCell( label: String, value: String, valueColor: Color, tintColor: Color, labelColor: Color = MaterialTheme.colorScheme.onSurfaceVariant, modifier: Modifier = Modifier )</ID>
     <ID>FunctionNaming:HoloEffects.kt$@Composable fun HoloScanLine(scanLineOffset: Float, tintColor: Color)</ID>
     <ID>FunctionNaming:HoloEffects.kt$@Composable fun HoloScanLineTexture(tintColor: Color)</ID>
+    <ID>FunctionNaming:HoloEffects.kt$@Composable private fun CornerMarks(length: Dp, thickness: Dp, offset: Dp, color: Color)</ID>
     <ID>FunctionNaming:HolographicCard.kt$@Composable fun HolographicCardOverlay( isFlipped: Boolean, onFlip: () -&gt; Unit, onClose: () -&gt; Unit, modifier: Modifier = Modifier, config: HolographicConfig = HolographicConfig.default, frontContent: @Composable () -&gt; Unit, backContent: @Composable () -&gt; Unit )</ID>
+    <ID>FunctionNaming:HolographicCard.kt$@Composable private fun HolographicAnimationOffsets(config: HolographicConfig): HolographicOffsets</ID>
+    <ID>FunctionNaming:HolographicCard.kt$@Composable private fun HolographicCardAnimations( visible: Boolean, dismissRequested: Boolean, isFlipped: Boolean, config: HolographicConfig, onClose: () -&gt; Unit ): HolographicAnimState</ID>
     <ID>FunctionNaming:HolographicCard.kt$@Composable private fun HolographicCardContent( config: HolographicConfig, onFlip: () -&gt; Unit, content: @Composable () -&gt; Unit )</ID>
     <ID>FunctionNaming:HolographicCard.kt$@Composable private fun HolographicScanLineOverlay( offset: Float, color: Color )</ID>
     <ID>FunctionNaming:HolographicCard.kt$@Composable private fun HolographicShimmerOverlay( offset: Float, color: Color )</ID>
@@ -40,11 +50,13 @@
     <ID>FunctionNaming:PhotoSlot.kt$@Composable fun PhotoSlot( mode: PhotoSlotMode, photoUri: String, onRemove: (() -&gt; Unit)? = null, onClick: (() -&gt; Unit)? = null )</ID>
     <ID>FunctionNaming:PhotoSlot.kt$@Composable private fun AvatarAddSlot(label: String, onClick: () -&gt; Unit)</ID>
     <ID>FunctionNaming:PhotoSlot.kt$@Composable private fun AvatarPhotoSlot(photoUri: String, onClick: (() -&gt; Unit)?)</ID>
+    <ID>FunctionNaming:PhotoSlot.kt$@Composable private fun PhotoRemoveButton( onRemove: () -&gt; Unit, modifier: Modifier = Modifier, iconSize: Dp = 14.dp )</ID>
     <ID>FunctionNaming:PhotoSlot.kt$@Composable private fun PolaroidAddSlot(label: String, onClick: () -&gt; Unit)</ID>
     <ID>FunctionNaming:PhotoSlot.kt$@Composable private fun PolaroidPhotoSlot(photoUri: String, onRemove: (() -&gt; Unit)?, onClick: (() -&gt; Unit)?)</ID>
     <ID>FunctionNaming:PhotoSlot.kt$@Composable private fun ThumbnailAddSlot(label: String, onClick: () -&gt; Unit)</ID>
     <ID>FunctionNaming:PhotoSlot.kt$@Composable private fun ThumbnailPhotoSlot(photoUri: String, onRemove: (() -&gt; Unit)?, onClick: (() -&gt; Unit)?)</ID>
     <ID>FunctionNaming:SearchBar.kt$@Composable fun SearchBar( query: String, onQueryChange: (String) -&gt; Unit, modifier: Modifier = Modifier, placeholder: String = "搜索", focusRequester: FocusRequester? = null, autoFocus: Boolean = false )</ID>
+    <ID>FunctionNaming:SearchBar.kt$@Composable internal fun SearchTextFieldInternal( query: String, onQueryChange: (String) -&gt; Unit, modifier: Modifier, placeholder: String, shape: Shape, containerColor: Color, shadowElevation: Dp, textFieldModifier: Modifier, focusRequester: FocusRequester?, iconTint: Color, textStyle: TextStyle, placeholderTextStyle: TextStyle, placeholderColor: Color, clearButton: (@Composable () -&gt; Unit)? )</ID>
     <ID>FunctionNaming:SectionHeader.kt$@Composable fun FormSectionLabel( icon: ImageVector, label: String, color: Color, modifier: Modifier = Modifier )</ID>
     <ID>FunctionNaming:SectionHeader.kt$@Composable fun SectionHeader( title: String, modifier: Modifier = Modifier, action: @Composable (() -&gt; Unit)? = null )</ID>
     <ID>FunctionNaming:SectionHeader.kt$@Composable fun SimpleSectionLabel( title: String, modifier: Modifier = Modifier )</ID>
@@ -57,23 +69,26 @@
     <ID>FunctionNaming:TabletSearchBar.kt$@Composable fun TabletSearchBar( query: String, onQueryChange: (String) -&gt; Unit, modifier: Modifier = Modifier, placeholder: String = "搜索" )</ID>
     <ID>FunctionNaming:TagSelector.kt$@Composable fun AddTypeDialog( title: String, onDismiss: () -&gt; Unit, onConfirm: (String, String?, String?) -&gt; Unit, showIconPicker: Boolean = false )</ID>
     <ID>FunctionNaming:TagSelector.kt$@Composable fun DeleteTypeDialog( typeName: String, onDismiss: () -&gt; Unit, onConfirm: () -&gt; Unit )</ID>
+    <ID>FunctionNaming:TagSelector.kt$@Composable private fun ColorPickerGrid( options: List&lt;String&gt;, selected: String?, onSelect: (String?) -&gt; Unit )</ID>
     <ID>FunctionNaming:TagSelector.kt$@Composable private fun GridRow(items: List&lt;String&gt;, columns: Int, content: @Composable (String) -&gt; Unit)</ID>
-    <ID>FunctionNaming:TagSelector.kt$@OptIn(ExperimentalLayoutApi::class) @Composable fun TagSelector( mode: TagSelectorMode, availableItems: List&lt;CustomType&gt;, selectedItems: List&lt;String&gt;, onSelectionChange: (List&lt;String&gt;) -&gt; Unit, onAddItem: (String, String?, String?) -&gt; Unit, onDeleteItem: (CustomType) -&gt; Unit, title: String? = null, emptyText: String = "暂无标签，点击新增添加", showHeader: Boolean = true, showAddButton: Boolean = true, showAddDialog: Boolean = false, onAddDialogDismiss: () -&gt; Unit = {}, iconResolver: ((String) -&gt; ImageVector?)? = null, showIconPicker: Boolean = false )</ID>
+    <ID>FunctionNaming:TagSelector.kt$@Composable private fun IconPickerGrid( options: List&lt;String&gt;, selected: String?, onSelect: (String?) -&gt; Unit )</ID>
+    <ID>FunctionNaming:TagSelector.kt$@Composable private fun TagSelectorDialogs( isAddVisible: Boolean, addDialogTitle: String, showIconPicker: Boolean, onAddDismiss: () -&gt; Unit, onAddConfirm: (String, String?, String?) -&gt; Unit, deleteTarget: CustomType?, onDeleteDismiss: () -&gt; Unit, onDeleteConfirm: () -&gt; Unit )</ID>
+    <ID>FunctionNaming:TagSelector.kt$@OptIn(ExperimentalLayoutApi::class) @Composable fun TagSelector( config: TagSelectorConfig, availableItems: List&lt;CustomType&gt;, selectedItems: List&lt;String&gt;, callbacks: TagSelectorCallbacks, showAddDialog: Boolean = false )</ID>
+    <ID>FunctionNaming:TagSelector.kt$@OptIn(ExperimentalLayoutApi::class) @Composable private fun TagChipList( items: List&lt;CustomType&gt;, selectedItems: List&lt;String&gt;, mode: TagSelectorMode, emptyText: String, showAddButton: Boolean, iconResolver: ((String) -&gt; ImageVector?)?, onSelectionChange: (List&lt;String&gt;) -&gt; Unit, onAddClick: () -&gt; Unit, onDeleteRequest: (CustomType) -&gt; Unit )</ID>
     <ID>FunctionNaming:Theme.kt$@Composable fun TangTheme( darkTheme: Boolean = isSystemInDarkTheme(), content: @Composable () -&gt; Unit )</ID>
     <ID>FunctionNaming:densityfix.kt$@Composable fun FixedDensityProvider( context: Context, content: @Composable () -&gt; Unit )</ID>
     <ID>LongMethod:AvatarCropDialog.kt$@Composable fun AvatarCropDialog( imagePath: String, onCropComplete: (String) -&gt; Unit, onDismiss: () -&gt; Unit )</ID>
-    <ID>LongMethod:ContactPickerDialog.kt$@Composable fun ContactPickerDialog( contacts: List&lt;com.tang.prm.domain.model.Contact&gt;, onDismiss: () -&gt; Unit, title: String = "选择联系人", subtitle: String? = null, multiSelect: Boolean = false, selectedContacts: List&lt;com.tang.prm.domain.model.Contact&gt; = emptyList(), onContactSelected: (com.tang.prm.domain.model.Contact) -&gt; Unit, emptyText: String = "暂无联系人", onCreateContact: (() -&gt; Unit)? = null )</ID>
-    <ID>LongMethod:Dialogs.kt$@Composable fun AppConfirmDialog( title: String, text: String, confirmLabel: String = "确认", dismissLabel: String = "取消", onConfirm: () -&gt; Unit, onDismiss: () -&gt; Unit, isDestructive: Boolean = false )</ID>
-    <ID>LongMethod:HolographicCard.kt$@Composable fun HolographicCardOverlay( isFlipped: Boolean, onFlip: () -&gt; Unit, onClose: () -&gt; Unit, modifier: Modifier = Modifier, config: HolographicConfig = HolographicConfig.default, frontContent: @Composable () -&gt; Unit, backContent: @Composable () -&gt; Unit )</ID>
-    <ID>LongMethod:TagSelector.kt$@Composable fun AddTypeDialog( title: String, onDismiss: () -&gt; Unit, onConfirm: (String, String?, String?) -&gt; Unit, showIconPicker: Boolean = false )</ID>
-    <ID>LongMethod:TagSelector.kt$@OptIn(ExperimentalLayoutApi::class) @Composable fun TagSelector( mode: TagSelectorMode, availableItems: List&lt;CustomType&gt;, selectedItems: List&lt;String&gt;, onSelectionChange: (List&lt;String&gt;) -&gt; Unit, onAddItem: (String, String?, String?) -&gt; Unit, onDeleteItem: (CustomType) -&gt; Unit, title: String? = null, emptyText: String = "暂无标签，点击新增添加", showHeader: Boolean = true, showAddButton: Boolean = true, showAddDialog: Boolean = false, onAddDialogDismiss: () -&gt; Unit = {}, iconResolver: ((String) -&gt; ImageVector?)? = null, showIconPicker: Boolean = false )</ID>
-    <ID>LongParameterList:ContactPickerDialog.kt$( contacts: List&lt;com.tang.prm.domain.model.Contact&gt;, onDismiss: () -&gt; Unit, title: String = "选择联系人", subtitle: String? = null, multiSelect: Boolean = false, selectedContacts: List&lt;com.tang.prm.domain.model.Contact&gt; = emptyList(), onContactSelected: (com.tang.prm.domain.model.Contact) -&gt; Unit, emptyText: String = "暂无联系人", onCreateContact: (() -&gt; Unit)? = null )</ID>
-    <ID>LongParameterList:FormComponents.kt$( show: Boolean, onDismiss: () -&gt; Unit, onDateSelected: (Long) -&gt; Unit, initialDate: Long? = null, confirmText: String = "确定", dismissText: String = "取消", confirmColor: Color = MaterialTheme.colorScheme.primary, dismissColor: Color = MaterialTheme.colorScheme.onSurfaceVariant )</ID>
+    <ID>LongMethod:TagSelector.kt$@OptIn(ExperimentalLayoutApi::class) @Composable private fun TagChipList( items: List&lt;CustomType&gt;, selectedItems: List&lt;String&gt;, mode: TagSelectorMode, emptyText: String, showAddButton: Boolean, iconResolver: ((String) -&gt; ImageVector?)?, onSelectionChange: (List&lt;String&gt;) -&gt; Unit, onAddClick: () -&gt; Unit, onDeleteRequest: (CustomType) -&gt; Unit )</ID>
     <ID>LongParameterList:FormFields.kt$( value: String, onValueChange: (String) -&gt; Unit, label: String, modifier: Modifier = Modifier, singleLine: Boolean = true, maxLines: Int = if (singleLine) 1 else 5, isError: Boolean = false, errorMessage: String = "", trailingIcon: @Composable (() -&gt; Unit)? = null )</ID>
-    <ID>LongParameterList:TagSelector.kt$( mode: TagSelectorMode, availableItems: List&lt;CustomType&gt;, selectedItems: List&lt;String&gt;, onSelectionChange: (List&lt;String&gt;) -&gt; Unit, onAddItem: (String, String?, String?) -&gt; Unit, onDeleteItem: (CustomType) -&gt; Unit, title: String? = null, emptyText: String = "暂无标签，点击新增添加", showHeader: Boolean = true, showAddButton: Boolean = true, showAddDialog: Boolean = false, onAddDialogDismiss: () -&gt; Unit = {}, iconResolver: ((String) -&gt; ImageVector?)? = null, showIconPicker: Boolean = false )</ID>
+    <ID>LongParameterList:SearchBar.kt$( query: String, onQueryChange: (String) -&gt; Unit, modifier: Modifier, placeholder: String, shape: Shape, containerColor: Color, shadowElevation: Dp, textFieldModifier: Modifier, focusRequester: FocusRequester?, iconTint: Color, textStyle: TextStyle, placeholderTextStyle: TextStyle, placeholderColor: Color, clearButton: (@Composable () -&gt; Unit)? )</ID>
+    <ID>LongParameterList:TagSelector.kt$( isAddVisible: Boolean, addDialogTitle: String, showIconPicker: Boolean, onAddDismiss: () -&gt; Unit, onAddConfirm: (String, String?, String?) -&gt; Unit, deleteTarget: CustomType?, onDeleteDismiss: () -&gt; Unit, onDeleteConfirm: () -&gt; Unit )</ID>
+    <ID>LongParameterList:TagSelector.kt$( items: List&lt;CustomType&gt;, selectedItems: List&lt;String&gt;, mode: TagSelectorMode, emptyText: String, showAddButton: Boolean, iconResolver: ((String) -&gt; ImageVector?)?, onSelectionChange: (List&lt;String&gt;) -&gt; Unit, onAddClick: () -&gt; Unit, onDeleteRequest: (CustomType) -&gt; Unit )</ID>
+    <ID>MatchingDeclarationName:AnniversaryIcons.kt$AnniversaryIconDef</ID>
+    <ID>MatchingDeclarationName:ContactPickerDialog.kt$ContactPickerConfig</ID>
+    <ID>MatchingDeclarationName:ContactRelationshipBadge.kt$BadgeTextStyle</ID>
     <ID>MatchingDeclarationName:Dimensions.kt$Dimens</ID>
-    <ID>MatchingDeclarationName:HolographicCard.kt$HolographicConfig</ID>
-    <ID>MatchingDeclarationName:TagSelector.kt$TagSelectorMode</ID>
+    <ID>MatchingDeclarationName:EmotionIcons.kt$EmotionIconDef</ID>
+    <ID>MatchingDeclarationName:WeatherIcons.kt$WeatherIconDef</ID>
     <ID>MatchingDeclarationName:densityfix.kt$DensityFix</ID>
     <ID>MaxLineLength:AvatarCropDialog.kt$drawRect(maskColor, topLeft = Offset(0f, circleCenter.y + circleRadius), size = Size(canvasSize.width, canvasSize.height - circleCenter.y - circleRadius))</ID>
     <ID>MaxLineLength:AvatarCropDialog.kt$drawRect(maskColor, topLeft = Offset(0f, circleCenter.y - circleRadius), size = Size(circleCenter.x - circleRadius, circleRadius * 2f))</ID>
@@ -81,20 +96,28 @@
     <ID>MaxLineLength:ContactPickerDialog.kt$Icon(Icons.Default.Check, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(18.dp))</ID>
     <ID>MaxLineLength:ContactPickerDialog.kt$Icon(Icons.Default.People, contentDescription = null, tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.4f), modifier = Modifier.size(28.dp))</ID>
     <ID>MaxLineLength:ContactPickerDialog.kt$Text(contact.name, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.onSurface)</ID>
-    <ID>MaxLineLength:ContactPickerDialog.kt$Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)</ID>
-    <ID>MaxLineLength:ContactPickerDialog.kt$color = if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.06f) else MaterialTheme.colorScheme.surfaceVariant</ID>
     <ID>MaxLineLength:ContactPickerDialog.kt$modifier = Modifier.size(56.dp).background(MaterialTheme.colorScheme.primary.copy(alpha = AnimationTokens.Alpha.faint), CircleShape)</ID>
+    <ID>MaxLineLength:Dialogs.kt$if (isDestructive) MaterialTheme.colorScheme.error.copy(alpha = 0.1f) else MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)</ID>
+    <ID>MaxLineLength:EventTypeStyleCoreTest.kt$EventTypeStyleCoreTest$val customType = CustomType(category = CustomCategories.EVENT_TYPE, name = "MEETUP", key = "MEETUP", color = "#FF5733", icon = null, isDefault = false)</ID>
+    <ID>MaxLineLength:EventTypeStyleCoreTest.kt$EventTypeStyleCoreTest$val customType = CustomType(category = CustomCategories.EVENT_TYPE, name = "MEETUP", key = "MEETUP", color = "invalid", icon = null, isDefault = false)</ID>
+    <ID>MaxLineLength:EventTypeStyleCoreTest.kt$EventTypeStyleCoreTest$val customType = CustomType(category = CustomCategories.EVENT_TYPE, name = "MEETUP", key = "MEETUP", color = null, icon = "Restaurant", isDefault = false)</ID>
+    <ID>MaxLineLength:EventTypeStyleCoreTest.kt$EventTypeStyleCoreTest$val customType = CustomType(category = CustomCategories.EVENT_TYPE, name = "MEETUP", key = "MEETUP", color = null, icon = null, isDefault = false)</ID>
+    <ID>MaxLineLength:EventTypeStyleCoreTest.kt$EventTypeStyleCoreTest$val customType = CustomType(category = CustomCategories.EVENT_TYPE, name = "MEETUP", key = "other_key", color = null, icon = null, isDefault = false)</ID>
+    <ID>MaxLineLength:EventTypeStyleCoreTest.kt$EventTypeStyleCoreTest$val customType = CustomType(category = CustomCategories.EVENT_TYPE, name = "其他", key = "OTHER", color = null, icon = null, isDefault = false)</ID>
+    <ID>MaxLineLength:EventTypeStyleCoreTest.kt$EventTypeStyleCoreTest$val customType = CustomType(category = CustomCategories.EVENT_TYPE, name = "聚餐", key = "other", color = null, icon = null, isDefault = false)</ID>
+    <ID>MaxLineLength:EventTypeStyleCoreTest.kt$EventTypeStyleCoreTest$val customType = CustomType(category = CustomCategories.EVENT_TYPE, name = "自定义", key = "MEETUP", color = null, icon = null, isDefault = false)</ID>
+    <ID>MaxLineLength:EventTypeStyleCoreTest.kt$EventTypeStyleCoreTest$val customType = CustomType(category = CustomCategories.EVENT_TYPE, name = "自定义", key = "OTHER", color = "#00FF00", icon = null, isDefault = false)</ID>
+    <ID>MaxLineLength:EventTypeStyleCoreTest.kt$EventTypeStyleCoreTest$val customType = CustomType(category = CustomCategories.EVENT_TYPE, name = "自定义活动", key = "OTHER", color = null, icon = "Flight", isDefault = false)</ID>
     <ID>MaxLineLength:FormComponents.kt$Box</ID>
     <ID>MaxLineLength:FormComponents.kt$Text(text = label, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 11.sp)</ID>
     <ID>MaxLineLength:FormComponents.kt$Text(text = title, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)</ID>
     <ID>MaxLineLength:FormComponents.kt$Text(text = value, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold, maxLines = maxLines, overflow = TextOverflow.Ellipsis, color = valueColor)</ID>
     <ID>MaxLineLength:FormComponents.kt$Text(title, style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold)</ID>
-    <ID>MaxLineLength:TagSelector.kt$.</ID>
-    <ID>MaxLineLength:TagSelector.kt$Box</ID>
     <ID>MaxLineLength:TagSelector.kt$Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(14.dp), tint = MaterialTheme.colorScheme.primary)</ID>
     <ID>MaxLineLength:TagSelector.kt$Icon(imageVector = icon, contentDescription = null, tint = if (isSelected) MaterialTheme.colorScheme.primary else TextGray, modifier = Modifier.size(20.dp))</ID>
     <ID>MaxLineLength:TagSelector.kt$Icon(imageVector = previewIcon, contentDescription = null, tint = previewColor, modifier = Modifier.size(14.dp))</ID>
     <ID>MaxLineLength:TagSelector.kt$Row</ID>
+    <ID>MaxLineLength:TagSelector.kt$Surface</ID>
     <ID>MaxLineLength:TagSelector.kt$TagSelectorMode.MULTI -&gt; onSelectionChange(if (isSelected) selectedItems.toMutableList().apply { remove(item.name) } else selectedItems + item.name)</ID>
     <ID>MaxLineLength:TagSelector.kt$Text("删除标签", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)</ID>
     <ID>MaxLineLength:TagSelector.kt$Text("确定要删除「$typeName」吗？删除后无法恢复。", style = MaterialTheme.typography.bodyMedium, color = TextGray, textAlign = TextAlign.Center)</ID>
@@ -106,10 +129,9 @@
     <ID>MaxLineLength:TagSelector.kt$color = if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = AnimationTokens.Alpha.subtle) else DialogDefaults.containerColor</ID>
     <ID>MaxLineLength:TagSelector.kt$colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary, disabledContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.4f))</ID>
     <ID>MaxLineLength:TagSelector.kt$focusedBorderColor = MaterialTheme.colorScheme.primary</ID>
-    <ID>MaxLineLength:TagSelector.kt$if (isSelected) Icon(Icons.Default.Check, contentDescription = null, tint = Color.White, modifier = Modifier.size(16.dp))</ID>
+    <ID>MaxLineLength:TagSelector.kt$onAddConfirm = { name, color, icon -&gt; callbacks.onAddItem(name, color, icon); internalShowAddDialog = false; callbacks.onAddDialogDismiss() }</ID>
     <ID>MayBeConst:Dimensions.kt$Dimens$val homeLeftWeight = 0.38f</ID>
     <ID>MayBeConst:Dimensions.kt$Dimens$val listPaneWeight = 0.4f</ID>
     <ID>TooGenericExceptionCaught:AvatarCropDialog.kt$e: Exception</ID>
-    <ID>TooGenericExceptionCaught:Color.kt$e: Exception</ID>
   </CurrentIssues>
 </SmellBaseline>

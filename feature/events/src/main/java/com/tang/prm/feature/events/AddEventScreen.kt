@@ -41,11 +41,15 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.tang.prm.domain.model.EventType
+import com.tang.prm.ui.components.ContactPickerConfig
 import com.tang.prm.ui.components.ContactPickerDialog
 import com.tang.prm.ui.components.AppDatePicker
+import com.tang.prm.ui.components.DatePickerLabels
 import com.tang.prm.ui.components.FormScreenScaffold
 import com.tang.prm.ui.components.SectionCard
 import com.tang.prm.ui.components.TagSelector
+import com.tang.prm.ui.components.TagSelectorCallbacks
+import com.tang.prm.ui.components.TagSelectorConfig
 import com.tang.prm.ui.components.TagSelectorMode
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.tang.prm.ui.theme.InsightPink
@@ -107,7 +111,7 @@ fun AddEventScreen(
         AppDatePicker(
             show = showDatePicker,
             onDismiss = { showDatePicker = false },
-            confirmText = "下一步",
+            labels = DatePickerLabels(confirmText = "下一步", dismissText = "取消"),
             onDateSelected = {
                 viewModel.updateTime(mergeDateAndTime(it, uiState.time))
                 showTimePicker = true
@@ -129,8 +133,13 @@ fun AddEventScreen(
     }
 
     if (uiState.showContactPicker) {
-        ContactPickerDialog(contacts = uiState.availableContacts, multiSelect = true, selectedContacts = uiState.participants,
-            onContactSelected = { viewModel.addParticipant(it) }, onDismiss = { viewModel.hideContactPicker() })
+        ContactPickerDialog(
+            contacts = uiState.availableContacts,
+            onDismiss = { viewModel.hideContactPicker() },
+            config = ContactPickerConfig(multiSelect = true),
+            onContactSelected = { viewModel.addParticipant(it) },
+            selectedContacts = uiState.participants
+        )
     }
 
     FormScreenScaffold(
@@ -216,13 +225,19 @@ private fun EventFormSections(
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         SectionCard(title = "事件类型", icon = Icons.AutoMirrored.Filled.Label, iconTint = SignalPurple) {
-            TagSelector(mode = TagSelectorMode.SINGLE, title = null, showHeader = false, showAddButton = true,
+            TagSelector(
+                config = TagSelectorConfig(
+                    mode = TagSelectorMode.SINGLE, title = null, showHeader = false, showAddButton = true,
+                    showIconPicker = true
+                ),
                 availableItems = uiState.eventTypes, selectedItems = listOf(uiState.type),
-                onSelectionChange = { viewModel.updateType(it.firstOrNull() ?: EventType.MEETUP.name) },
-                onAddItem = { name, color, icon -> viewModel.addEventType(name, color, icon) },
-                onDeleteItem = { viewModel.deleteEventType(it) },
-                iconResolver = { name -> uiState.eventTypes.find { it.name == name }?.icon?.let { getGenericIcon(it) } },
-                showIconPicker = true)
+                callbacks = TagSelectorCallbacks(
+                    onSelectionChange = { viewModel.updateType(it.firstOrNull() ?: EventType.MEETUP.name) },
+                    onAddItem = { name, color, icon -> viewModel.addEventType(name, color, icon) },
+                    onDeleteItem = { viewModel.deleteEventType(it) },
+                    iconResolver = { name -> uiState.eventTypes.find { it.name == name }?.icon?.let { getGenericIcon(it) } }
+                )
+            )
         }
 
         SectionCard(title = "时间和地点", icon = Icons.Default.CalendarToday, iconTint = MaterialTheme.colorScheme.primary) {

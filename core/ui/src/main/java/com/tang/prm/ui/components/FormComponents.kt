@@ -25,6 +25,29 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.tang.prm.ui.animation.core.AnimationTokens
 import com.tang.prm.ui.theme.DialogDefaults
+import com.tang.prm.ui.theme.Dimens
+
+/**
+ * AppDatePicker 的按钮颜色配置。
+ *
+ * @param confirmColor 确认按钮文字颜色
+ * @param dismissColor 取消按钮文字颜色
+ */
+data class DatePickerColors(
+    val confirmColor: Color,
+    val dismissColor: Color
+)
+
+/**
+ * AppDatePicker 的按钮文案配置。
+ *
+ * @param confirmText 确认按钮文案
+ * @param dismissText 取消按钮文案
+ */
+data class DatePickerLabels(
+    val confirmText: String,
+    val dismissText: String
+)
 
 /**
  * 表单区块卡片：白底 + 16dp 圆角 + outline 边框 + 阴影，内含图标+标题+内容。
@@ -40,10 +63,10 @@ fun SectionCard(
 ) {
     Surface(
         modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
+        shape = RoundedCornerShape(Dimens.cornerLarge),
         color = MaterialTheme.colorScheme.surface,
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
-        shadowElevation = 3.dp
+        shadowElevation = Dimens.elevationCard
     ) {
         Column(modifier = Modifier.padding(horizontal = 18.dp, vertical = 16.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -104,19 +127,24 @@ fun IconGradientSectionHeader(
         )
         if (action != null && onActionClick != null) {
             Spacer(modifier = Modifier.width(6.dp))
-            Surface(
-                shape = RoundedCornerShape(8.dp),
-                color = iconColor.copy(alpha = AnimationTokens.Alpha.faint)
+            Box(
+                modifier = Modifier
+                    .size(48.dp)
+                    .clickable { onActionClick() },
+                contentAlignment = Alignment.Center
             ) {
-                Text(
-                    action,
-                    fontFamily = FontFamily.Monospace,
-                    fontSize = 10.sp,
-                    color = iconColor,
-                    modifier = Modifier
-                        .clickable { onActionClick() }
-                        .padding(horizontal = 8.dp, vertical = 3.dp)
-                )
+                Surface(
+                    shape = RoundedCornerShape(Dimens.cornerSmall),
+                    color = iconColor.copy(alpha = AnimationTokens.Alpha.faint)
+                ) {
+                    Text(
+                        action,
+                        fontFamily = FontFamily.Monospace,
+                        fontSize = 10.sp,
+                        color = iconColor,
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
+                    )
+                }
             }
         }
     }
@@ -128,10 +156,11 @@ fun AppDatePicker(
     onDismiss: () -> Unit,
     onDateSelected: (Long) -> Unit,
     initialDate: Long? = null,
-    confirmText: String = "确定",
-    dismissText: String = "取消",
-    confirmColor: Color = MaterialTheme.colorScheme.primary,
-    dismissColor: Color = MaterialTheme.colorScheme.onSurfaceVariant
+    colors: DatePickerColors = DatePickerColors(
+        confirmColor = MaterialTheme.colorScheme.primary,
+        dismissColor = MaterialTheme.colorScheme.onSurfaceVariant
+    ),
+    labels: DatePickerLabels = DatePickerLabels(confirmText = "确定", dismissText = "取消")
 ) {
     if (show) {
         val datePickerState = rememberDatePickerState(
@@ -143,10 +172,10 @@ fun AppDatePicker(
                 TextButton(onClick = {
                     datePickerState.selectedDateMillis?.let { onDateSelected(it) }
                     onDismiss()
-                }) { Text(confirmText, color = confirmColor) }
+                }) { Text(labels.confirmText, color = colors.confirmColor) }
             },
             dismissButton = {
-                TextButton(onClick = onDismiss) { Text(dismissText, color = dismissColor) }
+                TextButton(onClick = onDismiss) { Text(labels.dismissText, color = colors.dismissColor) }
             },
             colors = DatePickerDefaults.colors(
                 containerColor = DialogDefaults.containerColor
@@ -222,7 +251,11 @@ fun DetailSection(
                 Text(text = title, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
             }
             Spacer(modifier = Modifier.height(12.dp))
-            HorizontalDivider(modifier = Modifier.fillMaxWidth(), thickness = 0.5.dp, color = MaterialTheme.colorScheme.surfaceVariant)
+            HorizontalDivider(
+                modifier = Modifier.fillMaxWidth(),
+                thickness = Dimens.hairline,
+                color = MaterialTheme.colorScheme.surfaceVariant
+            )
             Spacer(modifier = Modifier.height(10.dp))
             content()
         }

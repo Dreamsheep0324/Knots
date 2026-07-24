@@ -46,27 +46,33 @@ fun <T> SegmentedToggleButton(
             val selected = option.key == selectedKey
             Box(
                 modifier = Modifier
-                    .size(Dimens.iconLarge)
-                    .background(
-                        if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
-                        RoundedCornerShape(Dimens.cornerSmall)
-                    )
+                    .size(48.dp)
                     .clickable { onSelectionChange(option.key) },
                 contentAlignment = Alignment.Center
             ) {
-                if (showLabel && option.label != null) {
-                    Text(
-                        text = option.label,
-                        color = if (selected) Color.White else MaterialTheme.colorScheme.onSurfaceVariant,
-                        style = MaterialTheme.typography.labelSmall
-                    )
-                } else {
-                    Icon(
-                        option.icon,
-                        contentDescription = option.label,
-                        tint = if (selected) Color.White else MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.size(20.dp)
-                    )
+                Box(
+                    modifier = Modifier
+                        .size(Dimens.iconLarge)
+                        .background(
+                            if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
+                            RoundedCornerShape(Dimens.cornerSmall)
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    if (showLabel && option.label != null) {
+                        Text(
+                            text = option.label,
+                            color = if (selected) Color.White else MaterialTheme.colorScheme.onSurfaceVariant,
+                            style = MaterialTheme.typography.labelSmall
+                        )
+                    } else {
+                        Icon(
+                            option.icon,
+                            contentDescription = option.label,
+                            tint = if (selected) Color.White else MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
                 }
             }
         }

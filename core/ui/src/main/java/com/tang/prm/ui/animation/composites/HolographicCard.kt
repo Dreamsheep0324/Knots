@@ -20,6 +20,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -34,6 +35,23 @@ import com.tang.prm.ui.animation.core.AnimationTokens
 import com.tang.prm.ui.animation.core.rememberPausableInfiniteFloatLoop
 import com.tang.prm.ui.animation.primitives.rememberScanLineOffset
 import com.tang.prm.ui.animation.primitives.rememberShimmerPhase
+
+private const val ANIM_BG_ALPHA_VISIBLE = 0.55f
+private const val ANIM_CARD_SCALE_HIDDEN = 0.75f
+private const val ANIM_CARD_OFFSET_Y_HIDDEN = 120f
+private const val ANIM_CARD_ROTATION_HIDDEN = -8f
+private const val SPRING_SCALE_DAMPING = 0.75f
+private const val SPRING_SCALE_STIFFNESS = 350f
+private const val SPRING_OFFSET_DAMPING = 0.8f
+private const val SPRING_OFFSET_STIFFNESS = 300f
+private const val SPRING_ROTATION_DAMPING = 0.75f
+private const val SPRING_ROTATION_STIFFNESS = 250f
+private const val TWEEN_ALPHA_DURATION = 500
+private const val TWEEN_ALPHA_DELAY = 80
+private const val TWEEN_SCALE_DURATION = 250
+private const val CAMERA_DISTANCE_FACTOR = 16f
+private const val SHADOW_ELEVATION_FACTOR = 24f
+private const val SHADOW_ALPHA_THRESHOLD = 0.01f
 
 @Immutable
 data class HolographicConfig(
@@ -65,6 +83,88 @@ data class HolographicConfig(
     }
 }
 
+@Immutable
+private data class HolographicAnimState(
+    val bgAlpha: State<Float>,
+    val cardScale: State<Float>,
+    val cardAlpha: State<Float>,
+    val cardOffsetY: State<Float>,
+    val cardRotation: State<Float>,
+    val rotationY: State<Float>
+)
+
+@Immutable
+private data class HolographicOffsets(
+    val floatOffset: State<Float>,
+    val scanLineOffset: State<Float>,
+    val shimmerOffset: State<Float>
+)
+
+@Composable
+private fun HolographicCardAnimations(
+    visible: Boolean,
+    dismissRequested: Boolean,
+    isFlipped: Boolean,
+    config: HolographicConfig,
+    onClose: () -> Unit
+): HolographicAnimState {
+    val bgAlpha = animateFloatAsState(
+        targetValue = if (visible && !dismissRequested) ANIM_BG_ALPHA_VISIBLE else 0f,
+        animationSpec = tween(400, easing = AnimationTokens.Easing.standard),
+        label = "holo_bg"
+    )
+    val cardScale = animateFloatAsState(
+        targetValue = if (visible && !dismissRequested) 1f else ANIM_CARD_SCALE_HIDDEN,
+        animationSpec = spring(
+            dampingRatio = SPRING_SCALE_DAMPING,
+            stiffness = SPRING_SCALE_STIFFNESS
+        ),
+        label = "holo_scale"
+    )
+    val cardAlpha = animateFloatAsState(
+        targetValue = if (visible && !dismissRequested) 1f else 0f,
+        animationSpec = if (visible && !dismissRequested) {
+            tween(TWEEN_ALPHA_DURATION, delayMillis = TWEEN_ALPHA_DELAY, easing = AnimationTokens.Easing.standard)
+        } else {
+            tween(TWEEN_SCALE_DURATION, easing = AnimationTokens.Easing.exit)
+        },
+        finishedListener = {
+            if (dismissRequested && it == 0f) onClose()
+        },
+        label = "holo_alpha"
+    )
+    val cardOffsetY = animateFloatAsState(
+        targetValue = if (visible && !dismissRequested) 0f else ANIM_CARD_OFFSET_Y_HIDDEN,
+        animationSpec = spring(
+            dampingRatio = SPRING_OFFSET_DAMPING,
+            stiffness = SPRING_OFFSET_STIFFNESS
+        ),
+        label = "holo_offset_y"
+    )
+    val cardRotation = animateFloatAsState(
+        targetValue = if (visible && !dismissRequested) 0f else ANIM_CARD_ROTATION_HIDDEN,
+        animationSpec = spring(
+            dampingRatio = SPRING_ROTATION_DAMPING,
+            stiffness = SPRING_ROTATION_STIFFNESS
+        ),
+        label = "holo_rotation"
+    )
+    val rotationY = animateFloatAsState(
+        targetValue = if (isFlipped && config.enableFlip) 180f else 0f,
+        animationSpec = tween(config.flipDuration, easing = AnimationTokens.Easing.standard),
+        label = "holo_flip"
+    )
+
+    return HolographicAnimState(
+        bgAlpha = bgAlpha,
+        cardScale = cardScale,
+        cardAlpha = cardAlpha,
+        cardOffsetY = cardOffsetY,
+        cardRotation = cardRotation,
+        rotationY = rotationY
+    )
+}
+
 @Composable
 fun HolographicCardOverlay(
     isFlipped: Boolean,
@@ -79,52 +179,19 @@ fun HolographicCardOverlay(
     var dismissRequested by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) { visible = true }
 
-    val bgAlpha by animateFloatAsState(
-        targetValue = if (visible && !dismissRequested) 0.55f else 0f,
-        animationSpec = tween(400, easing = AnimationTokens.Easing.standard),
-        label = "holo_bg"
+    val anim = HolographicCardAnimations(
+        visible = visible,
+        dismissRequested = dismissRequested,
+        isFlipped = isFlipped,
+        config = config,
+        onClose = onClose
     )
-    val cardScale by animateFloatAsState(
-        targetValue = if (visible && !dismissRequested) 1f else 0.75f,
-        animationSpec = spring(
-            dampingRatio = 0.75f,
-            stiffness = 350f
-        ),
-        label = "holo_scale"
-    )
-    val cardAlpha by animateFloatAsState(
-        targetValue = if (visible && !dismissRequested) 1f else 0f,
-        animationSpec = if (visible && !dismissRequested) {
-            tween(500, delayMillis = 80, easing = AnimationTokens.Easing.standard)
-        } else {
-            tween(250, easing = AnimationTokens.Easing.exit)
-        },
-        finishedListener = {
-            if (dismissRequested && it == 0f) onClose()
-        },
-        label = "holo_alpha"
-    )
-    val cardOffsetY by animateFloatAsState(
-        targetValue = if (visible && !dismissRequested) 0f else 120f,
-        animationSpec = spring(
-            dampingRatio = 0.8f,
-            stiffness = 300f
-        ),
-        label = "holo_offset_y"
-    )
-    val cardRotation by animateFloatAsState(
-        targetValue = if (visible && !dismissRequested) 0f else -8f,
-        animationSpec = spring(
-            dampingRatio = 0.75f,
-            stiffness = 250f
-        ),
-        label = "holo_rotation"
-    )
-    val rotationY by animateFloatAsState(
-        targetValue = if (isFlipped && config.enableFlip) 180f else 0f,
-        animationSpec = tween(config.flipDuration, easing = AnimationTokens.Easing.standard),
-        label = "holo_flip"
-    )
+    val bgAlpha by anim.bgAlpha
+    val cardScale by anim.cardScale
+    val cardAlpha by anim.cardAlpha
+    val cardOffsetY by anim.cardOffsetY
+    val cardRotation by anim.cardRotation
+    val rotationY by anim.rotationY
 
     val showFront = rotationY < 90f
 
@@ -152,8 +219,8 @@ fun HolographicCardOverlay(
                     this.translationY = cardOffsetY
                     this.rotationZ = cardRotation
                     this.rotationY = rotationY
-                    cameraDistance = 16f * density
-                    shadowElevation = if (cardAlpha > 0.01f) 24f * cardScale else 0f
+                    cameraDistance = CAMERA_DISTANCE_FACTOR * density
+                    shadowElevation = if (cardAlpha > SHADOW_ALPHA_THRESHOLD) SHADOW_ELEVATION_FACTOR * cardScale else 0f
                     shape = RoundedCornerShape(config.cornerRadius)
                     clip = true
                 },
@@ -179,37 +246,63 @@ fun HolographicCardOverlay(
 }
 
 @Composable
+private fun HolographicAnimationOffsets(config: HolographicConfig): HolographicOffsets {
+    val floatOffset = if (config.enableFloat) {
+        rememberPausableInfiniteFloatLoop(
+            initialValue = -config.floatRange.value,
+            targetValue = config.floatRange.value,
+            durationMillis = config.floatDuration,
+            easing = AnimationTokens.Easing.emphasis,
+            repeatMode = RepeatMode.Reverse,
+            label = "holo_float"
+        )
+    } else {
+        remember { mutableStateOf(0f) }
+    }
+
+    val scanLineOffset = if (config.enableScanLine) {
+        rememberPausableInfiniteFloatLoop(
+            initialValue = 0f,
+            targetValue = 1f,
+            durationMillis = config.scanDuration,
+            easing = AnimationTokens.Easing.linear,
+            repeatMode = RepeatMode.Restart,
+            label = "holo_scan"
+        )
+    } else {
+        remember { mutableStateOf(0f) }
+    }
+
+    val shimmerOffset = if (config.enableShimmer) {
+        rememberPausableInfiniteFloatLoop(
+            initialValue = -1f,
+            targetValue = 2f,
+            durationMillis = config.shimmerDuration,
+            easing = AnimationTokens.Easing.linear,
+            repeatMode = RepeatMode.Restart,
+            label = "holo_shimmer"
+        )
+    } else {
+        remember { mutableStateOf(0f) }
+    }
+
+    return HolographicOffsets(
+        floatOffset = floatOffset,
+        scanLineOffset = scanLineOffset,
+        shimmerOffset = shimmerOffset
+    )
+}
+
+@Composable
 private fun HolographicCardContent(
     config: HolographicConfig,
     onFlip: () -> Unit,
     content: @Composable () -> Unit
 ) {
-    val floatOffset by rememberPausableInfiniteFloatLoop(
-        initialValue = if (config.enableFloat) -config.floatRange.value else 0f,
-        targetValue = if (config.enableFloat) config.floatRange.value else 0f,
-        durationMillis = if (config.enableFloat) config.floatDuration else Int.MAX_VALUE,
-        easing = AnimationTokens.Easing.emphasis,
-        repeatMode = RepeatMode.Reverse,
-        label = "holo_float"
-    )
-
-    val scanLineOffset by rememberPausableInfiniteFloatLoop(
-        initialValue = 0f,
-        targetValue = if (config.enableScanLine) 1f else 0f,
-        durationMillis = if (config.enableScanLine) config.scanDuration else Int.MAX_VALUE,
-        easing = AnimationTokens.Easing.linear,
-        repeatMode = RepeatMode.Restart,
-        label = "holo_scan"
-    )
-
-    val shimmerOffset by rememberPausableInfiniteFloatLoop(
-        initialValue = if (config.enableShimmer) -1f else 0f,
-        targetValue = if (config.enableShimmer) 2f else 0f,
-        durationMillis = if (config.enableShimmer) config.shimmerDuration else Int.MAX_VALUE,
-        easing = AnimationTokens.Easing.linear,
-        repeatMode = RepeatMode.Restart,
-        label = "holo_shimmer"
-    )
+    val offsets = HolographicAnimationOffsets(config)
+    val floatOffset by offsets.floatOffset
+    val scanLineOffset by offsets.scanLineOffset
+    val shimmerOffset by offsets.shimmerOffset
 
     Box(
         modifier = Modifier

@@ -93,7 +93,7 @@ fun NodeInfoCard(
                     ContactAvatar(
                         avatar = info.avatarUri,
                         name = info.name,
-                        size = 44
+                        size = 44.dp
                     )
                     Spacer(modifier = Modifier.width(12.dp))
                     Column(modifier = Modifier.weight(1f)) {

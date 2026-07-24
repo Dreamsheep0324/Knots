@@ -459,7 +459,7 @@ internal fun PhotoFilterDialog(
                                     modifier = Modifier.padding(12.dp),
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    ContactAvatar(avatar = contact.avatar, name = contact.name, size = 32)
+                                    ContactAvatar(avatar = contact.avatar, name = contact.name, size = 32.dp)
                                     Spacer(modifier = Modifier.width(12.dp))
                                     Text(
                                         text = contact.name,

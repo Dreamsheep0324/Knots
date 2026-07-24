@@ -31,9 +31,12 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import com.tang.prm.ui.theme.Dimens
+import kotlin.random.Random
 
 /**
  * 统一的图片展示槽位
@@ -183,8 +186,8 @@ private fun ThumbnailPhotoSlot(photoUri: String, onRemove: (() -> Unit)?, onClic
     Box(
         modifier = Modifier
             .size(80.dp)
-            .clip(RoundedCornerShape(8.dp))
-            .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(8.dp))
+            .clip(RoundedCornerShape(Dimens.cornerSmall))
+            .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(Dimens.cornerSmall))
             .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier)
     ) {
         AsyncImage(
@@ -193,24 +196,17 @@ private fun ThumbnailPhotoSlot(photoUri: String, onRemove: (() -> Unit)?, onClic
                 .crossfade(true)
                 .build(),
             contentDescription = "照片",
-            modifier = Modifier.size(80.dp).clip(RoundedCornerShape(8.dp)),
+            modifier = Modifier.size(80.dp).clip(RoundedCornerShape(Dimens.cornerSmall)),
             contentScale = ContentScale.Crop
         )
         if (onRemove != null) {
-            IconButton(
-                onClick = onRemove,
+            PhotoRemoveButton(
+                onRemove = onRemove,
                 modifier = Modifier
                     .align(Alignment.TopEnd)
-                    .size(24.dp)
+                    .size(48.dp)
                     .padding(2.dp)
-            ) {
-                Icon(
-                    Icons.Default.Close,
-                    contentDescription = "删除",
-                    modifier = Modifier.size(14.dp),
-                    tint = MaterialTheme.colorScheme.onSurface
-                )
-            }
+            )
         }
     }
 }
@@ -220,8 +216,8 @@ private fun ThumbnailAddSlot(label: String, onClick: () -> Unit) {
     Box(
         modifier = Modifier
             .size(80.dp)
-            .clip(RoundedCornerShape(8.dp))
-            .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(8.dp))
+            .clip(RoundedCornerShape(Dimens.cornerSmall))
+            .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(Dimens.cornerSmall))
             .clickable(onClick = onClick),
         contentAlignment = Alignment.Center
     ) {
@@ -244,7 +240,7 @@ private fun ThumbnailAddSlot(label: String, onClick: () -> Unit) {
 
 @Composable
 private fun PolaroidPhotoSlot(photoUri: String, onRemove: (() -> Unit)?, onClick: (() -> Unit)?) {
-    val rotation = remember { (-3f..3f).let { (it.start + (it.endInclusive - it.start) * kotlin.random.Random.nextFloat()) } }
+    val rotation = remember(photoUri) { Random.nextFloat() * 6f - 3f }
 
     Box(
         modifier = Modifier
@@ -282,19 +278,12 @@ private fun PolaroidPhotoSlot(photoUri: String, onRemove: (() -> Unit)?, onClick
         }
 
         if (onRemove != null) {
-            IconButton(
-                onClick = onRemove,
+            PhotoRemoveButton(
+                onRemove = onRemove,
                 modifier = Modifier
                     .align(Alignment.TopEnd)
-                    .size(20.dp)
-            ) {
-                Icon(
-                    Icons.Default.Close,
-                    contentDescription = "删除",
-                    modifier = Modifier.size(14.dp),
-                    tint = MaterialTheme.colorScheme.onSurface
-                )
-            }
+                    .size(48.dp)
+            )
         }
     }
 }
@@ -323,5 +312,31 @@ private fun PolaroidAddSlot(label: String, onClick: () -> Unit) {
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
+    }
+}
+
+/**
+ * 统一的图片删除按钮：圆形 IconButton + Close 图标。
+ *
+ * @param onRemove 删除回调
+ * @param modifier 调用方负责传入定位与尺寸修饰符（如 align + size + padding）
+ * @param iconSize 关闭图标尺寸
+ */
+@Composable
+private fun PhotoRemoveButton(
+    onRemove: () -> Unit,
+    modifier: Modifier = Modifier,
+    iconSize: Dp = 14.dp
+) {
+    IconButton(
+        onClick = onRemove,
+        modifier = modifier
+    ) {
+        Icon(
+            Icons.Default.Close,
+            contentDescription = "删除",
+            modifier = Modifier.size(iconSize),
+            tint = MaterialTheme.colorScheme.onSurface
+        )
     }
 }

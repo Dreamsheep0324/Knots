@@ -273,7 +273,7 @@ internal fun GiftFilterDialog(
                             shape = RoundedCornerShape(8.dp)
                         ) {
                             Row(modifier = Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
-                                ContactAvatar(avatar = contact.avatar, name = contact.name, size = 24)
+                                ContactAvatar(avatar = contact.avatar, name = contact.name, size = 24.dp)
                                 Spacer(modifier = Modifier.width(12.dp))
                                 Text(text = contact.name, color = if (selectedContactId == contact.id) SignalElectric else MaterialTheme.colorScheme.onSurface)
                             }

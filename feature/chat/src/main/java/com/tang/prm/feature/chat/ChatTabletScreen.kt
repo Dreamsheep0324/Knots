@@ -369,7 +369,7 @@ private fun ConversationListItem(
         ContactAvatar(
             avatar = conversation.avatar,
             name = conversation.contactName,
-            size = 44
+            size = 44.dp
         )
 
         Spacer(Modifier.width(12.dp))
@@ -638,7 +638,7 @@ private fun ThemLine(
     accentColor: Color
 ) {
     Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-        ContactAvatar(avatar = avatar, name = speaker, size = 36)
+        ContactAvatar(avatar = avatar, name = speaker, size = 36.dp)
         Column(modifier = Modifier.weight(1f, fill = false)) {
             Text(
                 text = speaker,

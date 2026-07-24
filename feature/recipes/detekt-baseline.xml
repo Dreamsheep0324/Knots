@@ -36,7 +36,6 @@
     <ID>FunctionNaming:RecipeDetailComponents.kt$@Composable fun IngredientGroupSection( groupName: String, groupType: IngredientGroupType, ingredients: List&lt;Ingredient&gt;, isScaled: Boolean, modifier: Modifier = Modifier )</ID>
     <ID>FunctionNaming:RecipeDetailComponents.kt$@Composable fun PersonChip( name: String, modifier: Modifier = Modifier )</ID>
     <ID>FunctionNaming:RecipeDetailComponents.kt$@Composable fun PortionScaler( currentServings: Int, onAdjust: (Int) -&gt; Unit, modifier: Modifier = Modifier )</ID>
-    <ID>FunctionNaming:RecipeDetailComponents.kt$@Composable fun StepCard( step: CookingStep, modifier: Modifier = Modifier )</ID>
     <ID>FunctionNaming:RecipeDetailComponents.kt$@Composable private fun IngredientRow( ingredient: Ingredient, dotColor: Color, isScaled: Boolean )</ID>
     <ID>FunctionNaming:RecipeDetailComponents.kt$@Composable private fun ScalerButton( icon: ImageVector, contentDescription: String, onClick: () -&gt; Unit )</ID>
     <ID>FunctionNaming:RecipeDetailComponents.kt$fun FoodEmoji(cuisine: String?): String</ID>

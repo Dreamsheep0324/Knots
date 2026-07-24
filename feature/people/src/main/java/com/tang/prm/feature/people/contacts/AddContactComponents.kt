@@ -57,7 +57,6 @@ import coil.compose.AsyncImage
 import com.tang.prm.domain.model.AppStrings
 import com.tang.prm.ui.animation.core.AnimationTokens
 import com.tang.prm.ui.components.AppCard
-import com.tang.prm.ui.theme.Error
 import com.tang.prm.ui.theme.SceneOrange
 
 internal val SectionIconSize = 36.dp
@@ -155,7 +154,7 @@ internal fun FormField(label: String, value: String, onValueChange: (String) -> 
     Column(modifier = Modifier.fillMaxWidth()) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(label, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, fontWeight = FontWeight.Medium)
-            if (required) { Spacer(modifier = Modifier.width(2.dp)); Text("*", color = Error, fontSize = MaterialTheme.typography.bodyMedium.fontSize) }
+            if (required) { Spacer(modifier = Modifier.width(2.dp)); Text("*", color = MaterialTheme.colorScheme.error, fontSize = MaterialTheme.typography.bodyMedium.fontSize) }
         }
         Spacer(modifier = Modifier.height(6.dp))
         OutlinedTextField(

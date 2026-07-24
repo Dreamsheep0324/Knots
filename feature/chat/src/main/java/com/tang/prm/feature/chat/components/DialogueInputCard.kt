@@ -170,7 +170,7 @@ internal fun DialogueLineEditor(
             verticalAlignment = Alignment.Top
         ) {
             if (!line.isMe) {
-                ContactAvatar(avatar = contactAvatar, name = contactName, size = 28)
+                ContactAvatar(avatar = contactAvatar, name = contactName, size = 28.dp)
                 Spacer(modifier = Modifier.width(8.dp))
             }
 

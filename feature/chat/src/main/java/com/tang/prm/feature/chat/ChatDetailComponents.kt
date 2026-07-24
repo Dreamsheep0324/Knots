@@ -115,7 +115,7 @@ internal fun ScriptHeader(event: Event, contact: Contact?, intimacyColor: Color)
                 .padding(Dimens.paddingCard),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            ContactAvatar(avatar = contact?.avatar, name = contact?.name ?: "对话", size = 48)
+            ContactAvatar(avatar = contact?.avatar, name = contact?.name ?: "对话", size = 48.dp)
 
             Spacer(modifier = Modifier.width(14.dp))
 
@@ -292,7 +292,7 @@ internal fun TheirDialogueLine(
     accentColor: Color
 ) {
     Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-        ContactAvatar(avatar = avatar, name = name, size = 36)
+        ContactAvatar(avatar = avatar, name = name, size = 36.dp)
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = name,

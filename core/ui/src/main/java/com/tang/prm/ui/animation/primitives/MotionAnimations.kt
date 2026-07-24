@@ -4,12 +4,14 @@ import androidx.compose.animation.core.RepeatMode
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.tang.prm.ui.animation.core.AnimationTokens
+import com.tang.prm.ui.animation.core.rememberIsResumed
 import com.tang.prm.ui.animation.core.rememberPausableInfiniteFloatLoop
 
 enum class RotationDirection {
@@ -35,6 +37,7 @@ fun rememberOrbitalRotations(
     particleCycleDuration: Int = 90000,
     crosshairCycleDuration: Int = 120000
 ): State<OrbitalRotationState> {
+    val isResumed by rememberIsResumed()
     val speeds = remember {
         floatArrayOf(
             360f / scanCycleDuration,
@@ -43,7 +46,8 @@ fun rememberOrbitalRotations(
             360f / crosshairCycleDuration
         )
     }
-    return produceState(initialValue = OrbitalRotationState()) {
+    return produceState(initialValue = OrbitalRotationState(), isResumed) {
+        if (!isResumed) return@produceState
         var lastTime = System.nanoTime()
         var scan = 0f; var rotate = 0f; var particle = 0f; var crosshair = 0f
         while (true) {
@@ -84,8 +88,10 @@ fun rememberContinuousRotation(
     cycleDuration: Int = AnimationTokens.Cycle.slow,
     direction: RotationDirection = RotationDirection.Clockwise
 ): State<Float> {
+    val isResumed by rememberIsResumed()
     val multiplier = if (direction == RotationDirection.Clockwise) 1f else -1f
-    return produceState(initialValue = 0f) {
+    return produceState(initialValue = 0f, isResumed) {
+        if (!isResumed) return@produceState
         val degreesPerMs = 360f * speed / cycleDuration
         var lastTime = System.nanoTime()
         var accumulated = 0f

@@ -2,6 +2,7 @@ package com.tang.prm.feature.recipes
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -18,7 +19,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Remove
-import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -28,7 +28,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
@@ -108,8 +108,11 @@ private fun ScalerButton(
 }
 
 /**
- * 食材分组区块：组名标题（带色点）+ 食材条目列表。
- * 当 [isScaled] 为 true 且食材可缩放时，用量以主题 primary 蓝色高亮显示。
+ * 食材分组区块：胶囊分栏版式（方案 C 精致版）。
+ * 组标题由「色条 + 中文名 + 英文小标 + 数量徽章 + 渐变装饰线」组成；
+ * 食材行为双栏底色胶囊——左栏淡灰底承载食材名（前置序号点），
+ * 右栏组色淡底承载用量，两栏拼接成完整胶囊。
+ * 当 [isScaled] 为 true 且食材可缩放时，用量右栏改用主题 primary 色高亮。
  */
 @Composable
 fun IngredientGroupSection(
@@ -119,72 +122,88 @@ fun IngredientGroupSection(
     isScaled: Boolean,
     modifier: Modifier = Modifier
 ) {
-    val dotColor = when (groupType) {
+    val accentColor = when (groupType) {
         IngredientGroupType.MAIN -> SignalAmber
         IngredientGroupType.SUB -> SignalGreen
         IngredientGroupType.SEASONING -> SignalPurple
     }
-    val groupTint = when (groupType) {
-        IngredientGroupType.MAIN -> SignalAmber
-        IngredientGroupType.SUB -> SignalGreen
-        IngredientGroupType.SEASONING -> SignalPurple
-    }.copy(alpha = 0.06f)
+    val amountTextColor = when (groupType) {
+        IngredientGroupType.MAIN -> Color(0xFFB07000)
+        IngredientGroupType.SUB -> Color(0xFF0A7A52)
+        IngredientGroupType.SEASONING -> Color(0xFF4250D4)
+    }
+    val englishLabel = when (groupType) {
+        IngredientGroupType.MAIN -> "MAIN"
+        IngredientGroupType.SUB -> "SUB"
+        IngredientGroupType.SEASONING -> "SEASONING"
+    }
 
-    Surface(
-        modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(14.dp),
-        color = groupTint,
-        border = BorderStroke(1.dp, dotColor.copy(alpha = 0.18f))
-    ) {
-        Column(modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Box(
-                    modifier = Modifier
-                        .size(8.dp)
-                        .clip(CircleShape)
-                        .background(dotColor)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = groupName,
-                    style = MaterialTheme.typography.labelMedium,
-                    fontSize = 13.sp,
-                    fontWeight = FontWeight.ExtraBold,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-                Spacer(modifier = Modifier.weight(1f))
-                Surface(
-                    shape = CircleShape,
-                    color = MaterialTheme.colorScheme.surface.copy(alpha = 0.7f)
-                ) {
-                    Text(
-                        text = "${ingredients.size} 项",
-                        style = MaterialTheme.typography.labelSmall,
-                        fontSize = 10.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
+    Column(modifier = modifier.fillMaxWidth()) {
+        // 组标题行：色条 + 中文名 + 英文小标 + 数量徽章
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .padding(bottom = 10.dp)
+                .padding(start = 10.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .width(3.dp)
+                    .height(18.dp)
+                    .clip(RoundedCornerShape(1.5.dp))
+                    .background(accentColor)
+            )
+            Spacer(modifier = Modifier.width(10.dp))
+            Text(
+                text = groupName,
+                style = MaterialTheme.typography.labelLarge,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.ExtraBold,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            Spacer(modifier = Modifier.width(6.dp))
+            Text(
+                text = englishLabel,
+                style = MaterialTheme.typography.labelSmall,
+                fontSize = 10.sp,
+                fontWeight = FontWeight.Bold,
+                color = accentColor.copy(alpha = 0.7f),
+                letterSpacing = 1.5.sp
+            )
+            Spacer(modifier = Modifier.weight(1f))
+            Text(
+                text = "${ingredients.size} 项",
+                style = MaterialTheme.typography.labelSmall,
+                fontSize = 11.sp,
+                fontWeight = FontWeight.Bold,
+                color = accentColor,
+                modifier = Modifier
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(accentColor.copy(alpha = 0.1f))
+                    .padding(horizontal = 8.dp, vertical = 2.dp)
+            )
+        }
+        // 组标题下渐变装饰线
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 10.dp, bottom = 4.dp)
+                .height(1.dp)
+                .background(
+                    Brush.horizontalGradient(
+                        listOf(accentColor.copy(alpha = 0.35f), Color.Transparent)
                     )
-                }
-            }
-            if (ingredients.isNotEmpty()) {
-                Spacer(modifier = Modifier.height(8.dp))
-            }
-            ingredients.forEachIndexed { index, ingredient ->
-                IngredientRow(
-                    ingredient = ingredient,
-                    dotColor = dotColor,
-                    isScaled = isScaled
                 )
-                if (index < ingredients.lastIndex) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(start = 20.dp)
-                            .height(1.dp)
-                            .background(MaterialTheme.colorScheme.outline.copy(alpha = 0.15f))
-                    )
-                }
-            }
+        )
+        // 食材胶囊列表
+        ingredients.forEachIndexed { index, ingredient ->
+            IngredientRow(
+                ingredient = ingredient,
+                accentColor = accentColor,
+                amountTextColor = amountTextColor,
+                isScaled = isScaled,
+                index = index
+            )
         }
     }
 }
@@ -192,59 +211,69 @@ fun IngredientGroupSection(
 @Composable
 private fun IngredientRow(
     ingredient: Ingredient,
-    dotColor: Color,
-    isScaled: Boolean
+    accentColor: Color,
+    amountTextColor: Color,
+    isScaled: Boolean,
+    index: Int
 ) {
     val scaled = isScaled && ingredient.isScalable
+    val amountText = formatIngredientAmount(ingredient)
+    val pillColor = if (scaled) MaterialTheme.colorScheme.primary else accentColor
+    val pillTextColor = if (scaled) MaterialTheme.colorScheme.primary else amountTextColor
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 7.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
+            .padding(vertical = 3.dp)
+            .height(38.dp)
+            .clip(RoundedCornerShape(10.dp))
     ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.weight(1f)
+        // 左栏：食材名（淡灰底，左圆角，前置序号点）
+        Box(
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxHeight()
+                .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.028f)),
+            contentAlignment = Alignment.CenterStart
         ) {
-            Box(
-                modifier = Modifier
-                    .size(6.dp)
-                    .clip(CircleShape)
-                    .background(dotColor.copy(alpha = 0.5f))
-            )
-            Spacer(modifier = Modifier.width(10.dp))
-            Text(
-                text = ingredient.name,
-                style = MaterialTheme.typography.bodyMedium,
-                fontSize = 14.sp,
-                color = MaterialTheme.colorScheme.onSurface,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
-        }
-        val amountText = formatIngredientAmount(ingredient)
-        if (scaled) {
-            Surface(
-                shape = CircleShape,
-                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.padding(horizontal = 12.dp)
             ) {
+                Box(
+                    modifier = Modifier
+                        .size(4.dp)
+                        .clip(CircleShape)
+                        .background(accentColor.copy(alpha = 0.55f))
+                )
+                Spacer(modifier = Modifier.width(10.dp))
                 Text(
-                    text = amountText,
+                    text = ingredient.name,
                     style = MaterialTheme.typography.bodyMedium,
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
+                    fontSize = 14.5.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
                 )
             }
-        } else {
+        }
+        // 右栏：用量（组色淡底，右圆角）
+        Box(
+            modifier = Modifier
+                .width(96.dp)
+                .fillMaxHeight()
+                .background(pillColor.copy(alpha = 0.1f)),
+            contentAlignment = Alignment.Center
+        ) {
             Text(
                 text = amountText,
-                style = MaterialTheme.typography.bodyMedium,
+                style = MaterialTheme.typography.labelMedium,
                 fontSize = 13.sp,
-                fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                fontWeight = FontWeight.Bold,
+                color = pillTextColor,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
             )
         }
     }
@@ -254,83 +283,6 @@ private fun formatIngredientAmount(ingredient: Ingredient): String {
     val amount = ingredient.amount.ifBlank { "—" }
     val unit = ingredient.unit
     return if (unit.isBlank()) amount else "$amount $unit"
-}
-
-/**
- * 烹饪步骤卡片：圆角容器内展示步骤描述，可选定时器 chip。
- * 配合时间线使用时，编号由时间线节点呈现。
- */
-@Composable
-fun StepCard(
-    step: CookingStep,
-    modifier: Modifier = Modifier
-) {
-    Surface(
-        modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
-        color = MaterialTheme.colorScheme.surface,
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.45f)),
-        shadowElevation = 1.dp
-    ) {
-        Box(modifier = Modifier.fillMaxWidth()) {
-            // 左侧主题色强调条
-            Box(
-                modifier = Modifier
-                    .width(4.dp)
-                    .fillMaxHeight()
-                    .align(Alignment.CenterStart)
-                    .clip(RoundedCornerShape(topEnd = 4.dp, bottomEnd = 4.dp))
-                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.6f))
-            )
-            Column(modifier = Modifier.padding(start = 14.dp, top = 12.dp, end = 12.dp, bottom = 12.dp)) {
-                Text(
-                    text = step.description,
-                    style = MaterialTheme.typography.bodyLarge,
-                    fontSize = 15.sp,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    lineHeight = 24.sp
-                )
-                step.timerSeconds?.takeIf { it > 0 }?.let { seconds ->
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Surface(
-                        shape = CircleShape,
-                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
-                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.2f))
-                    ) {
-                        Row(
-                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Icon(
-                                Icons.Default.Timer,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.size(14.dp)
-                            )
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text(
-                                text = formatTimer(seconds),
-                                style = MaterialTheme.typography.labelMedium,
-                                fontSize = 12.sp,
-                                color = MaterialTheme.colorScheme.primary,
-                                fontWeight = FontWeight.SemiBold
-                            )
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
-private fun formatTimer(seconds: Int): String {
-    val minutes = seconds / 60
-    val secs = seconds % 60
-    return when {
-        minutes == 0 -> "${secs}秒"
-        secs == 0 -> "${minutes}分钟"
-        else -> "${minutes}分${secs}秒"
-    }
 }
 
 /**

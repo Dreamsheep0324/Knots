@@ -3,7 +3,8 @@ package com.tang.prm.ui.animation.primitives
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
-import androidx.compose.runtime.produceState
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.remember
 import com.tang.prm.ui.animation.core.AnimationTokens
 import com.tang.prm.ui.animation.core.rememberPausableInfiniteFloatLoop
 
@@ -38,12 +39,13 @@ fun rememberBlinkingAlpha(
         repeatMode = RepeatMode.Restart,
         label = "BlinkingAlpha"
     )
-    return produceState(
-        initialValue = 1f,
-        key1 = phase.value
-    ) {
-        val currentPhase = phase.value % totalCycle
-        value = if (currentPhase < onDuration) 1f else 0f
+    // 用 derivedStateOf 替代 produceState(key1 = phase.value)，
+    // 避免每帧重建协程；derivedStateOf 自动追踪 phase 变化
+    return remember {
+        derivedStateOf {
+            val currentPhase = phase.value % totalCycle
+            if (currentPhase < onDuration) 1f else 0f
+        }
     }
 }
 

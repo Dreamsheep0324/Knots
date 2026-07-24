@@ -21,7 +21,6 @@ import androidx.navigation.NavController
 import com.tang.prm.ui.components.DeleteConfirmDialog
 import com.tang.prm.ui.navigation.ContactDetailRoute
 import com.tang.prm.ui.navigation.EditEventRoute
-import com.tang.prm.ui.theme.Error
 
 @Composable
 fun EventDetailScreen(
@@ -73,7 +72,7 @@ fun EventDetailScreen(
                         Icon(Icons.Default.Edit, contentDescription = "编辑", tint = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                     IconButton(onClick = { showDeleteDialog = true }) {
-                        Icon(Icons.Default.Delete, contentDescription = "删除", tint = Error)
+                        Icon(Icons.Default.Delete, contentDescription = "删除", tint = MaterialTheme.colorScheme.error)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface)

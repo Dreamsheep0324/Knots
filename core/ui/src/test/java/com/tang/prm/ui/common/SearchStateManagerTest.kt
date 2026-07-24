@@ -120,10 +120,11 @@ class SearchStateManagerTest {
         @Test
         fun emitsQueryAfterDebounce() = runTest {
             manager.debouncedQuery.test {
+                // 初始空查询立即发射（debounce 0L）
+                assertThat(awaitItem()).isEmpty()
+                // 设置非空查询，防抖 300ms 后发射
                 manager.onQueryChange("hello")
-                // Wait for debounce (300ms)
-                val query = awaitItem()
-                assertThat(query).isEqualTo("hello")
+                assertThat(awaitItem()).isEqualTo("hello")
                 cancelAndIgnoreRemainingEvents()
             }
         }

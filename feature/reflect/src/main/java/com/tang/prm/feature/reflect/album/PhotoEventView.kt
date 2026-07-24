@@ -229,7 +229,7 @@ private fun EventPhotoCard(
                             ContactAvatar(
                                 avatar = avatar,
                                 name = name,
-                                size = 18
+                                size = 18.dp
                             )
                             Text(
                                 text = name,

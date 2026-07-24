@@ -33,7 +33,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import com.tang.prm.ui.theme.Error
+import com.tang.prm.ui.theme.Dimens
 
 @Composable
 fun DeleteConfirmDialog(
@@ -85,7 +85,7 @@ fun AppConfirmDialog(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 24.dp),
-            shape = RoundedCornerShape(20.dp),
+            shape = RoundedCornerShape(Dimens.cornerXl),
             color = MaterialTheme.colorScheme.surface,
             tonalElevation = 0.dp,
             border = null
@@ -96,23 +96,7 @@ fun AppConfirmDialog(
                     .padding(24.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // 图标
-                Box(
-                    modifier = Modifier
-                        .size(48.dp)
-                        .background(
-                            if (isDestructive) Error.copy(alpha = 0.1f) else MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
-                            RoundedCornerShape(14.dp)
-                        ),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        if (isDestructive) Icons.Default.Warning else Icons.Default.Check,
-                        contentDescription = null,
-                        modifier = Modifier.size(26.dp),
-                        tint = if (isDestructive) Error else MaterialTheme.colorScheme.primary
-                    )
-                }
+                DialogIconBlock(isDestructive = isDestructive)
 
                 Spacer(modifier = Modifier.height(16.dp))
 
@@ -136,37 +120,76 @@ fun AppConfirmDialog(
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                // 按钮行
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(10.dp)
-                ) {
-                    // 取消按钮
-                    OutlinedButton(
-                        onClick = onDismiss,
-                        modifier = Modifier.weight(1f),
-                        shape = RoundedCornerShape(12.dp),
-                        colors = ButtonDefaults.outlinedButtonColors(
-                            contentColor = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    ) {
-                        Text(dismissLabel, fontWeight = FontWeight.Medium)
-                    }
-
-                    // 确认按钮
-                    Button(
-                        onClick = onConfirm,
-                        modifier = Modifier.weight(1f),
-                        shape = RoundedCornerShape(12.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = if (isDestructive) Error else MaterialTheme.colorScheme.primary,
-                            contentColor = Color.White
-                        )
-                    ) {
-                        Text(confirmLabel, fontWeight = FontWeight.Medium)
-                    }
-                }
+                DialogButtonRow(
+                    confirmLabel = confirmLabel,
+                    dismissLabel = dismissLabel,
+                    isDestructive = isDestructive,
+                    onConfirm = onConfirm,
+                    onDismiss = onDismiss
+                )
             }
+        }
+    }
+}
+
+@Composable
+private fun DialogIconBlock(
+    isDestructive: Boolean,
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = modifier
+            .size(48.dp)
+            .background(
+                if (isDestructive) MaterialTheme.colorScheme.error.copy(alpha = 0.1f) else MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
+                RoundedCornerShape(14.dp)
+            ),
+        contentAlignment = Alignment.Center
+    ) {
+        Icon(
+            if (isDestructive) Icons.Default.Warning else Icons.Default.Check,
+            contentDescription = null,
+            modifier = Modifier.size(26.dp),
+            tint = if (isDestructive) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary
+        )
+    }
+}
+
+@Composable
+private fun DialogButtonRow(
+    confirmLabel: String,
+    dismissLabel: String,
+    isDestructive: Boolean,
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(10.dp)
+    ) {
+        // 取消按钮
+        OutlinedButton(
+            onClick = onDismiss,
+            modifier = Modifier.weight(1f),
+            shape = RoundedCornerShape(Dimens.cornerMedium),
+            colors = ButtonDefaults.outlinedButtonColors(
+                contentColor = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        ) {
+            Text(dismissLabel, fontWeight = FontWeight.Medium)
+        }
+
+        // 确认按钮
+        Button(
+            onClick = onConfirm,
+            modifier = Modifier.weight(1f),
+            shape = RoundedCornerShape(Dimens.cornerMedium),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = if (isDestructive) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
+                contentColor = Color.White
+            )
+        ) {
+            Text(confirmLabel, fontWeight = FontWeight.Medium)
         }
     }
 }

@@ -46,7 +46,7 @@ internal fun ContactNameChip(
             modifier = Modifier.padding(start = 6.dp, end = 10.dp, top = 4.dp, bottom = 4.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            ContactAvatar(avatar = avatar, name = name, size = avatarSize)
+            ContactAvatar(avatar = avatar, name = name, size = avatarSize.dp)
             Spacer(modifier = Modifier.width(6.dp))
             Text(
                 name,
